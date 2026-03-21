@@ -1,0 +1,78 @@
+name: Greece
+options:
+  bundleIdPrefix: com.scorchy
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  generateEmptyDirectories: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+
+targets:
+
+  # ── Main Application ──────────────────────────────────────────
+  Greece:
+    type: application
+    platform: macOS
+    sources:
+      - path: Greece
+        excludes:
+          - "**/.DS_Store"
+      - path: Shared
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece
+        INFOPLIST_FILE: Greece/App/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Greece/App/Greece.entitlements
+        PRODUCT_NAME: Greece
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        COMBINE_HIDPI_IMAGES: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      buildTargets:
+        Greece: all
+    dependencies:
+      - target: GreeceQuickLook
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: pluginsAndFoundation
+
+  # ── Quick Look Extension ──────────────────────────────────────
+  GreeceQuickLook:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: GreeceQuickLook
+        excludes:
+          - "**/.DS_Store"
+      - path: Shared
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook
+        INFOPLIST_FILE: GreeceQuickLook/Info.plist
+        CODE_SIGN_ENTITLEMENTS: GreeceQuickLook/GreeceQuickLook.entitlements
+        PRODUCT_NAME: GreeceQuickLook
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SKIP_INSTALL: YES
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../Frameworks"
+          - "@executable_path/../../../../Frameworks"
+    resources:
+      - path: GreeceQuickLook/Resources
+        excludes:
+          - "**/.DS_Store"
