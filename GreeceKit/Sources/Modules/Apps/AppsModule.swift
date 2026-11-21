@@ -11,7 +11,7 @@ enum AppsModule: PreviewModule {
         case machO
         case windows
         case installerPackage
-        case ipa
+        case ipa, android
         case provisioningProfile, configurationProfile
         case torrent
     }
@@ -33,6 +33,7 @@ enum AppsModule: PreviewModule {
         if file.ext != "class", MachOFile.magic(of: bytes) != nil { return .machO }
         if WindowsPage.sniff(probe: bytes) { return .windows }
         if InstallerPackagePage.sniff(probe: bytes, ext: file.ext, isDirectory: false) { return .installerPackage }
+        if AndroidPage.sniff(probe: bytes, ext: file.ext) { return .android }
         let zip = bytes.count >= 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04
         switch file.ext {
         case "ipa": return zip ? .ipa : nil
@@ -78,6 +79,8 @@ enum AppsModule: PreviewModule {
             return try InstallerPackagePage.page(for: file.url, settings: .default)
         case .ipa:
             return try IPAPage.page(for: file.url, modified: modified)
+        case .android:
+            return try AndroidPage.page(for: file.url, settings: .default)
         case .provisioningProfile:
             return try ProfilePage.provisioningPage(for: file.url, modified: modified)
         case .configurationProfile:
@@ -92,6 +95,9 @@ enum AppsModule: PreviewModule {
         case .ipa:
             guard let icon = IPAPage.icon(for: file.url) else { return nil }
             return AppThumbnails.appIcon(icon, shape: .iOS, size: size, badge: "IPA")
+        case .android:
+            guard let icon = AndroidPage.icon(for: file.url) else { return nil }
+            return AppThumbnails.appIcon(icon, shape: .asIs, size: size, badge: file.ext.uppercased())
         case .windows:
             guard let icon = WindowsPage.icon(for: file.url) else { return nil }
             return AppThumbnails.appIcon(icon, shape: .asIs, size: size, badge: file.ext.isEmpty ? "EXE" : file.ext.uppercased())
