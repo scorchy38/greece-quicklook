@@ -29,6 +29,10 @@ Greece makes Quick Look beautiful for the files developers and writers live in. 
 
 The info bar at the bottom of every preview shows what the file is at a glance: language and line count, words and reading time, rows and columns, or files and compression ratio.
 
+### Finder thumbnails
+
+Source files and tab- or pipe-separated tables get real thumbnails in Finder: a miniature page of the file, highlighted in your code theme, or a table grid. They're drawn natively with highlight.js running in JavaScriptCore, so they're instant and need no web view. macOS keeps its own plain-text thumbnails for Markdown, JSON, CSV and `.txt`.
+
 ## The app
 
 Open Greece once and it walks you through turning previews on. It checks that Quick Look is actually using this copy of Greece and fixes the common problems (a stale copy registered elsewhere, the extension switched off) with one button.
@@ -80,6 +84,8 @@ scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots path/to/
 scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots --appearance dark --theme one file.swift
 scripts/shoot-app.sh build/dd/Build/Products/Release/Greece.app code /tmp/code.png --appearance dark
 scripts/shoot-quicklook.sh /Applications/Greece.app file.md /tmp/panel.png   # the real Quick Look panel, nothing else on screen
+build/dd/Build/Products/Release/Greece.app/Contents/MacOS/Greece --thumbnail file.swift /tmp/thumb.png --size 512
+swift scripts/ui-check.swift /Applications/Greece.app /tmp/ui   # clicks through the installed app and checks every step
 ```
 
 `scripts/make-icon.swift` draws the app icon.
@@ -89,7 +95,8 @@ scripts/shoot-quicklook.sh /Applications/Greece.app file.md /tmp/panel.png   # t
 ```
 Greece.app
 ├── Contents/Frameworks/GreeceKit.framework   shared engine: detection, parsers, renderers, web assets
-└── Contents/PlugIns/GreeceQuickLook.appex     sandboxed Quick Look extension (a thin wrapper)
+├── Contents/PlugIns/GreeceQuickLook.appex     sandboxed Quick Look preview extension (a thin wrapper)
+└── Contents/PlugIns/GreeceThumbnails.appex    sandboxed Finder thumbnail extension
 ```
 
 - **GreeceKit** turns a file into a `PreviewView`. Detection looks at bytes first (SQLite, ZIP, gzip, bzip2, xz and tar signatures, binary versus text), then names and extensions, then shebangs and diff markers.

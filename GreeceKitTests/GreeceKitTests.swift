@@ -381,3 +381,33 @@ final class HardeningTests: XCTestCase {
         XCTAssertEqual(listing.innerPrefix?.count, text.utf8.count)
     }
 }
+
+final class ThumbnailTests: XCTestCase {
+    func testPagesForDocumentsButNotBinaries() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("greece-thumb-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
+        func write(_ name: String, _ data: Data) throws -> URL {
+            let url = directory.appendingPathComponent(name)
+            try data.write(to: url)
+            return url
+        }
+        let size = CGSize(width: 256, height: 256)
+        let swift = Thumbnailer.page(for: try write("a.swift", Data("let x = 1\n".utf8)), maximumSize: size, settings: PreviewSettings())
+        XCTAssertEqual(swift?.badge, "SWIFT")
+        XCTAssertEqual(swift?.size.height, 256)
+        XCTAssertEqual(swift.map { $0.size.width / $0.size.height } ?? 0, 8.5 / 11, accuracy: 0.01)
+        XCTAssertEqual(Thumbnailer.page(for: try write("t.tsv", Data("a\tb\n1\t2\n".utf8)), maximumSize: size, settings: PreviewSettings())?.badge, "TSV")
+        XCTAssertNil(Thumbnailer.page(for: try write("x.bin", Data([0, 1, 2, 0, 255])), maximumSize: size, settings: PreviewSettings()))
+    }
+
+    func testHighlightedSpansTakeThemeColours() {
+        let theme = CodeTheme.xcode
+        let attributed = Highlighter.shared.attributed("let x = \"hi\"", grammar: "swift", base: [.font: NSFont.monospacedSystemFont(ofSize: 10, weight: .regular)], theme: theme)
+        XCTAssertEqual(attributed?.string, "let x = \"hi\"")
+        let keyword = attributed?.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor
+        let string = attributed?.attribute(.foregroundColor, at: 9, effectiveRange: nil) as? NSColor
+        XCTAssertEqual(keyword?.usingColorSpace(.sRGB), NSColor(hex: theme.light.keyword).usingColorSpace(.sRGB))
+        XCTAssertEqual(string?.usingColorSpace(.sRGB), NSColor(hex: theme.light.string).usingColorSpace(.sRGB))
+    }
+}

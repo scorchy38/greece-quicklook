@@ -75,6 +75,28 @@ targets:
           - "@executable_path/../../../../Frameworks"
 
   # The companion app: onboarding, live-preview settings, sample files.
+  # Finder thumbnails: miniature pages of Markdown, code and tables.
+  GreeceThumbnails:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: GreeceThumbnails
+    dependencies:
+      - target: GreeceKit
+        embed: false
+      - sdk: QuickLookThumbnailing.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.thumbnails
+        PRODUCT_NAME: GreeceThumbnails
+        INFOPLIST_FILE: GreeceThumbnails/Info.plist
+        CODE_SIGN_ENTITLEMENTS: GreeceThumbnails/GreeceThumbnails.entitlements
+        SKIP_INSTALL: YES
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../Frameworks"
+          - "@executable_path/../../../../Frameworks"
+
   Greece:
     type: application
     platform: macOS
@@ -83,6 +105,12 @@ targets:
     dependencies:
       - target: GreeceKit
       - target: GreeceQuickLook
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceThumbnails
         embed: true
         codeSign: true
         buildPhase:

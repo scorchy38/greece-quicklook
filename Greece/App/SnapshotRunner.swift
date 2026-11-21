@@ -186,6 +186,33 @@ enum SnapshotRunner {
         return result
     }
 
+    // MARK: - Thumbnails
+
+    /// Draws the Finder thumbnail for a file, exactly as the thumbnail extension does.
+    ///     Greece --thumbnail <file> <out.png> [--size 512]
+    static func runThumbnail() {
+        let args = CommandLine.arguments
+        guard let index = args.firstIndex(of: "--thumbnail"), index + 2 < args.count else { exit(1) }
+        let side = value(after: "--size").flatMap(Double.init) ?? 512
+        guard let page = Thumbnailer.page(for: URL(fileURLWithPath: args[index + 1]), maximumSize: CGSize(width: side, height: side),
+                                          settings: SettingsStore.current()) else {
+            FileHandle.standardError.write(Data("no thumbnail for this file\n".utf8))
+            exit(1)
+        }
+        let scale: CGFloat = 2
+        guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(page.size.width * scale), pixelsHigh: Int(page.size.height * scale),
+                                            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+                                            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) else { exit(1) }
+        bitmap.size = page.size
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
+        page.draw()
+        NSGraphicsContext.restoreGraphicsState()
+        try? bitmap.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: args[index + 2]))
+        print("badge \(page.badge) size \(Int(page.size.width))x\(Int(page.size.height))")
+        exit(0)
+    }
+
     // MARK: - Real Quick Look panel
 
     /// Opens the system Quick Look panel on a file (exactly what Finder shows) and prints its window

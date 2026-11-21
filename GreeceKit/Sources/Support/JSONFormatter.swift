@@ -11,7 +11,8 @@ public enum JSONFormatter {
         return sample.count / max(newlines, 1) > 300
     }
 
-    public static func prettyPrinted(_ text: String, indent: Int = 2) -> String? {
+    /// `lenient` formats a truncated document (a thumbnail's first kilobytes) instead of refusing it.
+    public static func prettyPrinted(_ text: String, indent: Int = 2, lenient: Bool = false) -> String? {
         let input = Array(text.utf8)
         var output: [UInt8] = []
         output.reserveCapacity(input.count + input.count / 2)
@@ -59,7 +60,7 @@ public enum JSONFormatter {
                 newline()
             case 0x7D, 0x5D: // } ]
                 depth -= 1
-                if depth < 0 { return nil }
+                if depth < 0 { if lenient { depth = 0 } else { return nil } }
                 newline()
                 output.append(byte)
             case 0x2C: // ,
@@ -75,7 +76,7 @@ public enum JSONFormatter {
             index += 1
             if output.count > outputLimit { return nil }
         }
-        guard depth == 0, !inString else { return nil }
+        guard lenient || (depth == 0 && !inString) else { return nil }
         output.append(0x0A)
         return String(decoding: output, as: UTF8.self)
     }
