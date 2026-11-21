@@ -10,6 +10,7 @@ enum AppsModule: PreviewModule {
         case bundle, xcarchive, dsym
         case machO
         case windows
+        case installerPackage
         case ipa
         case provisioningProfile, configurationProfile
         case torrent
@@ -24,12 +25,14 @@ enum AppsModule: PreviewModule {
     static func kind(of file: FileInfo) -> Kind? {
         if file.isDirectory {
             if file.ext == "xcarchive" { return .xcarchive }
+            if InstallerPackagePage.sniff(probe: [], ext: file.ext, isDirectory: true) { return .installerPackage }
             if file.ext == "dsym" { return .dsym }
             return bundleExtensions.contains(file.ext) ? .bundle : nil
         }
         let bytes = file.probe.bytes
         if file.ext != "class", MachOFile.magic(of: bytes) != nil { return .machO }
         if WindowsPage.sniff(probe: bytes) { return .windows }
+        if InstallerPackagePage.sniff(probe: bytes, ext: file.ext, isDirectory: false) { return .installerPackage }
         let zip = bytes.count >= 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04
         switch file.ext {
         case "ipa": return zip ? .ipa : nil
@@ -71,6 +74,8 @@ enum AppsModule: PreviewModule {
             return try MachOPage.page(for: file.url, modified: modified)
         case .windows:
             return try WindowsPage.page(for: file.url, settings: .default)
+        case .installerPackage:
+            return try InstallerPackagePage.page(for: file.url, settings: .default)
         case .ipa:
             return try IPAPage.page(for: file.url, modified: modified)
         case .provisioningProfile:
