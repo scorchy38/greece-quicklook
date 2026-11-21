@@ -33,10 +33,8 @@ xcodebuild -project Greece.xcodeproj -scheme Greece -configuration Release \
 app="$out/dd/Build/Products/Release/Greece.app"
 codesign --verify --deep --strict "$app"
 # Building registers the product's extensions with macOS; don't let a packaging build take over
-# Quick Look from the installed copy.
-lsregister=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
+# Quick Look from the installed copy. (Not `lsregister -u`: it can drop the shared bundle IDs.)
 for appex in "$app"/Contents/PlugIns/*.appex; do pluginkit -r "$appex" 2>/dev/null || true; done
-"$lsregister" -u "$app" 2>/dev/null || true
 version="$(defaults read "$app/Contents/Info" CFBundleShortVersionString)"
 dmg="$out/Greece-$version.dmg"
 
