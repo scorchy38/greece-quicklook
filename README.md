@@ -1,179 +1,112 @@
-# Greece: Preview Files
+# Greece
 
 **A better look at your files.**
 
-Greece extends Finder's Quick Look with rich preview capabilities for every file type. Press Space on any file to instantly preview it with beautiful, native rendering.
+Greece makes Quick Look beautiful for the files developers and writers live in. Select a file in Finder, press <kbd>Space</kbd>, and you get typeset Markdown, syntax-highlighted code, real tables, browsable archives and databases, readable diffs and rendered notebooks. Everything happens on your Mac, in a fraction of a second.
 
-Built natively for macOS with Swift. No analytics, no tracking, no accounts. Zero data collected.
+<p align="center">
+  <img src="docs/images/Guide-md.png" width="49%" alt="Markdown preview">
+  <img src="docs/images/Lighthouse-swift-dark.png" width="49%" alt="Swift preview in dark mode">
+</p>
+<p align="center">
+  <img src="docs/images/Timetable-patch.png" width="49%" alt="Patch preview">
+  <img src="docs/images/Islands-sqlite.png" width="49%" alt="SQLite preview">
+</p>
 
----
+## What Greece previews
 
-## Features
+| | Formats | What you get |
+|---|---|---|
+| **Markdown** | `.md` `.markdown` `.mdx` `.rmd` `.qmd` TextBundle | GitHub Flavored Markdown, alerts, task lists, footnotes, emoji, KaTeX math, Mermaid diagrams, front matter as properties, an outline with scroll tracking, relative images |
+| **Code** | 190+ languages | Xcode-quality highlighting, eight themes with light and dark variants, line numbers that stay aligned when wrapping, copy button, instant opening for 60,000-line files |
+| **JSON & plists** | `.json` `.jsonc` `.geojson` `.plist` (XML and binary) | Minified JSON formatted with key order preserved, binary property lists decoded |
+| **Notebooks** | `.ipynb` | Markdown cells, highlighted code, text, HTML tables, images, SVG and tracebacks |
+| **Diffs** | `.diff` `.patch` | Per-file sections with status badges, +/− stats, old and new line numbers, syntax highlighting inside the diff, commit title and message for `git format-patch` files |
+| **Tables** | `.tsv` `.tab` `.psv` | Native table with row numbers, numeric alignment, sorting, multi-row copy |
+| **Databases** | `.sqlite` `.sqlite3` `.db` | Tables and views in a sidebar with row counts, column types on hover, lazy paging, sorting. Opened read-only and immutable |
+| **Archives** | `.zip` `.jar` `.apk` `.tar` `.tgz` `.tar.gz` `.tbz2` `.txz` `.gz` `.bz2` `.xz` | Finder-style tree with sizes, dates and compression savings, without extracting anything. A compressed text file such as `server.log.gz` opens straight to its contents |
+| **Folders** | Any folder | Finder-style list with icons, kinds, Finder tags and lazy expansion |
 
-### Markdown Preview
-- GitHub Flavored Markdown with tables, task lists, and alerts
-- KaTeX math formulas (inline `$...$` and block `$$...$$`)
-- Mermaid diagrams
-- Auto-generated table of contents with active heading highlight
-- Emoji shortcodes, syntax-highlighted code blocks with copy button
-- TextBundle support
-- Remote image caching
-- Scroll position memory
+The info bar at the bottom of every preview shows what the file is at a glance: language and line count, words and reading time, rows and columns, or files and compression ratio.
 
-### Source Code Highlighting
-- **190+ programming languages** with syntax highlighting
-- Auto language detection from file content and shebang lines
-- Auto-formatting for JSON, CSS, JavaScript, XML, SVG, plist
-- Optional line numbers, word wrap, and custom tab width
-- Custom fonts, sizes, and weights
-- Independent light and dark themes
-- Progressive rendering for large files
+## The app
 
-### Data Format Previews
-- **CSV/TSV** rendered as native tables with sortable columns, resizable headers, alternating row colors
-- **SQLite** databases with multi-table tab switching and column type/constraint tooltips
-- **Diff/Patch** files with color-coded additions (green) and removals (red)
+Open Greece once and it walks you through turning previews on. It checks that Quick Look is actually using this copy of Greece and fixes the common problems (a stale copy registered elsewhere, the extension switched off) with one button.
 
-### Archive & Directory Browser
-- Browse **ZIP, TAR, GZ, BZ2** contents without extracting
-- Pure Swift binary parsing (no shell commands)
-- Directory tree with sortable columns and file metadata
-- **Folder preview** with Spotlight metadata and Finder tag support
+Every setting comes with a live preview rendered by the same engine Quick Look uses, so you see the effect before you press Space.
 
-### Fully Customizable
-- Independent light and dark themes for Markdown and code
-- Custom fonts, sizes, and weights for both Markdown and code
-- Scroll position memory across previews
-- Remote image caching for Markdown files
-- Configurable metadata bar showing file size, dates, and type
-- Per-format controls so each preview looks exactly the way you want
-
----
+<p align="center">
+  <img src="docs/images/app-welcome.png" width="49%" alt="Greece app, welcome">
+  <img src="docs/images/app-code-dark.png" width="49%" alt="Greece app, code settings in dark mode">
+</p>
 
 ## Privacy
 
-Greece runs entirely on your device. No analytics, no tracking, no accounts. The only network activity occurs when:
-- A Markdown file references a remote image (fetched directly from source, not through any intermediary)
-- highlight.js/KaTeX/Mermaid libraries are loaded from CDN for rendering
-
----
-
-## Project Structure
-
-```
-Greece/
-├── project.yml                          # XcodeGen project configuration
-├── Shared/                              # Shared code between app and extension
-│   ├── Constants.swift                  # App group ID, keys, file categories, limits
-│   ├── Settings.swift                   # UserDefaults wrapper with all preferences
-│   ├── ThemeManager.swift               # Theme definitions and system appearance detection
-│   └── FileTypeDetector.swift           # File category detection (extension, UTI, content)
-├── Greece/                                # Main application (Settings UI)
-│   ├── App/
-│   │   ├── GreeceApp.swift                # SwiftUI app entry point
-│   │   ├── Info.plist                   # App Info.plist
-│   │   └── Greece.entitlements            # Sandbox + App Group entitlements
-│   ├── Views/
-│   │   └── SettingsView.swift           # Full settings UI (General, Markdown, Code, Data, Archives, Folders)
-│   └── Assets.xcassets/                 # App icon and accent color
-├── GreeceQuickLook/                       # Quick Look Extension
-│   ├── PreviewViewController.swift      # Extension entry point & router
-│   ├── Info.plist                       # Extension Info.plist with 190+ UTI declarations
-│   ├── GreeceQuickLook.entitlements       # Extension entitlements
-│   ├── Renderers/
-│   │   ├── MarkdownRenderer.swift       # GFM + KaTeX + Mermaid + TOC + Alerts + Emoji
-│   │   ├── SourceCodeRenderer.swift     # 190+ languages, line numbers, auto-format
-│   │   ├── CSVRenderer.swift            # Native NSTableView with sorting
-│   │   ├── SQLiteRenderer.swift         # Multi-table with column metadata tooltips
-│   │   ├── DiffRenderer.swift           # Color-coded unified diff
-│   │   ├── ArchiveRenderer.swift        # NSOutlineView tree browser
-│   │   └── FolderRenderer.swift         # Directory tree with Spotlight metadata & tags
-│   ├── Parsers/
-│   │   ├── LanguageDetector.swift       # 190+ extension map, shebang, filename detection
-│   │   ├── ZIPParser.swift              # Pure Swift ZIP central directory parser
-│   │   └── TARParser.swift              # Pure Swift TAR/GZ/BZ2 parser
-│   └── Views/
-│       └── MetadataBarView.swift        # Bottom bar: size, date, file type
-└── README.md
-```
-
----
+- Previews are rendered on your Mac. No accounts, analytics or tracking.
+- Markdown, code and math libraries are bundled with the app, so nothing is fetched from a CDN.
+- Files are opened read-only. Databases are opened immutable, and archives are never extracted.
+- The only network access is loading remote images referenced by Markdown, which you can turn off.
+- Untrusted HTML in Markdown and notebooks is sanitized, and every preview page runs under a strict Content Security Policy with no script execution from documents.
 
 ## Building
 
-### Prerequisites
-- macOS 14.0+ (Sonoma)
-- Xcode 16.0+
-- [XcodeGen](https://github.com/yonaskolb/XcodeGen) (optional, for generating .xcodeproj)
+Requirements: macOS 14 or later, Xcode 16 or later, [XcodeGen](https://github.com/yonaskolb/XcodeGen).
 
-### Using XcodeGen
-
-```bash
-# Install XcodeGen if needed
+```sh
 brew install xcodegen
-
-# Generate the Xcode project
-cd Greece
 xcodegen generate
-
-# Open in Xcode
-open Greece.xcodeproj
+open Greece.xcodeproj        # or build from the command line:
+xcodebuild -project Greece.xcodeproj -scheme Greece -configuration Release -derivedDataPath build/dd build
 ```
 
-### Manual Xcode Setup
+Signing uses the Apple Development certificate for team `ZHCT595PYJ` (set in `project.yml`). The app is distributed directly, like Murmur, so it isn't sandboxed; the Quick Look extension is sandboxed, as macOS requires.
 
-If you prefer not to use XcodeGen:
+Run the app once after building, or press **Turn On Greece** on its Welcome page. To install permanently, copy `Greece.app` to `/Applications` and open it from there.
 
-1. Open Xcode → File → New → Project
-2. Choose macOS → App
-3. Add a new Quick Look Extension target
-4. Add all source files to the appropriate targets
-5. Configure the App Group (`group.com.scorchy.greece`) in both targets
-6. Set the deployment target to macOS 14.0
+### Tests
 
-### Building & Running
+```sh
+xcodebuild -project Greece.xcodeproj -scheme Greece -derivedDataPath build/dd test
+```
 
-1. Select the **Greece** scheme in Xcode
-2. Build & Run (⌘R)
-3. The main app opens the Settings window
-4. Enable the Quick Look extension:
-   - System Settings → Privacy & Security → Extensions → Quick Look
-   - Toggle **Greece Quick Look** on
-5. Navigate to any supported file in Finder and press **Space**
+The suite covers format detection, the language catalog (every grammar must ship in the bundle), the CSV engine, the JSON formatter, text decoding, settings migration and the archive readers, using real `zip`, `tar`, `gzip`, `bzip2` and `xz` output with Unicode and long file names.
 
----
+### Rendering previews without Quick Look
 
-## Supported File Types
+The app doubles as a headless renderer, which is handy for design work and regression checks:
 
-| Category | Formats |
-|----------|---------|
-| Markdown | `.md`, `.markdown`, `.mdown`, `.mkd`, `.rmd`, `.qmd`, `.textbundle` |
-| Source Code | 190+ languages including Swift, Python, Rust, Go, TypeScript, Kotlin, etc. |
-| Data | `.csv`, `.tsv`, `.sqlite`, `.sqlite3`, `.db`, `.diff`, `.patch` |
-| Archives | `.zip`, `.tar`, `.gz`, `.tgz`, `.bz2`, `.tbz2`, `.tar.gz`, `.tar.bz2` |
-| Folders | Any directory in Finder |
-| Config | `.json`, `.yaml`, `.yml`, `.toml`, `.ini`, `.plist`, `.xml` |
+```sh
+scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots path/to/files…
+scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots --appearance dark --theme one file.swift
+scripts/shoot-app.sh build/dd/Build/Products/Release/Greece.app code /tmp/code.png --appearance dark
+```
 
----
+`scripts/make-icon.swift` draws the app icon.
 
-## Themes
+## How it works
 
-### Markdown Themes
-GitHub Light/Dark, Solarized Light/Dark, Nord, Dracula, One Light/Dark, Monokai, Gruvbox Light/Dark
+```
+Greece.app
+├── Contents/Frameworks/GreeceKit.framework   shared engine: detection, parsers, renderers, web assets
+└── Contents/PlugIns/GreeceQuickLook.appex     sandboxed Quick Look extension (a thin wrapper)
+```
 
-### Code Themes
-Xcode, GitHub, Visual Studio, Atom One Light/Dark, Monokai, Dracula, Nord, Solarized, VS 2015 Dark, Tokyo Night, Catppuccin Mocha, and more
+- **GreeceKit** turns a file into a `PreviewView`. Detection looks at bytes first (SQLite, ZIP, gzip, bzip2, xz and tar signatures, binary versus text), then names and extensions, then shebangs and diff markers.
+- **Web previews** (Markdown, code, diffs, notebooks) render in WKWebView through a private `greece://` URL scheme. `greece://asset/…` serves the bundled renderer and libraries; `greece://file/…` serves images and media next to the document and nothing else. Huge files paint their first screens immediately, stream the rest, and highlight in a Web Worker.
+- **Native previews** (tables, databases, archives, folders, info bar) are AppKit table and outline views with system colors and fonts.
+- **Archives** are read as streams: ZIP (including ZIP64) from its central directory, tar (ustar, GNU long names, PAX) through zlib, libbz2 or Apple's Compression for xz.
+- **Settings** live in one JSON document in the App Group `ZHCT595PYJ.com.scorchy.greece`, which the app writes and the extension reads for every preview.
 
----
+## Known limitations
 
-## Architecture Notes
+These come from macOS rather than Greece:
 
-- **Pure Swift binary parsers**: ZIP and TAR archives are parsed without shell commands or external tools
-- **WKWebView rendering**: Markdown, source code, and diff files use WKWebView with inline HTML/CSS/JS
-- **Native AppKit**: CSV, SQLite, archives, and folders use native `NSTableView` / `NSOutlineView`
-- **App Group sharing**: Settings are shared between the main app and extension via `UserDefaults(suiteName:)`
-- **Sandboxed**: Both app and extension run in the macOS sandbox with minimal permissions
+- **`.csv`**: macOS's built-in Office previewer claims CSV ahead of any extension, so `.csv` keeps Apple's table preview. Tab- and pipe-separated files open in Greece.
+- **`.ts` TypeScript**: macOS treats `.ts` as MPEG video and its video previewer wins. `.tsx`, `.mts` and `.cts` open in Greece.
+- **Files without an extension** (`Makefile`, `LICENSE`) are generic data to macOS, so Quick Look doesn't offer them to extensions.
 
----
+## Acknowledgements
 
-© 2026 Scorchy. All rights reserved.
+Greece bundles [markdown-it](https://github.com/markdown-it/markdown-it) with its footnote and emoji plugins, [highlight.js](https://highlightjs.org), [KaTeX](https://katex.org) and [Mermaid](https://mermaid.js.org). Their licenses ship with the app and appear on its About page.
+
+© 2026 Scorchy
