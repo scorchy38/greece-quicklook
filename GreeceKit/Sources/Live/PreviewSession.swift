@@ -30,6 +30,7 @@ public final class PreviewSession {
         let preview = try await PreviewFactory.makePreview(for: url, settings: settings, scroll: remembered)
         lastScroll = remembered
         install(preview)
+        PreviewMemory.recordRecent(url, enabled: settings.recordRecents)
         if settings.liveUpdates {
             watcher = FileWatcher(url: url) { [weak self] in
                 Task { await self?.reload() }

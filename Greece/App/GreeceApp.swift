@@ -6,6 +6,14 @@ struct GreeceApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @StateObject private var store = SettingsStore.shared
     @StateObject private var status = ExtensionStatus()
+    @StateObject private var recents = RecentFiles()
+
+    /// SwiftUI writes this binding while it updates scenes; only real changes may reach the store,
+    /// or every write publishes a settings change mid-update.
+    private var menuBarInserted: Binding<Bool> {
+        Binding(get: { store.settings.showInMenuBar },
+                set: { value in if store.settings.showInMenuBar != value { store.settings.showInMenuBar = value } })
+    }
 
     var body: some Scene {
         Window("Greece", id: "main") {
@@ -25,11 +33,35 @@ struct GreeceApp: App {
                 Link("Greece on GitHub", destination: URL(string: "https://github.com/scorchy38/greece-quicklook")!)
             }
         }
+
+        // After the main window: the first scene is the one that opens at launch.
+        MenuBarExtra("Greece", systemImage: "doc.text.magnifyingglass", isInserted: menuBarInserted) {
+            MenuBarView(recents: recents)
+        }
+        .menuBarExtraStyle(.window)
     }
 }
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
+    private var closeObserver: Any?
+
+    /// With the menu bar item on, closing the window leaves Greece in the menu bar (no Dock icon).
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        !SettingsStore.shared.settings.showInMenuBar
+    }
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        closeObserver = NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: nil, queue: .main) { note in
+            guard let window = note.object as? NSWindow, window.identifier?.rawValue.hasPrefix("main") == true,
+                  SettingsStore.shared.settings.showInMenuBar else { return }
+            DispatchQueue.main.async { NSApp.setActivationPolicy(.accessory) }
+        }
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        NSApp.setActivationPolicy(.regular)
+        return true
+    }
 
     // The app delegate is part of the responder chain, so it can own the Quick Look panel.
     override func acceptsPreviewPanelControl(_ panel: QLPreviewPanel!) -> Bool { true }

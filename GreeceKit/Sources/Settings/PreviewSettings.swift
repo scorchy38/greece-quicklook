@@ -93,6 +93,9 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
     public var rememberWindowSize: WindowMemory = .allFiles
     /// Raised by the app's "Forget Positions and Sizes"; the extension then clears its memory.
     public var memoryGeneration = 0
+    /// Keep a list of recently previewed files for the menu bar.
+    public var recordRecents = true
+    public var showInMenuBar = true
 
     // Code
     public var theme = CodeTheme.default.id
@@ -139,6 +142,8 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         read(.rememberScroll, &rememberScroll)
         read(.rememberWindowSize, &rememberWindowSize)
         read(.memoryGeneration, &memoryGeneration)
+        read(.recordRecents, &recordRecents)
+        read(.showInMenuBar, &showInMenuBar)
         read(.theme, &theme)
         read(.codeFont, &codeFont)
         read(.codeFontSize, &codeFontSize)

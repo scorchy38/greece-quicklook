@@ -78,6 +78,28 @@ enum PreviewMemory {
         defaults.set(all, forKey: scrollKey)
     }
 
+    // MARK: - Recent files
+
+    /// Kept in the extension's own defaults (it can't write to the App Group); the app reads the file.
+    static let recentsKey = "recent-files.v1"
+    static let extensionDefaultsPath = NSHomeDirectory().components(separatedBy: "/Library/Containers/").first.map {
+        $0 + "/Library/Containers/com.scorchy.greece.quicklook/Data/Library/Preferences/com.scorchy.greece.quicklook.plist"
+    } ?? ""
+
+    /// Temporary files (piped text, diagnostics samples) aren't worth listing.
+    static func isTemporary(_ path: String) -> Bool {
+        ["/private/var/folders/", "/var/folders/", "/private/tmp/", "/tmp/"].contains { path.hasPrefix($0) }
+    }
+
+    static func recordRecent(_ url: URL, enabled: Bool) {
+        guard enabled else { defaults.removeObject(forKey: recentsKey); return }
+        guard !isTemporary(url.path) else { return }
+        var recents = (defaults.array(forKey: recentsKey) as? [[String: Any]]) ?? []
+        recents.removeAll { ($0["path"] as? String) == url.path }
+        recents.insert(["path": url.path, "date": Date().timeIntervalSince1970], at: 0)
+        defaults.set(Array(recents.prefix(60)), forKey: recentsKey)
+    }
+
     // MARK: - Window size
 
     static func windowSize(kind: String, mode: PreviewSettings.WindowMemory) -> CGSize? {

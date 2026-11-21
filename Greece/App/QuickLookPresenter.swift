@@ -6,14 +6,18 @@ final class QuickLookPresenter: NSObject, QLPreviewPanelDataSource, QLPreviewPan
     static let shared = QuickLookPresenter()
     private var urls: [URL] = []
 
-    func show(_ url: URL) {
-        urls = [url]
+    func show(_ url: URL) { show([url], at: 0) }
+
+    /// Shows several files; the arrow keys move between them, as in Finder.
+    func show(_ list: [URL], at index: Int) {
+        urls = list
         guard let panel = QLPreviewPanel.shared() else { return }
         if QLPreviewPanel.sharedPreviewPanelExists() && panel.isVisible {
             panel.reloadData()
-            panel.currentPreviewItemIndex = 0
+            panel.currentPreviewItemIndex = index
         } else {
             panel.makeKeyAndOrderFront(nil)
+            panel.currentPreviewItemIndex = index
         }
     }
 
