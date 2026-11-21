@@ -8,6 +8,7 @@ enum AppThumbnails {
     // MARK: - App icons
 
     static func appIcon(_ image: NSImage, shape: InspectorIcon.IconShape, size: CGSize, badge: String) -> ThumbnailPage {
+        let shape = shape.resolved(for: image)
         let side = max(16, min(size.width, size.height)).rounded()
         return ThumbnailPage(size: CGSize(width: side, height: side), badge: badge) { rect in
             // Finder leaves a margin around app icons; match it so these sit well beside .app files.

@@ -40,6 +40,24 @@ enum InspectorIcon {
     enum IconShape { case asIs, iOS, rounded }
 }
 
+extension NSImage {
+    /// True when all four corners are opaque: a square bitmap that a launcher would mask.
+    var hasOpaqueCorners: Bool {
+        guard let image = cgImage(forProposedRect: nil, context: nil, hints: nil), image.width > 8, image.height > 8 else { return false }
+        let bitmap = NSBitmapImageRep(cgImage: image)
+        let inset = max(1, image.width / 64)
+        let points = [(inset, inset), (image.width - 1 - inset, inset), (inset, image.height - 1 - inset), (image.width - 1 - inset, image.height - 1 - inset)]
+        return points.allSatisfy { (bitmap.colorAt(x: $0.0, y: $0.1)?.alphaComponent ?? 0) > 0.98 }
+    }
+}
+
+extension InspectorIcon.IconShape {
+    /// "As is" icons that are opaque squares get a rounded mask, like a launcher would draw them.
+    func resolved(for image: NSImage) -> InspectorIcon.IconShape {
+        self == .asIs && image.hasOpaqueCorners ? .rounded : self
+    }
+}
+
 /// Status colours: what a badge or value means.
 enum InspectorTone: Equatable {
     case neutral, positive, accent, caution, critical

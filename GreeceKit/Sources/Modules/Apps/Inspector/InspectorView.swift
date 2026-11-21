@@ -249,7 +249,7 @@ struct IconView: View {
                 .interpolation(.high)
                 .frame(width: size, height: size)
         case .image(let image, let shape):
-            switch shape {
+            switch shape.resolved(for: image) {
             case .asIs:
                 Image(nsImage: image)
                     .resizable()
