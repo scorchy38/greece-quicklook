@@ -41,6 +41,7 @@ public.module-map
 com.sun.java-source
 com.netscape.javascript-source
 com.microsoft.typescript
+public.typescript  # macOS 27 types .ts as TypeScript
 com.facebook.jsx
 com.apple.applescript.text
 com.apple.rez-source

@@ -74,6 +74,7 @@
 				<string>com.sun.java-source</string>
 				<string>com.netscape.javascript-source</string>
 				<string>com.microsoft.typescript</string>
+				<string>public.typescript</string>
 				<string>com.facebook.jsx</string>
 				<string>com.apple.applescript.text</string>
 				<string>com.apple.rez-source</string>
