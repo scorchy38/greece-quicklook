@@ -1,4 +1,5 @@
 import XCTest
+import WebKit
 @testable import GreeceKit
 
 /// Archives: detection, listing every format, split sets, encryption, legacy names, extraction and limits.
@@ -386,5 +387,82 @@ final class ArchivesTests: XCTestCase {
         let listing = try list(directory.appendingPathComponent("harbor.log.bz2"))
         XCTAssertEqual(listing.innerPrefix?.count, text.utf8.count)
         XCTAssertEqual(listing.entries.first?.size, UInt64(text.utf8.count))
+    }
+}
+
+/// Renders archive previews with something selected, for design review. Skipped unless asked for:
+///
+///     TEST_RUNNER_GREECE_SNAPSHOTS=<out dir> TEST_RUNNER_GREECE_SNAPSHOT_CASES=<cases file> \
+///       xcodebuild test … -only-testing:GreeceKitTests/ArchiveSnapshots
+///
+/// Each line of the cases file: `file<TAB>path to select (or -)<TAB>preview|info<TAB>light|dark<TAB>output name`.
+final class ArchiveSnapshots: XCTestCase {
+    @MainActor
+    func testRenderCases() async throws {
+        let environment = ProcessInfo.processInfo.environment
+        guard let output = environment["GREECE_SNAPSHOTS"], let casesPath = environment["GREECE_SNAPSHOT_CASES"] else {
+            throw XCTSkip("Set GREECE_SNAPSHOTS and GREECE_SNAPSHOT_CASES to render")
+        }
+        let cases = try String(contentsOfFile: casesPath, encoding: .utf8).split(separator: "\n").map { $0.split(separator: "\t").map(String.init) }
+        for fields in cases where fields.count >= 5 {
+            try await render(URL(fileURLWithPath: fields[0]), select: fields[1] == "-" ? nil : fields[1], info: fields[2] == "info",
+                             dark: fields[3] == "dark", to: URL(fileURLWithPath: output).appendingPathComponent(fields[4] + ".png"))
+        }
+    }
+
+    @MainActor
+    private func render(_ file: URL, select: String?, info: Bool, dark: Bool, to output: URL) async throws {
+        let size = NSSize(width: 1000, height: 680)
+        var settings = PreviewSettings()
+        settings.appearance = dark ? .dark : .light
+        let preview = try await PreviewFactory.makePreview(for: file, settings: settings)
+        let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -20_000, y: -20_000), size: size), styleMask: [.borderless], backing: .buffered, defer: false)
+        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        window.backgroundColor = .windowBackgroundColor
+        preview.frame = NSRect(origin: .zero, size: size)
+        window.contentView = preview
+        window.orderFrontRegardless()
+        preview.layoutSubtreeIfNeeded()
+        if let select, let browser = Self.find(ArchiveBrowserView.self, in: preview) {
+            XCTAssertTrue(browser.select(path: select, info: info), select)
+        }
+        try await Task.sleep(nanoseconds: 4_000_000_000)
+        preview.layoutSubtreeIfNeeded()
+        preview.display()
+
+        guard let rep = preview.bitmapImageRepForCachingDisplay(in: preview.bounds) else { return }
+        preview.cacheDisplay(in: preview.bounds, to: rep)
+        let base = NSImage(size: size)
+        base.addRepresentation(rep)
+        var shots: [(NSImage, NSRect)] = []
+        for web in Self.all(WKWebView.self, in: preview) where !web.isHiddenOrHasHiddenAncestor && web.window != nil {
+            let configuration = WKSnapshotConfiguration()
+            configuration.rect = CGRect(origin: .zero, size: web.bounds.size)
+            if let shot = try? await web.takeSnapshot(configuration: configuration) {
+                shots.append((shot, web.convert(web.bounds, to: preview)))
+            }
+        }
+        let appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        let final = NSImage(size: size, flipped: false) { _ in
+            appearance?.performAsCurrentDrawingAppearance {
+                NSColor.windowBackgroundColor.setFill()
+                NSRect(origin: .zero, size: size).fill()
+            }
+            base.draw(in: NSRect(origin: .zero, size: size))
+            for (shot, frame) in shots { shot.draw(in: frame) }
+            return true
+        }
+        guard let tiff = final.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff) else { return }
+        try bitmap.representation(using: .png, properties: [:])?.write(to: output)
+        window.orderOut(nil)
+    }
+
+    private static func find<T: NSView>(_ type: T.Type, in view: NSView) -> T? { all(type, in: view).first }
+
+    private static func all<T: NSView>(_ type: T.Type, in view: NSView) -> [T] {
+        var result: [T] = []
+        if let match = view as? T { result.append(match) }
+        for subview in view.subviews { result += all(type, in: subview) }
+        return result
     }
 }

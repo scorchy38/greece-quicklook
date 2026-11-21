@@ -19,7 +19,8 @@ public enum PreviewFactory {
 
     // MARK: - Off-main preparation
 
-    private static func prepare(_ url: URL, settings: PreviewSettings) throws -> PreparedPreview {
+    /// Internal so archives can preview the files they extract (`prepare` off main, then `build`).
+    static func prepare(_ url: URL, settings: PreviewSettings) throws -> PreparedPreview {
         let info = FileInfo(url: url)
         let kind = FileKind.detect(info)
         let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
@@ -169,7 +170,7 @@ public enum PreviewFactory {
     // MARK: - Main-thread construction
 
     @MainActor
-    private static func build(_ prepared: PreparedPreview, url: URL, settings: PreviewSettings) throws -> PreviewView {
+    static func build(_ prepared: PreparedPreview, url: URL, settings: PreviewSettings) throws -> PreviewView {
         switch prepared {
         case .web(let document, let summary, let size):
             let content = WebPreviewView(document: document, settings: settings, size: NSSize(width: size.width, height: size.height - 28))
