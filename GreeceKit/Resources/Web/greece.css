@@ -398,6 +398,11 @@ summary::marker { color: var(--text-3); }
 .diff-message { font: 12.5px/1.5 var(--ui); color: color-mix(in srgb, var(--fg) 65%, transparent); margin: 0 4px 14px; white-space: pre-wrap; }
 .diff-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font: 12.5px var(--ui); color: color-mix(in srgb, var(--fg) 65%, transparent); margin: 0 4px 14px; }
 .diff-summary b { color: var(--fg); font-weight: 600; }
+.commit { margin: 0 0 6px; }
+.commit-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; margin: 2px 4px 10px; font: 12.5px var(--ui); color: color-mix(in srgb, var(--fg) 60%, transparent); }
+.commit-meta .sha { font: 500 12px var(--code-font); color: var(--fg); background: var(--fill-2); padding: 1px 6px; border-radius: 5px; }
+.commit-block { padding-top: 18px; margin-top: 14px; border-top: .5px solid var(--hairline-strong); }
+.commit-block:first-of-type { border-top: 0; margin-top: 0; padding-top: 4px; }
 .add-n { color: var(--t-added); font-weight: 600; font-variant-numeric: tabular-nums; }
 .del-n { color: var(--t-removed); font-weight: 600; font-variant-numeric: tabular-nums; }
 

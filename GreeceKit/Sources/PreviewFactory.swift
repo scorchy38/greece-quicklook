@@ -124,9 +124,10 @@ public enum PreviewFactory {
             let file = try TextFile(url: url)
             let stats = diffStats(file.text)
             let ext = url.pathExtension.lowercased()
-            let summary = FileSummary(symbol: "plus.forwardslash.minus", title: ext == "patch" ? "Patch" : "Diff",
-                                      details: ["\(stats.files) \(stats.files == 1 ? "file" : "files")", "+\(stats.added.formatted())", "−\(stats.removed.formatted())"],
-                                      trailing: modified)
+            var details = ["\(stats.files) \(stats.files == 1 ? "file" : "files")", "+\(stats.added.formatted())", "−\(stats.removed.formatted())"]
+            let commits = file.text.components(separatedBy: "\n").filter { $0.range(of: #"^(commit [0-9a-f]{7,64}\b|From [0-9a-f]{40} )"#, options: .regularExpression) != nil }.count
+            if commits > 1 { details.insert("\(commits) commits", at: 0) }
+            let summary = FileSummary(symbol: "plus.forwardslash.minus", title: ext == "patch" ? "Patch" : "Diff", details: details, trailing: modified)
             return .web(WebDocument(kind: .diff, text: file.text, truncated: file.truncated), summary, NSSize(width: 1000, height: 760))
 
         case .archive(let format):

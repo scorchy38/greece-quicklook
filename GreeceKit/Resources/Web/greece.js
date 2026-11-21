@@ -661,55 +661,115 @@
     return `<span class="bar">${out}</span>`;
   }
 
+  /** Splits `git log -p`, `git show` and multi-patch mailboxes into one chunk per commit. */
+  function splitCommits(text) {
+    const lines = text.replace(/\r\n?/g, '\n').split('\n');
+    const starts = [];
+    lines.forEach((line, i) => {
+      if (/^commit [0-9a-f]{7,64}\b/.test(line) || /^From [0-9a-f]{40} /.test(line)) starts.push(i);
+    });
+    if (starts.length < 1) return [text];
+    const chunks = [];
+    if (starts[0] > 0 && lines.slice(0, starts[0]).some((l) => l.trim())) chunks.push(lines.slice(0, starts[0]).join('\n'));
+    starts.forEach((s, k) => chunks.push(lines.slice(s, k + 1 < starts.length ? starts[k + 1] : lines.length).join('\n')));
+    return chunks;
+  }
+
+  /** Subject, author, date and message from a commit's header lines (git log or format-patch). */
+  function commitInfo(preamble) {
+    const info = {};
+    const shaLine = preamble.find((l) => /^commit [0-9a-f]{7,}/.test(l)) || preamble.find((l) => /^From [0-9a-f]{40} /.test(l));
+    if (shaLine) info.sha = shaLine.split(' ')[1].slice(0, 9);
+    const author = preamble.find((l) => /^(Author|From): /.test(l));
+    if (author) {
+      const value = author.replace(/^(Author|From):\s*/, '');
+      info.author = value.replace(/\s*<[^>]*>\s*$/, '') || value;
+      info.email = (value.match(/<([^>]*)>/) || [])[1];
+    }
+    const date = preamble.find((l) => /^(Date|AuthorDate):\s/.test(l));
+    if (date) {
+      const raw = date.replace(/^(Date|AuthorDate):\s*/, '');
+      const parsed = new Date(raw.replace(/^(\w{3}) (\w{3}) (\d+) (\d+:\d+:\d+) (\d{4}) ([+-]\d{4})$/, '$2 $3 $5 $4 GMT$6'));
+      info.date = isNaN(parsed) ? raw : parsed.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    }
+    const subject = preamble.find((l) => /^Subject: /.test(l));
+    let body = [];
+    if (subject) {
+      info.subject = subject.replace(/^Subject:\s*(\[[^\]]*\]\s*)?/, '');
+      const from = preamble.indexOf(subject) + 1;
+      const stop = preamble.findIndex((l, i) => i > from && /^---$/.test(l));
+      body = preamble.slice(from, stop > 0 ? stop : undefined);
+    } else {
+      // git log: the message is indented by four spaces after the headers.
+      const message = preamble.filter((l) => /^    /.test(l)).map((l) => l.slice(4));
+      info.subject = (message.find((l) => l.trim()) || '').trim();
+      body = message.slice(message.findIndex((l) => l.trim()) + 1);
+    }
+    info.message = body.join('\n').trim();
+    return info;
+  }
+
+  function commitHeader(info) {
+    if (!info.subject && !info.sha) return '';
+    const meta = [info.sha && `<span class="sha">${esc(info.sha)}</span>`,
+      info.author && `<span title="${esc(info.email || '')}">${esc(info.author)}</span>`,
+      info.date && `<span>${esc(info.date)}</span>`].filter(Boolean).join('');
+    return `<header class="commit">${info.subject ? `<h1 class="diff-title">${esc(info.subject)}</h1>` : ''}`
+      + (meta ? `<div class="commit-meta">${meta}</div>` : '')
+      + (info.message ? `<p class="diff-message">${esc(info.message)}</p>` : '') + '</header>';
+  }
+
+  function fileSection(f) {
+    const path = f.to || f.from || 'file';
+    const ext = (path.split('/').pop().split('.').pop() || '').toLowerCase();
+    const lang = (payload.diffLanguages || {})[ext] || ext;
+    const pathHTML = f.status === 'renamed' && f.from && f.from !== f.to
+      ? `<span class="old">${esc(f.from)} → </span>${esc(f.to)}`
+      : esc(path);
+    const badge = f.status !== 'modified' ? `<span class="badge ${f.status}">${f.status}</span>` : '';
+    let body = '';
+    if (f.binary) body = '<div class="file-note">Binary file not shown</div>';
+    else if (!f.rows.length) body = `<div class="file-note">${f.notes.length ? esc(f.notes.join(' · ')) : 'No content changes'}</div>`;
+    else {
+      const rows = f.rows.map((r) => {
+        if (r.type === 'hunk') return `<tr class="hunk"><td class="o"></td><td class="n"></td><td colspan="2" class="c">${esc(r.text)}</td></tr>`;
+        if (r.type === 'meta') return `<tr class="meta"><td class="o"></td><td class="n"></td><td class="s"></td><td class="c">${esc(r.text)}</td></tr>`;
+        const sign = r.type === 'add' ? '+' : r.type === 'del' ? '−' : '';
+        const cls = r.type === 'ctx' ? '' : r.type;
+        return `<tr class="${cls}"><td class="o">${r.o || ''}</td><td class="n">${r.n || ''}</td><td class="s">${sign}</td><td class="c">${highlight(r.text, lang) || ' '}</td></tr>`;
+      }).join('');
+      body = `<div class="file-body"><table class="lines">${rows}</table></div>`;
+    }
+    return `<section class="file"><header class="file-header"><span class="path">${pathHTML}</span>${badge}<span class="stat"><span class="add-n">+${f.added}</span><span class="del-n">−${f.removed}</span>${diffBar(f.added, f.removed)}</span></header>${body}</section>`;
+  }
+
+  function summary(files, commits) {
+    const added = files.reduce((s, f) => s + f.added, 0);
+    const removed = files.reduce((s, f) => s + f.removed, 0);
+    const lead = commits > 1 ? `<span><b>${commits}</b> commits</span>` : '';
+    return `<div class="diff-summary">${lead}<span><b>${files.length}</b> ${files.length === 1 ? 'file' : 'files'} changed</span><span class="add-n">+${added.toLocaleString()}</span><span class="del-n">−${removed.toLocaleString()}</span></div>`;
+  }
+
   function renderDiff() {
     html.classList.add('kind-diff');
-    const { files, preamble } = parseDiff(payload.text);
-    if (!files.length) {
+    const commits = splitCommits(payload.text).map((chunk) => {
+      const parsed = parseDiff(chunk);
+      return { files: parsed.files, info: commitInfo(parsed.preamble) };
+    }).filter((c) => c.files.length || c.info.subject);
+    const allFiles = commits.flatMap((c) => c.files);
+    if (!allFiles.length) {
       payload.language = 'diff';
       html.classList.remove('kind-diff');
       return renderCode();
     }
-
-    let header = '';
-    const subject = preamble.find((l) => /^Subject: /.test(l));
-    if (subject) {
-      const title = subject.replace(/^Subject:\s*(\[[^\]]*\]\s*)?/, '');
-      const start = preamble.indexOf(subject) + 1;
-      const stop = preamble.findIndex((l, i) => i > start && /^---$/.test(l));
-      const message = preamble.slice(start, stop > 0 ? stop : undefined).join('\n').trim();
-      const author = preamble.find((l) => /^From: /.test(l));
-      header += `<h1 class="diff-title">${esc(title)}</h1>`;
-      if (author || message) header += `<p class="diff-message">${author ? esc(author.slice(6)) + '\n' : ''}${message ? '\n' + esc(message) : ''}</p>`;
+    let out = '';
+    if (commits.length === 1) {
+      out = commitHeader(commits[0].info) + summary(allFiles, 1) + allFiles.map(fileSection).join('');
+    } else {
+      out = summary(allFiles, commits.length) + commits.map((c) =>
+        `<article class="commit-block">${commitHeader(c.info)}${c.files.length > 1 ? summary(c.files, 1) : ''}${c.files.map(fileSection).join('')}</article>`).join('');
     }
-    const added = files.reduce((s, f) => s + f.added, 0);
-    const removed = files.reduce((s, f) => s + f.removed, 0);
-    header += `<div class="diff-summary"><span><b>${files.length}</b> ${files.length === 1 ? 'file' : 'files'} changed</span><span class="add-n">+${added.toLocaleString()}</span><span class="del-n">−${removed.toLocaleString()}</span></div>`;
-
-    const sections = files.map((f) => {
-      const path = f.to || f.from || 'file';
-      const ext = (path.split('/').pop().split('.').pop() || '').toLowerCase();
-      const lang = (payload.diffLanguages || {})[ext] || ext;
-      const pathHTML = f.status === 'renamed' && f.from && f.from !== f.to
-        ? `<span class="old">${esc(f.from)} → </span>${esc(f.to)}`
-        : esc(path);
-      const badge = f.status !== 'modified' ? `<span class="badge ${f.status}">${f.status}</span>` : '';
-      let body = '';
-      if (f.binary) body = '<div class="file-note">Binary file not shown</div>';
-      else if (!f.rows.length) body = `<div class="file-note">${f.notes.length ? esc(f.notes.join(' · ')) : 'No content changes'}</div>`;
-      else {
-        const rows = f.rows.map((r) => {
-          if (r.type === 'hunk') return `<tr class="hunk"><td class="o"></td><td class="n"></td><td colspan="2" class="c">${esc(r.text)}</td></tr>`;
-          if (r.type === 'meta') return `<tr class="meta"><td class="o"></td><td class="n"></td><td class="s"></td><td class="c">${esc(r.text)}</td></tr>`;
-          const sign = r.type === 'add' ? '+' : r.type === 'del' ? '−' : '';
-          const cls = r.type === 'ctx' ? '' : r.type;
-          return `<tr class="${cls}"><td class="o">${r.o || ''}</td><td class="n">${r.n || ''}</td><td class="s">${sign}</td><td class="c">${highlight(r.text, lang) || ' '}</td></tr>`;
-        }).join('');
-        body = `<div class="file-body"><table class="lines">${rows}</table></div>`;
-      }
-      return `<section class="file"><header class="file-header"><span class="path">${pathHTML}</span>${badge}<span class="stat"><span class="add-n">+${f.added}</span><span class="del-n">−${f.removed}</span>${diffBar(f.added, f.removed)}</span></header>${body}</section>`;
-    }).join('');
-
-    root.innerHTML = `<div class="diff">${header}${sections}</div>`;
+    root.innerHTML = `<div class="diff">${out}</div>`;
   }
 
   // ------------------------------------------------------------------ Notebook
