@@ -523,6 +523,60 @@ final class PackageTests: XCTestCase {
     }
 }
 
+/// Comic books: page order, ComicInfo, pages served on demand (random access and sequential).
+final class ComicTests: XCTestCase {
+    private func book(_ name: String) throws -> ComicBook {
+        let url = ArchivesTests.fixtures.appendingPathComponent("comics/" + name)
+        XCTAssertEqual(ArchiveSniffer.identify(FileInfo(url: url))?.flavor, .comic, name)
+        let session = try ArchiveSession(url: url)
+        return try XCTUnwrap(ComicBook(session: session, listing: try session.listAll(), scratch: ArchiveScratch()), name)
+    }
+
+    func testPagesComeInReadingOrderWithTheirDetails() throws {
+        let book = try book("Aegean Tales 01.cbz")
+        XCTAssertEqual(book.pages.count, 8)
+        XCTAssertEqual(book.pages.map { ($0.path as NSString).lastPathComponent }.first, "page-01.jpg")
+        XCTAssertEqual(book.info.series, "Aegean Tales")
+        XCTAssertEqual(book.info.title, "The Crossing")
+        let payload = book.payload(fileName: "Aegean Tales 01.cbz", format: "CBZ")
+        XCTAssertEqual(payload.title, "Aegean Tales #1")
+        XCTAssertEqual(payload.facts.first, "8 pages")
+    }
+
+    func testPagesAndThumbnailsAreServed() throws {
+        for name in ["Aegean Tales 01.cbz", "Aegean Tales 01.cb7", "Aegean Tales 01.cbt"] {
+            let book = try book(name)
+            let page = try XCTUnwrap(book.resource("page/2"), name)
+            XCTAssertEqual(page.mimeType, "image/jpeg", name)
+            XCTAssertNotNil(NSImage(data: page.data), name)
+            let thumb = try XCTUnwrap(book.resource("thumb/0?w=200"), name)
+            let image = try XCTUnwrap(NSBitmapImageRep(data: thumb.data), name)
+            XCTAssertLessThanOrEqual(max(image.pixelsWide, image.pixelsHigh), 300, name)
+        }
+    }
+
+    func testResourceRequestsAreValidated() throws {
+        let book = try book("Aegean Tales 01.cbz")
+        for request in ["page/8", "page/-1", "thumb/99?w=200", "../page/1", "page/1/2", "page/one", "cover", "", "thumb/0?w=999999999999999999999"] {
+            if request.hasPrefix("thumb/0") {
+                XCTAssertNotNil(book.resource(request), "oversized widths are clamped")
+            } else {
+                XCTAssertNil(book.resource(request), request)
+            }
+        }
+    }
+
+    func testComicsPrepareAsAPageOfCovers() throws {
+        let url = ArchivesTests.fixtures.appendingPathComponent("comics/Aegean Tales 01.cbz")
+        let prepared = try ArchivesModule.prepare(FileInfo(url: url), settings: PreviewSettings())
+        guard case .web(let document, let summary, _) = prepared else { return XCTFail("expected a web page") }
+        XCTAssertEqual(document.kind, .init("comic"))
+        XCTAssertNotNil(document.resources)
+        XCTAssertEqual(summary.title, "Comic Book")
+        XCTAssertEqual(summary.details.first, "8 pages")
+    }
+}
+
 /// Renders archive previews with something selected, for design review. Skipped unless asked for:
 ///
 ///     TEST_RUNNER_GREECE_SNAPSHOTS=<out dir> TEST_RUNNER_GREECE_SNAPSHOT_CASES=<cases file> \

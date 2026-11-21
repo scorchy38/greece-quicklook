@@ -17,10 +17,29 @@ enum ArchivesModule: PreviewModule {
         if document.listing.container == .compressedFile, let single = try? singleFile(document, settings: settings, modified: modified) {
             return single
         }
+        if identity.flavor == .comic, let comic = comic(document, file: file, modified: modified) {
+            return comic
+        }
         let summary = document.summary(modified: modified, loading: document.isLoading)
         return .native(summary, NSSize(width: 980, height: 680)) { settings in
             ArchiveBrowserView(document: document, settings: settings, modified: modified)
         }
+    }
+
+    /// A comic book: its cover, details and pages, read from the archive as the page asks for them.
+    private static func comic(_ document: ArchiveDocument, file: FileInfo, modified: String?) -> PreparedPreview? {
+        if document.isLoading { document.finishListing(budget: 3) }
+        guard let book = ComicBook(session: document.session, listing: document.listing, scratch: document.scratch) else { return nil }
+        let format = file.ext.uppercased()
+        var web = WebDocument(module: .init("comic"), data: book.payload(fileName: document.session.volumes.displayName, format: format),
+                              scripts: ["modules/archives.js"], styles: ["modules/archives.css"])
+        web.resources = { path in book.resource(path) }
+        var details = ["\(book.pages.count.formatted()) \(book.pages.count == 1 ? "page" : "pages")"]
+        if let series = book.info.series { details.append(book.info.number.map { "\(series) #\($0)" } ?? series) }
+        details.append(FileTreeView.bytes(document.listing.archiveSize))
+        if document.listing.volumes > 1 { details.append("\(document.listing.volumes) parts") }
+        let summary = FileSummary(symbol: "book.closed", title: "Comic Book", details: details, trailing: modified)
+        return .web(web, summary, NSSize(width: 1000, height: 760))
     }
 
     /// A lone compressed file (a .log.gz, a .json.zst): show what's inside directly, with Greece's

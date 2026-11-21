@@ -31,6 +31,18 @@ final class ArchiveDocument: @unchecked Sendable {
 
     var isLoading: Bool { !lister.isFinished }
 
+    /// Lists the rest now (comics and thumbnails need every entry), within `budget` seconds.
+    func finishListing(budget: TimeInterval) {
+        let deadline = CFAbsoluteTimeGetCurrent() + budget
+        while !lister.isFinished {
+            let added = (try? lister.step(until: deadline)) ?? []
+            builder.add(added)
+            if CFAbsoluteTimeGetCurrent() >= deadline { lister.stop() }
+        }
+        builder.finish()
+        listing = lister.listing
+    }
+
     func inspectPackage(_ listing: ArchiveListing) -> PackageInfo? {
         guard !listing.headerEncrypted else { return nil }
         return PackageInspector.inspect(session, listing: listing, flavor: identity.flavor, members: session.packageMembers)

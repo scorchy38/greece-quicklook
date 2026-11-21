@@ -180,6 +180,34 @@ final class ArchiveSession: @unchecked Sendable {
         throw ArchiveError.corrupt("“\((entry.path as NSString).lastPathComponent)” couldn’t be found again")
     }
 
+    /// Extracts many entries in archive order with one reader, so a solid archive decodes once.
+    /// `deliver` gets each entry's bytes (nil if it was over `limit` or unreadable); return false to stop.
+    func extractInOrder(_ entries: [ArchiveEntry], limit: UInt64, cancel: CancelToken? = nil,
+                        deliver: (ArchiveEntry, Data?) -> Bool) {
+        let wanted = Dictionary(entries.map { ($0.index, $0) }, uniquingKeysWith: { first, _ in first })
+        if case .libarchive(let origin, let formats) = layout, let reader = try? ArchiveSession.open(origin, formats: formats) {
+            var remaining = wanted.count
+            while remaining > 0, cancel?.isCancelled != true, let header = try? reader.nextHeader() {
+                _ = header
+                guard let entry = wanted[reader.headerIndex] else { continue }
+                remaining -= 1
+                var data = Data()
+                let result = try? reader.readData(limit: limit, cancel: cancel) { data.append(contentsOf: $0) }
+                if !deliver(entry, result?.1 == true ? data : nil) { return }
+            }
+            return
+        }
+        for entry in entries.sorted(by: { $0.index < $1.index }) where cancel?.isCancelled != true {
+            if !deliver(entry, data(entry, limit: limit, cancel: cancel)) { return }
+        }
+    }
+
+    /// True when any single entry can be read without decoding the ones before it.
+    var hasRandomAccess: Bool {
+        if case .zip = layout { return true }
+        return false
+    }
+
     /// An entry's bytes in memory, or nil if it's larger than `limit` or can't be read.
     func data(_ entry: ArchiveEntry, limit: UInt64, cancel: CancelToken? = nil) -> Data? {
         var data = Data()
