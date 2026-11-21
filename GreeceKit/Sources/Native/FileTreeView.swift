@@ -59,12 +59,16 @@ final class FileNode {
         var total: UInt64 = 0
         var compressed: UInt64? = 0
         var files = 0
+        var latest: Date?
         for child in children ?? [] {
             let (size, packed, count) = child.computeArchiveTotals()
             total = total.saturatingAdd(size)
             compressed = packed.flatMap { value in compressed.map { $0.saturatingAdd(value) } }
             files += count
+            if let date = child.modified, latest.map({ date > $0 }) ?? true { latest = date }
         }
+        // Folders an archive leaves implicit take the date of their newest item, as Finder shows them.
+        if modified == nil && entry == nil { modified = latest }
         size = total
         compressedSize = (children ?? []).isEmpty ? nil : compressed
         itemCount = children?.count ?? 0

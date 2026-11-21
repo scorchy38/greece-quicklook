@@ -23,13 +23,23 @@ final class ArchiveDocument: @unchecked Sendable {
         builder.add(first)
         builder.finish()
         listing = lister.listing
+        // Packages whose metadata lives outside the file list (.deb, .rpm, .gem) don't need to wait for it.
+        if lister.isFinished || [.package(.deb), .package(.rpm), .package(.gem)].contains(identity.flavor) {
+            package = inspectPackage(listing)
+        }
     }
 
     var isLoading: Bool { !lister.isFinished }
 
+    func inspectPackage(_ listing: ArchiveListing) -> PackageInfo? {
+        guard !listing.headerEncrypted else { return nil }
+        return PackageInspector.inspect(session, listing: listing, flavor: identity.flavor, members: session.packageMembers)
+    }
+
     /// Keeps listing on a background queue, handing each batch to `update` on the main thread.
-    func continueLoading(_ update: @escaping @MainActor (_ added: [ArchiveEntry], _ listing: ArchiveListing, _ finished: Bool) -> Void) {
+    func continueLoading(_ update: @escaping @MainActor (_ added: [ArchiveEntry], _ listing: ArchiveListing, _ finished: Bool, _ package: PackageInfo?) -> Void) {
         guard isLoading else { return }
+        let hasPackage = package != nil
         DispatchQueue.global(qos: .userInitiated).async { [self] in
             var interval = 0.2
             while !lister.isFinished {
@@ -37,9 +47,11 @@ final class ArchiveDocument: @unchecked Sendable {
                 do { added = try lister.step(until: CFAbsoluteTimeGetCurrent() + interval) } catch { lister.stop() }
                 let snapshot = lister.listing
                 let finished = lister.isFinished
+                let package = finished && !hasPackage ? inspectPackage(snapshot) : nil
                 DispatchQueue.main.async {
                     self.listing = snapshot
-                    update(added, snapshot, finished)
+                    if let package { self.package = package }
+                    update(added, snapshot, finished, package)
                 }
                 // Fewer, larger batches as the tree grows: re-sorting is what costs.
                 interval = min(interval * 1.6, 1.5)

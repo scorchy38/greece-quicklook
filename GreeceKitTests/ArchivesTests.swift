@@ -390,6 +390,139 @@ final class ArchivesTests: XCTestCase {
     }
 }
 
+/// Package metadata: every kind Greece reads, from fixtures built by Fixtures/archives/make-packages.py.
+final class PackageTests: XCTestCase {
+    private func inspect(_ name: String) throws -> PackageInfo {
+        let url = ArchivesTests.fixtures.appendingPathComponent("packages/" + name)
+        let identity = try XCTUnwrap(ArchiveSniffer.identify(FileInfo(url: url)), name)
+        let document = try ArchiveDocument(url: url, identity: identity, showHidden: false)
+        if document.package == nil, document.isLoading { _ = try document.session.listAll() }
+        return try XCTUnwrap(document.package ?? document.inspectPackage(try document.session.listAll()), name)
+    }
+
+    func testPython() throws {
+        let wheel = try inspect("harbourmaster-2.4.1-py3-none-any.whl")
+        XCTAssertEqual(wheel.kind, .wheel)
+        XCTAssertEqual(wheel.name, "harbourmaster")
+        XCTAssertEqual(wheel.version, "2.4.1")
+        XCTAssertEqual(wheel.summary, "Assigns berths to ferries arriving at Aegean harbours.")
+        XCTAssertEqual(wheel.facts.first { $0.0 == "Requires Python" }?.1, "≥ 3.9")
+        XCTAssertEqual(wheel.facts.first { $0.0 == "License" }?.1, "MIT")
+        XCTAssertEqual(wheel.facts.first { $0.0 == "Author" }?.1, "Eleni Papadaki")
+        XCTAssertEqual(wheel.facts.first { $0.0 == "Built for" }?.1, "py3-none-any")
+        XCTAssertEqual(wheel.dependencies.count, 3, "extras are left out: \(wheel.dependencies)")
+        let sdist = try inspect("harbourmaster-2.4.1.tar.gz")
+        XCTAssertEqual(sdist.kind, .sdist)
+        XCTAssertEqual(sdist.version, "2.4.1")
+    }
+
+    func testJavaAndDotNet() throws {
+        let jar = try inspect("lighthouse-1.3.0.jar")
+        XCTAssertEqual(jar.name, "Lighthouse")
+        XCTAssertEqual(jar.version, "1.3.0")
+        XCTAssertEqual(jar.facts.first { $0.0 == "Vendor" }?.1, "Aegean Light Company", "continuation lines join")
+        XCTAssertEqual(jar.facts.first { $0.0 == "Main class" }?.1, "gr.aegean.lighthouse.Keeper")
+        XCTAssertEqual(jar.facts.first { $0.0 == "Maven" }?.1, "gr.aegean:lighthouse")
+        XCTAssertEqual(jar.facts.first { $0.0 == "Classes" }?.1, "3")
+        let nuget = try inspect("Aegean.Ferries.3.1.0.nupkg")
+        XCTAssertEqual(nuget.name, "Aegean Ferries")
+        XCTAssertEqual(nuget.version, "3.1.0")
+        XCTAssertEqual(nuget.facts.first { $0.0 == "License" }?.1, "Apache-2.0")
+        XCTAssertEqual(nuget.facts.first { $0.0 == "Frameworks" }?.1, "net8.0, netstandard2.0")
+        XCTAssertEqual(nuget.dependencies, ["System.Text.Json 8.0.4", "Microsoft.Bcl.AsyncInterfaces 8.0.0"])
+        XCTAssertNotNil(nuget.icon.flatMap(NSImage.init(data:)))
+    }
+
+    func testEditorAndBrowserExtensions() throws {
+        let vsix = try inspect("ferry-tracker-0.9.2.vsix")
+        XCTAssertEqual(vsix.name, "Ferry Tracker")
+        XCTAssertEqual(vsix.facts.first { $0.0 == "Identifier" }?.1, "aegean-labs.ferry-tracker")
+        XCTAssertNotNil(vsix.icon)
+        for name in ["tide-clock-1.2.xpi", "tide-clock-1.2.crx"] {
+            let info = try inspect(name)
+            XCTAssertEqual(info.name, "Tide Clock", "__MSG_ names resolve from the default locale")
+            XCTAssertEqual(info.summary, "High and low tide for your harbour, in the toolbar.")
+            XCTAssertNotNil(info.icon, name)
+        }
+        XCTAssertEqual(try inspect("tide-clock-1.2.xpi").kind, .xpi)
+        XCTAssertEqual(try inspect("tide-clock-1.2.crx").kind, .crx)
+    }
+
+    func testAndroid() throws {
+        for name in ["lighthouse-keeper.apk", "lighthouse-keeper.aab"] {
+            let info = try inspect(name)
+            XCTAssertEqual(info.name, "Lighthouse Keeper", name)
+            XCTAssertEqual(info.summary, "gr.aegean.lighthouse", name)
+            XCTAssertEqual(info.version, "3.2.0", name)
+            XCTAssertEqual(info.facts.first { $0.0 == "Version code" }?.1, "42", name)
+            XCTAssertEqual(info.facts.first { $0.0 == "Minimum Android" }?.1, "Android 8 (API 26)", name)
+            XCTAssertEqual(info.dependencies, ["INTERNET", "ACCESS_FINE_LOCATION", "POST_NOTIFICATIONS"], name)
+        }
+        let apk = try inspect("lighthouse-keeper.apk")
+        XCTAssertEqual(apk.facts.first { $0.0 == "Native code" }?.1, "arm64-v8a, x86_64")
+        XCTAssertNotNil(apk.icon)
+    }
+
+    func testLinuxRubyAndNode() throws {
+        let deb = try inspect("harbourmaster_2.4.1-1_arm64.deb")
+        XCTAssertEqual(deb.name, "harbourmaster")
+        XCTAssertEqual(deb.version, "2.4.1-1")
+        XCTAssertEqual(deb.summary, "berths for Aegean ferries")
+        XCTAssertEqual(deb.facts.first { $0.0 == "Architecture" }?.1, "arm64")
+        XCTAssertEqual(deb.dependencies, ["libc6 (>= 2.34)", "python3 (>= 3.9)", "python3-attr"])
+        let debListing = try ArchiveSession(url: ArchivesTests.fixtures.appendingPathComponent("packages/harbourmaster_2.4.1-1_arm64.deb")).listAll()
+        XCTAssertEqual(debListing.title, "Debian Package")
+        XCTAssertTrue(debListing.entries.contains { $0.path == "usr/bin/harbourmaster" }, "data.tar.zst decodes: \(debListing.entries.map(\.path))")
+
+        let rpmURL = ArchivesTests.fixtures.appendingPathComponent("packages/harbourmaster-2.4.1-1.x86_64.rpm")
+        let rpm = try inspect("harbourmaster-2.4.1-1.x86_64.rpm")
+        XCTAssertEqual(rpm.name, "harbourmaster")
+        XCTAssertEqual(rpm.version, "2.4.1-1")
+        XCTAssertEqual(rpm.facts.first { $0.0 == "Architecture" }?.1, "x86_64")
+        XCTAssertEqual(rpm.dependencies, ["python3", "python3-attrs"])
+        let session = try ArchiveSession(url: rpmURL)
+        let listing = try session.listAll()
+        XCTAssertEqual(listing.compression, .zstd)
+        let script = try XCTUnwrap(listing.entries.first { $0.path.hasSuffix("bin/harbourmaster") })
+        XCTAssertEqual(session.data(script, limit: 1 << 20).map { String(decoding: $0, as: UTF8.self) }, "#!/bin/sh\necho 'Harbourmaster: berth A1 is free.'\n")
+
+        let gem = try inspect("harbourmaster-2.4.1.gem")
+        XCTAssertEqual(gem.name, "harbourmaster")
+        XCTAssertEqual(gem.version, "2.4.1")
+        XCTAssertEqual(gem.facts.first { $0.0 == "Ruby" }?.1, "≥ 3.1.0")
+        XCTAssertEqual(gem.facts.first { $0.0 == "Authors" }?.1, "Eleni Papadaki, Nikos Georgiou")
+        XCTAssertEqual(gem.dependencies, ["concurrent-ruby ~> 1.3"])
+
+        let npm = try inspect("tide-clock-1.2.0.tgz")
+        XCTAssertEqual(npm.kind, .npm)
+        XCTAssertEqual(npm.name, "@aegean/tide-clock")
+        XCTAssertEqual(npm.dependencies, ["date-fns ^4.1.0", "suncalc ^1.9.0"])
+    }
+
+    func testRPMSourceFixtureFromLibarchive() throws {
+        let url = ArchivesTests.fixtures.appendingPathComponent("libarchive/gzip-payload.rpm")
+        let session = try ArchiveSession(url: url)
+        let listing = try session.listAll()
+        XCTAssertFalse(listing.entries.isEmpty)
+        let file = try XCTUnwrap(listing.entries.first { !$0.isDirectory && $0.size > 0 })
+        XCTAssertEqual(session.data(file, limit: 1 << 20)?.count, Int(file.size))
+    }
+
+    func testHostileMetadataIsRefusedOrBounded() throws {
+        // Deep JSON nesting, a truncated binary manifest and a protobuf length past the end.
+        XCTAssertNil(PackageFormats.json(Data((String(repeating: "[", count: 5000) + String(repeating: "]", count: 5000)).utf8)))
+        XCTAssertNil(AndroidManifest(binaryXML: Data([0x03, 0x00, 0x08, 0x00, 0xFF, 0xFF, 0xFF, 0x7F, 0x01, 0x00])))
+        var budget = 1000
+        XCTAssertTrue(Protobuf.fields(Data([0x0A, 0xFF, 0xFF, 0xFF, 0x0F, 0x01])[...], budget: &budget).isEmpty)
+        let headers = PackageFormats.headers(String(repeating: "Key: value\n continued\n", count: 10_000))
+        XCTAssertLessThanOrEqual(headers.count, 5000)
+        XCTAssertNil(PackageFormats.XMLDigest(Data(repeating: 0x3C, count: PackageInspector.metadataLimit + 1)))
+        // A gzip bomb stops at the limit.
+        let zeros = try (Data(count: 4 * 1024 * 1024) as NSData).compressed(using: .zlib) as Data
+        XCTAssertNil(PackageFormats.gunzip(Data([0x78, 0x9C]) + zeros, limit: 1024))
+    }
+}
+
 /// Renders archive previews with something selected, for design review. Skipped unless asked for:
 ///
 ///     TEST_RUNNER_GREECE_SNAPSHOTS=<out dir> TEST_RUNNER_GREECE_SNAPSHOT_CASES=<cases file> \

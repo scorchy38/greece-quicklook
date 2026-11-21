@@ -14,7 +14,10 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
     private var paneFraction: CGFloat = 0.5
     private var state: NSView?
 
-    init(document: ArchiveDocument, settings: PreviewSettings, modified: String?, header: NSView? = nil) {
+    /// Holds the package card; empty (zero height) for plain archives.
+    private let headerSlot = NSView()
+
+    init(document: ArchiveDocument, settings: PreviewSettings, modified: String?) {
         self.document = document
         self.settings = settings
         self.modified = modified
@@ -29,21 +32,18 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
         split.delegate = self
         split.addArrangedSubview(tree)
 
-        var top = topAnchor
-        if let header {
-            header.translatesAutoresizingMaskIntoConstraints = false
-            addSubview(header)
-            NSLayoutConstraint.activate([
-                header.topAnchor.constraint(equalTo: topAnchor),
-                header.leadingAnchor.constraint(equalTo: leadingAnchor),
-                header.trailingAnchor.constraint(equalTo: trailingAnchor),
-            ])
-            top = header.bottomAnchor
-        }
+        headerSlot.translatesAutoresizingMaskIntoConstraints = false
         split.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(headerSlot)
         addSubview(split)
+        let collapsed = headerSlot.heightAnchor.constraint(equalToConstant: 0)
+        collapsed.priority = .defaultLow
         NSLayoutConstraint.activate([
-            split.topAnchor.constraint(equalTo: top),
+            headerSlot.topAnchor.constraint(equalTo: topAnchor),
+            headerSlot.leadingAnchor.constraint(equalTo: leadingAnchor),
+            headerSlot.trailingAnchor.constraint(equalTo: trailingAnchor),
+            collapsed,
+            split.topAnchor.constraint(equalTo: headerSlot.bottomAnchor),
             split.leadingAnchor.constraint(equalTo: leadingAnchor),
             split.trailingAnchor.constraint(equalTo: trailingAnchor),
             split.bottomAnchor.constraint(equalTo: bottomAnchor),
@@ -55,8 +55,22 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
             self.pane.setMode(.info)
             self.selectionChanged(self.tree.selectedNodes.isEmpty ? [node] : self.tree.selectedNodes)
         }
+        if let package = document.package { showPackage(package) }
         updateState()
         if document.isLoading { startLoading() }
+    }
+
+    private func showPackage(_ info: PackageInfo) {
+        headerSlot.subviews.forEach { $0.removeFromSuperview() }
+        let header = PackageHeaderView(info)
+        header.translatesAutoresizingMaskIntoConstraints = false
+        headerSlot.addSubview(header)
+        NSLayoutConstraint.activate([
+            header.topAnchor.constraint(equalTo: headerSlot.topAnchor),
+            header.bottomAnchor.constraint(equalTo: headerSlot.bottomAnchor),
+            header.leadingAnchor.constraint(equalTo: headerSlot.leadingAnchor),
+            header.trailingAnchor.constraint(equalTo: headerSlot.trailingAnchor),
+        ])
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
@@ -69,11 +83,12 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
     // MARK: - Loading
 
     private func startLoading() {
-        document.continueLoading { [weak self] added, listing, finished in
+        document.continueLoading { [weak self] added, listing, finished, package in
             guard let self else { return }
             self.document.builder.add(added)
             self.document.builder.finish()
             self.tree.reload()
+            if let package { self.showPackage(package) }
             self.updateState()
             self.setSummary(self.document.summary(modified: self.modified, loading: !finished))
         }
