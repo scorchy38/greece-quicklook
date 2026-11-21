@@ -19,16 +19,9 @@ public enum PreviewFactory {
 
     // MARK: - Off-main preparation
 
-    private enum Prepared {
-        case web(WebDocument, FileSummary, NSSize)
-        case table(DelimitedTable, FileSummary)
-        case sqlite(SQLiteDatabase, FileSummary)
-        case tree(FileNode, FileSummary, showsKind: Bool)
-        case video(FileSummary)
-    }
-
-    private static func prepare(_ url: URL, settings: PreviewSettings) throws -> Prepared {
-        let kind = FileKind.detect(url)
+    private static func prepare(_ url: URL, settings: PreviewSettings) throws -> PreparedPreview {
+        let info = FileInfo(url: url)
+        let kind = FileKind.detect(info)
         let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
         let modified = values?.contentModificationDate.map(modifiedText)
         let size = values?.fileSize.map { ByteCountFormatter.string(fromByteCount: Int64($0), countStyle: .file) }
@@ -164,6 +157,10 @@ public enum PreviewFactory {
         case .video:
             return .video(FileSummary(symbol: "film", title: "MPEG Transport Stream", details: [size].compactMap { $0 }, trailing: modified))
 
+        case .module(let id):
+            guard let module = PreviewModules.module(id: id) else { throw PreviewError.unsupported }
+            return try module.prepare(info, settings: settings)
+
         case .unsupported:
             throw PreviewError.unsupported
         }
@@ -172,10 +169,13 @@ public enum PreviewFactory {
     // MARK: - Main-thread construction
 
     @MainActor
-    private static func build(_ prepared: Prepared, url: URL, settings: PreviewSettings) throws -> PreviewView {
+    private static func build(_ prepared: PreparedPreview, url: URL, settings: PreviewSettings) throws -> PreviewView {
         switch prepared {
         case .web(let document, let summary, let size):
             let content = WebPreviewView(document: document, settings: settings, size: NSSize(width: size.width, height: size.height - 28))
+            return PreviewView(content: content, summary: summary, preferredSize: size, settings: settings)
+        case .native(let summary, let size, let make):
+            let content = try make(settings)
             return PreviewView(content: content, summary: summary, preferredSize: size, settings: settings)
         case .table(let table, let summary):
             let grid = GridView(source: DelimitedGridSource(table: table), showsRowNumbers: settings.rowNumbers)

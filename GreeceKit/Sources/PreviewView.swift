@@ -48,6 +48,7 @@ public final class PreviewView: NSView {
         if let web = content as? WebPreviewView { web.update(settings: settings) }
         if let grid = content as? GridView { grid.setShowsRowNumbers(settings.rowNumbers) }
         if let browser = content as? SQLiteBrowserView { browser.setShowsRowNumbers(settings.rowNumbers) }
+        if let aware = content as? PreviewSettingsAware { aware.apply(settings) }
         setInfoBarVisible(settings.showInfoBar)
     }
 

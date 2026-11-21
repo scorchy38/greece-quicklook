@@ -1,14 +1,40 @@
 import Foundation
 
-/// A document rendered by the web engine: Markdown, code, diffs and notebooks.
+/// A document rendered by the web engine: Markdown, code, diffs, notebooks, and any module's own pages.
 public struct WebDocument {
-    public enum Kind: String, Encodable { case markdown, code, diff, notebook }
+    /// Which renderer draws the page. Modules add their own kinds and register a renderer for
+    /// them in their script (`greece.register('kind', render)`).
+    public struct Kind: RawRepresentable, Hashable, Encodable {
+        public let rawValue: String
+        public init(rawValue: String) { self.rawValue = rawValue }
+        public init(_ rawValue: String) { self.rawValue = rawValue }
+        public static let markdown = Kind("markdown")
+        public static let code = Kind("code")
+        public static let diff = Kind("diff")
+        public static let notebook = Kind("notebook")
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(rawValue)
+        }
+    }
+
+    /// Bundled libraries a page can ask for beyond highlight.js.
+    public enum Library: Hashable { case markdown, math, diagrams }
 
     public var kind: Kind
     public var text: String
     public var grammar: String?
     public var baseDirectory: URL?
     public var truncated = false
+    /// A module's own scripts and styles, relative to the bundle's Web folder (e.g. "modules/maps.js").
+    public var scripts: [String] = []
+    public var styles: [String] = []
+    /// A module's data, already JSON-encoded. The page reads it with `greece.kit.data()`.
+    public var data: String?
+    /// Libraries a module page needs, loaded whatever the document text contains.
+    public var libraries: Set<Library> = []
+    /// For modules that run WebAssembly decoders.
+    public var allowsWasm = false
 
     public init(kind: Kind, text: String, grammar: String? = nil, baseDirectory: URL? = nil, truncated: Bool = false) {
         self.kind = kind
@@ -16,6 +42,16 @@ public struct WebDocument {
         self.grammar = grammar
         self.baseDirectory = baseDirectory
         self.truncated = truncated
+    }
+
+    /// A module page: the module's renderer draws `data` with its own scripts and styles.
+    public init<Data: Encodable>(module kind: Kind, data: Data, scripts: [String], styles: [String] = [],
+                                 libraries: Set<Library> = [], text: String = "", baseDirectory: URL? = nil) {
+        self.init(kind: kind, text: text, baseDirectory: baseDirectory)
+        self.scripts = scripts
+        self.styles = styles
+        self.libraries = libraries
+        self.data = (try? JSONEncoder().encode(data)).map { String(decoding: $0, as: UTF8.self) }
     }
 
     // MARK: - Payload
@@ -47,18 +83,15 @@ public struct WebDocument {
     /// highlight.js grammars a document needs beyond the bundled common set.
     private func extraGrammars(diffLanguages: [String: String]) -> [String] {
         var needed = Set<String>()
-        switch kind {
-        case .code:
-            if let grammar { needed.insert(grammar) }
-        case .markdown, .notebook:
+        if let grammar { needed.insert(grammar) }
+        if kind == .markdown || kind == .notebook || libraries.contains(.markdown) {
             for word in fenceLanguages() {
                 if WebAssets.hasGrammar(word) { needed.insert(word) }
                 if let language = LanguageCatalog.language(forExtension: word) { needed.insert(language.grammar) }
             }
             if kind == .notebook, let language = notebookLanguage() { needed.insert(language) }
-        case .diff:
-            needed.formUnion(diffLanguages.values)
         }
+        if kind == .diff { needed.formUnion(diffLanguages.values) }
         return needed
             .filter { !LanguageCatalog.commonGrammars.contains($0) && WebAssets.bundledGrammars.contains($0) }
             .sorted()
@@ -107,9 +140,9 @@ public struct WebDocument {
     // MARK: - HTML
 
     public func html(settings: PreviewSettings) -> String {
-        let usesMarkdown = kind == .markdown || kind == .notebook
-        let math = usesMarkdown && settings.renderMath && mayContainMath
-        let diagrams = usesMarkdown && settings.renderDiagrams && mayContainDiagrams
+        let usesMarkdown = kind == .markdown || kind == .notebook || libraries.contains(.markdown)
+        let math = libraries.contains(.math) || (usesMarkdown && settings.renderMath && mayContainMath)
+        let diagrams = libraries.contains(.diagrams) || (usesMarkdown && settings.renderDiagrams && mayContainDiagrams)
         let diffLanguages = diffLanguageMap()
 
         var scripts = ["vendor/highlight/highlight.min.js"]
@@ -124,6 +157,9 @@ public struct WebDocument {
         }
         if diagrams { scripts.append("vendor/mermaid/mermaid.min.js") }
         scripts.append("greece.js")
+        // Module scripts run after greece.js (which waits for them) and register their renderers.
+        scripts += self.scripts.filter { WebAssets.url($0) != nil }
+        styles += self.styles.filter { WebAssets.url($0) != nil }
 
         let payload = Payload(
             kind: kind,
@@ -136,11 +172,12 @@ public struct WebDocument {
         let json = (try? JSONEncoder().encode(payload)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         // Make the JSON inert inside <script>: no "<" can ever close the element or open a comment.
         let safeJSON = json.replacingOccurrences(of: "<", with: "\\u003c")
+        let safeData = data.map { $0.replacingOccurrences(of: "<", with: "\\u003c") }
 
         let remote = settings.loadRemoteImages ? " https: http:" : ""
         let csp = [
             "default-src 'none'",
-            "script-src greece://asset",
+            "script-src greece://asset" + (allowsWasm ? " 'wasm-unsafe-eval'" : ""),
             "style-src greece://asset 'unsafe-inline'",
             "font-src greece://asset data:",
             "img-src greece: data:\(remote)",
@@ -160,7 +197,7 @@ public struct WebDocument {
         \(styles.map { "<link rel=\"stylesheet\" href=\"greece://asset/\(WebDocument.attribute($0))\">" }.joined(separator: "\n"))
         <style id="theme">\(settings.codeTheme.css)</style>
         <style id="vars">\(WebDocument.variablesCSS(settings))</style>
-        <script id="payload" type="application/json">\(safeJSON)</script>
+        <script id="payload" type="application/json">\(safeJSON)</script>\(safeData.map { "\n<script id=\"data\" type=\"application/json\">\($0)</script>" } ?? "")
         </head>
         <body>
         <main id="root"></main>

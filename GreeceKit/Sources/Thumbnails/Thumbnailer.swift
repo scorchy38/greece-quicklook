@@ -7,6 +7,12 @@ public struct ThumbnailPage {
     public let badge: String
     fileprivate let drawing: (CGRect) -> Void
 
+    init(size: CGSize, badge: String, drawing: @escaping (CGRect) -> Void) {
+        self.size = size
+        self.badge = badge
+        self.drawing = drawing
+    }
+
     /// Draws into the current AppKit graphics context.
     public func draw() { drawing(CGRect(origin: .zero, size: size)) }
 }
@@ -16,12 +22,22 @@ public enum Thumbnailer {
     /// Letter-paper proportions, like every other document page in Finder.
     static let aspect: CGFloat = 8.5 / 11
 
-    public static func page(for url: URL, maximumSize: CGSize, settings: PreviewSettings) -> ThumbnailPage? {
-        let kind = FileKind.detect(url)
-        guard let file = try? TextFile(url: url, limit: 48 * 1024) else { return nil }
+    /// A portrait document page that fits in `maximumSize`.
+    static func pageSize(fitting maximumSize: CGSize) -> CGSize {
         var height = min(maximumSize.height, maximumSize.width / aspect)
         height = max(height, 16)
-        let size = CGSize(width: (height * aspect).rounded(), height: height.rounded())
+        return CGSize(width: (height * aspect).rounded(), height: height.rounded())
+    }
+
+    public static func page(for url: URL, maximumSize: CGSize, settings: PreviewSettings) -> ThumbnailPage? {
+        let info = FileInfo(url: url)
+        let kind = FileKind.detect(info)
+        if case .module(let id) = kind {
+            // Modules choose their own proportions (a model's render, an app's card), within the maximum.
+            return PreviewModules.module(id: id)?.thumbnail(info, size: maximumSize, settings: settings)
+        }
+        guard let file = try? TextFile(url: url, limit: 48 * 1024) else { return nil }
+        let size = pageSize(fitting: maximumSize)
         let palette = settings.codeTheme.light
         let ext = url.pathExtension.uppercased()
 

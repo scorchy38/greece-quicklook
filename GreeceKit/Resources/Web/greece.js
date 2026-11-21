@@ -541,26 +541,32 @@
 
   async function renderMarkdown() {
     html.classList.add('kind-markdown');
-    const md = createMarkdown();
-    const { body, html: meta } = frontMatter(payload.text.replace(/^﻿/, ''));
+    const { body, html: meta } = frontMatter(payload.text.replace(/^\ufeff/, ''));
     if (!body.trim() && !meta) return empty('Empty document');
+    await markdownDocument(body, { prefix: (payload.truncated ? notice('Showing the beginning of a very large document.') : '') + meta });
+  }
 
+  /** Renders Markdown as a reading document (sanitised, highlighted, outlined) inside `container`.
+      Modules use it for anything that becomes prose: Org, AsciiDoc, EPUB chapters… */
+  async function markdownDocument(text, { prefix = '', container = root, outline = true } = {}) {
+    const md = createMarkdown();
     const doc = document.createElement('div');
     doc.className = 'doc';
     const article = document.createElement('article');
     const template = document.createElement('template');
-    template.innerHTML = (payload.truncated ? notice('Showing the beginning of a very large document.') : '') + meta + md.render(body);
+    template.innerHTML = prefix + md.render(text);
     sanitize(template.content);
     article.appendChild(template.content);
     doc.appendChild(article);
-    root.appendChild(doc);
+    container.appendChild(doc);
 
     const headings = enhanceMarkdown(article);
-    buildOutline(headings, doc);
+    if (outline) buildOutline(headings, doc);
     if (options.diagrams) {
       await Promise.race([renderMermaid(article), new Promise((r) => setTimeout(r, 1500))]);
       rerenderMermaidOnAppearanceChange(article);
     }
+    return article;
   }
 
   // ------------------------------------------------------------------ Diff
@@ -785,12 +791,37 @@
 
   // ------------------------------------------------------------------ Live styling
 
+  const renderers = {};
+  const applyCallbacks = [];
+  let moduleData;
+
   window.greece = {
     /** Applies appearance changes without re-rendering (used by the app's live preview). */
     apply(config) {
       if (config.themeCSS != null) $('#theme').textContent = config.themeCSS;
       if (config.varsCSS != null) $('#vars').textContent = config.varsCSS;
       if (config.classes) Object.keys(config.classes).forEach((k) => html.classList.toggle(k, !!config.classes[k]));
+      applyCallbacks.forEach((callback) => { try { callback(config); } catch (e) { post('log', 'apply: ' + e); } });
+    },
+
+    /** A module's renderer for its own document kind: `render(data, kit)`, may be async. */
+    register(kind, render) { renderers[kind] = render; },
+
+    /** What module renderers share with Greece's own: escaping, highlighting, Markdown, notices. */
+    kit: {
+      $, $$, esc, post, root, payload, options,
+      highlight, languageTitle, splitHighlighted, copyText, notice, empty, tick, afterReady,
+      katexHTML, createMarkdown, sanitize, markdownDocument, renderCode,
+      /** The module's data (the JSON GreeceKit embedded for this page), parsed once. */
+      data() {
+        if (moduleData === undefined) {
+          const element = $('#data');
+          moduleData = element ? JSON.parse(element.textContent) : null;
+        }
+        return moduleData;
+      },
+      /** Runs after live settings changes (theme, appearance), e.g. to recolour a canvas. */
+      onApply(callback) { applyCallbacks.push(callback); },
     },
   };
 
@@ -798,16 +829,22 @@
 
   async function boot() {
     try {
-      switch (payload.kind) {
-        case 'markdown': await renderMarkdown(); break;
-        case 'diff': renderDiff(); break;
-        case 'notebook': renderNotebook(); break;
-        default: renderCode();
+      const custom = renderers[payload.kind];
+      if (custom) {
+        html.classList.add('kind-' + payload.kind);
+        await custom(window.greece.kit.data(), window.greece.kit);
+      } else {
+        switch (payload.kind) {
+          case 'markdown': await renderMarkdown(); break;
+          case 'diff': renderDiff(); break;
+          case 'notebook': renderNotebook(); break;
+          default: renderCode();
+        }
       }
     } catch (e) {
       post('log', 'render failed: ' + (e && e.stack || e));
       payload.language = null;
-      html.className = html.className.replace(/kind-\w+/g, '');
+      html.className = html.className.replace(/kind-[\w-]+/g, '');
       root.innerHTML = '';
       renderCode();
     }
@@ -818,5 +855,7 @@
     tick().then(() => readyCallbacks.forEach((callback) => callback()));
   }
 
-  boot();
+  // Module scripts load after this one; start once they have all run and registered.
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+  else boot();
 })();

@@ -13,20 +13,27 @@ public enum FileKind: Equatable, Sendable {
     case archive(ArchiveFormat)
     case folder
     case video
+    /// Handled by a `PreviewModule` (apps, 3D models, maps…), by its id.
+    case module(String)
     case unsupported
 
     public static func detect(_ url: URL) -> FileKind {
-        let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .isPackageKey])
-        let name = url.lastPathComponent
-        let lowerName = name.lowercased()
-        let ext = url.pathExtension.lowercased()
+        detect(FileInfo(url: url))
+    }
 
-        if values?.isDirectory == true {
+    static func detect(_ file: FileInfo) -> FileKind {
+        let lowerName = file.name
+        let ext = file.ext
+
+        // Modules know their formats precisely (magic bytes, package layouts): they go first.
+        if let module = PreviewModules.claiming(file) { return .module(module.id) }
+
+        if file.isDirectory {
             if ["textbundle", "textpack"].contains(ext) { return .markdown }
-            return values?.isPackage == true ? .unsupported : .folder
+            return file.isPackage ? .unsupported : .folder
         }
 
-        let head = FileProbe(url: url)
+        let head = file.probe
 
         // Formats identified by their bytes win over names.
         if head.hasPrefix(Array("SQLite format 3\0".utf8)) { return .sqlite }
