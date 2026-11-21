@@ -3,12 +3,16 @@ import Foundation
 /// Re-indents JSON without parsing it into objects, so key order and number spelling survive.
 public enum JSONFormatter {
 
-    /// Minified JSON: long lines and almost no line breaks.
+    /// Squashed onto long lines: one line wider than a window, or any line far too long to read.
     public static func looksMinified(_ text: String) -> Bool {
         let sample = text.utf8.prefix(64 * 1024)
-        guard sample.count > 120 else { return false }
-        let newlines = sample.reduce(0) { $0 + ($1 == 0x0A ? 1 : 0) }
-        return sample.count / max(newlines, 1) > 300
+        var newlines = 0, line = 0, longest = 0
+        for byte in sample {
+            if byte == 0x0A { newlines += 1; longest = max(longest, line); line = 0 } else { line += 1 }
+        }
+        longest = max(longest, line)
+        if newlines <= 1 { return longest > 80 }
+        return longest > 400 || sample.count / max(newlines, 1) > 300
     }
 
     /// `lenient` formats a truncated document (a thumbnail's first kilobytes) instead of refusing it.

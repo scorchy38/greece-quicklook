@@ -118,6 +118,13 @@ final class DelimitedTableTests: XCTestCase {
 }
 
 final class FormatterTests: XCTestCase {
+    func testRecognisesMinifiedJSON() {
+        XCTAssertTrue(JSONFormatter.looksMinified(#"{"ferries":[{"from":"Piraeus","to":"Naxos","hours":5.5},{"from":"Naxos","to":"Paros"}]}"# + "\n"))
+        XCTAssertFalse(JSONFormatter.looksMinified(#"{"a": 1}"#), "short one-liners read fine as they are")
+        XCTAssertFalse(JSONFormatter.looksMinified("{\n  \"a\": 1,\n  \"b\": 2\n}\n"))
+        XCTAssertTrue(JSONFormatter.looksMinified("{\n" + String(repeating: "\"k\":1,", count: 120) + "\"z\":0}\n}"))
+    }
+
     func testPrettyPrintKeepsKeyOrder() {
         let pretty = JSONFormatter.prettyPrinted(#"{"z":1,"a":[1,2,{}],"s":"a,b:{c}","e":[]}"#)
         XCTAssertEqual(pretty, """
