@@ -1,6 +1,7 @@
 import AppKit
 import WebKit
 import SwiftUI
+import Quartz
 import GreeceKit
 
 /// Renders a preview to a PNG without any UI, for design review and regression checks.
@@ -184,4 +185,46 @@ enum SnapshotRunner {
         for subview in view.subviews { result += allWebViews(in: subview) }
         return result
     }
+
+    // MARK: - Real Quick Look panel
+
+    /// Opens the system Quick Look panel on a file (exactly what Finder shows) and prints its window
+    /// number, so `screencapture -l` can grab that panel alone.
+    ///     Greece --quicklook <file> [--size 1000x720] [--hold seconds]
+    static func runQuickLook() {
+        let app = NSApplication.shared
+        app.setActivationPolicy(.accessory)
+        let delegate = QuickLookHost()
+        app.delegate = delegate
+        Task { @MainActor in
+            let args = CommandLine.arguments
+            guard let index = args.firstIndex(of: "--quicklook"), index + 1 < args.count else { exit(1) }
+            let url = URL(fileURLWithPath: args[index + 1])
+            var size = NSSize(width: 1000, height: 720)
+            if let raw = value(after: "--size") {
+                let parts = raw.split(separator: "x").compactMap { Double($0) }
+                if parts.count == 2 { size = NSSize(width: parts[0], height: parts[1]) }
+            }
+            QuickLookPresenter.shared.show(url)
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            if let panel = QLPreviewPanel.shared() {
+                var frame = panel.frame
+                frame.size = size
+                panel.setFrame(frame, display: true)
+                print(panel.windowNumber)
+                fflush(stdout)
+            }
+            let hold = value(after: "--hold").flatMap(Double.init) ?? 5
+            try? await Task.sleep(nanoseconds: UInt64(hold * 1_000_000_000))
+            exit(0)
+        }
+        app.run()
+    }
+}
+
+/// Owns the Quick Look panel for `--quicklook` runs.
+private final class QuickLookHost: NSObject, NSApplicationDelegate {
+    override func acceptsPreviewPanelControl(_ panel: QLPreviewPanel!) -> Bool { true }
+    override func beginPreviewPanelControl(_ panel: QLPreviewPanel!) { QuickLookPresenter.shared.attach(to: panel) }
+    override func endPreviewPanelControl(_ panel: QLPreviewPanel!) { QuickLookPresenter.shared.detach(from: panel) }
 }

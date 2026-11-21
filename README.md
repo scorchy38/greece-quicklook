@@ -79,6 +79,7 @@ The app doubles as a headless renderer, which is handy for design work and regre
 scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots path/to/files…
 scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots --appearance dark --theme one file.swift
 scripts/shoot-app.sh build/dd/Build/Products/Release/Greece.app code /tmp/code.png --appearance dark
+scripts/shoot-quicklook.sh /Applications/Greece.app file.md /tmp/panel.png   # the real Quick Look panel, nothing else on screen
 ```
 
 `scripts/make-icon.swift` draws the app icon.
@@ -97,13 +98,15 @@ Greece.app
 - **Archives** are read as streams: ZIP (including ZIP64) from its central directory, tar (ustar, GNU long names, PAX) through zlib, libbz2 or Apple's Compression for xz.
 - **Settings** live in one JSON document in the App Group `ZHCT595PYJ.com.scorchy.greece`, which the app writes and the extension reads for every preview.
 
-## Known limitations
+## What macOS keeps for itself
 
-These come from macOS rather than Greece:
+Checked in the real Quick Look panel on macOS 26:
 
-- **`.csv`**: macOS's built-in Office previewer claims CSV ahead of any extension, so `.csv` keeps Apple's table preview. Tab- and pipe-separated files open in Greece.
-- **`.ts` TypeScript**: macOS treats `.ts` as MPEG video and its video previewer wins. `.tsx`, `.mts` and `.cts` open in Greece.
-- **Files without an extension** (`Makefile`, `LICENSE`) are generic data to macOS, so Quick Look doesn't offer them to extensions.
+- **`.csv`**: Quick Look routes CSV to Apple's built-in table preview ahead of any extension. Tab- and pipe-separated files open in Greece.
+- **`.ts` TypeScript**: macOS types `.ts` as MPEG video, and its video previewer takes it (showing only an icon for TypeScript). `.tsx`, `.mts` and `.cts` open in Greece.
+- **Plain text**: `.txt` files, and extensionless files macOS recognizes as text (`LICENSE`, `README`), stay with Apple's text viewer.
+
+Other extensionless files do reach Greece: `Makefile` is recognized by name, and `Dockerfile`, `.gitignore`, `Procfile` and similar files open highlighted. Binary files Greece can't read fall back to Quick Look's standard file view.
 
 ## Acknowledgements
 
