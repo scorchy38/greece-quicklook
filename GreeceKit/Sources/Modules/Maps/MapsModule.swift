@@ -245,6 +245,14 @@ enum MapLoader {
                 o.source = path
                 return o
             }
+            let root = folder.path + "/"
+            document.loadImage = { path, limit in
+                // Only files inside the KML's own folder, resolved paths and all.
+                let url = URL(fileURLWithPath: path).resolvingSymlinksInPath().standardizedFileURL
+                guard url.path.hasPrefix(root),
+                      let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size <= limit else { return nil }
+                return try? Data(contentsOf: url)
+            }
             return document
 
         case .kmz:
@@ -271,6 +279,13 @@ enum MapLoader {
                 var o = overlay
                 o.source = path
                 return o
+            }
+            let lock = NSLock()
+            document.loadImage = { name, limit in
+                lock.lock()
+                defer { lock.unlock() }
+                guard let member = zip.member(named: name) else { return nil }
+                return zip.data(member, limit: limit)
             }
             return document
 

@@ -230,15 +230,7 @@ final class MapResources: @unchecked Sendable {
 
     /// KMZ members by path, or files beside a KML (already resolved to absolute paths).
     private func image(_ source: String, limit: Int) -> Data? {
-        if document.format == .kmz {
-            lock.lock()
-            defer { lock.unlock() }
-            if zip == nil { zip = try? ZipMembers(url: self.source) }
-            guard let zip, let member = zip.member(named: source) else { return nil }
-            return zip.data(member, limit: limit)
-        }
-        guard source.hasPrefix("/"), let size = (try? URL(fileURLWithPath: source).resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size <= limit else { return nil }
-        return try? Data(contentsOf: URL(fileURLWithPath: source))
+        document.loadImage?(source, limit)
     }
 
     private func mimeType(_ data: Data) -> String {

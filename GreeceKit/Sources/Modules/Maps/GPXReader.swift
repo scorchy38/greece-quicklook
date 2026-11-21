@@ -252,7 +252,8 @@ enum GPXReader {
             }
         }
         let parsed = stream.parse(data)
-        guard sawGPX, parsed else { throw GeoError.invalid("This GPX file is damaged.") }
+        let empty = tracks.features.isEmpty && routes.features.isEmpty && waypoints.features.isEmpty
+        guard sawGPX, parsed, !(stream.failed && empty) else { throw GeoError.invalid("This GPX file is damaged.") }
         if stream.timedOut || budget.exhausted { document.truncated = true }
         document.title = metadataName
         document.layers = [tracks, routes, waypoints].filter { !$0.features.isEmpty }

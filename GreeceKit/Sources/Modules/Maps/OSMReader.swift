@@ -97,7 +97,7 @@ enum OSMReader {
             }
         }
         let parsed = stream.parse(data)
-        guard sawOSM, parsed else { throw GeoError.invalid("This OpenStreetMap file is damaged.") }
+        guard sawOSM, parsed, !(stream.failed && nodes.isEmpty) else { throw GeoError.invalid("This OpenStreetMap file is damaged.") }
         if stream.timedOut || budget.exhausted { document.truncated = true }
 
         var layers: [Class: GeoLayer] = [:]

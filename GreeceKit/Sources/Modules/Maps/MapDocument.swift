@@ -97,6 +97,9 @@ final class MapDocument {
     var facts: [String] = []
     /// MBTiles and GeoPackage tile tables, served tile by tile.
     var tileSets: [TileSet] = []
+    /// Reads an icon or overlay image named in the file (a KMZ member, a file beside a KML),
+    /// capped in size. Nil for formats without images.
+    var loadImage: (@Sendable (_ source: String, _ limit: Int) -> Data?)?
     /// Set when a reader already reprojected its layers (GeoPackage tables, zipped shapefiles
     /// whose layers each have their own CRS).
     private var reprojectedByReader: String?
@@ -143,6 +146,7 @@ final class MapDocument {
     /// Brings every position to WGS 84: reprojects from a known CRS, or lays out planar data
     /// whose CRS is unknown or unsupported.
     func normalize() {
+        defer { unwrapAntimeridian() }
         if let name = reprojectedByReader {
             projection = .reprojected(name)
             return
@@ -181,6 +185,47 @@ final class MapDocument {
         for layer in layers {
             for index in layer.features.indices {
                 if let g = layer.features[index].geometry { layer.features[index].geometry = g.mapPoints(transform) }
+            }
+        }
+    }
+
+    /// Lines and rings that cross the antimeridian jump from +180° to −180°; drawn as they are,
+    /// they streak across the whole map. Continuous longitudes (beyond ±180°) draw correctly.
+    /// Rings that encircle a pole (Antarctica) can't be unwrapped and are left alone.
+    func unwrapAntimeridian() {
+        guard !isPlanar else { return }
+        func unwrap(_ points: [GeoPoint], ring: Bool) -> [GeoPoint] {
+            guard points.count > 1 else { return points }
+            var jumps = false
+            for i in 1..<points.count where abs(points[i].x - points[i - 1].x) > 180 { jumps = true; break }
+            guard jumps else { return points }
+            var result = points
+            var offset = 0.0
+            for i in 1..<points.count {
+                let dx = points[i].x - points[i - 1].x
+                if dx > 180 { offset -= 360 } else if dx < -180 { offset += 360 }
+                result[i].x = points[i].x + offset
+            }
+            if ring, offset != 0 { return points }
+            // Keep the shape on the side of the antimeridian where most of it lies.
+            let mean = result.reduce(0) { $0 + $1.x } / Double(result.count)
+            if mean > 180 { for i in result.indices { result[i].x -= 360 } }
+            if mean < -180 { for i in result.indices { result[i].x += 360 } }
+            return result
+        }
+        func fix(_ g: GeoGeometry) -> GeoGeometry {
+            switch g {
+            case .lineString(let p): return .lineString(unwrap(p, ring: false))
+            case .multiLineString(let l): return .multiLineString(l.map { unwrap($0, ring: false) })
+            case .polygon(let r): return .polygon(r.map { unwrap($0, ring: true) })
+            case .multiPolygon(let m): return .multiPolygon(m.map { $0.map { unwrap($0, ring: true) } })
+            case .collection(let parts): return .collection(parts.map(fix))
+            default: return g
+            }
+        }
+        for layer in layers {
+            for index in layer.features.indices {
+                if let g = layer.features[index].geometry { layer.features[index].geometry = fix(g) }
             }
         }
     }

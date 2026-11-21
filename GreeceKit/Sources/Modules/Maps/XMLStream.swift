@@ -16,6 +16,8 @@ final class XMLStream: NSObject, XMLParserDelegate {
     private var events = 0
     private(set) var timedOut = false
     private(set) var stopped = false
+    /// The XML was malformed (as opposed to stopped by a limit).
+    private(set) var failed = false
     private weak var parser: XMLParser?
 
     init(deadline: CFAbsoluteTime, maxText: Int = 64 * 1024) {
@@ -38,6 +40,7 @@ final class XMLStream: NSObject, XMLParserDelegate {
         parser.delegate = self
         self.parser = parser
         let ok = parser.parse()
+        failed = !ok && !stopped
         return ok || stopped || events > 0
     }
 

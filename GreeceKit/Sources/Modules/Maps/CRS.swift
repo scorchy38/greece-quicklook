@@ -167,6 +167,24 @@ struct Projection {
                 + (7 * e6 / 120 + 81 * e8 / 1120) * sin(6 * chi)
                 + (4279 * e8 / 161280) * sin(8 * chi)
         }
+        /// Distance along the meridian from the equator to latitude φ.
+        func meridianArc(_ phi: Double) -> Double {
+            let e4 = e2 * e2, e6 = e4 * e2
+            return a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * phi
+                        - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * sin(2 * phi)
+                        + (15 * e4 / 256 + 45 * e6 / 1024) * sin(4 * phi)
+                        - (35 * e6 / 3072) * sin(6 * phi))
+        }
+        /// The latitude whose meridian arc is M (footpoint latitude).
+        func footpoint(_ M: Double) -> Double {
+            let e4 = e2 * e2, e6 = e4 * e2
+            let mu = M / (a * (1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256))
+            let e1 = (1 - sqrt(1 - e2)) / (1 + sqrt(1 - e2))
+            return mu + (3 * e1 / 2 - 27 * pow(e1, 3) / 32) * sin(2 * mu)
+                + (21 * e1 * e1 / 16 - 55 * pow(e1, 4) / 32) * sin(4 * mu)
+                + (151 * pow(e1, 3) / 96) * sin(6 * mu)
+                + (1097 * pow(e1, 4) / 512) * sin(8 * mu)
+        }
         /// Latitude from t (Lambert conic, Mercator, polar stereographic), iterated.
         func fromT(_ tValue: Double) -> Double {
             var phi = .pi / 2 - 2 * atan(tValue)
@@ -189,25 +207,14 @@ struct Projection {
             return (E / (a * k) + lambda0, fromConformal(.pi / 2 - 2 * atan(tValue)))
 
         case .equirectangular:
+            // Ellipsoidal equidistant cylindrical (EPSG 1028): y is distance along the meridian.
             let ts = Projection.rad(latTs ?? lat1 ?? 0)
-            return (E / (a * cos(ts)) + lambda0, N / a + phi0)
+            let k = cos(ts) / sqrt(1 - e2 * sin(ts) * sin(ts))
+            return (E / (a * k) + lambda0, footpoint(meridianArc(phi0) + N))
 
         case .transverseMercator:
             let ep2 = e2 / (1 - e2)
-            let e4 = e2 * e2, e6 = e4 * e2
-            func arc(_ phi: Double) -> Double {
-                a * ((1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256) * phi
-                     - (3 * e2 / 8 + 3 * e4 / 32 + 45 * e6 / 1024) * sin(2 * phi)
-                     + (15 * e4 / 256 + 45 * e6 / 1024) * sin(4 * phi)
-                     - (35 * e6 / 3072) * sin(6 * phi))
-            }
-            let M = arc(phi0) + N / k0
-            let mu = M / (a * (1 - e2 / 4 - 3 * e4 / 64 - 5 * e6 / 256))
-            let e1 = (1 - sqrt(1 - e2)) / (1 + sqrt(1 - e2))
-            let phi1 = mu + (3 * e1 / 2 - 27 * pow(e1, 3) / 32) * sin(2 * mu)
-                + (21 * e1 * e1 / 16 - 55 * pow(e1, 4) / 32) * sin(4 * mu)
-                + (151 * pow(e1, 3) / 96) * sin(6 * mu)
-                + (1097 * pow(e1, 4) / 512) * sin(8 * mu)
+            let phi1 = footpoint(meridianArc(phi0) + N / k0)
             let s1 = sin(phi1), c1 = cos(phi1)
             guard abs(c1) > 1e-12 else { return (lambda0, phi1) }
             let C1 = ep2 * c1 * c1
@@ -356,7 +363,8 @@ struct Projection {
             if abs(abs(alphaC) - .pi / 2) < 1e-12 { uc = A * (lambdaC - lambdaZero) } else {
                 uc = (A / B) * atan(sqrt(D * D - 1) / cos(alphaC)) * sign
             }
-            let gc = gammaC ?? gamma0
+            // Without an explicit rectified grid angle, it equals the azimuth (as in PROJ).
+            let gc = gammaC ?? alphaC
             let v = E * cos(gc) - N * sin(gc)
             let u = N * cos(gc) + E * sin(gc) + abs(uc) * sign
             let Q = exp(-B * v / A)
@@ -419,7 +427,7 @@ extension CRS {
     }
 
     private static func applyDatum(_ node: WKTNode, to crs: inout CRS) {
-        let datum = node.node("DATUM") ?? node.node("GEODETICDATUM") ?? node.node("TRF")
+        let datum = node.node("DATUM") ?? node.node("GEODETICDATUM") ?? node.node("TRF") ?? node.node("ENSEMBLE")
         if let spheroid = datum?.node("SPHEROID") ?? datum?.node("ELLIPSOID") ?? node.node("SPHEROID") ?? node.node("ELLIPSOID") {
             let numbers = spheroid.numbers
             if numbers.count >= 2, numbers[0] > 6_000_000, numbers[0] < 7_000_000 {

@@ -118,7 +118,10 @@ enum MapThumbnail {
         // Frame in mercator space with breathing room and a sensible minimum extent.
         let a = mercator(GeoPoint(extent.minX, extent.maxY)), b = mercator(GeoPoint(extent.maxX, extent.minY))
         var frame = CGRect(x: a.x, y: a.y, width: max(b.x - a.x, 0), height: max(b.y - a.y, 0))
-        let minimum: CGFloat = document.tileSets.isEmpty ? 1.0 / 4096 : 1.0 / 2048
+        // A lone point gets regional context; anything with extent is framed to it, down to a
+        // neighbourhood (about a kilometre).
+        let single = extent.width == 0 && extent.height == 0
+        let minimum: CGFloat = !document.tileSets.isEmpty ? 1.0 / 2048 : single ? 1.0 / 4096 : 1.0 / 40_000
         if frame.width < minimum { frame = frame.insetBy(dx: -(minimum - frame.width) / 2, dy: 0) }
         if frame.height < minimum { frame = frame.insetBy(dx: 0, dy: -(minimum - frame.height) / 2) }
         frame = frame.insetBy(dx: -frame.width * 0.09, dy: -frame.height * 0.09)
@@ -134,20 +137,37 @@ enum MapThumbnail {
         if size.height > maximumSize.height { size = CGSize(width: maximumSize.height * aspect, height: maximumSize.height) }
         size = CGSize(width: max(16, size.width.rounded()), height: max(16, size.height.rounded()))
 
-        // Raster tiles are decoded before drawing, outside the drawing closure.
-        let tiles = rasterTiles(document, frame: frame, pixelWidth: size.width * 2)
+        // Images are decoded before drawing, outside the drawing closure.
+        var tiles = rasterTiles(document, frame: frame, pixelWidth: size.width * 2)
         let vector = vectorTiles(document, frame: frame, pixelWidth: size.width)
+        for overlay in document.overlays.prefix(4) {
+            guard let data = document.loadImage?(overlay.source, 24 << 20), let image = decode(data, maxPixels: Int(size.width) * 2) else { continue }
+            let nw = mercator(GeoPoint(overlay.west, overlay.north)), se = mercator(GeoPoint(overlay.east, overlay.south))
+            tiles.append((CGRect(x: nw.x, y: nw.y, width: se.x - nw.x, height: se.y - nw.y), image))
+        }
+        var icons: [Int: CGImage] = [:]
+        for index in document.icons.indices.prefix(16) {
+            if let data = document.loadImage?(document.icons[index], 2 << 20), let image = decode(data, maxPixels: 96) { icons[index] = image }
+        }
 
         return ThumbnailPage(size: size, badge: document.format.badge) { rect in
             guard let context = NSGraphicsContext.current?.cgContext else { return }
-            draw(document, in: context, rect: rect, frame: frame, tiles: tiles, vector: vector)
+            draw(document, in: context, rect: rect, frame: frame, tiles: tiles, vector: vector, icons: icons)
         }
+    }
+
+    /// A downsampled image, never decoding more pixels than the thumbnail needs.
+    static func decode(_ data: Data, maxPixels: Int) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        let options: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceThumbnailMaxPixelSize: max(maxPixels, 16),
+                                        kCGImageSourceCreateThumbnailWithTransform: true, kCGImageSourceShouldCacheImmediately: true]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
     }
 
     // MARK: Drawing
 
     private static func draw(_ document: MapDocument, in context: CGContext, rect: CGRect, frame: CGRect,
-                             tiles: [(CGRect, CGImage)], vector: [(CGRect, VectorTile)]) {
+                             tiles: [(CGRect, CGImage)], vector: [(CGRect, VectorTile)], icons: [Int: CGImage]) {
         let scale = rect.width / frame.width
         let unit = max(rect.width / 256, 0.5)
         func project(_ p: GeoPoint) -> CGPoint {
@@ -182,7 +202,7 @@ enum MapThumbnail {
         } else {
             context.setFillColor(Palette.water.cgColor)
             context.fill(rect)
-            if tiles.isEmpty {
+            if !document.tileSets.contains(where: { $0.info.kind == .raster }) {
                 if let land = Basemap.layers["land"] {
                     let p = CGMutablePath()
                     for f in land.features where visible(f.bounds) { p.addPath(path(f.parts, close: true)) }
@@ -218,13 +238,22 @@ enum MapThumbnail {
         drawVectorTiles(vector, context: context, rect: rect, frame: frame, unit: unit)
 
         // Data: areas, then lines, then points, then track ends on top.
-        let total = document.stats.features
-        let pointRadius: CGFloat = (total > 2000 ? 1.4 : total > 300 ? 2.2 : 3.2) * unit
+        let total = document.stats.points
+        let pointRadius: CGFloat = (total > 2000 ? 1.3 : total > 150 ? 1.9 : 3.2) * unit
         for pass in 0..<3 {
             for (layerIndex, layer) in document.layers.enumerated() where !layer.isHidden {
                 let base = Palette.layerColors[layerIndex % Palette.layerColors.count]
                 for feature in layer.features {
                     guard let g = feature.geometry else { continue }
+                    if pass == 2, let index = feature.style?.icon, let icon = icons[index] {
+                        // KML icons, at about the size Google Earth shows them.
+                        let side = 11 * unit * CGFloat(feature.style?.iconScale ?? 1)
+                        g.forEachPoint { p in
+                            let c = project(p)
+                            context.draw(icon, in: CGRect(x: c.x - side / 2, y: c.y - side / 2, width: side, height: side))
+                        }
+                        continue
+                    }
                     drawGeometry(g, feature.style, layer.role, base, pass: pass, context: context, unit: unit,
                                  pointRadius: pointRadius, path: path, project: project)
                 }

@@ -314,7 +314,9 @@ enum KMLReader {
         }
 
         let parsed = stream.parse(data)
-        guard sawKML || !pendingPlacemarks.isEmpty, parsed else { throw GeoError.invalid("This KML file is damaged.") }
+        guard sawKML || !pendingPlacemarks.isEmpty, parsed, !(stream.failed && pendingPlacemarks.isEmpty && document.overlays.isEmpty) else {
+            throw GeoError.invalid("This KML file is damaged.")
+        }
         if stream.timedOut || budget.exhausted { document.truncated = true }
 
         // Resolve styles now that every shared style has been read.
