@@ -1,0 +1,43 @@
+# Apps, installers and binaries (GreeceKit/Sources/Modules/Apps).
+# Bundles and packages
+com.apple.application-bundle
+com.apple.application-and-system-extension
+com.apple.framework
+com.apple.generic-bundle
+com.apple.plugin
+com.apple.kernel-extension
+com.apple.system-extension
+com.apple.driver-extension
+com.apple.xpc-service
+com.apple.quicklook-generator
+com.apple.metadata-importer
+com.apple.systempreference.screen-saver
+com.apple.systempreference.prefpane
+com.apple.xcode.archive
+com.apple.xcode.dsym
+# Installers and disk images
+com.apple.installer-package-archive
+com.apple.installer-package
+com.apple.disk-image-udif
+com.apple.disk-image
+public.iso-image
+com.apple.disk-image-cdr
+com.apple.disk-image-sparse
+com.apple.disk-image-sparse-bundle
+com.roxio.disk-image-toast
+# Mobile apps
+com.apple.itunes.ipa
+com.scorchy.greece.android-package
+com.scorchy.greece.android-app-bundle
+# Executables
+com.apple.mach-o-binary
+com.apple.mach-o-dylib
+public.unix-executable
+public.object-code
+com.microsoft.windows-executable
+com.microsoft.windows-dynamic-link-library
+# Profiles and torrents
+com.apple.mobileprovision
+com.apple.provisionprofile
+com.apple.mobileconfig
+org.bittorrent.torrent

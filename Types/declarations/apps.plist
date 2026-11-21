@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>UTTypeConformsTo</key>
+		<array>
+			<string>public.data</string>
+			<string>public.archive</string>
+		</array>
+		<key>UTTypeDescription</key>
+		<string>Android Package</string>
+		<key>UTTypeIdentifier</key>
+		<string>com.scorchy.greece.android-package</string>
+		<key>UTTypeTagSpecification</key>
+		<dict>
+			<key>public.filename-extension</key>
+			<array>
+				<string>apk</string>
+			</array>
+			<key>public.mime-type</key>
+			<array>
+				<string>application/vnd.android.package-archive</string>
+			</array>
+		</dict>
+	</dict>
+	<dict>
+		<key>UTTypeConformsTo</key>
+		<array>
+			<string>public.data</string>
+			<string>public.archive</string>
+		</array>
+		<key>UTTypeDescription</key>
+		<string>Android App Bundle</string>
+		<key>UTTypeIdentifier</key>
+		<string>com.scorchy.greece.android-app-bundle</string>
+		<key>UTTypeTagSpecification</key>
+		<dict>
+			<key>public.filename-extension</key>
+			<array>
+				<string>aab</string>
+			</array>
+		</dict>
+	</dict>
+</array>
+</plist>

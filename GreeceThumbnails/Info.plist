@@ -28,6 +28,14 @@
 		<dict>
 			<key>QLSupportedContentTypes</key>
 			<array>
+				<string>com.apple.itunes.ipa</string>
+				<string>com.scorchy.greece.android-package</string>
+				<string>com.scorchy.greece.android-app-bundle</string>
+				<string>com.microsoft.windows-executable</string>
+				<string>com.apple.mobileprovision</string>
+				<string>com.apple.provisionprofile</string>
+				<string>com.apple.mobileconfig</string>
+				<string>org.bittorrent.torrent</string>
 				<string>net.daringfireball.markdown</string>
 				<string>com.scorchy.greece.markdown</string>
 				<string>public.swift-source</string>
