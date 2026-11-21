@@ -35,6 +35,7 @@ enum Page: String, CaseIterable, Identifiable, Hashable {
 struct RootView: View {
     @EnvironmentObject private var status: ExtensionStatus
     @SceneStorage("page") private var storedPage: Page = .welcome
+    @State private var query = ""
     /// Fixed page for snapshots; nil in normal use.
     var pinnedPage: Page?
 
@@ -45,7 +46,10 @@ struct RootView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: Binding(get: { page }, set: { if let value = $0 { page = value } })) {
+            List(selection: Binding(get: { page }, set: { if let value = $0 { page = value; query = "" } })) {
+                if !query.isEmpty {
+                    SettingsSearchResults(query: query)
+                } else {
                 Label(Page.welcome.title, systemImage: Page.welcome.symbol).tag(Page.welcome)
                 Section("Previews") {
                     ForEach([Page.markdown, .code, .data, .files]) { item in
@@ -57,7 +61,9 @@ struct RootView: View {
                         Label(item.title, systemImage: item.symbol).tag(item)
                     }
                 }
+                }
             }
+            .searchable(text: $query, placement: .sidebar, prompt: "Search Settings")
             .navigationSplitViewColumnWidth(min: 190, ideal: 210, max: 260)
             .safeAreaInset(edge: .bottom) {
                 StatusFooter { page = .welcome }
