@@ -41,27 +41,36 @@ final class ExtensionStatus: ObservableObject {
 
     /// Registers this copy, removes stale ones (old builds, other folders), enables it and restarts Quick Look.
     func enable() {
-        guard let own = ownExtensionPath else { return }
+        Task { await enableAndWait() }
+    }
+
+    /// Every extension Greece ships, by bundle identifier and file name.
+    nonisolated static let extensions = [("com.scorchy.greece.quicklook", "GreeceQuickLook.appex"),
+                                         ("com.scorchy.greece.thumbnails", "GreeceThumbnails.appex")]
+
+    func enableAndWait() async {
+        guard let plugins = Bundle.main.builtInPlugInsURL else { return }
         working = true
-        Task {
-            let listing = await Self.run("/usr/bin/pluginkit", ["-m", "-A", "-D", "-v", "-i", Self.identifier])
-            for path in Self.paths(in: listing) where path != own {
+        for (identifier, file) in Self.extensions {
+            let own = plugins.appendingPathComponent(file).resolvingSymlinksInPath().path
+            let listing = await Self.run("/usr/bin/pluginkit", ["-m", "-A", "-D", "-v", "-i", identifier])
+            for path in Self.paths(in: listing, identifier: identifier) where URL(fileURLWithPath: path).resolvingSymlinksInPath().path != own {
                 _ = await Self.run("/usr/bin/pluginkit", ["-r", path])
             }
-            _ = await Self.run("/usr/bin/pluginkit", ["-a", own])
-            _ = await Self.run("/usr/bin/pluginkit", ["-e", "use", "-i", Self.identifier])
-            // Finder thumbnails ship in the same app; keep them registered alongside the previews.
-            if let thumbnails = Bundle.main.builtInPlugInsURL?.appendingPathComponent("GreeceThumbnails.appex").path {
-                _ = await Self.run("/usr/bin/pluginkit", ["-a", thumbnails])
-                _ = await Self.run("/usr/bin/pluginkit", ["-e", "use", "-i", "com.scorchy.greece.thumbnails"])
+            // Right after an update the registry may ignore the first add; retry until it's listed.
+            for _ in 0..<20 {
+                _ = await Self.run("/usr/bin/pluginkit", ["-a", own])
+                if await Self.run("/usr/bin/pluginkit", ["-m", "-A", "-D", "-v", "-i", identifier]).contains(own) { break }
+                try? await Task.sleep(nanoseconds: 300_000_000)
             }
-            _ = await Self.run("/usr/bin/qlmanage", ["-r"])
-            _ = await Self.run("/usr/bin/qlmanage", ["-r", "cache"])
-            try? await Task.sleep(nanoseconds: 600_000_000)
-            working = false
-            refresh()
-            message = "Greece is now handling Quick Look previews."
+            _ = await Self.run("/usr/bin/pluginkit", ["-e", "use", "-i", identifier])
         }
+        _ = await Self.run("/usr/bin/qlmanage", ["-r"])
+        _ = await Self.run("/usr/bin/qlmanage", ["-r", "cache"])
+        try? await Task.sleep(nanoseconds: 600_000_000)
+        working = false
+        refresh()
+        message = "Greece is now handling Quick Look previews."
     }
 
     func resetQuickLook() {
@@ -103,7 +112,7 @@ final class ExtensionStatus: ObservableObject {
         return first.flag == "-" ? .disabled : .active
     }
 
-    nonisolated static func paths(in output: String) -> [String] {
+    nonisolated static func paths(in output: String, identifier: String = identifier) -> [String] {
         output.split(separator: "\n").filter { $0.contains(identifier) }.compactMap { line in
             line.split(separator: "\t").last.map { String($0).trimmingCharacters(in: .whitespaces) }
         }

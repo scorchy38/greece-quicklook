@@ -30,11 +30,17 @@ for appex in "$dest"/Contents/PlugIns/*.appex; do
 done
 qlmanage -r >/dev/null 2>&1 || true
 
+# The registry can lag when the Mac is busy; give it up to 15 more seconds.
 for id in "${ids[@]}"; do
-  if ! pluginkit -m -A -D -v -i "$id" | grep -q "^+.*$dest"; then
-    echo "Quick Look did not register $id from $dest" >&2
-    exit 1
-  fi
+  for attempt in $(seq 1 30); do
+    pluginkit -m -A -D -v -i "$id" | grep -q "^+.*$dest" && break
+    if [[ $attempt == 30 ]]; then
+      echo "Quick Look did not register $id from $dest" >&2
+      exit 1
+    fi
+    pluginkit -e use -i "$id" 2>/dev/null
+    sleep 0.5
+  done
 done
 echo "Installed $dest. Quick Look previews use it now."
 echo "Finder thumbnails switch over when macOS restarts its thumbnail service (at the latest after you log out)."

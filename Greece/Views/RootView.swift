@@ -2,7 +2,7 @@ import SwiftUI
 import GreeceKit
 
 enum Page: String, CaseIterable, Identifiable, Hashable {
-    case welcome, markdown, code, data, files, general, about
+    case welcome, markdown, code, data, files, general, diagnostics, about
     var id: String { rawValue }
 
     var title: String {
@@ -13,6 +13,7 @@ enum Page: String, CaseIterable, Identifiable, Hashable {
         case .data: return "Data"
         case .files: return "Archives & Folders"
         case .general: return "General"
+        case .diagnostics: return "Diagnostics"
         case .about: return "About"
         }
     }
@@ -25,6 +26,7 @@ enum Page: String, CaseIterable, Identifiable, Hashable {
         case .data: return "tablecells"
         case .files: return "archivebox"
         case .general: return "gearshape"
+        case .diagnostics: return "stethoscope"
         case .about: return "info.circle"
         }
     }
@@ -51,7 +53,7 @@ struct RootView: View {
                     }
                 }
                 Section("Greece") {
-                    ForEach([Page.general, .about]) { item in
+                    ForEach([Page.general, .diagnostics, .about]) { item in
                         Label(item.title, systemImage: item.symbol).tag(item)
                     }
                 }
@@ -74,6 +76,7 @@ struct RootView: View {
         case .data: DataPage()
         case .files: FilesPage()
         case .general: GeneralPage()
+        case .diagnostics: DiagnosticsPage()
         case .about: AboutPage()
         }
     }
