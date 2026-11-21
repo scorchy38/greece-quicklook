@@ -17,6 +17,7 @@ final class PreviewViewController: NSViewController, QLPreviewingController {
 
     func preparePreviewOfFile(at url: URL) async throws {
         let started = Date()
+        Self.log.info("Preparing preview (\(url.pathExtension.isEmpty ? "no extension" : url.pathExtension, privacy: .public))")
         do {
             let settings = SettingsStore.current()
             let preview = try await PreviewFactory.makePreview(for: url, settings: settings)
