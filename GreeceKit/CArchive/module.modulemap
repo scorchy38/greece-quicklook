@@ -4,3 +4,16 @@ module CArchive [system] {
     link "bz2"
     export *
 }
+
+/// libarchive 3.7 from the system (/usr/lib/libarchive.2.dylib): 7z, RAR, CAB, LHA, ISO and more.
+module CLibArchive [system] {
+    header "greece_libarchive.h"
+    link "archive"
+    export *
+}
+
+/// Zstandard's decoder, compiled from GreeceKit/Sources/Modules/Archives/Zstd/zstddeclib.c.
+module CZstd {
+    header "greece_zstd.h"
+    export *
+}

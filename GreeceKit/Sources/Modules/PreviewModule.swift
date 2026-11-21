@@ -73,6 +73,7 @@ protocol PreviewSettingsAware: AnyObject {
 enum PreviewModules {
     /// Every module, in the order they're asked. Add new modules here.
     static let all: [PreviewModule.Type] = [
+        ArchivesModule.self,
     ]
 
     static func module(id: String) -> PreviewModule.Type? {
