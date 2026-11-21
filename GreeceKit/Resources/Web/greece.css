@@ -360,7 +360,7 @@ summary::marker { color: var(--text-3); }
   background: var(--fill);
   font: 12.5px/1.5 var(--ui);
 }
-.front-matter dt { color: var(--text-3); font-weight: 500; }
+.front-matter dt { color: var(--text-3); font-weight: 500; margin: 0; }
 .front-matter dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
 .front-matter .chip { display: inline-block; padding: 0 .55em; margin: 0 .3em .2em 0; border-radius: 999px; background: var(--fill-2); color: var(--text-2); }
 
