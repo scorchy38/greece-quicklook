@@ -1,0 +1,10 @@
+Natural Earth
+
+Greece's offline basemap (GreeceKit/Resources/Web/modules/maps-basemap.bin) is built from
+Natural Earth 1:50m vector data: land, lakes, rivers and lake centrelines, admin-0 boundary
+lines, admin-1 state and province lines, and admin-0 country label points.
+
+Made with Natural Earth. Free vector and raster map data @ naturalearthdata.com.
+
+Natural Earth data is in the public domain. No permission is needed to use it.
+https://www.naturalearthdata.com/about/terms-of-use/
