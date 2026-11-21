@@ -1,0 +1,5 @@
+LIBRARY greece.dll
+EXPORTS
+  greece_add
+  greece_answer
+  greece_secret @7 NONAME

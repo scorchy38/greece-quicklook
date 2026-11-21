@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Adaptive</string>
+    <color name="launcher_background">#FF1A73E8</color>
+</resources>
