@@ -140,6 +140,11 @@ guard AXIsProcessTrusted() else {
 }
 
 shell("/usr/bin/pluginkit", ["-e", "ignore", "-i", extensionID])
+// Right after an install, the plugin registry can still be settling: wait until it reports "off".
+if !waitUntil(10, { !extensionEnabled() }) {
+    shell("/usr/bin/pluginkit", ["-e", "ignore", "-i", extensionID])
+    _ = waitUntil(10) { !extensionEnabled() }
+}
 NSRunningApplication.runningApplications(withBundleIdentifier: "com.scorchy.greece").forEach { $0.terminate() }
 pause(1)
 

@@ -90,6 +90,14 @@ swift scripts/ui-check.swift /Applications/Greece.app /tmp/ui   # clicks through
 
 `scripts/make-icon.swift` draws the app icon.
 
+### Releasing
+
+```sh
+scripts/release.sh            # universal build, signed, packaged as build/release/Greece-<version>.dmg
+```
+
+The script signs with a Developer ID Application certificate when one is in the keychain and notarizes when `GREECE_NOTARY_PROFILE` names a `notarytool` profile. Without them it still produces a working, signed DMG, but Gatekeeper on other Macs will block it until it's notarized.
+
 ## How it works
 
 ```

@@ -50,6 +50,11 @@ final class ExtensionStatus: ObservableObject {
             }
             _ = await Self.run("/usr/bin/pluginkit", ["-a", own])
             _ = await Self.run("/usr/bin/pluginkit", ["-e", "use", "-i", Self.identifier])
+            // Finder thumbnails ship in the same app; keep them registered alongside the previews.
+            if let thumbnails = Bundle.main.builtInPlugInsURL?.appendingPathComponent("GreeceThumbnails.appex").path {
+                _ = await Self.run("/usr/bin/pluginkit", ["-a", thumbnails])
+                _ = await Self.run("/usr/bin/pluginkit", ["-e", "use", "-i", "com.scorchy.greece.thumbnails"])
+            }
             _ = await Self.run("/usr/bin/qlmanage", ["-r"])
             _ = await Self.run("/usr/bin/qlmanage", ["-r", "cache"])
             try? await Task.sleep(nanoseconds: 600_000_000)
