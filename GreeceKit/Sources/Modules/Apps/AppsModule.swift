@@ -9,6 +9,7 @@ enum AppsModule: PreviewModule {
     enum Kind: Equatable {
         case bundle, xcarchive, dsym
         case machO
+        case windows
         case ipa
         case provisioningProfile, configurationProfile
         case torrent
@@ -28,6 +29,7 @@ enum AppsModule: PreviewModule {
         }
         let bytes = file.probe.bytes
         if file.ext != "class", MachOFile.magic(of: bytes) != nil { return .machO }
+        if WindowsPage.sniff(probe: bytes) { return .windows }
         let zip = bytes.count >= 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04
         switch file.ext {
         case "ipa": return zip ? .ipa : nil
@@ -67,6 +69,8 @@ enum AppsModule: PreviewModule {
             return try ArchivePage.dsym(file.url, modified: modified)
         case .machO:
             return try MachOPage.page(for: file.url, modified: modified)
+        case .windows:
+            return try WindowsPage.page(for: file.url, settings: .default)
         case .ipa:
             return try IPAPage.page(for: file.url, modified: modified)
         case .provisioningProfile:
@@ -83,6 +87,9 @@ enum AppsModule: PreviewModule {
         case .ipa:
             guard let icon = IPAPage.icon(for: file.url) else { return nil }
             return AppThumbnails.appIcon(icon, shape: .iOS, size: size, badge: "IPA")
+        case .windows:
+            guard let icon = WindowsPage.icon(for: file.url) else { return nil }
+            return AppThumbnails.appIcon(icon, shape: .asIs, size: size, badge: file.ext.isEmpty ? "EXE" : file.ext.uppercased())
         case .provisioningProfile:
             return AppThumbnails.profileCard(for: file.url, size: size)
         case .configurationProfile:
