@@ -78,6 +78,11 @@ enum IPAPage {
         for (name, _) in scored.prefix(4) {
             if let data = source.data(name, limit: 4 << 20), let image = CgBIImage.image(from: data) { return image }
         }
+        // Current Xcode keeps iOS icons only in the compiled asset catalog.
+        if let catalog = source.data("Assets.car", limit: AssetCatalog.maxSize) {
+            let primary = (info["CFBundleIcons"] as? [String: Any])?["CFBundlePrimaryIcon"] as? [String: Any]
+            return AssetCatalog.appIcon(in: catalog, named: primary?["CFBundleIconName"] as? String ?? info["CFBundleIconName"] as? String)
+        }
         return nil
     }
 

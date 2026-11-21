@@ -311,6 +311,25 @@ final class AppsCoreTests: XCTestCase {
         XCTAssertTrue(uuids.allSatisfy { UUID(uuidString: $0.value ?? "") != nil })
     }
 
+    // MARK: - Disk images
+
+    func testDiskImageSignature() throws {
+        let signed = fixture("diskimages/Signed-adhoc.dmg")
+        XCTAssertEqual(kind(signed), .diskImage)
+        let page = try AppsModule.makePage(FileInfo(url: signed))
+        let section = try XCTUnwrap(page.section("signature"))
+        XCTAssertTrue(section.rows.contains { $0.item?.value == "com.scorchy.greece.fixture.disk" })
+        XCTAssertTrue(page.badges.contains { $0.id == "signer" && $0.title == "Ad Hoc" })
+        let integrity = try XCTUnwrap(page.checks.first { $0.id == "integrity" })
+        XCTAssertEqual(integrity.run().rows.first?.item?.value, "Unmodified since signing")
+
+        // Unsigned images are normal: no alarming badge.
+        let unsigned = try AppsModule.makePage(FileInfo(url: fixture("diskimages/Sample-HFS-zlib.dmg")))
+        XCTAssertEqual(unsigned.section("signature")?.rows.first?.item?.value, "Not signed")
+        XCTAssertFalse(unsigned.badges.contains { $0.id == "signer" })
+        XCTAssertEqual(unsigned.sections.first?.id, "apps")
+    }
+
     // MARK: - iOS
 
     func testIPA() throws {
@@ -325,6 +344,29 @@ final class AppsCoreTests: XCTestCase {
         XCTAssertTrue(page.section("signature")?.rows.contains { $0.item?.title == "Hardened Runtime" } == false)
         XCTAssertNotNil(IPAPage.icon(for: fixture("ios/Tiny.ipa")))
         XCTAssertNotNil(AppsModule.thumbnail(FileInfo(url: fixture("ios/Tiny.ipa")), size: CGSize(width: 256, height: 256), settings: PreviewSettings()))
+    }
+
+    func testIconFromCompiledAssetCatalog() throws {
+        // Current Xcode ships iOS icons only inside Assets.car.
+        let icon = try XCTUnwrap(IPAPage.icon(for: fixture("ios/Catalog.ipa")))
+        XCTAssertEqual(icon.size, NSSize(width: 1024, height: 1024))
+        let bitmap = try XCTUnwrap(NSBitmapImageRep(data: try XCTUnwrap(icon.tiffRepresentation)))
+        let centre = try XCTUnwrap(bitmap.colorAt(x: 512, y: 512)?.usingColorSpace(.sRGB))
+        XCTAssertGreaterThan(centre.greenComponent, 0.95)
+        let corner = try XCTUnwrap(bitmap.colorAt(x: 40, y: 40)?.usingColorSpace(.sRGB))
+        XCTAssertGreaterThan(corner.blueComponent, corner.redComponent + 0.3)
+
+        // Hostile catalogs: truncated, corrupted, or not a BOM at all.
+        let zip = try ZipFile(url: fixture("ios/Catalog.ipa"))
+        let catalog = try XCTUnwrap(zip.contents(of: "Payload/Catalog.app/Assets.car"))
+        XCTAssertNil(AssetCatalog.appIcon(in: catalog.prefix(600), named: "AppIcon"))
+        XCTAssertNil(AssetCatalog.appIcon(in: Data("BOMStore".utf8) + Data(repeating: 0xFF, count: 200), named: nil))
+        var generator = SeededGenerator(seed: 3)
+        for _ in 0..<200 {
+            var data = catalog
+            for _ in 0..<16 { data[Int.random(in: 0..<data.count, using: &generator)] = UInt8.random(in: 0...255, using: &generator) }
+            _ = AssetCatalog.appIcon(in: data, named: "AppIcon")
+        }
     }
 
     func testCgBIDecoding() throws {
@@ -1722,5 +1764,425 @@ final class AndroidTests: XCTestCase {
         _ = SVGPath.parse("M0,0" + String(repeating: "z1", count: 200_000))
         _ = SVGPath.parse(String(repeating: "L", count: 300_000))
         XCTAssertLessThan(Date().timeIntervalSince(started), 2)
+    }
+}
+
+// MARK: - DiskImageTests
+
+final class DiskImageTests: XCTestCase {
+    private var directory: URL!
+
+    override func setUpWithError() throws {
+        directory = FileManager.default.temporaryDirectory.appendingPathComponent("GreeceDiskImageTests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    }
+
+    override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(at: directory)
+    }
+
+    private func fixture(_ name: String) -> URL {
+        URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/apps/diskimages/\(name)")
+    }
+
+    private func write(_ name: String, _ data: Data) throws -> URL {
+        let url = directory.appendingPathComponent(name)
+        try data.write(to: url)
+        return url
+    }
+
+    private func entry(_ contents: DiskImage.Contents, _ path: String) -> VolumeEntry? {
+        contents.entries.first { $0.path == path }
+    }
+
+    // MARK: Detection
+
+    func testDetection() throws {
+        XCTAssertTrue(DiskImage.sniff(probe: [], ext: "dmg", isDirectory: false))
+        XCTAssertTrue(DiskImage.sniff(probe: Array("encrcdsa".utf8) + [0, 0, 0, 2], ext: "bin", isDirectory: false))
+        XCTAssertTrue(DiskImage.sniff(probe: Array("sprs".utf8) + [0, 0, 0, 3], ext: "sparseimage", isDirectory: false))
+        XCTAssertTrue(DiskImage.sniff(probe: Array("shdw".utf8) + [0, 0, 0, 1, 0, 0, 2, 0], ext: "asif", isDirectory: false))
+        XCTAssertTrue(DiskImage.sniff(probe: [], ext: "iso", isDirectory: false))
+        XCTAssertTrue(DiskImage.sniff(probe: [], ext: "sparsebundle", isDirectory: true))
+        XCTAssertFalse(DiskImage.sniff(probe: [], ext: "app", isDirectory: true))
+        // CorelDRAW drawings share .cdr with Apple's DVD/CD masters.
+        XCTAssertFalse(DiskImage.sniff(probe: Array("RIFF".utf8) + [0, 0, 0, 0], ext: "cdr", isDirectory: false))
+        // .img needs a partition map (or a UDIF trailer) to be claimed.
+        var mbr = [UInt8](repeating: 0, count: 512)
+        mbr[510] = 0x55; mbr[511] = 0xAA
+        XCTAssertTrue(DiskImage.sniff(probe: mbr, ext: "img", isDirectory: false))
+        XCTAssertFalse(DiskImage.sniff(probe: [UInt8](repeating: 7, count: 600), ext: "img", isDirectory: false))
+        XCTAssertFalse(DiskImage.sniff(probe: Array("shdw".utf8), ext: "txt", isDirectory: false))
+        XCTAssertFalse(DiskImage.sniff(probe: [], ext: "txt", isDirectory: false))
+        // A UDIF .img is recognised from its trailer.
+        let udifAsImg = try write("copy.img", try Data(contentsOf: fixture("Sample-HFS-zlib.dmg")))
+        XCTAssertTrue(DiskImage.sniff(udifAsImg, probe: [], ext: "img", isDirectory: false))
+    }
+
+    // MARK: Fixtures
+
+    func testHFSZlibImageWithLicense() throws {
+        let image = try DiskImage(url: fixture("Sample-HFS-zlib.dmg"))
+        XCTAssertEqual(image.container, .udif)
+        XCTAssertEqual(image.format.code, "UDZO")
+        XCTAssertEqual(image.format.compression, "zlib")
+        XCTAssertEqual(image.virtualSize, 3842 * 512)
+        XCTAssertEqual(image.udif?.trailer.masterChecksum?.text, "$A030D4BB")
+        XCTAssertEqual(image.partitionMap.scheme, .guid)
+        XCTAssertEqual(image.partitionMap.readable.first?.fileSystem, .hfsPlus)
+        XCTAssertNil(image.codeSignatureRange)
+        XCTAssertTrue(image.udif?.licenseText?.hasPrefix("Sample License Agreement") ?? false)
+
+        let contents = try XCTUnwrap(image.contents())
+        XCTAssertEqual(contents.volumeName, "Sample HFS")
+        XCTAssertEqual(contents.fileSystem, .hfsPlus)
+        XCTAssertFalse(contents.truncated)
+        XCTAssertEqual(contents.fileCount, 8)
+        XCTAssertEqual(entry(contents, "Docs/Nested/Deeper/readme.txt")?.size, 19)
+        XCTAssertEqual(entry(contents, "Docs/Nested/Deeper")?.isDirectory, true)
+        XCTAssertEqual(entry(contents, "notes-link")?.isSymlink, true)
+        XCTAssertTrue(contents.applicationsLink)
+        XCTAssertEqual(contents.backgroundImage, ".background/background.png")
+
+        let app = try XCTUnwrap(contents.apps.first)
+        XCTAssertEqual(contents.apps.count, 1)
+        XCTAssertEqual(app.name, "Sample App")
+        XCTAssertEqual(app.version, "1.2.3")
+        XCTAssertEqual(app.build, "45")
+        XCTAssertEqual(app.bundleID, "com.example.sample")
+        XCTAssertEqual(app.minimumSystem, "13.0")
+        XCTAssertNotNil(app.icon)
+
+        let volume = try XCTUnwrap(image.openVolume())
+        XCTAssertEqual(try volume.readFile("Docs/Nested/Deeper/readme.txt", limit: 1024), Data("Deep file contents\n".utf8))
+        XCTAssertEqual(try volume.linkTarget("notes-link"), "Docs/notes.txt")
+        XCTAssertEqual(try volume.linkTarget("Applications"), "/Applications")
+        XCTAssertThrowsError(try volume.readFile("Docs/Nested/Deeper/readme.txt", limit: 4))
+        XCTAssertThrowsError(try volume.readFile("Docs/missing.txt", limit: 1024))
+    }
+
+    func testAPFSLZFSEImage() throws {
+        let image = try DiskImage(url: fixture("Sample-APFS-lzfse.dmg"))
+        XCTAssertEqual(image.format.code, "ULFO")
+        XCTAssertEqual(image.partitionMap.readable.first?.fileSystem, .apfs)
+        let contents = try XCTUnwrap(image.contents())
+        XCTAssertEqual(contents.volumeName, "Sample APFS")
+        XCTAssertEqual(contents.fileSystem, .apfs)
+        XCTAssertEqual(contents.fileCount, 8)
+        XCTAssertEqual(contents.folderCount, 8)
+        XCTAssertEqual(entry(contents, "Docs/Nested/Deeper/readme.txt")?.size, 19)
+        XCTAssertEqual(entry(contents, "notes-link")?.isSymlink, true)
+        XCTAssertEqual(contents.apps.first?.bundleID, "com.example.sample")
+        XCTAssertNotNil(contents.apps.first?.icon)
+        let volume = try XCTUnwrap(image.openVolume())
+        XCTAssertEqual(try volume.readFile("Docs/notes.txt", limit: 1024), Data("hello\n".utf8))
+        XCTAssertEqual(try volume.linkTarget("notes-link"), "Docs/notes.txt")
+    }
+
+    func testOtherCompressions() throws {
+        for (name, code) in [("Sample-HFS-bzip2.dmg", "UDBZ"), ("Sample-HFS-lzma.dmg", "ULMO"), ("Sample-HFS-adc.dmg", "UDCO")] {
+            let image = try DiskImage(url: fixture(name))
+            XCTAssertEqual(image.format.code, code, name)
+            let volume = try XCTUnwrap(image.openVolume(), name)
+            XCTAssertEqual(try volume.readFile("Docs/Nested/Deeper/readme.txt", limit: 1024), Data("Deep file contents\n".utf8), name)
+            XCTAssertEqual(image.contents()?.fileCount, 8, name)
+        }
+    }
+
+    func testISO() throws {
+        let image = try DiskImage(url: fixture("Sample.iso"))
+        XCTAssertEqual(image.container, .raw)
+        XCTAssertEqual(image.format.code, "ISO")
+        let contents = try XCTUnwrap(image.contents())
+        XCTAssertEqual(contents.fileSystem, .iso9660)
+        XCTAssertEqual(contents.volumeName, "SAMPLEISO")
+        // Joliet keeps long names with spaces and case.
+        XCTAssertEqual(entry(contents, "Read Me First.txt")?.size, 6)
+        XCTAssertEqual(entry(contents, "Docs/Nested/readme.txt")?.size, 19)
+        XCTAssertEqual(try image.openVolume()?.readFile("Docs/Nested/readme.txt", limit: 1024), Data("Deep file contents\n".utf8))
+    }
+
+    func testSparseImage() throws {
+        let image = try DiskImage(url: fixture("Sample.sparseimage"))
+        XCTAssertEqual(image.container, .sparseImage)
+        XCTAssertEqual(image.format.code, "UDSP")
+        let contents = try XCTUnwrap(image.contents())
+        XCTAssertEqual(contents.fileSystem, .hfsX)
+        XCTAssertEqual(contents.volumeName, "Sparse")
+        XCTAssertEqual(contents.fileCount, 2)
+        XCTAssertEqual(try image.openVolume()?.readFile("Folder/inner.txt", limit: 64), Data("nested\n".utf8))
+        XCTAssertEqual(try image.openVolume()?.readFile("hello.txt", limit: 64), Data("Sparse fixture\n".utf8))
+    }
+
+    func testEncryptedImage() throws {
+        let image = try DiskImage(url: fixture("Encrypted-header.dmg"))
+        XCTAssertEqual(image.container, .encrypted)
+        XCTAssertEqual(image.encryption?.keyBits, 256)
+        XCTAssertEqual(image.encryption?.algorithm, "AES-256")
+        XCTAssertEqual(image.virtualSize, 1 << 20)
+        XCTAssertNil(image.contents())
+        let page = DiskImagePage.page(for: image, settings: PreviewSettings())
+        XCTAssertTrue(page.badges.contains { $0.id == "encrypted" })
+        XCTAssertNil(page.contents)
+    }
+
+    func testPage() throws {
+        let page = try DiskImagePage.page(for: fixture("Sample-HFS-zlib.dmg"), settings: PreviewSettings())
+        XCTAssertEqual(page.header.title, "Sample App")
+        XCTAssertEqual(page.header.subtitle, "Version 1.2.3 (45)")
+        XCTAssertEqual(page.header.identifier, "com.example.sample")
+        XCTAssertEqual(page.badges.map(\.id), ["format", "license"])
+        XCTAssertEqual(page.sections.map(\.id), ["apps", "image", "volume", "license"])
+        XCTAssertEqual(page.summary.title, "Disk Image")
+        guard case .tree(_, let title, let count)? = page.contents else { return XCTFail("no file listing") }
+        XCTAssertEqual(title, "Files")
+        XCTAssertEqual(count, 8)
+    }
+
+    // MARK: Synthetic containers
+
+    /// Wraps a raw disk in an ASIF file with 64 KB chunks: header, two directories, table, then data.
+    private func asif(wrapping disk: Data, skipZeroChunks: Bool = true) -> Data {
+        let chunk = 65_536
+        let chunks = (disk.count + chunk - 1) / chunk
+        var file = Data(count: chunk * 2)
+        func put64(_ value: UInt64, at offset: Int) { withUnsafeBytes(of: value.bigEndian) { file.replaceSubrange(offset..<(offset + 8), with: $0) } }
+        func put32(_ value: UInt32, at offset: Int) { withUnsafeBytes(of: value.bigEndian) { file.replaceSubrange(offset..<(offset + 4), with: $0) } }
+        file.replaceSubrange(0..<4, with: Data("shdw".utf8))
+        put32(1, at: 4); put32(512, at: 8)
+        put64(512, at: 16); put64(1024, at: 24)
+        put64(UInt64(disk.count / 512), at: 48)
+        put32(UInt32(chunk), at: 64)
+        file.replaceSubrange(68..<70, with: [0x02, 0x00])
+        // The older directory points at a bogus table; the newer one (generation 5) wins.
+        put64(1, at: 512); put64(999, at: 520)
+        put64(5, at: 1024); put64(1, at: 1032)
+        var stored = 2
+        var data = Data()
+        for index in 0..<chunks {
+            let slice = disk.subdata(in: (index * chunk)..<min(disk.count, (index + 1) * chunk))
+            if skipZeroChunks && !slice.contains(where: { $0 != 0 }) {
+                put64(0x8000_0000_0000_0000, at: chunk + index * 8)
+                continue
+            }
+            put64(0xC000_0000_0000_0000 | UInt64(stored), at: chunk + index * 8)
+            var padded = slice
+            padded.count = chunk
+            data.append(padded)
+            stored += 1
+        }
+        return file + data
+    }
+
+    func testSyntheticASIF() throws {
+        let disk = try Data(contentsOf: fixture("Sample.iso"))
+        let url = try write("Synthetic.asif", asif(wrapping: disk))
+        XCTAssertTrue(DiskImage.sniff(probe: [UInt8](try Data(contentsOf: url).prefix(8192)), ext: "asif", isDirectory: false))
+        let image = try DiskImage(url: url)
+        XCTAssertEqual(image.container, .asif)
+        XCTAssertEqual(image.virtualSize, UInt64(disk.count))
+        XCTAssertEqual(try image.device?.read(at: 0, count: disk.count), disk)
+        let contents = try XCTUnwrap(image.contents())
+        XCTAssertEqual(entry(contents, "Docs/Nested/readme.txt")?.size, 19)
+    }
+
+    func testSyntheticSparseBundle() throws {
+        let disk = try Data(contentsOf: fixture("Sample.iso"))
+        let bundle = directory.appendingPathComponent("Synthetic.sparsebundle")
+        let bands = bundle.appendingPathComponent("bands")
+        try FileManager.default.createDirectory(at: bands, withIntermediateDirectories: true)
+        let plist: [String: Any] = ["diskimage-bundle-type": "com.apple.diskimage.sparsebundle", "band-size": 8192,
+                                    "size": disk.count, "bundle-backingstore-version": 1, "CFBundleInfoDictionaryVersion": "6.0"]
+        try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0).write(to: bundle.appendingPathComponent("Info.plist"))
+        for index in 0..<((disk.count + 8191) / 8192) {
+            // The last band may be short; missing bands read as zeros.
+            let band = disk.subdata(in: (index * 8192)..<min(disk.count, (index + 1) * 8192))
+            if band.contains(where: { $0 != 0 }) { try band.write(to: bands.appendingPathComponent(String(index, radix: 16))) }
+        }
+        XCTAssertTrue(DiskImage.sniff(probe: [], ext: "sparsebundle", isDirectory: true))
+        let image = try DiskImage(url: bundle)
+        XCTAssertEqual(image.container, .sparseBundle)
+        XCTAssertEqual(try image.device?.read(at: 0, count: disk.count), disk)
+        XCTAssertEqual(image.contents()?.volumeName, "SAMPLEISO")
+    }
+
+    // MARK: Hostile input
+
+    func testTruncatedTrailerFallsBackToRaw() throws {
+        let data = try Data(contentsOf: fixture("Sample-HFS-zlib.dmg"))
+        let url = try write("cut.dmg", data.prefix(data.count - 100))
+        let image = try DiskImage(url: url)
+        XCTAssertEqual(image.container, .raw)
+        XCTAssertNil(image.contents())
+        _ = DiskImagePage.page(for: image, settings: PreviewSettings())
+    }
+
+    /// A trailer whose property list declares impossible chunk tables.
+    private func hostileUDIF(mish: Data, xmlOffset: UInt64? = nil, xmlLength: UInt64? = nil) throws -> URL {
+        let plist: [String: Any] = ["resource-fork": ["blkx": [["Name": "hostile", "ID": "0", "Data": mish]]]]
+        let xml = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+        var file = Data(count: 4096)
+        let offset = UInt64(file.count)
+        file.append(xml)
+        var koly = Data(count: 512)
+        func put(_ value: UInt64, at at: Int) { withUnsafeBytes(of: value.bigEndian) { koly.replaceSubrange(at..<(at + 8), with: $0) } }
+        koly.replaceSubrange(0..<4, with: Data("koly".utf8))
+        koly.replaceSubrange(8..<12, with: [0, 0, 2, 0])
+        put(xmlOffset ?? offset, at: 216)
+        put(xmlLength ?? UInt64(xml.count), at: 224)
+        put(UInt64.max / 2, at: 492)                  // absurd sector count
+        put(UInt64.max, at: 296); put(UInt64.max, at: 304)   // absurd signature range
+        file.append(koly)
+        return try write("hostile-\(UUID().uuidString).dmg", file)
+    }
+
+    private func mish(chunks: [(type: UInt32, sector: UInt64, count: UInt64, offset: UInt64, length: UInt64)], declared: UInt32? = nil) -> Data {
+        var data = Data(count: 204)
+        data.replaceSubrange(0..<4, with: Data("mish".utf8))
+        withUnsafeBytes(of: (declared ?? UInt32(chunks.count)).bigEndian) { data.replaceSubrange(200..<204, with: $0) }
+        for chunk in chunks {
+            var entry = Data(count: 40)
+            withUnsafeBytes(of: chunk.type.bigEndian) { entry.replaceSubrange(0..<4, with: $0) }
+            withUnsafeBytes(of: chunk.sector.bigEndian) { entry.replaceSubrange(8..<16, with: $0) }
+            withUnsafeBytes(of: chunk.count.bigEndian) { entry.replaceSubrange(16..<24, with: $0) }
+            withUnsafeBytes(of: chunk.offset.bigEndian) { entry.replaceSubrange(24..<32, with: $0) }
+            withUnsafeBytes(of: chunk.length.bigEndian) { entry.replaceSubrange(32..<40, with: $0) }
+            data.append(entry)
+        }
+        return data
+    }
+
+    func testHostileChunkTables() throws {
+        let url = try hostileUDIF(mish: mish(chunks: [
+            (0x8000_0005, 0, 1 << 40, 0, 100),                    // a "1 TB" zlib chunk
+            (0x8000_0005, UInt64.max - 2, 10, 0, 100),             // wraps around
+            (0x0000_0001, 5, 4, UInt64.max - 10, 4096),            // data beyond the file
+            (0x8000_0007, 9, 2048, 0, 1 << 40),                    // compressed length beyond the file
+            (0x0000_0000, 20, UInt64.max / 1024, 0, 0),            // a huge zero run
+        ], declared: 0xFFFF_FFFF))
+        let image = try DiskImage(url: url)
+        XCTAssertEqual(image.container, .udif)
+        XCTAssertNil(image.codeSignatureRange)
+        let device = try XCTUnwrap(image.device)
+        // Reads either fail cleanly or return zeros; nothing traps or allocates terabytes.
+        _ = try? device.read(at: 0, count: 4096)
+        _ = try? device.read(at: 5 * 512, count: 4096)
+        _ = try? device.read(at: 9 * 512, count: 4096)
+        _ = try? device.read(at: UInt64.max - 10, count: 4096)
+        XCTAssertEqual(image.partitionMap.scheme, .none)
+        XCTAssertNil(image.contents())
+        _ = DiskImagePage.page(for: image, settings: PreviewSettings())
+    }
+
+    func testHostileTrailerOffsets() throws {
+        let url = try hostileUDIF(mish: mish(chunks: []), xmlOffset: UInt64.max - 4, xmlLength: 1 << 40)
+        XCTAssertThrowsError(try UDIFImage(url: url))
+        // DiskImage still identifies it as UDIF and reports the failure instead of crashing.
+        XCTAssertThrowsError(try DiskImage(url: url))
+    }
+
+    func testRandomBytes() throws {
+        var generator = SystemRandomNumberGenerator()
+        for ext in ["dmg", "iso", "img", "sparseimage", "asif", "cdr"] {
+            var bytes = (0..<65_536).map { _ in UInt8.random(in: 0...255, using: &generator) }
+            if ext == "sparseimage" { bytes.replaceSubrange(0..<4, with: Array("sprs".utf8)) }
+            if ext == "asif" { bytes.replaceSubrange(0..<4, with: Array("shdw".utf8)) }
+            let url = try write("random.\(ext)", Data(bytes))
+            if let image = try? DiskImage(url: url) {
+                _ = image.partitionMap
+                _ = image.contents()
+                _ = DiskImagePage.page(for: image, settings: PreviewSettings())
+            }
+        }
+    }
+
+    /// The raw disk inside the HFS+ fixture, for surgery on its structures.
+    private func rawDisk(_ name: String) throws -> Data {
+        let image = try DiskImage(url: fixture(name))
+        let device = try XCTUnwrap(image.device)
+        return try device.read(at: 0, count: Int(device.size))
+    }
+
+    func testHFSLeafChainLoopTerminates() throws {
+        var disk = try rawDisk("Sample-HFS-zlib.dmg")
+        let partition = 40 * 512
+        let header = BinaryReader(disk.subdata(in: (partition + 1024)..<(partition + 1536)), bigEndian: true)
+        let blockSize = Int(header.u32(at: 40) ?? 0)
+        let catalogStart = partition + Int(header.u32(at: 272 + 16) ?? 0) * blockSize
+        let node0 = BinaryReader(disk.subdata(in: catalogStart..<(catalogStart + 512)), bigEndian: true)
+        let nodeSize = Int(node0.u16(at: 32) ?? 0)
+        let firstLeaf = Int(node0.u32(at: 24) ?? 0)
+        XCTAssertGreaterThan(nodeSize, 0)
+        // Point the first leaf's forward link at itself.
+        let leaf = catalogStart + firstLeaf * nodeSize
+        withUnsafeBytes(of: UInt32(firstLeaf).bigEndian) { disk.replaceSubrange(leaf..<(leaf + 4), with: $0) }
+        let url = try write("loop.dmg", disk)
+        let started = Date()
+        let contents = try XCTUnwrap(DiskImage(url: url).contents())
+        XCTAssertLessThan(Date().timeIntervalSince(started), 2)
+        XCTAssertLessThanOrEqual(contents.entries.count, 16)
+    }
+
+    func testAPFSHostileCheckpointAddress() throws {
+        // Regression: a checkpoint area near UInt64.max used to overflow when turned into an offset.
+        var disk = try rawDisk("Sample-APFS-lzfse.dmg")
+        let container = 40 * 512
+        withUnsafeBytes(of: (UInt64.max - 3).littleEndian) { disk.replaceSubrange((container + 112)..<(container + 120), with: $0) }
+        withUnsafeBytes(of: UInt32(64).littleEndian) { disk.replaceSubrange((container + 104)..<(container + 108), with: $0) }
+        let url = try write("apfs.dmg", disk)
+        let image = try DiskImage(url: url)
+        // Block 0 is still a valid superblock, so the volume lists.
+        XCTAssertEqual(image.contents()?.volumeName, "Sample APFS")
+    }
+
+    func testISODirectoryLoopTerminates() throws {
+        // A hand-built ISO whose subdirectory points back at the root.
+        var disk = Data(count: 2048 * 24)
+        func record(name: [UInt8], extent: UInt32, length: UInt32, directory: Bool) -> Data {
+            var r = Data(count: 33 + name.count + (name.count % 2 == 0 ? 1 : 0))
+            r[0] = UInt8(r.count)
+            withUnsafeBytes(of: extent.littleEndian) { r.replaceSubrange(2..<6, with: $0) }
+            withUnsafeBytes(of: extent.bigEndian) { r.replaceSubrange(6..<10, with: $0) }
+            withUnsafeBytes(of: length.littleEndian) { r.replaceSubrange(10..<14, with: $0) }
+            withUnsafeBytes(of: length.bigEndian) { r.replaceSubrange(14..<18, with: $0) }
+            r[25] = directory ? 0x02 : 0
+            r[32] = UInt8(name.count)
+            r.replaceSubrange(33..<(33 + name.count), with: name)
+            return r
+        }
+        var pvd = Data(count: 2048)
+        pvd[0] = 1
+        pvd.replaceSubrange(1..<6, with: Data("CD001".utf8))
+        pvd[6] = 1
+        pvd.replaceSubrange(40..<44, with: Data("LOOP".utf8))
+        withUnsafeBytes(of: UInt32(24).littleEndian) { pvd.replaceSubrange(80..<84, with: $0) }
+        withUnsafeBytes(of: UInt16(2048).littleEndian) { pvd.replaceSubrange(128..<130, with: $0) }
+        pvd.replaceSubrange(156..<190, with: record(name: [0], extent: 20, length: 2048, directory: true))
+        disk.replaceSubrange((16 * 2048)..<(17 * 2048), with: pvd)
+        disk[17 * 2048] = 255
+        disk.replaceSubrange((17 * 2048 + 1)..<(17 * 2048 + 6), with: Data("CD001".utf8))
+        var root = record(name: [0], extent: 20, length: 2048, directory: true) + record(name: [1], extent: 20, length: 2048, directory: true)
+        root += record(name: Array("SUB".utf8), extent: 21, length: 2048, directory: true)
+        root += record(name: Array("SELF".utf8), extent: 20, length: 2048, directory: true)
+        disk.replaceSubrange((20 * 2048)..<(20 * 2048 + root.count), with: root)
+        let sub = record(name: [0], extent: 21, length: 2048, directory: true) + record(name: Array("BACK".utf8), extent: 20, length: 2048, directory: true)
+        disk.replaceSubrange((21 * 2048)..<(21 * 2048 + sub.count), with: sub)
+        let url = try write("loop.iso", disk)
+        let contents = try XCTUnwrap(DiskImage(url: url).contents())
+        XCTAssertEqual(contents.volumeName, "LOOP")
+        XCTAssertEqual(Set(contents.entries.map(\.path)), ["SUB", "SELF", "SUB/BACK"])
+    }
+
+    func testDecompressorsRejectGarbage() {
+        let garbage = Data((0..<4096).map { UInt8(truncatingIfNeeded: $0 &* 7919) })
+        XCTAssertThrowsError(try DiskDecompress.zlib(garbage, expected: 65_536))
+        XCTAssertThrowsError(try DiskDecompress.bzip2(garbage, expected: 65_536))
+        XCTAssertThrowsError(try DiskDecompress.zlib(garbage, expected: 1 << 40))
+        _ = try? DiskDecompress.lzfse(garbage, expected: 65_536)
+        _ = try? DiskDecompress.lzvn(garbage, expected: 65_536)
+        _ = try? DiskDecompress.adc(garbage, expected: 65_536)
+        // An ADC back-reference before the start of the output is corrupt, not a crash.
+        XCTAssertThrowsError(try DiskDecompress.adc(Data([0x40, 0xFF, 0xFF]), expected: 64))
     }
 }
