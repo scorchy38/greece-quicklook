@@ -263,6 +263,9 @@ struct GeneralPage: View {
     @EnvironmentObject private var store: SettingsStore
     @EnvironmentObject private var status: ExtensionStatus
     @State private var confirmReset = false
+    @State private var cliPath = CommandLineInstaller.installedPath
+    @State private var cliMessage: String?
+    @StateObject private var loginItem = LoginItem()
 
     var body: some View {
         Form {
@@ -292,6 +295,33 @@ struct GeneralPage: View {
                 Text("While You Read")
             } footer: {
                 Text("Save a file while its preview is open and the preview updates in place, at the same spot. Greece can also reopen files where you left off, and the window at the size you last chose.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Section {
+                Toggle("Show Greece in the menu bar", isOn: $store.settings.showInMenuBar)
+                Toggle("Keep a list of recently previewed files", isOn: $store.settings.recordRecents)
+                Toggle("Open at login", isOn: Binding(get: { loginItem.isOn }, set: { loginItem.set($0) }))
+                LabeledContent("Terminal command") {
+                    HStack(spacing: 8) {
+                        if let path = cliPath {
+                            Text(path).font(.callout.monospaced()).foregroundStyle(.secondary)
+                        }
+                        Button(cliPath == nil ? "Install" : "Reinstall") {
+                            switch CommandLineInstaller.install() {
+                            case .success(let path): cliPath = path; cliMessage = "Type `greece file.md` in Terminal, or pipe text into `greece`."
+                            case .failure(let error): cliMessage = error.localizedDescription
+                            }
+                        }
+                    }
+                }
+                if let cliMessage {
+                    Text(cliMessage).font(.caption).foregroundStyle(.secondary)
+                }
+            } header: {
+                Text("Menu Bar and Terminal")
+            } footer: {
+                Text("The menu bar lists files you previewed and files Claude Code and Codex edited recently, read from their own session logs on this Mac.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -381,5 +411,22 @@ extension Color {
                   green: Double((value >> 8) & 0xFF) / 255,
                   blue: Double(value & 0xFF) / 255,
                   opacity: 1)
+    }
+}
+
+import ServiceManagement
+
+/// Open at login, through the system's login items.
+@MainActor
+final class LoginItem: ObservableObject {
+    @Published private(set) var isOn = SMAppService.mainApp.status == .enabled
+
+    func set(_ on: Bool) {
+        do {
+            if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+        } catch {
+            NSLog("[Greece] login item: \(error)")
+        }
+        isOn = SMAppService.mainApp.status == .enabled
     }
 }

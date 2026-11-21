@@ -4,7 +4,9 @@ import SwiftUI
 @main
 enum Main {
     static func main() {
-        if CommandLine.arguments.contains("--thumbnail") {
+        if CommandLine.arguments.contains("--cli") {
+            CommandLineTool.run()
+        } else if CommandLine.arguments.contains("--thumbnail") {
             SnapshotRunner.runThumbnail()
         } else if CommandLine.arguments.contains("--quicklook") {
             SnapshotRunner.runQuickLook()
