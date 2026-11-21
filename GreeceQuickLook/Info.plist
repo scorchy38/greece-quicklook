@@ -188,6 +188,16 @@
 				<string>dyn.ah62d4rv4ge80c65r</string>
 				<string>dyn.ah62d4rv4ge81s2py</string>
 				<string>public.data</string>
+				<string>com.scorchy.greece.geojson-lines</string>
+				<string>com.scorchy.greece.topojson</string>
+				<string>com.google.earth.kml</string>
+				<string>com.google.earth.kmz</string>
+				<string>com.topografix.gpx</string>
+				<string>com.scorchy.greece.shapefile</string>
+				<string>com.scorchy.greece.geopackage</string>
+				<string>com.scorchy.greece.mbtiles</string>
+				<string>com.scorchy.greece.osm</string>
+				<string>com.scorchy.greece.wkt</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>

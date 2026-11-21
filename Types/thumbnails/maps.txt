@@ -1,0 +1,12 @@
+# Finder thumbnails for maps and geodata: the geometry drawn over a small basemap.
+public.geojson
+com.scorchy.greece.geojson-lines
+com.scorchy.greece.topojson
+com.google.earth.kml
+com.google.earth.kmz
+com.topografix.gpx
+com.scorchy.greece.shapefile
+com.scorchy.greece.geopackage
+com.scorchy.greece.mbtiles
+com.scorchy.greece.osm
+com.scorchy.greece.wkt
