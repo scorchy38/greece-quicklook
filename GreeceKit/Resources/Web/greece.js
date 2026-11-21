@@ -850,6 +850,14 @@
     }
     const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
     await Promise.race([fonts, new Promise((r) => setTimeout(r, 400))]);
+    // Back where you were (after a save, or from last time), before anything is shown.
+    if (options.scroll) window.scrollTo(options.scroll[0] || 0, options.scroll[1] || 0);
+    // Report where the reader is. No timers: Quick Look's pages count as hidden and their timers
+    // barely run, so report from the events themselves, at most every 50 ms, plus where it ends.
+    let lastReport = 0;
+    const report = () => { lastReport = Date.now(); post('scroll', [window.scrollX, window.scrollY]); };
+    window.addEventListener('scroll', () => { if (Date.now() - lastReport >= 50) report(); }, { passive: true });
+    for (const name of ['scrollend', 'mouseleave', 'pointerup', 'keyup']) window.addEventListener(name, report, { passive: true });
     // Quick Look prepares previews before they are on screen, where animation frames never fire.
     post('ready', { height: document.body.scrollHeight });
     tick().then(() => readyCallbacks.forEach((callback) => callback()));

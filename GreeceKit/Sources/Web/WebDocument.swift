@@ -45,6 +45,8 @@ public struct WebDocument {
     /// Data a module serves on demand (map tiles, archive members, database pages), at
     /// `greece://module/<path>`. Called off the main thread.
     public var resources: ModuleResources?
+    /// Where to scroll before the first paint (reloads after a save, remembered positions).
+    public var initialScroll: CGPoint?
 
     public init(kind: Kind, text: String, grammar: String? = nil, baseDirectory: URL? = nil, truncated: Bool = false) {
         self.kind = kind
@@ -73,6 +75,7 @@ public struct WebDocument {
             var diagrams: Bool
             var remoteImages: Bool
             var frontMatter: Bool
+            var scroll: [Double]?
         }
         var kind: Kind
         var text: String
@@ -177,7 +180,8 @@ public struct WebDocument {
             language: grammar,
             truncated: truncated,
             options: .init(outline: settings.showOutline, math: math, diagrams: diagrams,
-                           remoteImages: settings.loadRemoteImages, frontMatter: settings.showFrontMatter),
+                           remoteImages: settings.loadRemoteImages, frontMatter: settings.showFrontMatter,
+                           scroll: initialScroll.map { [Double($0.x), Double($0.y)] }),
             diffLanguages: diffLanguages.isEmpty ? nil : diffLanguages)
         let json = (try? JSONEncoder().encode(payload)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         // Make the JSON inert inside <script>: no "<" can ever close the element or open a comment.

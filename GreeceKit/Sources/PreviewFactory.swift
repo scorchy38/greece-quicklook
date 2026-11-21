@@ -9,11 +9,17 @@ public enum PreviewError: LocalizedError {
 /// Turns a file into a finished `PreviewView`. Heavy work runs off the main thread.
 public enum PreviewFactory {
 
+    /// - Parameter scroll: where to open the preview, measured from the top (a reload, a remembered position).
     @MainActor
-    public static func makePreview(for url: URL, settings: PreviewSettings) async throws -> PreviewView {
-        let prepared = try await Task.detached(priority: .userInitiated) { try prepare(url, settings: settings) }.value
+    public static func makePreview(for url: URL, settings: PreviewSettings, scroll: CGPoint? = nil) async throws -> PreviewView {
+        var prepared = try await Task.detached(priority: .userInitiated) { try prepare(url, settings: settings) }.value
+        if let scroll, case .web(var document, let summary, let size) = prepared {
+            document.initialScroll = scroll
+            prepared = .web(document, summary, size)
+        }
         let view = try build(prepared, url: url, settings: settings)
         await view.waitUntilReady()
+        if let scroll { view.restoreScroll(scroll) }
         return view
     }
 

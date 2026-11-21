@@ -86,4 +86,60 @@ public final class PreviewView: NSView {
 
     /// The web view inside, if any (used for snapshots).
     public var webView: NSView? { (content as? WebPreviewView)?.webView }
+
+    // MARK: - Scroll position
+
+    /// Called when the reader scrolls (after scrolling settles for web pages).
+    public var onScroll: ((CGPoint) -> Void)? {
+        didSet {
+            if let web = content as? WebPreviewView {
+                web.onScroll = onScroll
+            } else if let clip = scrollView?.contentView {
+                clip.postsBoundsChangedNotifications = true
+                scrollObserver.map(NotificationCenter.default.removeObserver)
+                scrollObserver = NotificationCenter.default.addObserver(forName: NSView.boundsDidChangeNotification, object: clip, queue: .main) { [weak self] _ in
+                    MainActor.assumeIsolated {
+                        guard let self, let origin = self.scrollView?.contentView.bounds.origin else { return }
+                        self.onScroll?(self.flipped(origin))
+                    }
+                }
+            }
+        }
+    }
+    private var scrollObserver: NSObjectProtocol?
+
+    public func scrollPosition() async -> CGPoint? {
+        if let web = content as? WebPreviewView { return await web.scrollPosition() }
+        return scrollView.map { flipped($0.contentView.bounds.origin) }
+    }
+
+    /// Native content: scrolls to a position recorded earlier (web pages restore it themselves).
+    func restoreScroll(_ point: CGPoint) {
+        guard !(content is WebPreviewView), let scrollView, let document = scrollView.documentView else { return }
+        layoutSubtreeIfNeeded()
+        var origin = point
+        if !document.isFlipped { origin.y = max(0, document.bounds.height - scrollView.contentView.bounds.height - point.y) }
+        scrollView.contentView.scroll(to: origin)
+        scrollView.reflectScrolledClipView(scrollView.contentView)
+    }
+
+    /// Positions are measured from the top, whichever way the document view is flipped.
+    private func flipped(_ origin: CGPoint) -> CGPoint {
+        guard let scrollView, let document = scrollView.documentView, !document.isFlipped else { return origin }
+        return CGPoint(x: origin.x, y: max(0, document.bounds.height - scrollView.contentView.bounds.height - origin.y))
+    }
+
+    /// The main scrolling area of native content (the first scroll view, depth-first).
+    private var scrollView: NSScrollView? {
+        func find(_ view: NSView) -> NSScrollView? {
+            if let scroll = view as? NSScrollView { return scroll }
+            for sub in view.subviews { if let found = find(sub) { return found } }
+            return nil
+        }
+        return find(content)
+    }
+
+    deinit {
+        scrollObserver.map(NotificationCenter.default.removeObserver)
+    }
 }

@@ -227,7 +227,8 @@ enum SnapshotRunner {
             let args = CommandLine.arguments
             guard let index = args.firstIndex(of: "--quicklook"), index + 1 < args.count else { exit(1) }
             let url = URL(fileURLWithPath: args[index + 1])
-            var size = NSSize(width: 1000, height: 720)
+            // Without --size the panel opens at whatever size the extension asks for (as in Finder).
+            var size: NSSize?
             if let raw = value(after: "--size") {
                 let parts = raw.split(separator: "x").compactMap { Double($0) }
                 if parts.count == 2 { size = NSSize(width: parts[0], height: parts[1]) }
@@ -235,9 +236,11 @@ enum SnapshotRunner {
             QuickLookPresenter.shared.show(url)
             try? await Task.sleep(nanoseconds: 400_000_000)
             if let panel = QLPreviewPanel.shared() {
-                var frame = panel.frame
-                frame.size = size
-                panel.setFrame(frame, display: true)
+                if let size {
+                    var frame = panel.frame
+                    frame.size = size
+                    panel.setFrame(frame, display: true)
+                }
                 print(panel.windowNumber)
                 fflush(stdout)
             }

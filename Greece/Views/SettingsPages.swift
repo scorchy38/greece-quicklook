@@ -279,6 +279,22 @@ struct GeneralPage: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
 
+            Section {
+                Toggle("Update previews when files change", isOn: $store.settings.liveUpdates)
+                Picker("Remember scroll position", selection: $store.settings.rememberScroll) {
+                    ForEach(PreviewSettings.Memory.allCases) { memory in Text(memory.title).tag(memory) }
+                }
+                Picker("Remember window size", selection: $store.settings.rememberWindowSize) {
+                    ForEach(PreviewSettings.WindowMemory.allCases) { memory in Text(memory.title).tag(memory) }
+                }
+                Button("Forget Positions and Sizes") { store.settings.memoryGeneration += 1 }
+            } header: {
+                Text("While You Read")
+            } footer: {
+                Text("Save a file while its preview is open and the preview updates in place, at the same spot. Greece can also reopen files where you left off, and the window at the size you last chose.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
             Section("Quick Look") {
                 LabeledContent("Status") {
                     switch status.state {

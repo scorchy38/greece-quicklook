@@ -9,6 +9,8 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
     private var settings: PreviewSettings
     private var readyContinuations: [CheckedContinuation<Void, Never>] = []
     private(set) var isReady = false
+    /// The page's scroll position, reported shortly after scrolling stops.
+    var onScroll: ((CGPoint) -> Void)?
     private let messages = MessageProxy()
 
     init(document: WebDocument, settings: PreviewSettings, size: NSSize = NSSize(width: 900, height: 700)) {
@@ -22,7 +24,7 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
         configuration.websiteDataStore = .nonPersistent()
         configuration.preferences.isElementFullscreenEnabled = false
         let controller = WKUserContentController()
-        for name in ["ready", "copy", "log"] { controller.add(messages, name: name) }
+        for name in ["ready", "copy", "log", "scroll"] { controller.add(messages, name: name) }
         configuration.userContentController = controller
 
         // Lay out at the real size from the first frame: a zero-sized page measures and scrolls wrongly.
@@ -52,7 +54,7 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     deinit {
-        for name in ["ready", "copy", "log"] {
+        for name in ["ready", "copy", "log", "scroll"] {
             webView.configuration.userContentController.removeScriptMessageHandler(forName: name)
         }
     }
@@ -98,6 +100,12 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
         }
     }
 
+    /// Where the page is scrolled to right now.
+    func scrollPosition() async -> CGPoint? {
+        guard let value = try? await webView.evaluateJavaScript("[window.scrollX, window.scrollY]") as? [Double], value.count == 2 else { return nil }
+        return CGPoint(x: value[0], y: value[1])
+    }
+
     func replace(document newDocument: WebDocument) {
         document = newDocument
         load()
@@ -126,6 +134,10 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
             }
         case "log":
             NSLog("[Greece] %@", String(describing: message.body))
+        case "scroll":
+            if let point = message.body as? [Double], point.count == 2, point.allSatisfy(\.isFinite) {
+                onScroll?(CGPoint(x: point[0], y: point[1]))
+            }
         default:
             break
         }

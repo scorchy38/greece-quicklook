@@ -59,9 +59,40 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         }
     }
 
+    /// How long Greece remembers where you were in a file.
+    public enum Memory: String, Codable, CaseIterable, Identifiable, Sendable {
+        case off, session, always
+        public var id: String { rawValue }
+        public var title: String {
+            switch self {
+            case .off: return "Off"
+            case .session: return "Until Restart"
+            case .always: return "Always"
+            }
+        }
+    }
+
+    /// Whether the Quick Look window opens at the size you last left it.
+    public enum WindowMemory: String, Codable, CaseIterable, Identifiable, Sendable {
+        case off, allFiles, perKind
+        public var id: String { rawValue }
+        public var title: String {
+            switch self {
+            case .off: return "Off"
+            case .allFiles: return "For All Files"
+            case .perKind: return "For Each Kind of File"
+            }
+        }
+    }
+
     // General
     public var appearance: Appearance = .system
     public var showInfoBar = true
+    public var liveUpdates = true
+    public var rememberScroll: Memory = .session
+    public var rememberWindowSize: WindowMemory = .allFiles
+    /// Raised by the app's "Forget Positions and Sizes"; the extension then clears its memory.
+    public var memoryGeneration = 0
 
     // Code
     public var theme = CodeTheme.default.id
@@ -104,6 +135,10 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         }
         read(.appearance, &appearance)
         read(.showInfoBar, &showInfoBar)
+        read(.liveUpdates, &liveUpdates)
+        read(.rememberScroll, &rememberScroll)
+        read(.rememberWindowSize, &rememberWindowSize)
+        read(.memoryGeneration, &memoryGeneration)
         read(.theme, &theme)
         read(.codeFont, &codeFont)
         read(.codeFontSize, &codeFontSize)
