@@ -16,7 +16,8 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
         self.settings = settings
 
         let configuration = WKWebViewConfiguration()
-        configuration.setURLSchemeHandler(GreeceSchemeHandler(), forURLScheme: GreeceSchemeHandler.scheme)
+        configuration.setURLSchemeHandler(GreeceSchemeHandler(readableDirectory: document.readableDirectory, resources: document.resources),
+                                          forURLScheme: GreeceSchemeHandler.scheme)
         configuration.suppressesIncrementalRendering = true
         configuration.websiteDataStore = .nonPersistent()
         configuration.preferences.isElementFullscreenEnabled = false

@@ -27,12 +27,24 @@ enum WebAssets {
     }
 }
 
-/// Serves `greece://asset/<path>` from the bundle and `greece://file/<absolute path>` from disk.
-/// Local files are limited to media, are never scriptable, and are not readable cross-origin.
+/// Serves the page's resources:
+/// - `greece://asset/<path>`: Greece's bundled renderer, styles and libraries.
+/// - `greece://file/<absolute path>`: local media (images, video, audio, PDF) for Markdown and
+///   notebooks, plus any file inside the document's `readableDirectory`. Never scriptable.
+/// - `greece://module/<path>`: data a module computes on demand.
 final class GreeceSchemeHandler: NSObject, WKURLSchemeHandler {
     static let scheme = "greece"
 
     private static let mediaTypes: [UTType] = [.image, .movie, .audio, .pdf]
+    private let readableDirectory: String?
+    private let resources: ModuleResources?
+    /// Tasks WebKit has cancelled; answering one of them raises an exception.
+    private var stopped = Set<ObjectIdentifier>()
+
+    init(readableDirectory: URL? = nil, resources: ModuleResources? = nil) {
+        self.readableDirectory = readableDirectory.map { $0.resolvingSymlinksInPath().standardizedFileURL.path }
+        self.resources = resources
+    }
 
     func webView(_ webView: WKWebView, start task: WKURLSchemeTask) {
         guard let url = task.request.url else { return fail(task) }
@@ -46,25 +58,60 @@ final class GreeceSchemeHandler: NSObject, WKURLSchemeHandler {
             headers["Access-Control-Allow-Origin"] = "*"
         case "file":
             let candidate = URL(fileURLWithPath: path).standardizedFileURL
-            if let type = UTType(filenameExtension: candidate.pathExtension),
-               Self.mediaTypes.contains(where: { type.conforms(to: $0) }) {
+            if isReadable(candidate) {
+                file = candidate
+            } else if let type = UTType(filenameExtension: candidate.pathExtension),
+                      Self.mediaTypes.contains(where: { type.conforms(to: $0) }) {
                 file = candidate
             }
             // Even if an SVG is ever opened directly, it can't run script or load anything.
             headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"
+            headers["Access-Control-Allow-Origin"] = "*"
+        case "module":
+            guard let resources else { return fail(task) }
+            let id = ObjectIdentifier(task)
+            let request = String(path.drop(while: { $0 == "/" })) + (url.query.map { "?" + $0 } ?? "")
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                let result = resources(request)
+                DispatchQueue.main.async {
+                    guard let self, self.stopped.remove(id) == nil else { return }
+                    guard let result else { return self.fail(task) }
+                    self.respond(task, url: url, data: result.data, headers: [
+                        "Content-Type": result.mimeType, "Cache-Control": "no-store",
+                        "Access-Control-Allow-Origin": "*",
+                        "Content-Security-Policy": "default-src 'none'; sandbox",
+                    ])
+                }
+            }
+            return
         default:
             break
         }
         guard let file, let data = try? Data(contentsOf: file, options: .mappedIfSafe) else { return fail(task) }
         headers["Content-Type"] = Self.mimeType(for: file)
+        respond(task, url: url, data: data, headers: headers)
+    }
+
+    func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {
+        stopped.insert(ObjectIdentifier(task))
+    }
+
+    /// Files inside the document's readable folder (after resolving links and `..`).
+    private func isReadable(_ candidate: URL) -> Bool {
+        guard let readableDirectory else { return false }
+        let resolved = candidate.resolvingSymlinksInPath().standardizedFileURL.path
+        let root = readableDirectory.hasSuffix("/") ? readableDirectory : readableDirectory + "/"
+        return resolved.hasPrefix(root)
+    }
+
+    private func respond(_ task: WKURLSchemeTask, url: URL, data: Data, headers: [String: String]) {
+        var headers = headers
         headers["Content-Length"] = String(data.count)
         let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: headers)!
         task.didReceive(response)
         task.didReceive(data)
         task.didFinish()
     }
-
-    func webView(_ webView: WKWebView, stop task: WKURLSchemeTask) {}
 
     private func fail(_ task: WKURLSchemeTask) {
         task.didFailWithError(NSError(domain: NSURLErrorDomain, code: NSURLErrorFileDoesNotExist))

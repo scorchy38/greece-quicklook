@@ -1,5 +1,9 @@
 import Foundation
 
+/// Serves a module's data to its page: given the path after `greece://module/`, returns the bytes
+/// and their MIME type, or nil for "not found". Runs off the main thread.
+public typealias ModuleResources = @Sendable (String) -> (data: Data, mimeType: String)?
+
 /// A document rendered by the web engine: Markdown, code, diffs, notebooks, and any module's own pages.
 public struct WebDocument {
     /// Which renderer draws the page. Modules add their own kinds and register a renderer for
@@ -35,6 +39,12 @@ public struct WebDocument {
     public var libraries: Set<Library> = []
     /// For modules that run WebAssembly decoders.
     public var allowsWasm = false
+    /// A folder whose files the page may read, whatever their type: a model's textures and
+    /// buffers, a shapefile's sidecars, a font itself. Served at `greece://file/<absolute path>`.
+    public var readableDirectory: URL?
+    /// Data a module serves on demand (map tiles, archive members, database pages), at
+    /// `greece://module/<path>`. Called off the main thread.
+    public var resources: ModuleResources?
 
     public init(kind: Kind, text: String, grammar: String? = nil, baseDirectory: URL? = nil, truncated: Bool = false) {
         self.kind = kind
@@ -175,14 +185,18 @@ public struct WebDocument {
         let safeData = data.map { $0.replacingOccurrences(of: "<", with: "\\u003c") }
 
         let remote = settings.loadRemoteImages ? " https: http:" : ""
+        var connect = ["greece://asset"]
+        if readableDirectory != nil { connect.append("greece://file") }
+        if resources != nil { connect.append("greece://module") }
         let csp = [
             "default-src 'none'",
             "script-src greece://asset" + (allowsWasm ? " 'wasm-unsafe-eval'" : ""),
             "style-src greece://asset 'unsafe-inline'",
-            "font-src greece://asset data:",
-            "img-src greece: data:\(remote)",
-            "media-src greece:\(remote)",
-            "worker-src blob:", "connect-src greece://asset", "frame-src 'none'", "object-src 'none'", "base-uri 'none'", "form-action 'none'",
+            "font-src greece: data:",
+            "img-src greece: data: blob:\(remote)",
+            "media-src greece: blob:\(remote)",
+            "worker-src blob:", "connect-src " + connect.joined(separator: " "),
+            "frame-src 'none'", "object-src 'none'", "base-uri 'none'", "form-action 'none'",
         ].joined(separator: "; ")
 
         let classes = WebDocument.classes(settings: settings, kind: kind).filter(\.value).map(\.key).sorted().joined(separator: " ")

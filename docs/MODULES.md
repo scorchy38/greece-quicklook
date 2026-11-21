@@ -36,6 +36,10 @@ A module adds a family of formats to Greece (apps and binaries, 3D models, maps,
   - `notice`, `empty`, `copyText`, `post('log', …)`
   - `onApply(fn)` (theme and appearance changes)
   - `root` (`<main>`)
+- **Reading files**:
+  - Set `document.readableDirectory` (usually the file's own folder) and the page can `fetch('greece://file' + absolutePath)` any file inside it: the file itself, a glTF's buffers and textures, a shapefile's `.dbf`.
+  - Fonts and images there work in CSS too.
+- **Data on demand**: set `document.resources = { path in … }` (runs off the main thread) and the page can fetch `greece://module/<path>`. Use it for map tiles, archive members and database pages. Never ship large data through `data`.
 - The page has a strict CSP: scripts only from the bundle; no network unless the user enabled remote images; no inline script. Set `allowsWasm` on the document if you ship a WebAssembly decoder.
 - Never put file contents into HTML without `esc` or `kit.sanitize`. File names, metadata and strings are all hostile input.
 - Workers must be blob workers whose code is fetched from `greece://asset/…` (see `highlightInSegments` in `greece.js`).
