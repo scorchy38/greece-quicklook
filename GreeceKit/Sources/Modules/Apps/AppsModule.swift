@@ -11,6 +11,7 @@ enum AppsModule: PreviewModule {
         case machO
         case windows
         case installerPackage
+        case diskImage
         case ipa, android
         case provisioningProfile, configurationProfile
         case torrent
@@ -26,6 +27,7 @@ enum AppsModule: PreviewModule {
         if file.isDirectory {
             if file.ext == "xcarchive" { return .xcarchive }
             if InstallerPackagePage.sniff(probe: [], ext: file.ext, isDirectory: true) { return .installerPackage }
+            if DiskImage.sniff(probe: [], ext: file.ext, isDirectory: true) { return .diskImage }
             if file.ext == "dsym" { return .dsym }
             return bundleExtensions.contains(file.ext) ? .bundle : nil
         }
@@ -34,6 +36,7 @@ enum AppsModule: PreviewModule {
         if WindowsPage.sniff(probe: bytes) { return .windows }
         if InstallerPackagePage.sniff(probe: bytes, ext: file.ext, isDirectory: false) { return .installerPackage }
         if AndroidPage.sniff(probe: bytes, ext: file.ext) { return .android }
+        if DiskImage.sniff(probe: bytes, ext: file.ext, isDirectory: false) { return .diskImage }
         let zip = bytes.count >= 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04
         switch file.ext {
         case "ipa": return zip ? .ipa : nil
@@ -77,6 +80,12 @@ enum AppsModule: PreviewModule {
             return try WindowsPage.page(for: file.url, settings: .default)
         case .installerPackage:
             return try InstallerPackagePage.page(for: file.url, settings: .default)
+        case .diskImage:
+            let image = try DiskImage(url: file.url)
+            var page = DiskImagePage.page(for: image, settings: .default)
+            DiskImageSigning.add(to: &page, image: image)
+            if page.summary.trailing == nil { page.summary.trailing = modified }
+            return page
         case .ipa:
             return try IPAPage.page(for: file.url, modified: modified)
         case .android:
