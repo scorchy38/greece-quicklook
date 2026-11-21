@@ -42,6 +42,25 @@ public enum Thumbnailer {
             return ThumbnailPage(size: size, badge: "JSON") { rect in
                 CodePage.draw(text, grammar: "json", in: rect, theme: settings.codeTheme)
             }
+        case .diff:
+            return ThumbnailPage(size: size, badge: ext.isEmpty ? "DIFF" : ext) { rect in
+                CodePage.draw(file.text, grammar: "diff", in: rect, theme: settings.codeTheme)
+            }
+        case .propertyList:
+            var text = file.text
+            if let data = try? Data(contentsOf: url, options: .mappedIfSafe),
+               let object = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil),
+               let xml = try? PropertyListSerialization.data(fromPropertyList: object, format: .xml, options: 0) {
+                text = String(decoding: xml, as: UTF8.self)
+            }
+            return ThumbnailPage(size: size, badge: ext.isEmpty ? "PLIST" : ext) { rect in
+                CodePage.draw(text, grammar: "xml", in: rect, theme: settings.codeTheme)
+            }
+        case .notebook:
+            guard let document = NotebookOutline.markdown(from: url) else { return nil }
+            return ThumbnailPage(size: size, badge: "IPYNB") { rect in
+                MarkdownPage.draw(document, in: rect, palette: palette)
+            }
         case .delimited(let separator):
             let table = DelimitedTable.parse(file.text, separator: separator, maxRows: 80)
             guard table.columnCount > 0 else { return nil }
@@ -352,5 +371,31 @@ enum TablePage {
                     .draw(with: cell, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine])
             }
         }
+    }
+}
+
+// MARK: - Notebooks
+
+/// A notebook's cells as Markdown: prose stays prose, code becomes fenced blocks.
+enum NotebookOutline {
+    static func markdown(from url: URL) -> String? {
+        guard let data = try? Data(contentsOf: url, options: .mappedIfSafe), data.count < 64 * 1024 * 1024,
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let cells = json["cells"] as? [[String: Any]] else { return nil }
+        func source(_ value: Any?) -> String {
+            if let lines = value as? [String] { return lines.joined() }
+            return value as? String ?? ""
+        }
+        var parts: [String] = []
+        for cell in cells.prefix(30) {
+            let text = source(cell["source"]).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { continue }
+            if cell["cell_type"] as? String == "markdown" {
+                parts.append(text)
+            } else {
+                parts.append("```\n" + text + "\n```")
+            }
+        }
+        return parts.isEmpty ? nil : parts.joined(separator: "\n\n")
     }
 }

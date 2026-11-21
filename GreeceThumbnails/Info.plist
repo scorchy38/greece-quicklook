@@ -149,6 +149,17 @@
 				<string>dyn.ah62d4rv4ge80255drq</string>
 				<string>dyn.ah62d4rv4ge80c65r</string>
 				<string>dyn.ah62d4rv4ge81s2py</string>
+				<string>public.plain-text</string>
+				<string>com.apple.log</string>
+				<string>public.patch-file</string>
+				<string>org.jupyter.ipynb</string>
+				<string>dyn.ah62d4rv4ge80w6d3r3va</string>
+				<string>com.apple.property-list</string>
+				<string>com.apple.xml-property-list</string>
+				<string>com.apple.binary-property-list</string>
+				<string>com.apple.ascii-property-list</string>
+				<string>com.apple.xcode.entitlements-property-list</string>
+				<string>com.apple.xcode.app-privacy-property-list</string>
 			</array>
 			<key>QLThumbnailMinimumDimension</key>
 			<integer>0</integer>
