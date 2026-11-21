@@ -1,0 +1,36 @@
+import AppKit
+import Quartz
+
+/// Shows files in the real Quick Look panel, so people see exactly what Finder will show.
+final class QuickLookPresenter: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {
+    static let shared = QuickLookPresenter()
+    private var urls: [URL] = []
+
+    func show(_ url: URL) {
+        urls = [url]
+        guard let panel = QLPreviewPanel.shared() else { return }
+        if QLPreviewPanel.sharedPreviewPanelExists() && panel.isVisible {
+            panel.reloadData()
+            panel.currentPreviewItemIndex = 0
+        } else {
+            panel.makeKeyAndOrderFront(nil)
+        }
+    }
+
+    func attach(to panel: QLPreviewPanel) {
+        panel.dataSource = self
+        panel.delegate = self
+        panel.reloadData()
+    }
+
+    func detach(from panel: QLPreviewPanel) {
+        panel.dataSource = nil
+        panel.delegate = nil
+    }
+
+    func numberOfPreviewItems(in panel: QLPreviewPanel!) -> Int { urls.count }
+
+    func previewPanel(_ panel: QLPreviewPanel!, previewItemAt index: Int) -> QLPreviewItem! {
+        urls[index] as NSURL
+    }
+}
