@@ -173,6 +173,11 @@ public struct WebDocument {
         // Module scripts run after greece.js (which waits for them) and register their renderers.
         scripts += self.scripts.filter { WebAssets.url($0) != nil }
         styles += self.styles.filter { WebAssets.url($0) != nil }
+        // Enhancers add features to a kind of page after it renders (code tools, Markdown extras).
+        for name in ["all", kind.rawValue] {
+            if WebAssets.url("enhancers/\(name).js") != nil { scripts.append("enhancers/\(name).js") }
+            if WebAssets.url("enhancers/\(name).css") != nil { styles.append("enhancers/\(name).css") }
+        }
 
         let payload = Payload(
             kind: kind,

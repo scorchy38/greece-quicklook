@@ -852,6 +852,7 @@
   // ------------------------------------------------------------------ Live styling
 
   const renderers = {};
+  const enhancers = [];
   const applyCallbacks = [];
   let moduleData;
 
@@ -866,6 +867,10 @@
 
     /** A module's renderer for its own document kind: `render(data, kit)`, may be async. */
     register(kind, render) { renderers[kind] = render; },
+
+    /** Adds features to pages of a kind ('code', 'markdown', 'diff', 'notebook', a module's kind, or '*')
+        after they render and before they're shown: `enhance(root, kit)`, may be async. */
+    enhance(kind, enhance) { enhancers.push({ kind, enhance }); },
 
     /** What module renderers share with Greece's own: escaping, highlighting, Markdown, notices. */
     kit: {
@@ -907,6 +912,10 @@
       html.className = html.className.replace(/kind-[\w-]+/g, '');
       root.innerHTML = '';
       renderCode();
+    }
+    for (const { kind, enhance } of enhancers) {
+      if (kind !== '*' && kind !== payload.kind) continue;
+      try { await enhance(root, window.greece.kit); } catch (e) { post('log', 'enhancer failed: ' + (e && e.stack || e)); }
     }
     const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
     await Promise.race([fonts, new Promise((r) => setTimeout(r, 400))]);
