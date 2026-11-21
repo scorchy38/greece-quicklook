@@ -158,3 +158,8 @@ dyn.ah62d4rv4ge80255drq
 dyn.ah62d4rv4ge80c65r
 dyn.ah62d4rv4ge81s2py
 public.data
+com.scorchy.greece.code  # languages macOS doesn't declare (Go, Kotlin, Lua, JSX…)
+public.rss
+com.apple.interfacebuilder.document.cocoa
+com.apple.dt.interfacebuilder.document.storyboard
+com.apple.xcode.strings-dictionary

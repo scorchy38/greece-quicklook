@@ -189,6 +189,11 @@
 				<string>dyn.ah62d4rv4ge80c65r</string>
 				<string>dyn.ah62d4rv4ge81s2py</string>
 				<string>public.data</string>
+				<string>com.scorchy.greece.code</string>
+				<string>public.rss</string>
+				<string>com.apple.interfacebuilder.document.cocoa</string>
+				<string>com.apple.dt.interfacebuilder.document.storyboard</string>
+				<string>com.apple.xcode.strings-dictionary</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>

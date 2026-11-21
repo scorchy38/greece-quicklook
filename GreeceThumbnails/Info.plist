@@ -161,6 +161,7 @@
 				<string>com.apple.ascii-property-list</string>
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xcode.app-privacy-property-list</string>
+				<string>com.scorchy.greece.code</string>
 			</array>
 			<key>QLThumbnailMinimumDimension</key>
 			<integer>0</integer>

@@ -32,21 +32,18 @@
 	<true/>
 	<key>NSSupportsSuddenTermination</key>
 	<true/>
-
-	<!-- File types macOS doesn't declare on its own. Imported, so any app that exports
-	     an official declaration still wins. -->
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.scorchy.greece.markdown</string>
-			<key>UTTypeDescription</key>
-			<string>Markdown Document</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>net.daringfireball.markdown</string>
 				<string>public.plain-text</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Markdown Document</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.markdown</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -65,15 +62,15 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.scorchy.greece.json-variant</string>
-			<key>UTTypeDescription</key>
-			<string>JSON Document</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.json</string>
 				<string>public.text</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>JSON Document</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.json-variant</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -89,15 +86,15 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.scorchy.greece.source</string>
-			<key>UTTypeDescription</key>
-			<string>Source Code</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.source-code</string>
 				<string>public.plain-text</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Source Code</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.source</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -178,14 +175,14 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>com.scorchy.greece.text</string>
-			<key>UTTypeDescription</key>
-			<string>Text Document</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.plain-text</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Text Document</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.text</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -211,15 +208,15 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>org.sqlite.sqlite3</string>
-			<key>UTTypeDescription</key>
-			<string>SQLite Database</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.database</string>
 				<string>public.data</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>SQLite Database</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.sqlite.sqlite3</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
@@ -238,20 +235,235 @@
 			</dict>
 		</dict>
 		<dict>
-			<key>UTTypeIdentifier</key>
-			<string>org.jupyter.ipynb</string>
-			<key>UTTypeDescription</key>
-			<string>Jupyter Notebook</string>
 			<key>UTTypeConformsTo</key>
 			<array>
 				<string>public.json</string>
 				<string>public.text</string>
 			</array>
+			<key>UTTypeDescription</key>
+			<string>Jupyter Notebook</string>
+			<key>UTTypeIdentifier</key>
+			<string>org.jupyter.ipynb</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
 					<string>ipynb</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.source-code</string>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Source Code</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.code</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>1st</string>
+					<string>ado</string>
+					<string>aidl</string>
+					<string>arm</string>
+					<string>asc</string>
+					<string>atom</string>
+					<string>awk</string>
+					<string>babelrc</string>
+					<string>bas</string>
+					<string>bash_aliases</string>
+					<string>bash_profile</string>
+					<string>bashrc</string>
+					<string>bats</string>
+					<string>bb</string>
+					<string>cake</string>
+					<string>clj</string>
+					<string>cljc</string>
+					<string>cljs</string>
+					<string>cmake</string>
+					<string>cmd</string>
+					<string>cnf</string>
+					<string>coffee</string>
+					<string>comp</string>
+					<string>conf</string>
+					<string>containerfile</string>
+					<string>cson</string>
+					<string>csproj</string>
+					<string>d</string>
+					<string>ddl</string>
+					<string>desktop</string>
+					<string>di</string>
+					<string>dml</string>
+					<string>do</string>
+					<string>dockerfile</string>
+					<string>dpr</string>
+					<string>dtsi</string>
+					<string>ebuild</string>
+					<string>eex</string>
+					<string>elisp</string>
+					<string>elm</string>
+					<string>err</string>
+					<string>es6</string>
+					<string>escript</string>
+					<string>eslintignore</string>
+					<string>eslintrc</string>
+					<string>f03</string>
+					<string>f08</string>
+					<string>feature</string>
+					<string>flake8</string>
+					<string>fnl</string>
+					<string>fpp</string>
+					<string>frm</string>
+					<string>fsproj</string>
+					<string>fsscript</string>
+					<string>fun</string>
+					<string>gawk</string>
+					<string>gco</string>
+					<string>gcode</string>
+					<string>gemspec</string>
+					<string>gitconfig</string>
+					<string>gml</string>
+					<string>go</string>
+					<string>graphql</string>
+					<string>groovy</string>
+					<string>gvy</string>
+					<string>gyp</string>
+					<string>gypi</string>
+					<string>handlebars</string>
+					<string>hql</string>
+					<string>hs</string>
+					<string>hsc</string>
+					<string>htaccess</string>
+					<string>http</string>
+					<string>hx</string>
+					<string>hxml</string>
+					<string>iced</string>
+					<string>inc</string>
+					<string>ino</string>
+					<string>inputrc</string>
+					<string>jbuilder</string>
+					<string>jenkinsfile</string>
+					<string>jinja2</string>
+					<string>jsx</string>
+					<string>kt</string>
+					<string>leex</string>
+					<string>less</string>
+					<string>lhs</string>
+					<string>lic</string>
+					<string>license</string>
+					<string>lisp</string>
+					<string>lpr</string>
+					<string>ls</string>
+					<string>lsp</string>
+					<string>lua</string>
+					<string>luau</string>
+					<string>matlab</string>
+					<string>me</string>
+					<string>mll</string>
+					<string>mly</string>
+					<string>moon</string>
+					<string>mt</string>
+					<string>mysql</string>
+					<string>nb</string>
+					<string>nginx</string>
+					<string>nginxconf</string>
+					<string>nimble</string>
+					<string>nims</string>
+					<string>nix</string>
+					<string>npmignore</string>
+					<string>objc</string>
+					<string>opml</string>
+					<string>p6</string>
+					<string>pde</string>
+					<string>pgsql</string>
+					<string>php5</string>
+					<string>php7</string>
+					<string>phps</string>
+					<string>pl6</string>
+					<string>plpgsql</string>
+					<string>pm6</string>
+					<string>pod</string>
+					<string>podspec</string>
+					<string>postcss</string>
+					<string>prefs</string>
+					<string>prettierignore</string>
+					<string>prettierrc</string>
+					<string>pro</string>
+					<string>profile</string>
+					<string>prolog</string>
+					<string>props</string>
+					<string>psql</string>
+					<string>pxd</string>
+					<string>pylintrc</string>
+					<string>pypirc</string>
+					<string>pyw</string>
+					<string>rake</string>
+					<string>raku</string>
+					<string>rakumod</string>
+					<string>rbi</string>
+					<string>reg</string>
+					<string>rej</string>
+					<string>rest</string>
+					<string>resx</string>
+					<string>rhtml</string>
+					<string>rkt</string>
+					<string>rktl</string>
+					<string>rockspec</string>
+					<string>ron</string>
+					<string>rprofile</string>
+					<string>rpy</string>
+					<string>rs</string>
+					<string>ru</string>
+					<string>sas</string>
+					<string>sass</string>
+					<string>sbt</string>
+					<string>sc</string>
+					<string>scad</string>
+					<string>scala</string>
+					<string>scm</string>
+					<string>scss</string>
+					<string>service</string>
+					<string>shader</string>
+					<string>sld</string>
+					<string>sml</string>
+					<string>sqlite-sql</string>
+					<string>ss</string>
+					<string>st</string>
+					<string>stylus</string>
+					<string>sublime-syntax</string>
+					<string>svelte</string>
+					<string>t</string>
+					<string>targets</string>
+					<string>tcl</string>
+					<string>tesc</string>
+					<string>tese</string>
+					<string>thor</string>
+					<string>tk</string>
+					<string>tpp</string>
+					<string>vala</string>
+					<string>vapi</string>
+					<string>vb</string>
+					<string>vbproj</string>
+					<string>vbs</string>
+					<string>vh</string>
+					<string>vhost</string>
+					<string>vimrc</string>
+					<string>vue</string>
+					<string>wast</string>
+					<string>wl</string>
+					<string>wls</string>
+					<string>wsdl</string>
+					<string>xsd</string>
+					<string>xsl</string>
+					<string>xslt</string>
+					<string>zone</string>
+					<string>zprofile</string>
+					<string>zshenv</string>
+					<string>zshrc</string>
 				</array>
 			</dict>
 		</dict>
