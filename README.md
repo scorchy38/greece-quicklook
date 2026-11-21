@@ -31,7 +31,9 @@ The info bar at the bottom of every preview shows what the file is at a glance: 
 
 ### Finder thumbnails
 
-Source files and tab- or pipe-separated tables get real thumbnails in Finder: a miniature page of the file, highlighted in your code theme, or a table grid. They're drawn natively with highlight.js running in JavaScriptCore, so they're instant and need no web view. macOS keeps its own plain-text thumbnails for Markdown, JSON, CSV and `.txt`.
+Finder shows Greece thumbnails for source code, Markdown, logs, patches, property lists and tab- or pipe-separated tables: a miniature page of the file, highlighted in your code theme, or a table grid. They're drawn natively with highlight.js running in JavaScriptCore, so they need no web view.
+
+Apple's own text thumbnailer also claims JSON and plain text, and macOS keeps `.txt`, CSV and extensionless files. After you install or update Greece, Finder can keep its old thumbnails until macOS restarts its thumbnail service, at the latest when you log out.
 
 ## The app
 
@@ -65,7 +67,7 @@ xcodebuild -project Greece.xcodeproj -scheme Greece -configuration Release -deri
 
 Signing uses the Apple Development certificate for team `ZHCT595PYJ` (set in `project.yml`). The app is distributed directly, like Murmur, so it isn't sandboxed; the Quick Look extension is sandboxed, as macOS requires.
 
-Run the app once after building, or press **Turn On Greece** on its Welcome page. To install permanently, copy `Greece.app` to `/Applications` and open it from there.
+To install the build into `/Applications` and verify that Quick Look uses it, run `scripts/install.sh`. If Quick Look ever picks up another copy (a debug build, an older download), **Turn On Greece** on the app's Welcome page puts the installed copy back in charge.
 
 ### Tests
 
@@ -115,10 +117,10 @@ Greece.app
 
 ## What macOS keeps for itself
 
-Checked in the real Quick Look panel on macOS 26:
+Quick Look picks a viewer for each file before it consults extensions, and for a few types it never hands the file over. Checked against Quick Look's own logs on macOS 26:
 
-- **`.csv`**: Quick Look routes CSV to Apple's built-in table preview ahead of any extension. Tab- and pipe-separated files open in Greece.
-- **`.ts` TypeScript**: macOS types `.ts` as MPEG video, and its video previewer takes it (showing only an icon for TypeScript). `.tsx`, `.mts` and `.cts` open in Greece.
+- **`.csv`**: Quick Look sees Greece's claim but sends CSV to Apple's Office previewer, one of two built-in generators it ranks ahead of extensions. A more specific CSV type doesn't help, because macOS keeps its own type for `.csv` whatever apps declare, and Quick Look has no setting for it. Tab- and pipe-separated files open in Greece.
+- **`.ts` and `.mts`**: macOS types these as MPEG video, so Quick Look opens its movie viewer (which shows only an icon for TypeScript). `.tsx` and `.cts` open in Greece.
 - **Plain text**: `.txt` files, and extensionless files macOS recognizes as text (`LICENSE`, `README`), stay with Apple's text viewer.
 
 Other extensionless files do reach Greece: `Makefile` is recognized by name, and `Dockerfile`, `.gitignore`, `Procfile` and similar files open highlighted. Binary files Greece can't read fall back to Quick Look's standard file view.
