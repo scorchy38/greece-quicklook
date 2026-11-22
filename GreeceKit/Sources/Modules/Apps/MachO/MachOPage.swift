@@ -112,7 +112,8 @@ enum MachOPage {
         if slice.hasSection(named: "__go_buildinfo") || slice.hasSection(named: "__gopclntab") { language.append("Go") }
         if slice.libraries.contains(where: { $0.name == "libc++" }) { language.append("C++") }
         if !language.isEmpty {
-            rows.append(.field(String(localized: "Languages", bundle: .greeceKit, comment: "Inspector row title: the programming languages a binary was written in"), language.joined(separator: ", ")))
+            rows.append(.field(String(localized: "Languages [programming]", defaultValue: "Languages", bundle: .greeceKit,
+                                                comment: "Inspector row title: the programming languages a binary was written in"), language.joined(separator: ", ")))
         }
         if slice.fileType == 2 {
             rows.append(.field(String(localized: "Position Independent", bundle: .greeceKit, comment: "Inspector row title: whether an executable is position-independent (PIE)"),

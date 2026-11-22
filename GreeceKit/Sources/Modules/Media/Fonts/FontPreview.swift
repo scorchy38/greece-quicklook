@@ -74,7 +74,8 @@ enum FontPreview {
         let first = faces[0].0
         var details: [String] = []
         if info.faces.count > 1 {
-            details.append(String(localized: "\(info.faces.count) faces", bundle: .greeceKit, comment: "Info bar detail: how many fonts (typefaces) a font collection holds"))
+            details.append(String(localized: "%lld faces [font collection]", defaultValue: "\(info.faces.count) faces", bundle: .greeceKit,
+                                          comment: "Info bar detail: how many fonts (typefaces) a font collection holds"))
             details.append(first.family)
         } else {
             details.append(first.fullName)

@@ -791,7 +791,7 @@ enum InstallerPackagePage {
                 }
                 return component.installKBytes.map { Format.bytes(UInt64(max(0, $0)) * 1024) }
             }()
-            var details: [InspectorItem] = [.field(String(localized: "Location", bundle: .greeceKit, comment: "Inspector row title: where a package installs"),
+            var details: [InspectorItem] = [.field(String(localized: "Location [install]", defaultValue: "Location", bundle: .greeceKit, comment: "Inspector row title: where a package installs"),
                                                    component.installLocation, mono: true),
                                             .field(installsAsTitle, component.installsAsRoot ? administratorText : currentUserText)]
             if !component.scripts.isEmpty {
