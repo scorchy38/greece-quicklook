@@ -43,16 +43,16 @@ private struct PreviewPage<Content: View>: View {
     }
 }
 
+/// A size in typographic points.
 private struct ValueStepper: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var value: Double
     let range: ClosedRange<Double>
-    var unit = "pt"
 
     var body: some View {
         Stepper(value: $value, in: range, step: 1) {
             LabeledContent(title) {
-                Text("\(Int(value)) \(unit)").monospacedDigit().foregroundStyle(.secondary)
+                Text("\(Int(value)) pt", comment: "A font size in typographic points").monospacedDigit().foregroundStyle(.secondary)
             }
         }
     }
@@ -75,7 +75,8 @@ struct MarkdownPage: View {
     }
 
     var body: some View {
-        PreviewPage(samples: [("Document", Samples.markdown), ("Notebook", Samples.notebook)], selection: $sample) {
+        PreviewPage(samples: [(String(localized: "Document", comment: "Sample file: a Markdown document"), Samples.markdown),
+                              (String(localized: "Notebook", comment: "Sample file: a Jupyter notebook"), Samples.notebook)], selection: $sample) {
             Section {
                 ReadingThemeGallery(selection: $store.settings.readingTheme, dark: previewsAreDark) { theme in
                     // A theme comes with its own typefaces; choosing one starts from them.
@@ -91,7 +92,9 @@ struct MarkdownPage: View {
             Section("Typography") {
                 Picker("Font", selection: $store.settings.readingFont) {
                     ForEach(PreviewSettings.ReadingFont.allCases) { font in
-                        Text(font == .theme ? "Theme Default (\(store.settings.markdownTheme.name))" : font.title).tag(font)
+                        Text(font == .theme ? String(localized: "Theme Default (\(store.settings.markdownTheme.name))",
+                                                     comment: "Font menu item; the argument is a reading theme’s name")
+                                            : font.title).tag(font)
                     }
                 }
                 ValueStepper(title: "Size", value: $store.settings.readingSize, range: 11...26)
@@ -119,8 +122,10 @@ struct MarkdownPage: View {
                             Section {
                                 ForEach(DiagramTheme.all.filter(\.isAutomatic)) { theme in Text(theme.name).tag(theme.id) }
                             }
-                            Section("Mermaid") {
+                            Section {
                                 ForEach(DiagramTheme.all.filter(\.isBuiltIn)) { theme in Text(theme.name).tag(theme.id) }
+                            } header: {
+                                Text(verbatim: "Mermaid")
                             }
                             Section("Palettes") {
                                 ForEach(DiagramTheme.all.filter { !$0.isAutomatic && !$0.isBuiltIn }) { theme in Text(theme.name).tag(theme.id) }
@@ -158,7 +163,8 @@ struct CodePage: View {
     }
 
     var body: some View {
-        PreviewPage(samples: [("Swift", Samples.swift), ("Python", Samples.python), ("JSON", Samples.json), ("Patch", Samples.patch)], selection: $sample) {
+        PreviewPage(samples: [("Swift", Samples.swift), ("Python", Samples.python), ("JSON", Samples.json),
+                              (String(localized: "Patch", comment: "Sample file: a code patch (diff)"), Samples.patch)], selection: $sample) {
             Section {
                 Picker("Variant", selection: $store.settings.themeVariant) {
                     ForEach(PreviewSettings.ThemeVariant.allCases) { variant in Text(variantTitle(variant)).tag(variant) }
@@ -168,9 +174,7 @@ struct CodePage: View {
             } header: {
                 Text("Theme")
             } footer: {
-                Text(selectedTheme.variants == .pair
-                     ? "\(selectedTheme.name) follows your Mac’s appearance. Choose a variant to keep it light or dark."
-                     : "\(selectedTheme.name) is a \(selectedTheme.variants == .dark ? "dark" : "light") theme and stays \(selectedTheme.variants == .dark ? "dark" : "light") in either appearance.")
+                Text(themeFooter)
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("Text") {
@@ -182,7 +186,7 @@ struct CodePage: View {
                 }
                 ValueStepper(title: "Size", value: $store.settings.codeFontSize, range: 9...24)
                 Picker("Tab width", selection: $store.settings.tabWidth) {
-                    ForEach([2, 3, 4, 8], id: \.self) { width in Text("\(width) spaces").tag(width) }
+                    ForEach([2, 3, 4, 8], id: \.self) { width in Text("\(width) spaces", comment: "Tab width").tag(width) }
                 }
             }
             Section {
@@ -192,7 +196,8 @@ struct CodePage: View {
             } header: {
                 Text("Layout")
             } footer: {
-                Text("Greece highlights \(LanguageCatalog.languageCount) languages and \(LanguageCatalog.extensionCount) file extensions, decodes binary property lists, and keeps JSON keys in their original order when formatting.")
+                Text("Greece highlights \(LanguageCatalog.languageCount) languages and \(LanguageCatalog.extensionCount) file extensions, decodes binary property lists, and keeps JSON keys in their original order when formatting.",
+                     comment: "The arguments are how many programming languages and file name extensions Greece recognises")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -200,12 +205,30 @@ struct CodePage: View {
 
     private var selectedTheme: CodeTheme { CodeTheme.named(store.settings.theme) ?? .default }
 
+    private var themeFooter: String {
+        let name = selectedTheme.name
+        switch selectedTheme.variants {
+        case .pair:
+            return String(localized: "\(name) follows your Mac’s appearance. Choose a variant to keep it light or dark.",
+                          comment: "The argument is a code theme’s name")
+        case .dark:
+            return String(localized: "\(name) is a dark theme and stays dark in either appearance.", comment: "The argument is a code theme’s name")
+        case .light:
+            return String(localized: "\(name) is a light theme and stays light in either appearance.", comment: "The argument is a code theme’s name")
+        }
+    }
+
     private func variantTitle(_ variant: PreviewSettings.ThemeVariant) -> String {
         let theme = selectedTheme
         switch variant {
-        case .automatic: return "Automatic"
-        case .light: return theme.lightName.map { "Light (\($0))" } ?? "Light"
-        case .dark: return theme.darkName.map { "Dark (\($0))" } ?? "Dark"
+        case .automatic:
+            return String(localized: "Automatic", comment: "Code theme variant: follow the Mac’s appearance")
+        case .light:
+            return theme.lightName.map { String(localized: "Light (\($0))", comment: "Code theme variant; the argument is the variant’s own name") }
+                ?? String(localized: "Light", comment: "Code theme variant or group")
+        case .dark:
+            return theme.darkName.map { String(localized: "Dark (\($0))", comment: "Code theme variant; the argument is the variant’s own name") }
+                ?? String(localized: "Dark", comment: "Code theme variant or group")
         }
     }
 }
@@ -221,10 +244,7 @@ struct DataPage: View {
             Section("Tables") {
                 Toggle("Row numbers", isOn: $store.settings.rowNumbers)
                 Picker("Show up to", selection: $store.settings.maxRows) {
-                    Text("1,000 rows").tag(1_000)
-                    Text("10,000 rows").tag(10_000)
-                    Text("100,000 rows").tag(100_000)
-                    Text("1,000,000 rows").tag(1_000_000)
+                    ForEach([1_000, 10_000, 100_000, 1_000_000], id: \.self) { count in Text(rows(count)).tag(count) }
                 }
             }
             Section {
@@ -237,6 +257,13 @@ struct DataPage: View {
             .foregroundStyle(.secondary)
         }
     }
+
+    /// "10,000 rows": the catalog picks the grammatical form for the count, then its digits are
+    /// grouped the way the reader's language writes large numbers (format specifiers can't group).
+    private func rows(_ count: Int) -> String {
+        String(localized: "\(count) rows", comment: "Most rows a table preview shows")
+            .replacingOccurrences(of: String(count), with: count.formatted(.number))
+    }
 }
 
 // MARK: - Archives & folders
@@ -246,7 +273,8 @@ struct FilesPage: View {
     @SceneStorage("files.sample") private var sample = 0
 
     var body: some View {
-        PreviewPage(samples: [("ZIP Archive", Samples.zip), ("Folder", Samples.folder)], selection: $sample) {
+        PreviewPage(samples: [(String(localized: "ZIP Archive", comment: "Sample file"), Samples.zip),
+                              (String(localized: "Folder", comment: "Sample file"), Samples.folder)], selection: $sample) {
             Section {
                 Toggle("Show hidden files", isOn: $store.settings.showHiddenFiles)
                 Toggle("Keep folders on top", isOn: $store.settings.foldersFirst)
@@ -267,7 +295,7 @@ struct GeneralPage: View {
     @EnvironmentObject private var status: ExtensionStatus
     @State private var confirmReset = false
     @State private var cliPath = CommandLineInstaller.installedPath
-    @State private var cliMessage: String?
+    @State private var cliMessage: AttributedString?
     @StateObject private var loginItem = LoginItem()
     @StateObject private var previewKinds = PreviewKinds()
 
@@ -331,10 +359,15 @@ struct GeneralPage: View {
                         if let path = cliPath {
                             Text(path).font(.callout.monospaced()).foregroundStyle(.secondary)
                         }
-                        Button(cliPath == nil ? "Install" : "Reinstall") {
+                        Button(cliPath == nil ? String(localized: "Install", comment: "Installs the greece terminal command")
+                                              : String(localized: "Reinstall", comment: "Installs the greece terminal command again")) {
                             switch CommandLineInstaller.install() {
-                            case .success(let path): cliPath = path; cliMessage = "Type `greece file.md` in Terminal, or pipe text into `greece`."
-                            case .failure(let error): cliMessage = error.localizedDescription
+                            case .success(let path):
+                                cliPath = path
+                                cliMessage = AttributedString(localized: "Type `greece file.md` in Terminal, or pipe text into `greece`.",
+                                                              comment: "Keep the Markdown code spans: `greece` is the command")
+                            case .failure(let error):
+                                cliMessage = AttributedString(error.localizedDescription)
                             }
                         }
                     }
@@ -398,8 +431,9 @@ struct AboutPage: View {
                         .resizable()
                         .frame(width: 64, height: 64)
                     VStack(alignment: .leading, spacing: 3) {
-                        Text("Greece").font(.title2.weight(.semibold))
-                        Text("Version \(version)").foregroundStyle(.secondary).monospacedDigit()
+                        Text(verbatim: "Greece").font(.title2.weight(.semibold))
+                        Text("Version \(version)", comment: "About page; the argument is the version and build, such as 1.0.0 (1)")
+                            .foregroundStyle(.secondary).monospacedDigit()
                     }
                 }
                 .padding(.vertical, 6)

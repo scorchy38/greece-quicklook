@@ -136,7 +136,11 @@ enum CommandLineInstaller {
         let command = "mkdir -p /usr/local/bin && install -m 755 '\(temporary.path)' /usr/local/bin/greece"
         var error: NSDictionary?
         NSAppleScript(source: "do shell script \"\(command)\" with administrator privileges")?.executeAndReturnError(&error)
-        if let error { return .failure(NSError(domain: "Greece", code: 1, userInfo: [NSLocalizedDescriptionKey: error[NSAppleScript.errorMessage] as? String ?? "Couldn’t install the command."])) }
+        if let error {
+            let description = error[NSAppleScript.errorMessage] as? String
+                ?? String(localized: "Couldn’t install the command.", comment: "Installing the greece terminal command failed")
+            return .failure(NSError(domain: "Greece", code: 1, userInfo: [NSLocalizedDescriptionKey: description]))
+        }
         return .success("/usr/local/bin/greece")
     }
 }

@@ -9,17 +9,17 @@ struct WelcomeView: View {
         (Samples.markdown, "Markdown", "doc.richtext"),
         (Samples.swift, "Swift", "swift"),
         (Samples.json, "JSON", "curlybraces.square"),
-        (Samples.patch, "Patch", "plus.forwardslash.minus"),
-        (Samples.notebook, "Notebook", "book.pages"),
+        (Samples.patch, String(localized: "Patch", comment: "Sample file: a code patch (diff)"), "plus.forwardslash.minus"),
+        (Samples.notebook, String(localized: "Notebook", comment: "Sample file: a Jupyter notebook"), "book.pages"),
         (Samples.sqlite, "SQLite", "cylinder.split.1x2"),
-        (Samples.map, "Map", "map"),
-        (Samples.model, "3D Model", "cube"),
-        (Samples.book, "Book", "book.closed"),
-        (Samples.animation, "Animation", "sparkles"),
-        (Samples.comic, "Comic", "photo.on.rectangle.angled"),
-        (Samples.zip, "ZIP Archive", "archivebox"),
-        (Bundle.main.bundleURL, "This App", "checkmark.seal"),
-        (Samples.folder, "Folder", "folder"),
+        (Samples.map, String(localized: "Map", comment: "Sample file"), "map"),
+        (Samples.model, String(localized: "3D Model", comment: "Sample file"), "cube"),
+        (Samples.book, String(localized: "Book", comment: "Sample file: an EPUB book"), "book.closed"),
+        (Samples.animation, String(localized: "Animation", comment: "Sample file: a Lottie animation"), "sparkles"),
+        (Samples.comic, String(localized: "Comic", comment: "Sample file: a comic book archive"), "photo.on.rectangle.angled"),
+        (Samples.zip, String(localized: "ZIP Archive", comment: "Sample file"), "archivebox"),
+        (Bundle.main.bundleURL, String(localized: "This App", comment: "Sample file: Greece.app itself"), "checkmark.seal"),
+        (Samples.folder, String(localized: "Folder", comment: "Sample file"), "folder"),
     ]
 
     var body: some View {
@@ -31,7 +31,7 @@ struct WelcomeView: View {
                         .frame(width: 76, height: 76)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Greece")
+                        Text(verbatim: "Greece")
                             .font(.largeTitle.weight(.semibold))
                         Text("Press Space on almost anything, from code and Markdown to maps, 3D models, books, archives and apps, and see it beautifully and instantly, without anything leaving your Mac.")
                             .foregroundStyle(.secondary)
@@ -123,7 +123,7 @@ struct WelcomeView: View {
             }
             .padding(.vertical, 4)
             HStack {
-                Button(status.working ? "Turning On…" : "Turn On Greece") { status.enable() }
+                Button(status.working ? String(localized: "Turning On…") : String(localized: "Turn On Greece")) { status.enable() }
                     .buttonStyle(.borderedProminent)
                     .disabled(status.working)
                 Button("Open Extension Settings") { status.openExtensionSettings() }
@@ -136,20 +136,21 @@ struct WelcomeView: View {
         switch status.state {
         case .otherCopy(let path):
             let name = (path as NSString).deletingLastPathComponent.replacingOccurrences(of: "/Contents/PlugIns", with: "")
-            return "Quick Look is using another copy of Greece at \(name). Turn on this copy to use its previews and settings."
+            return String(localized: "Quick Look is using another copy of Greece at \(name). Turn on this copy to use its previews and settings.",
+                          comment: "The argument is the path of the other Greece.app")
         case .disabled:
-            return "Greece’s Quick Look extension is switched off in System Settings. Turn it on to preview files with Greece."
+            return String(localized: "Greece’s Quick Look extension is switched off in System Settings. Turn it on to preview files with Greece.")
         default:
-            return "macOS hasn’t registered Greece’s Quick Look extension yet. Turn it on to start previewing files."
+            return String(localized: "macOS hasn’t registered Greece’s Quick Look extension yet. Turn it on to start previewing files.")
         }
     }
 
     private func blurb(for page: Page) -> String {
         switch page {
-        case .markdown: return "Fonts, width, math, diagrams"
-        case .code: return "Themes, fonts, line numbers"
-        case .data: return "Tables and databases"
-        case .files: return "Hidden files, sorting"
+        case .markdown: return String(localized: "Fonts, width, math, diagrams", comment: "Welcome: what the Markdown settings cover")
+        case .code: return String(localized: "Themes, fonts, line numbers", comment: "Welcome: what the Code settings cover")
+        case .data: return String(localized: "Tables and databases", comment: "Welcome: what the Data settings cover")
+        case .files: return String(localized: "Hidden files, sorting", comment: "Welcome: what the Archives & Folders settings cover")
         default: return ""
         }
     }
@@ -187,7 +188,7 @@ private struct SampleTile: View {
         }
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
-        .help("Preview \(url.lastPathComponent) in Quick Look")
-        .accessibilityLabel("Preview \(title) sample")
+        .help(Text("Preview \(url.lastPathComponent) in Quick Look", comment: "Tooltip; the argument is a file name"))
+        .accessibilityLabel(Text("Preview \(title) sample", comment: "The argument is a kind of sample, such as Map or ZIP Archive"))
     }
 }

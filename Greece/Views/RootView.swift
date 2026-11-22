@@ -7,14 +7,14 @@ enum Page: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .welcome: return "Welcome"
+        case .welcome: return String(localized: "Welcome", comment: "Sidebar page")
         case .markdown: return "Markdown"
-        case .code: return "Code"
-        case .data: return "Data"
-        case .files: return "Archives & Folders"
-        case .general: return "General"
-        case .diagnostics: return "Diagnostics"
-        case .about: return "About"
+        case .code: return String(localized: "Code", comment: "Sidebar page: settings for source code previews")
+        case .data: return String(localized: "Data", comment: "Sidebar page: settings for tables and databases")
+        case .files: return String(localized: "Archives & Folders", comment: "Sidebar page")
+        case .general: return String(localized: "General", comment: "Sidebar page")
+        case .diagnostics: return String(localized: "Diagnostics", comment: "Sidebar page")
+        case .about: return String(localized: "About", comment: "Sidebar page: about Greece")
         }
     }
 
@@ -56,10 +56,12 @@ struct RootView: View {
                         Label(item.title, systemImage: item.symbol).tag(item)
                     }
                 }
-                Section("Greece") {
+                Section {
                     ForEach([Page.general, .diagnostics, .about]) { item in
                         Label(item.title, systemImage: item.symbol).tag(item)
                     }
+                } header: {
+                    Text(verbatim: "Greece")
                 }
                 }
             }
@@ -123,9 +125,9 @@ private struct StatusFooter: View {
 
     private var text: String {
         switch status.state {
-        case .active: return "Quick Look is on"
-        case .checking: return "Checking Quick Look…"
-        default: return "Turn on Quick Look"
+        case .active: return String(localized: "Quick Look is on", comment: "Sidebar status footer")
+        case .checking: return String(localized: "Checking Quick Look…", comment: "Sidebar status footer")
+        default: return String(localized: "Turn on Quick Look", comment: "Sidebar status footer; opens the Welcome page")
         }
     }
 }

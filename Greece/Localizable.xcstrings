@@ -1,0 +1,833 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ also previews %lld of Greece’s file types" : {
+      "comment" : "The first argument is an app’s name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ also previews %#@types@"
+          },
+          "substitutions" : {
+            "types" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg of Greece’s file types"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg of Greece’s file types"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ claims this type." : {
+      "comment" : "The argument is an app’s name"
+    },
+    "%@ follows your Mac’s appearance. Choose a variant to keep it light or dark." : {
+      "comment" : "The argument is a code theme’s name"
+    },
+    "%@ is a dark theme and stays dark in either appearance." : {
+      "comment" : "The argument is a code theme’s name"
+    },
+    "%@ is a light theme and stays light in either appearance." : {
+      "comment" : "The argument is a code theme’s name"
+    },
+    "%@ previews are off" : {
+      "comment" : "The argument is a kind of preview, such as Code & Text"
+    },
+    "%@ previews are on" : {
+      "comment" : "The argument is a kind of preview, such as Code & Text"
+    },
+    "%@ previews aren’t registered with macOS" : {
+      "comment" : "The argument is a kind of preview, such as Code & Text"
+    },
+    "%@ previews come from another copy of Greece" : {
+      "comment" : "The argument is a kind of preview, such as Code & Text"
+    },
+    "%@ previews: %lld copies of Greece are registered" : {
+      "comment" : "The first argument is a kind of preview, such as Code & Text",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ previews: %#@copies@"
+          },
+          "substitutions" : {
+            "copies" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg copy of Greece is registered"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg copies of Greece are registered"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ reading theme. %@" : {
+      "comment" : "VoiceOver; the arguments are a theme’s name and its one-line description",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ reading theme. %2$@"
+          }
+        }
+      }
+    },
+    "%@. These use Apple’s retired plug-in system. If previews look wrong for a file type, removing them can help." : {
+      "comment" : "The argument lists plug-in file names"
+    },
+    "%@’s Quick Look extension is off. You can turn it back on in System Settings › General › Login Items & Extensions." : {
+      "comment" : "The argument is an app’s name. Use the System Settings names macOS shows in this language."
+    },
+    "%lld older Quick Look plug-ins installed" : {
+      "comment" : "Legacy .qlgenerator plug-ins",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld older Quick Look plug-in installed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld older Quick Look plug-ins installed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pt" : {
+      "comment" : "A font size in typographic points"
+    },
+    "%lld rows" : {
+      "comment" : "Most rows a table preview shows",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld row"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld spaces" : {
+      "comment" : "Tab width",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld space"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld spaces"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld themes" : {
+      "comment" : "How many code themes there are",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld theme"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld themes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld things need attention" : {
+      "comment" : "Diagnostics headline",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "One thing needs attention"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld things need attention"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "3D Model" : {
+      "comment" : "Sample file"
+    },
+    "A ring of islands in the Aegean, reached by %@ from Piraeus each morning." : {
+      "comment" : "Theme thumbnail: the sample sentence; the argument is the linked word “ferry”"
+    },
+    "About" : {
+      "comment" : "Sidebar page: about Greece"
+    },
+    "Acknowledgements" : {},
+    "All %lld kinds of preview use this copy of Greece." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld kind of preview uses this copy of Greece."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "All %lld kinds of preview use this copy of Greece."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Animation" : {
+      "comment" : "Sample file: a Lottie animation"
+    },
+    "Another app" : {
+      "comment" : "Diagnostics: another app’s extension showed the file"
+    },
+    "Appearance" : {},
+    "Apple’s PDF viewer" : {
+      "comment" : "Completes “Quick Look used %@.”"
+    },
+    "Apple’s audio player" : {
+      "comment" : "Completes “Quick Look used %@.”"
+    },
+    "Apple’s document previewer" : {
+      "comment" : "Completes “Quick Look used %@.”"
+    },
+    "Apple’s image viewer" : {
+      "comment" : "Completes “Quick Look used %@.”"
+    },
+    "Apple’s movie viewer" : {
+      "comment" : "Completes “Quick Look used %@.”"
+    },
+    "Apple’s text viewer" : {
+      "comment" : "Completes “Quick Look used %@.”"
+    },
+    "Apps, installers, disk images, profiles and binaries" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "Archives & Folders" : {
+      "comment" : "Sidebar page"
+    },
+    "Automatic" : {
+      "comment" : "Code theme variant: follow the Mac’s appearance"
+    },
+    "Book" : {
+      "comment" : "Sample file: an EPUB book"
+    },
+    "Cancel" : {},
+    "Check" : {},
+    "Check Again" : {},
+    "Check opens a sample in the real Quick Look panel and reports which viewer macOS picked." : {},
+    "Checking Quick Look…" : {
+      "comment" : "Sidebar status footer"
+    },
+    "Checking…" : {},
+    "Choose a sample file" : {},
+    "Click a column header to sort. Select rows and press ⌘C to copy them as tab-separated text." : {},
+    "Code" : {
+      "comment" : "Sidebar page: settings for source code previews"
+    },
+    "Code font" : {},
+    "Code font weight" : {},
+    "Code size" : {},
+    "Code theme" : {},
+    "Comic" : {
+      "comment" : "Sample file: a comic book archive"
+    },
+    "Confirmed in Quick Look just now." : {},
+    "Copied" : {
+      "comment" : "Shown briefly after copying the report"
+    },
+    "Copy Path" : {},
+    "Copy Report" : {
+      "comment" : "Copies a plain-text diagnostics report"
+    },
+    "Copy report" : {},
+    "Couldn’t install the command." : {
+      "comment" : "Installing the greece terminal command failed"
+    },
+    "Dark" : {
+      "comment" : "Code theme variant or group"
+    },
+    "Dark (%@)" : {
+      "comment" : "Code theme variant; the argument is the variant’s own name"
+    },
+    "Data" : {
+      "comment" : "Sidebar page: settings for tables and databases"
+    },
+    "Diagnostics" : {
+      "comment" : "Sidebar page"
+    },
+    "Diagram theme" : {},
+    "Document" : {
+      "comment" : "Sample file: a Markdown document"
+    },
+    "Each opens in the real Quick Look panel, exactly as Finder shows it." : {},
+    "Edited by Claude Code" : {
+      "comment" : "Menu bar: files the Claude Code agent changed"
+    },
+    "Edited by Codex" : {
+      "comment" : "Menu bar: files the Codex agent changed"
+    },
+    "Every reading theme has a light and a dark version and follows your Mac’s appearance." : {},
+    "Everything looks right" : {
+      "comment" : "Diagnostics found no problems"
+    },
+    "Extension Settings…" : {},
+    "Extra copies (old downloads, builds) can take over after updates. Repair removes them." : {},
+    "Files are opened read-only. Databases are never modified, and archives are never extracted." : {},
+    "Files you preview, and files Claude Code or Codex edit, appear here." : {},
+    "Find a file" : {},
+    "Finder thumbnails are off" : {},
+    "Finder thumbnails are on" : {},
+    "Finder thumbnails aren’t registered with macOS" : {},
+    "Finder thumbnails come from another copy of Greece" : {},
+    "Finder thumbnails · %lld file types" : {
+      "comment" : "Another app’s thumbnail extension",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Finder thumbnails · %lld file type"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Finder thumbnails · %lld file types"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Finder thumbnails: %lld copies of Greece are registered" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Finder thumbnails: %lld copy of Greece is registered"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Finder thumbnails: %lld copies of Greece are registered"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Folder" : {
+      "comment" : "Sample file"
+    },
+    "Font" : {},
+    "Font (TrueType)" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Fonts, subtitles, SVG, Lottie and colour palettes" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "Fonts, width, math, diagrams" : {
+      "comment" : "Welcome: what the Markdown settings cover"
+    },
+    "Forget Positions and Sizes" : {},
+    "Forget positions and sizes" : {},
+    "Format minified JSON" : {},
+    "Front matter as properties" : {},
+    "GPX track" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "General" : {
+      "comment" : "Sidebar page"
+    },
+    "GeoJSON map" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "GeoJSON, KML, GPX, shapefiles and map tiles" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "Getting there" : {
+      "comment" : "Theme thumbnail: a section heading in the sample document"
+    },
+    "Good to know" : {},
+    "Greece checks its registration, other Quick Look extensions and how macOS routes each kind of file." : {},
+    "Greece claims this type." : {},
+    "Greece highlights %lld languages and %lld file extensions, decodes binary property lists, and keeps JSON keys in their original order when formatting." : {
+      "comment" : "The arguments are how many programming languages and file name extensions Greece recognises",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Greece highlights %#@languages@ and %#@extensions@, decodes binary property lists, and keeps JSON keys in their original order when formatting."
+          },
+          "substitutions" : {
+            "extensions" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg file extension"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg file extensions"
+                    }
+                  }
+                }
+              }
+            },
+            "languages" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg language"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg languages"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Greece is now handling Quick Look previews." : {},
+    "Greece is registered and on. Quick Look was restarted." : {},
+    "Greece isn’t in Applications" : {},
+    "Greece on GitHub" : {},
+    "Greece reads ZIP, JAR, tar, gzip, bzip2 and xz without extracting anything. A compressed text file, such as a .log.gz, opens straight to its contents." : {},
+    "Greece, also %@" : {
+      "comment" : "The argument lists other apps that claim the same file type"
+    },
+    "Greece’s Quick Look extension is switched off in System Settings. Turn it on to preview files with Greece." : {},
+    "Hidden files, sorting" : {
+      "comment" : "Welcome: what the Archives & Folders settings cover"
+    },
+    "Info bar" : {},
+    "Install" : {
+      "comment" : "Installs the greece terminal command"
+    },
+    "Jupyter notebook" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Keep a list of recently previewed files" : {},
+    "Keep folders on top" : {},
+    "Layout" : {},
+    "Light" : {
+      "comment" : "Code theme variant or group"
+    },
+    "Light (%@)" : {
+      "comment" : "Code theme variant; the argument is the variant’s own name"
+    },
+    "Light and Dark" : {
+      "comment" : "Group of code themes that have both variants"
+    },
+    "Light · Dark" : {
+      "comment" : "A code theme with both variants"
+    },
+    "Line numbers" : {},
+    "Line width" : {},
+    "Listing" : {},
+    "Live preview" : {},
+    "Load remote images" : {},
+    "Log" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Make it yours" : {},
+    "Map" : {
+      "comment" : "Sample file"
+    },
+    "Markdown, notebooks, LaTeX, EPUB, Org and more" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "Math" : {},
+    "Math and diagrams render on your Mac with bundled libraries. Remote images are the only content that ever touches the network; turn them off to keep previews fully offline." : {},
+    "Menu Bar and Terminal" : {},
+    "Menu bar" : {},
+    "Mermaid diagram" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Mermaid diagrams" : {},
+    "More than one extension claims this type; Quick Look shows only one." : {},
+    "No answer" : {
+      "comment" : "Diagnostics: Quick Look didn’t say which viewer it used"
+    },
+    "No matching files." : {
+      "comment" : "Menu bar search found nothing"
+    },
+    "No settings match “%@”" : {
+      "comment" : "Settings search; the argument is what was typed"
+    },
+    "No themes match “%@”" : {
+      "comment" : "Theme search; the argument is what was typed"
+    },
+    "None installed. Only Greece and Apple’s own viewers are in play." : {},
+    "Notebook" : {
+      "comment" : "Sample file: a Jupyter notebook"
+    },
+    "OBJ model" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Off" : {
+      "comment" : "Extension state"
+    },
+    "On" : {
+      "comment" : "Extension state"
+    },
+    "Open" : {},
+    "Open Extension Settings" : {},
+    "Open Greece" : {},
+    "Open at login" : {},
+    "Open in Quick Look" : {},
+    "Open this sample in the real Quick Look panel" : {},
+    "Other Quick Look Extensions" : {},
+    "Other Quick Look extensions" : {},
+    "Outline beside long documents" : {},
+    "Palettes" : {},
+    "Patch" : {
+      "comment" : "Diagnostics: a kind of file\nSample file: a code patch (diff)"
+    },
+    "Plain text" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Press Space on almost anything, from code and Markdown to maps, 3D models, books, archives and apps, and see it beautifully and instantly, without anything leaving your Mac." : {},
+    "Preview %@ in Quick Look" : {
+      "comment" : "Tooltip; the argument is a file name"
+    },
+    "Preview %@ sample" : {
+      "comment" : "The argument is a kind of sample, such as Map or ZIP Archive"
+    },
+    "Preview Kinds" : {},
+    "Preview kinds" : {},
+    "Previews" : {},
+    "Previews are on" : {},
+    "Previews are rendered on your Mac. Greece has no accounts, analytics or tracking." : {},
+    "Previews · %lld file types" : {
+      "comment" : "Another app’s preview extension",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Previews · %lld file type"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Previews · %lld file types"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Privacy" : {},
+    "Property list" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Provisioning profile" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Quick Look" : {},
+    "Quick Look always opens CSV in Apple’s Office previewer, before any extension." : {},
+    "Quick Look didn’t report a viewer in time. Try again." : {},
+    "Quick Look doesn’t know about Greece’s %@ previews yet." : {
+      "comment" : "The argument is a kind of preview, such as Code & Text"
+    },
+    "Quick Look doesn’t know about Greece’s Finder thumbnails yet." : {},
+    "Quick Look is on" : {
+      "comment" : "Sidebar status footer"
+    },
+    "Quick Look is using %@. Repair to use this copy and remove the others." : {
+      "comment" : "The argument is the path of another copy’s extension"
+    },
+    "Quick Look is using another copy of Greece at %@. Turn on this copy to use its previews and settings." : {
+      "comment" : "The argument is the path of the other Greece.app"
+    },
+    "Quick Look isn’t using Greece yet" : {},
+    "Quick Look keeps plain text for its own text viewer." : {},
+    "Quick Look opens SVG in Apple’s web viewer, before any extension. Greece shows SVGs inside archives." : {},
+    "Quick Look picked another app’s extension." : {},
+    "Quick Look previews are on" : {},
+    "Quick Look shows only one of them for %@. Turn %@’s extension off to let Greece show them." : {
+      "comment" : "The first argument lists file types; the second is an app’s name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Quick Look shows only one of them for %1$@. Turn %2$@’s extension off to let Greece show them."
+          }
+        }
+      }
+    },
+    "Quick Look shows provisioning profiles with its text viewer. Greece shows them inside apps and archives." : {},
+    "Quick Look status" : {},
+    "Quick Look used %@." : {
+      "comment" : "The argument is a viewer, such as Apple’s text viewer"
+    },
+    "Quick Look uses this copy of Greece." : {},
+    "Quick Look was restarted. New previews use your latest settings." : {},
+    "Quit" : {},
+    "Reading font" : {},
+    "Reading size" : {},
+    "Reading theme" : {},
+    "Recently Previewed" : {
+      "comment" : "Menu bar: files previewed in Quick Look"
+    },
+    "Recently previewed files" : {},
+    "Reinstall" : {
+      "comment" : "Installs the greece terminal command again"
+    },
+    "Remember scroll position" : {},
+    "Remember window size" : {},
+    "Repair" : {
+      "comment" : "Button: registers this copy of Greece again"
+    },
+    "Restart Quick Look" : {},
+    "Restore Default Settings…" : {},
+    "Restore Defaults" : {},
+    "Restore all preview settings to their defaults?" : {},
+    "Restore default settings" : {},
+    "Rich content" : {},
+    "Row numbers" : {},
+    "Rows to show" : {},
+    "SQLite files open read-only and unchanged. Large tables page in as you scroll." : {},
+    "STL model" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "SVG image" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Sample" : {},
+    "Save a file while its preview is open and the preview updates in place, at the same spot. Greece can also reopen files where you left off, and the window at the size you last chose." : {},
+    "Search Settings" : {},
+    "Search Themes" : {
+      "comment" : "Search field placeholder"
+    },
+    "Select any file in Finder and press Space. Settings apply to the next preview you open." : {},
+    "Settings" : {},
+    "Shell script" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Show Greece in the menu bar" : {},
+    "Show an outline beside long documents" : {},
+    "Show front matter as properties" : {},
+    "Show hidden files" : {},
+    "Show in Finder" : {},
+    "Show the info bar" : {},
+    "Show up to" : {},
+    "Shown by Apple’s built-in viewer." : {},
+    "Size" : {},
+    "Source code, JSON, property lists, patches and logs" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "Status" : {},
+    "Subtitles" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "TSV, SQLite, HAR, lock files, Parquet and more" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "Tab width" : {},
+    "Tab- and pipe-separated files open in Greece. For .csv files, macOS keeps its own built-in table preview." : {},
+    "Tables" : {},
+    "Tables and databases" : {
+      "comment" : "Welcome: what the Data settings cover"
+    },
+    "Terminal command" : {},
+    "Text" : {},
+    "The Cyclades" : {
+      "comment" : "Theme thumbnail: title of a tiny sample document about Greek islands"
+    },
+    "The info bar shows what a file is at a glance: its language, size, line or row count, and when it last changed." : {},
+    "The menu bar lists files you previewed and files Claude Code and Codex edited recently, read from their own session logs on this Mac." : {},
+    "The only network access is loading remote images in Markdown, which you can turn off." : {},
+    "The outline appears when the preview is wide enough and the document has three or more sections." : {},
+    "The slow boats have better decks." : {
+      "comment" : "Theme thumbnail: a quotation in the sample document"
+    },
+    "Theme" : {},
+    "Theme Default (%@)" : {
+      "comment" : "Font menu item; the argument is a reading theme’s name"
+    },
+    "Theme variant" : {},
+    "Themes, fonts, line numbers" : {
+      "comment" : "Welcome: what the Code settings cover"
+    },
+    "This App" : {
+      "comment" : "Sample file: Greece.app itself"
+    },
+    "This version of macOS treats .%@ files as video, so Quick Look opens its movie viewer." : {
+      "comment" : "The argument is a file name extension, such as ts"
+    },
+    "Try it" : {},
+    "Turn Off" : {
+      "comment" : "Button: turns another app’s Quick Look extension off"
+    },
+    "Turn On Greece" : {},
+    "Turn a kind off and macOS shows those files with its own viewer, as if Greece weren’t installed. The same switches are in System Settings › General › Login Items & Extensions › Quick Look." : {},
+    "Turn on Greece" : {},
+    "Turn on Quick Look" : {
+      "comment" : "Sidebar status footer; opens the Welcome page"
+    },
+    "Turning On…" : {},
+    "Type `greece file.md` in Terminal, or pipe text into `greece`." : {
+      "comment" : "Keep the Markdown code spans: `greece` is the command"
+    },
+    "Typography" : {},
+    "Update previews when files change" : {},
+    "Variant" : {},
+    "Version %@" : {
+      "comment" : "About page; the argument is the version and build, such as 1.0.0 (1)"
+    },
+    "Web font" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "Weight" : {},
+    "Welcome" : {
+      "comment" : "Sidebar page"
+    },
+    "While You Read" : {},
+    "Who Shows Each Kind of File" : {},
+    "Wrap long lines" : {},
+    "ZIP Archive" : {
+      "comment" : "Sample file"
+    },
+    "ZIP, 7z, RAR, tar, comics, packages and folders" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "a built-in viewer" : {
+      "comment" : "Completes “Quick Look used %@.”"
+    },
+    "ferry" : {
+      "comment" : "Theme thumbnail: the linked word in the sample sentence"
+    },
+    "glTF model" : {
+      "comment" : "Diagnostics: a kind of file"
+    },
+    "glTF, FBX, STL, OBJ, 3MF and point clouds" : {
+      "comment" : "Preview Kinds: what this kind covers"
+    },
+    "macOS hasn’t registered Greece’s Quick Look extension yet. Turn it on to start previewing files." : {},
+    "macOS keeps" : {
+      "comment" : "Diagnostics: macOS always shows this file type itself"
+    },
+    "macOS may stop using Greece’s extensions when it runs from another folder. Move it to Applications and open it from there." : {},
+    "macOS shows these files itself. Turn them back on in General › Preview Kinds." : {
+      "comment" : "General is the settings page, Preview Kinds its section"
+    },
+    "other types" : {
+      "comment" : "Ends a list of file types, as in “JSON, YAML and other types”"
+    }
+  },
+  "version" : "1.0"
+}

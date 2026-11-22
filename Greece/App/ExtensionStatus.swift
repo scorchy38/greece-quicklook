@@ -56,11 +56,12 @@ final class ExtensionStatus: ObservableObject {
     }
 
     /// The preview families (everything but thumbnails), for the Preview Kinds settings.
+    /// Names are the ones System Settings shows, in the app's language when the extension has it.
     nonisolated static var previewFamilies: [(identifier: String, file: String, name: String)] {
         guard let plugins = Bundle.main.builtInPlugInsURL else { return [] }
         return extensions.filter { $0.identifier != "com.scorchy.greece.thumbnails" }.map { item in
-            let info = NSDictionary(contentsOf: plugins.appendingPathComponent(item.file).appendingPathComponent("Contents/Info.plist")) as? [String: Any]
-            return (item.identifier, item.file, info?["CFBundleDisplayName"] as? String ?? item.file)
+            let bundle = Bundle(url: plugins.appendingPathComponent(item.file))
+            return (item.identifier, item.file, bundle?.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? item.file)
         }
     }
 
@@ -86,7 +87,7 @@ final class ExtensionStatus: ObservableObject {
         try? await Task.sleep(nanoseconds: 600_000_000)
         working = false
         refresh()
-        message = "Greece is now handling Quick Look previews."
+        message = String(localized: "Greece is now handling Quick Look previews.")
     }
 
     func resetQuickLook() {
@@ -95,7 +96,7 @@ final class ExtensionStatus: ObservableObject {
             _ = await Self.run("/usr/bin/qlmanage", ["-r"])
             _ = await Self.run("/usr/bin/qlmanage", ["-r", "cache"])
             working = false
-            message = "Quick Look was restarted. New previews use your latest settings."
+            message = String(localized: "Quick Look was restarted. New previews use your latest settings.")
         }
     }
 
