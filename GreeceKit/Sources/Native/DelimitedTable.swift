@@ -13,11 +13,11 @@ public struct DelimitedTable: Sendable {
 
     public var separatorName: String {
         switch separator {
-        case UInt8(ascii: ","): return "Comma-separated"
-        case UInt8(ascii: ";"): return "Semicolon-separated"
-        case UInt8(ascii: "\t"): return "Tab-separated"
-        case UInt8(ascii: "|"): return "Pipe-separated"
-        default: return "Delimited"
+        case UInt8(ascii: ","): return String(localized: "Comma-separated", bundle: .greeceKit, comment: "Info bar detail: how a table’s columns are separated")
+        case UInt8(ascii: ";"): return String(localized: "Semicolon-separated", bundle: .greeceKit, comment: "Info bar detail: how a table’s columns are separated")
+        case UInt8(ascii: "\t"): return String(localized: "Tab-separated", bundle: .greeceKit, comment: "Info bar detail: how a table’s columns are separated")
+        case UInt8(ascii: "|"): return String(localized: "Pipe-separated", bundle: .greeceKit, comment: "Info bar detail: how a table’s columns are separated (by “|”)")
+        default: return String(localized: "Delimited", bundle: .greeceKit, comment: "Info bar detail: a table whose columns are separated by some other character")
         }
     }
 

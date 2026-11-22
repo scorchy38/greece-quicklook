@@ -417,21 +417,27 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
         var items: [NSMenuItem] = []
         if let row, row < source.rowCount {
             if let column, let text = Self.copyableText(source.value(row: row, column: column)) {
-                items.append(ActionMenuItem("Copy \(MenuText.quoted(text))") { Clipboard.copy(text) })
+                items.append(ActionMenuItem(Self.copyTitle(text)) { Clipboard.copy(text) })
             }
-            items.append(ActionMenuItem("Copy Row") { [weak self] in
+            items.append(ActionMenuItem(String(localized: "Copy Row", bundle: .greeceKit)) { [weak self] in
                 guard let self else { return }
                 Clipboard.copy(self.tsv(rows: IndexSet(integer: row)))
             })
             let selected = tableView.selectedRowIndexes
             if selected.count > 1, selected.contains(row) {
-                items.append(ActionMenuItem("Copy Selected Rows") { [weak self] in self?.copySelection() })
+                items.append(ActionMenuItem(String(localized: "Copy Selected Rows", bundle: .greeceKit)) { [weak self] in self?.copySelection() })
             }
         }
         let extra = cellMenuItems?(row, column) ?? []
         if !items.isEmpty, !extra.isEmpty, !extra[0].isSeparatorItem { items.append(.separator()) }
         items += extra
         return .context(items)
+    }
+
+    /// "Copy “Paros”": a value, shortened to one line, in the item's title.
+    private static func copyTitle(_ value: String) -> String {
+        let shown = MenuText.short(value)
+        return String(localized: "Copy “\(shown)”", bundle: .greeceKit, comment: "Menu item; the argument is the value it copies, such as a table cell’s text")
     }
 
     /// The text a "Copy “…”" item copies, or nil when the cell holds nothing worth copying.
@@ -449,16 +455,19 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
         let sorted = sort?.key == String(column)
         let title = source.title(ofColumn: column)
         var items: [NSMenuItem] = [
-            ActionMenuItem("Sort Ascending", state: sorted && sort?.ascending == true ? .on : .off) { [weak self] in
+            ActionMenuItem(String(localized: "Sort Ascending", bundle: .greeceKit, comment: "Menu item on a table column’s title"),
+                           state: sorted && sort?.ascending == true ? .on : .off) { [weak self] in
                 self?.tableView.sortDescriptors = [NSSortDescriptor(key: String(column), ascending: true)]
             },
-            ActionMenuItem("Sort Descending", state: sorted && sort?.ascending == false ? .on : .off) { [weak self] in
+            ActionMenuItem(String(localized: "Sort Descending", bundle: .greeceKit, comment: "Menu item on a table column’s title"),
+                           state: sorted && sort?.ascending == false ? .on : .off) { [weak self] in
                 self?.tableView.sortDescriptors = [NSSortDescriptor(key: String(column), ascending: false)]
             },
             .separator(),
         ]
-        if !title.isEmpty { items.append(ActionMenuItem("Copy \(MenuText.quoted(title))") { Clipboard.copy(title) }) }
-        items.append(ActionMenuItem("Copy Column", enabled: source.rowCount > 0) { [weak self] in
+        if !title.isEmpty { items.append(ActionMenuItem(Self.copyTitle(title)) { Clipboard.copy(title) }) }
+        items.append(ActionMenuItem(String(localized: "Copy Column", bundle: .greeceKit, comment: "Menu item: copies every value in a table column"),
+                                    enabled: source.rowCount > 0) { [weak self] in
             guard let self else { return }
             Clipboard.copy(self.columnText(column))
         })
