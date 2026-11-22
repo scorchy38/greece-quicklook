@@ -25,12 +25,13 @@
   /** Own string-keyed entries of an object, capped. Safe on anything. */
   Smart.entries = (v, limit = 2000) => (isObject(v) ? Object.keys(v).slice(0, limit).map((k) => [k, v[k]]) : []);
   /** A short, single-line, printable version of any value. */
-  Smart.text = (v, max = 200) => {
+  Smart.text = (v, max = 200, nested = false) => {
     let s;
     if (v == null) s = '';
     else if (typeof v === 'string') s = v;
     else if (typeof v === 'number' || typeof v === 'boolean') s = String(v);
-    else if (Array.isArray(v)) s = v.slice(0, 20).map((x) => Smart.text(x, 60)).join(', ');
+    // One level of list only: YAML aliases can nest lists exponentially.
+    else if (Array.isArray(v)) s = nested ? '…' : v.slice(0, 20).map((x) => Smart.text(x, 60, true)).join(', ');
     else if (v instanceof Date) s = isNaN(v) ? '' : v.toISOString().slice(0, 10);
     else s = '';
     s = s.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim();

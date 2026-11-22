@@ -22,7 +22,7 @@
   const LETTERS = { V: TRACE, D: DEBUG, I: INFO, W: WARN, E: ERROR, F: ERROR, A: ERROR, U: INFO };
 
   const STRUCTURED = /(?:^|[\s,{])"?(?:level|lvl|severity|loglevel|log\.level|levelname|@l|@level)"?\s*[=:]\s*"?([A-Za-z]{3,11}|\d{1,2})\b"?/i;
-  const UPPER = /(^|[\s[(<|:"'=/])(FATAL|CRITICAL|CRIT|EMERG(?:ENCY)?|ALERT|PANIC|SEVERE|ERROR|ERR|EROR|FAULT|WARN(?:ING)?|WRN|NOTICE|INFO(?:RMATION)?|INF|DEBUG|DBG|TRACE|TRC|VERBOSE|FINEST|FINER|FINE)(?=$|[\s\]):>|,.;"'=/-])/;
+  const UPPER = /(^|[\s[(<|:"'=/.])(FATAL|CRITICAL|CRIT|EMERG(?:ENCY)?|ALERT|PANIC|SEVERE|ERROR|ERR|EROR|FAULT|WARN(?:ING)?|WRN|NOTICE|INFO(?:RMATION)?|INF|DEBUG|DBG|TRACE|TRC|VERBOSE|FINEST|FINER|FINE)(?=$|[\s\]):>|,.;"'=/-])/;
   const BRACKETED = /[[<(|]\s*(fatal|critical|crit|emerg|alert|panic|error|err|warn|warning|notice|info|debug|trace|verbose)\s*[\]>)|]/i;
   const TITLE = /^(Error|Warning|Fatal|Panic|Notice|Info|Debug|Trace)(?=[:!\s])/;
   const MACOS = /\s0x[0-9a-f]+\s+(Default|Info|Debug|Error|Fault)\s+0x/;
@@ -182,7 +182,7 @@
       if (!message) continue;
       // Ids, hashes and numbers vary between otherwise identical errors.
       const key = message.replace(/\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi, '…')
-        .replace(/\b0x[0-9a-f]+\b/gi, '0x…').replace(/\b(?=[0-9a-f]*\d)[0-9a-f]{3,}\b/gi, '…').replace(/\d+/g, '#').slice(0, 160);
+        .replace(/\b0x[0-9a-f]+\b/gi, '0x…').replace(/\b(?=[0-9a-f]*\d)(?=[0-9a-f]*[a-f])[0-9a-f]{3,}\b/gi, '…').replace(/\d+/g, '#').slice(0, 160);
       const group = groups.get(key);
       if (group) group.count++;
       else if (groups.size < 5000) groups.set(key, { message: message.slice(0, 160), count: 1, line: i + 1 });
@@ -444,7 +444,7 @@
           if (lv !== wanted) continue;
           const y = Math.round(((top + index * rowHeight) / total) * strip.height);
           if (y - lastY < scale) continue;
-          ctx.fillRect(scale, y, 6 * scale, Math.max(2 * scale, Math.round(rowHeight / total * strip.height)));
+          ctx.fillRect(2 * scale, y, 5 * scale, Math.max(2 * scale, Math.round(rowHeight / total * strip.height)));
           lastY = y;
         }
       }
@@ -455,6 +455,8 @@
       window.scrollTo(window.scrollX, fraction * document.documentElement.scrollHeight - window.innerHeight / 2);
     });
     window.addEventListener('resize', drawStrip);
+    // Folding the card or loading the rest of the log moves everything; redraw then too.
+    if (window.ResizeObserver) new ResizeObserver(() => drawStrip()).observe(document.body);
     drawStrip();
   }
 
