@@ -290,13 +290,13 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         if PreviewHost.acceptsTyping { outline.doubleAction = #selector(toggle(_:)) }
         outline.owner = self
 
-        addColumn("name", title: "Name", width: 300, min: 160)
-        addColumn("modified", title: "Date Modified", width: 170, min: 90)
-        addColumn("size", title: "Size", width: 82, min: 60, alignment: .right)
+        addColumn("name", title: FileColumnTitles.name, width: 300, min: 160)
+        addColumn("modified", title: FileColumnTitles.modified, width: 170, min: 90)
+        addColumn("size", title: FileColumnTitles.size, width: 82, min: 60, alignment: .right)
         if isArchive && compressedSizes {
-            addColumn("compressed", title: "Compressed", width: 92, min: 60, alignment: .right)
+            addColumn("compressed", title: FileColumnTitles.compressed, width: 92, min: 60, alignment: .right)
         }
-        addColumn("kind", title: "Kind", width: 130, min: 70)
+        addColumn("kind", title: FileColumnTitles.kind, width: 130, min: 70)
         outline.outlineTableColumn = outline.tableColumns.first
         let initialSort = sort == .compressed && !(isArchive && compressedSizes) ? .name : sort
         outline.sortDescriptors = [NSSortDescriptor(key: initialSort.rawValue, ascending: ascending)]
@@ -509,11 +509,15 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         var folder: [NSMenuItem] = []
         if node.isExpandable {
             let expanded = outline.isItemExpanded(node)
-            folder.append(ActionMenuItem(expanded ? "Collapse" : "Expand") { [weak self] in
+            let toggle = expanded ? String(localized: "Collapse", bundle: .greeceKit, comment: "Menu item: closes a folder in the list")
+                : String(localized: "Expand", bundle: .greeceKit, comment: "Menu item: opens a folder in the list to show what’s inside")
+            folder.append(ActionMenuItem(toggle) { [weak self] in
                 guard let self else { return }
                 if expanded { self.outline.collapseItem(node) } else { self.outline.expandItem(node) }
             })
-            folder.append(ActionMenuItem(expanded ? "Collapse All" : "Expand All") { [weak self] in
+            let toggleAll = expanded ? String(localized: "Collapse All", bundle: .greeceKit, comment: "Menu item: closes a folder in the list and every folder inside it")
+                : String(localized: "Expand All", bundle: .greeceKit, comment: "Menu item: opens a folder in the list and every folder inside it")
+            folder.append(ActionMenuItem(toggleAll) { [weak self] in
                 guard let self else { return }
                 if expanded { self.outline.collapseItem(node, collapseChildren: true) } else { self.expandAll(node) }
             })
@@ -713,7 +717,9 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
             if let packed = file.compressedSize, !(file.isDirectory && file.children?.isEmpty != false) {
                 cell.configure(Self.bytes(packed), alignment: .right)
                 if let size = file.size, size > 0 {
-                    cell.toolTip = "\(Int((Double(packed) / Double(size) * 100).rounded()))% of the original size"
+                    let percent = ((Double(packed) / Double(size) * 100).rounded() / 100).formatted(.percent)
+                    cell.toolTip = String(localized: "\(percent) of the original size", bundle: .greeceKit,
+                                          comment: "Tooltip on a compressed size in an archive’s list; the argument is a percentage, such as “40%”")
                 }
             } else {
                 cell.configure("--", alignment: .right, color: .tertiaryLabelColor)
@@ -736,15 +742,23 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     /// The Kind column: the file system's own description for real files, the type's for archive members.
     static func kindName(of file: FileNode) -> String {
         if let kind = file.kind { return kind }
-        if file.isSymlink { return "Alias" }
-        if file.isDirectory { return "Folder" }
+        if file.isSymlink { return KindNames.alias }
+        if file.isDirectory { return KindNames.folder }
         let ext = (file.name as NSString).pathExtension.lowercased()
         FileTreeView.kindLock.lock()
         defer { FileTreeView.kindLock.unlock() }
         if let cached = FileTreeView.kindCache[ext] { return cached }
-        let name = ext.isEmpty ? "Document" : (UTType(filenameExtension: ext).flatMap { $0.isDynamic ? nil : $0.localizedDescription } ?? "\(ext.uppercased()) File")
+        let name = ext.isEmpty ? KindNames.document : (UTType(filenameExtension: ext).flatMap { $0.isDynamic ? nil : $0.localizedDescription }
+            ?? String(localized: "\(ext.uppercased()) File", bundle: .greeceKit, comment: "Kind of a file of unknown type; the argument is its extension in capitals, such as “XYZ”"))
         FileTreeView.kindCache[ext] = name
         return name
+    }
+
+    /// Kinds Finder names without a type, looked up once: sorting by kind asks for them often.
+    enum KindNames {
+        static let alias = String(localized: "Alias", bundle: .greeceKit, comment: "Kind of a symbolic link (as in Finder), also its badge’s accessibility label")
+        static let folder = String(localized: "Folder", bundle: .greeceKit, comment: "Kind of a folder (as in Finder)")
+        static let document = String(localized: "Document", bundle: .greeceKit, comment: "Kind of a file without an extension (as in Finder)")
     }
 
     private func icon(for file: FileNode) -> NSImage { FileTreeView.displayIcon(for: file) }
@@ -886,10 +900,11 @@ private final class NameCell: NSTableCellView {
         icon.imageScaling = .scaleProportionallyUpOrDown
         labelDot.wantsLayer = true
         labelDot.layer?.cornerRadius = 4
-        alias.image = NSImage(systemSymbolName: "arrow.turn.up.right", accessibilityDescription: "Alias")
+        alias.image = NSImage(systemSymbolName: "arrow.turn.up.right", accessibilityDescription: FileTreeView.KindNames.alias)
         alias.symbolConfiguration = .init(pointSize: 9, weight: .semibold)
         alias.contentTintColor = .tertiaryLabelColor
-        lock.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "Encrypted")
+        lock.image = NSImage(systemSymbolName: "lock.fill",
+                             accessibilityDescription: String(localized: "Encrypted", bundle: .greeceKit, comment: "State of an archive or a file in it"))
         lock.symbolConfiguration = .init(pointSize: 9, weight: .regular)
         lock.contentTintColor = .tertiaryLabelColor
         textField = label

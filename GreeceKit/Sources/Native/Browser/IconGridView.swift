@@ -54,7 +54,7 @@ final class IconGridView: NSView, NSCollectionViewDataSource, NSCollectionViewDe
         collectionView.register(IconItem.self, forItemWithIdentifier: IconItem.identifier)
         collectionView.register(GroupHeaderView.self, forSupplementaryViewOfKind: NSCollectionView.elementKindSectionHeader,
                                 withIdentifier: GroupHeaderView.identifier)
-        collectionView.setAccessibilityLabel("Icons")
+        collectionView.setAccessibilityLabel(String(localized: "Icons", bundle: .greeceKit, comment: "Accessibility label of a folder’s files shown as icons"))
 
         scrollView.documentView = collectionView
         scrollView.hasVerticalScroller = true
@@ -475,12 +475,13 @@ final class IconCell: NSView {
 
         let config = NSImage.SymbolConfiguration(pointSize: 17, weight: .semibold)
             .applying(.init(paletteColors: [.white, .controlAccentColor]))
-        openButton.image = NSImage(systemSymbolName: "chevron.right.circle.fill", accessibilityDescription: "Open")?
+        let openTitle = String(localized: "Open", bundle: .greeceKit, comment: "Menu item and button: opens a folder in the browser")
+        openButton.image = NSImage(systemSymbolName: "chevron.right.circle.fill", accessibilityDescription: openTitle)?
             .withSymbolConfiguration(config)
         openButton.isBordered = false
         openButton.imagePosition = .imageOnly
-        openButton.toolTip = "Open"
-        openButton.setAccessibilityLabel("Open")
+        openButton.toolTip = openTitle
+        openButton.setAccessibilityLabel(openTitle)
         openButton.target = self
         openButton.action = #selector(open)
         openButton.isHidden = true
@@ -642,7 +643,8 @@ final class GroupHeaderView: NSView, NSCollectionViewElement {
     func configure(title text: String, count number: Int) {
         title.stringValue = text
         count.stringValue = number.formatted()
-        setAccessibilityLabel("\(text), \(number) \(number == 1 ? "item" : "items")")
+        setAccessibilityLabel(String(localized: "\(text), \(number) items", bundle: .greeceKit,
+                                     comment: "Accessibility label of a group heading: its title and how many files it holds, such as “Images, 12 items”"))
     }
 
     /// Views don't clip to their bounds (macOS 14 and later), and headings float above the files.
