@@ -1,0 +1,9 @@
+# App icons for mobile and Windows apps; cards for profiles and torrents.
+com.apple.itunes.ipa
+com.scorchy.greece.android-package
+com.scorchy.greece.android-app-bundle
+com.microsoft.windows-executable
+com.apple.mobileprovision
+com.apple.provisionprofile
+com.apple.mobileconfig
+org.bittorrent.torrent
