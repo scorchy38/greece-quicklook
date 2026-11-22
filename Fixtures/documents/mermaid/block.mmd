@@ -1,0 +1,12 @@
+block-beta
+    columns 3
+    ais["AIS receiver"] space feed["Delay feed"]
+    space space space
+    estimator["Arrival estimator"] store[("Sailing archive")] app["Passenger app"]
+
+    ais --> estimator
+    estimator --> feed
+    estimator --> store
+    feed --> app
+
+    style feed fill:#e8f4ea,stroke:#34a853

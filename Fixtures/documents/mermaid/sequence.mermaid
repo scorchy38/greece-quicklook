@@ -1,0 +1,20 @@
+%%{init: {"sequence": {"mirrorActors": false}}}%%
+sequenceDiagram
+    autonumber
+    actor P as Passenger
+    participant App
+    participant Feed as Delay feed
+    participant AIS as AIS receiver
+
+    AIS->>Feed: Position report (every 15 s)
+    Feed->>Feed: Estimate arrival $$\hat{t} = t_0 + \frac{d}{v}$$
+    P->>App: Open route page
+    App->>Feed: GET /routes/skerry/delays
+    alt Delayed more than 2 minutes
+        Feed-->>App: Delay of 6 min
+        App-->>P: Shows "6 min late"
+    else On time
+        Feed-->>App: On time
+        App-->>P: Shows departure time
+    end
+    Note over Feed,AIS: Gaps up to 2 minutes are tolerated

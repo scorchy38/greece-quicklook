@@ -1,0 +1,16 @@
+---
+title: Training a sparse-attention model
+---
+flowchart LR
+    data[(Corpus)] --> tok[Tokenise]
+    tok --> blocks["Split keys into blocks of $$b$$"]
+    blocks --> score["Score blocks: $$s_i = q \cdot \bar{k}_i$$"]
+    score --> choose{"Discarded mass $$\delta < \varepsilon$$?"}
+    choose -- yes --> read[Read top-k blocks]
+    choose -- no --> grow[Increase k] --> score
+    read --> loss["Loss $$\ell = -\log p(y \mid x)$$"]
+    loss --> update[Update weights]
+    update -. next batch .-> tok
+
+    classDef store fill:#e8eef7,stroke:#5b7fa6
+    class data store

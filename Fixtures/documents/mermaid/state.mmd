@@ -1,0 +1,21 @@
+stateDiagram-v2
+    [*] --> Scheduled
+    Scheduled --> Boarding : 10 min before
+    Boarding --> Departed : gangway up
+    Departed --> Delayed : estimate over 2 min late
+    Delayed --> Departed : back on time
+    Departed --> Arrived
+    Delayed --> Arrived
+    Scheduled --> Cancelled : weather
+    Arrived --> [*]
+    Cancelled --> [*]
+
+    state Departed {
+        [*] --> AtSea
+        AtSea --> Approaching : within 1 nm
+        Approaching --> [*]
+    }
+    note right of Cancelled
+        Passengers are notified
+        and offered the next sailing.
+    end note

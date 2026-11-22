@@ -1,0 +1,19 @@
+C4Context
+    title System context: ferry timetable service
+
+    Person(passenger, "Passenger", "Checks departures and delays on their phone.")
+    Person(operator, "Harbour operator", "Edits timetables and cancels sailings.")
+
+    Enterprise_Boundary(harbour, "Harbour Authority") {
+        System(timetable, "Timetable service", "Publishes sailings and live delays.")
+        SystemDb(archive, "Sailing archive", "Every departure since 2019.")
+    }
+
+    System_Ext(ais, "AIS receiver", "Reports vessel positions every 15 seconds.")
+    System_Ext(planners, "Journey planners", "Third-party apps using the open feed.")
+
+    Rel(passenger, timetable, "Reads departures from", "HTTPS")
+    Rel(operator, timetable, "Manages timetables in")
+    Rel(ais, timetable, "Sends positions to", "UDP")
+    Rel(timetable, archive, "Stores sailings in")
+    Rel(planners, timetable, "Polls", "GTFS-Realtime")

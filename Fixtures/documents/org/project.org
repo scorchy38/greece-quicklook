@@ -1,0 +1,112 @@
+#+TITLE: Harbour Ferry Timetable Rewrite
+#+AUTHOR: Ingrid Sæther
+#+DATE: <2026-03-02 Mon>
+#+FILETAGS: :ferries:planning:
+#+STARTUP: overview
+#+TODO: TODO NEXT WAITING | DONE CANCELLED
+
+# This file plans the spring release. Lines starting with "# " are comments.
+
+* Overview
+The timetable service publishes sailings for eleven routes across the
+archipelago. This rewrite moves it from nightly batch files to a live feed, so
+that delays reach passengers *within a minute* instead of the next morning.
+See [[https://orgmode.org][Org mode]] for the format of this file, or
+https://example.org/ferries for the current public site.
+
+Goals, in order of importance:
+1. Correct departures, always[fn:1].
+2. Delays published in under 60 seconds.
+3. A feed other apps can use without asking us.
+
+** Glossary
+- Sailing :: one departure of one vessel on one route.
+- Rotation :: the sequence of sailings a vessel runs in a day.
+- Tidal window :: hours when a harbour is deep enough for the larger vessels.
+
+* TODO [#A] Live delay feed [1/3]                                  :backend:
+  DEADLINE: <2026-04-15 Wed> SCHEDULED: <2026-03-09 Mon>
+  :PROPERTIES:
+  :OWNER:    Tomás
+  :EFFORT:   3w
+  :ID:       5b0c9d1e-0a4f-4c1b-9b1a-2f7d8c3e6a10
+  :END:
+Vessels report their position every 15 seconds. We estimate arrival with a
+simple model and publish a delay when it exceeds two minutes.
+
+- [X] Ingest AIS positions from the harbour receiver
+- [ ] Estimate arrival times per sailing
+- [ ] Publish a GTFS-Realtime feed
+
+#+BEGIN_SRC python
+def delay_minutes(scheduled, estimated):
+    """Rounded delay in minutes; early arrivals count as on time."""
+    seconds = (estimated - scheduled).total_seconds()
+    return max(0, round(seconds / 60))
+#+END_SRC
+
+#+BEGIN_NOTE
+The receiver drops roughly one position in forty during storms. The estimator
+must tolerate gaps of up to two minutes.
+#+END_NOTE
+
+** NEXT Choose the arrival model                                :research:
+Candidates are a constant-speed model and a per-route regression. Expected
+error for the constant-speed model is about \(\pm 90\) seconds; the
+regression should halve it. Euler would approve: \(e^{i\pi} + 1 = 0\).
+
+** WAITING Receiver firmware update from the harbour authority
+   SCHEDULED: <2026-03-20 Fri>
+
+* DONE [#B] Import the winter timetable                          :data:
+  CLOSED: [2026-02-27 Fri 16:40]
+The winter timetable arrived as a spreadsheet. Imported totals:
+
+| Route              | Sailings | Vessels | First departure |
+|--------------------+----------+---------+-----------------|
+| Harbour – Skerry   |       42 |       2 | 06:10           |
+| Harbour – Lindholm |       28 |       1 | 06:45           |
+| Lindholm – Outer   |       12 |       1 | 08:00           |
+|--------------------+----------+---------+-----------------|
+| Total              |       82 |       4 |                 |
+
+* TODO [#C] Passenger notifications [0/2]                     :frontend:ux:
+- [ ] Push a notice when a followed sailing is delayed
+- [ ] Show the tidal window on the route page
+
+#+BEGIN_QUOTE
+Nobody minds a late ferry nearly as much as not knowing it is late.
+— a regular on the Skerry route
+#+END_QUOTE
+
+#+BEGIN_WARNING
+Do not send notifications between 23:00 and 05:00 unless the sailing departs
+in that window.
+#+END_WARNING
+
+* CANCELLED Print timetables for the kiosks                       :ops:
+  CLOSED: [2026-02-10 Tue 09:12]
+Replaced by the screens at each pier.
+
+* Notes
+Formatting check: *bold*, /italic/, _underlined_, +struck through+,
+=verbatim text=, and ~inline code~. A keyboard shortcut: =C-c C-t= cycles the
+TODO state.
+
+#+BEGIN_EXAMPLE
+$ ferryctl import winter-2026.xlsx --dry-run
+82 sailings, 4 vessels, 0 conflicts
+#+END_EXAMPLE
+
+#+BEGIN_SRC emacs-lisp
+(setq org-todo-keywords
+      '((sequence "TODO" "NEXT" "WAITING" "|" "DONE" "CANCELLED")))
+#+END_SRC
+
+#+begin_comment
+Internal: remember to rotate the AIS receiver credentials before launch.
+#+end_comment
+
+* Footnotes
+[fn:1] Correct means matching the published timetable or the latest delay
+notice, whichever is newer.

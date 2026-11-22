@@ -1,0 +1,60 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{Sweave}
+
+\title{Old Faithful: Eruptions and Waiting Times}
+\author{Tomás Okafor}
+\date{February 2026}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\maketitle
+
+<<setup, echo=FALSE>>=
+data(faithful)
+options(digits = 3)
+@
+
+\section{Data}
+
+The \texttt{faithful} data set records \Sexpr{nrow(faithful)} eruptions of the
+Old Faithful geyser in Yellowstone National Park. For each eruption we know its
+duration in minutes and the waiting time until the next one.
+
+<<summary>>=
+summary(faithful)
+@
+
+\section{Two kinds of eruption}
+
+The durations are bimodal: short eruptions of about two minutes and long ones
+of about four and a half. The mean waiting time is
+\Sexpr{round(mean(faithful$waiting), 1)} minutes.
+
+<<plot, fig=TRUE, echo=FALSE, width=6, height=4>>=
+plot(faithful$eruptions, faithful$waiting,
+     xlab = "Eruption duration (min)", ylab = "Waiting time (min)",
+     pch = 19, col = "steelblue")
+abline(lm(waiting ~ eruptions, data = faithful), col = "firebrick", lwd = 2)
+@
+
+\section{A linear model}
+
+We model the waiting time $w$ as a linear function of the duration $e$ of the
+previous eruption:
+\begin{equation}
+  w_i = \beta_0 + \beta_1 e_i + \varepsilon_i,
+  \qquad \varepsilon_i \sim \mathcal{N}(0, \sigma^2).
+  \label{eq:model}
+\end{equation}
+
+<<model>>=
+fit <- lm(waiting ~ eruptions, data = faithful)
+coef(fit)
+@
+
+Each extra minute of eruption adds about \Sexpr{round(coef(fit)[2], 1)}
+minutes to the wait, as Equation~\eqref{eq:model} predicts with a good fit
+($R^2 = \Sexpr{round(summary(fit)$r.squared, 2)}$).
+
+\end{document}
