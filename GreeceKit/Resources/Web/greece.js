@@ -499,7 +499,10 @@
         current = { key: pair[1], values: [] };
         rows.push(current);
         let value = pair[2].trim().replace(/^["']|["']$/g, '');
-        if (/^\[.*\]$/.test(value)) {
+        if (/^[|>][-+]?\d?$/.test(value)) {
+          // A YAML block scalar: the indented lines below are the value, kept as lines (|) or folded (>).
+          current.literal = value[0] === '|';
+        } else if (/^\[.*\]$/.test(value)) {
           current.values = value.slice(1, -1).split(',').map((v) => v.trim().replace(/^["']|["']$/g, '')).filter(Boolean);
           current.list = true;
         } else if (value) {
@@ -513,7 +516,7 @@
       }
     });
     if (!rows.length) return { body, html: '' };
-    const items = rows.map((r) => `<dt>${esc(r.key)}</dt><dd>${r.list ? r.values.map((v) => `<span class="chip">${esc(v)}</span>`).join('') : esc(r.values.join(' '))}</dd>`).join('');
+    const items = rows.map((r) => `<dt>${esc(r.key)}</dt><dd${r.literal ? ' class="literal"' : ''}>${r.list ? r.values.map((v) => `<span class="chip">${esc(v)}</span>`).join('') : esc(r.values.join(r.literal ? '\n' : ' '))}</dd>`).join('');
     return { body, html: `<dl class="front-matter">${items}</dl>` };
   }
 

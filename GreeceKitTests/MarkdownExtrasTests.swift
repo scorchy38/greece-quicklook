@@ -195,6 +195,18 @@ final class MarkdownExtrasTests: XCTestCase {
     }
 
     @MainActor
+    func testFrontMatterBlockScalars() async throws {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("FrontMatter-\(UUID().uuidString).md")
+        defer { try? FileManager.default.removeItem(at: url) }
+        try "---\nname: harbour-forms\ndescription: >\n  Fills in permit forms.\n  Use for berths.\nnotes: |\n  One\n  Two\n---\n\n# Title\n"
+            .write(to: url, atomically: true, encoding: .utf8)
+        let web = try await page(url)
+        let values = try await web.callAsyncJavaScript("return Array.from(document.querySelectorAll('.front-matter dd')).map((d) => d.textContent)",
+                                                       contentWorld: .page) as? [String]
+        XCTAssertEqual(values, ["harbour-forms", "Fills in permit forms. Use for berths.", "One\nTwo"])
+    }
+
+    @MainActor
     func testReadingToolsOnTheExtrasFixture() async throws {
         let web = try await page(fixtures.appendingPathComponent("extras.md"))
         let state = try await web.callAsyncJavaScript("""
