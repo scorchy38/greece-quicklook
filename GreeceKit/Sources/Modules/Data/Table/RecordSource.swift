@@ -159,7 +159,8 @@ final class RecordGridSource: GridSource {
             }
             return indices.map { rows[$0] }
         }
-        let keys: [[UInt8]] = rows.map { Array(store.text(row: $0, column: column).utf8) }
+        // Natural-order keys compare with memcmp: sorting stays fast on large tables.
+        let keys: [[UInt8]] = rows.map { NaturalOrder.key(store.text(row: $0, column: column)) }
         var indices = Array(rows.indices)
         indices.sort { a, b in
             let lhs = keys[a], rhs = keys[b]
@@ -168,7 +169,7 @@ final class RecordGridSource: GridSource {
                 if lhs.isEmpty && rhs.isEmpty { return rows[a] < rows[b] }
                 return !lhs.isEmpty
             }
-            let result = NaturalOrder.compare(lhs, rhs)
+            let result = NaturalOrder.compareKeys(lhs, rhs)
             if result == 0 { return rows[a] < rows[b] }
             return ascending ? result < 0 : result > 0
         }
@@ -274,6 +275,40 @@ enum NaturalOrder {
         }
         if n - i != m - j { return (n - i) < (m - j) ? -1 : 1 }
         return 0
+    }
+
+    /// A key whose plain byte order is natural order: ASCII letters folded to lower case, and each
+    /// run of digits written as its length then its digits (leading zeros dropped), so "9" < "10".
+    static func key(_ text: String) -> [UInt8] {
+        var key: [UInt8] = []
+        let bytes = Array(text.utf8.prefix(256))
+        key.reserveCapacity(bytes.count + 8)
+        var i = 0
+        while i < bytes.count {
+            let b = bytes[i]
+            if b >= 48 && b <= 57 {
+                var start = i
+                while start < bytes.count - 1, bytes[start] == 48, bytes[start + 1] >= 48, bytes[start + 1] <= 57 { start += 1 }
+                var end = start
+                while end < bytes.count, bytes[end] >= 48, bytes[end] <= 57 { end += 1 }
+                // Digits sort before letters; the length byte keeps longer numbers after shorter ones.
+                key.append(0x01)
+                key.append(UInt8(min(end - start, 200)))
+                key.append(contentsOf: bytes[start..<end])
+                i = end
+            } else {
+                key.append(fold(b))
+                i += 1
+            }
+        }
+        return key
+    }
+
+    static func compareKeys(_ a: [UInt8], _ b: [UInt8]) -> Int {
+        let common = min(a.count, b.count)
+        let result = a.withUnsafeBufferPointer { x in b.withUnsafeBufferPointer { y in memcmp(x.baseAddress!, y.baseAddress!, common) } }
+        if result != 0 { return result < 0 ? -1 : 1 }
+        return a.count == b.count ? 0 : (a.count < b.count ? -1 : 1)
     }
 
     static func contains(_ haystack: [UInt8], _ needle: [UInt8]) -> Bool {

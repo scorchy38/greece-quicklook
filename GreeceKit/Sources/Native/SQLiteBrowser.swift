@@ -402,6 +402,23 @@ final class SQLiteWorker {
         }
     }
 
+    /// Every rowid in order: lets a page anywhere in the table start with an index lookup instead of
+    /// an OFFSET scan.
+    func rowids(table: String, alias: String, limit: Int, completion: @escaping ([Int64]?) -> Void) {
+        queue.async { [self] in
+            var ids: [Int64] = []
+            var overflow = false
+            let sql = "SELECT \(alias) FROM \(SQLiteDatabase.quote(table)) ORDER BY \(alias)"
+            let ok = (try? database()?.forEachRow(sql, budget: 10) { statement, _ in
+                ids.append(sqlite3_column_int64(statement, 0))
+                if ids.count > limit { overflow = true; return false }
+                return true
+            }) != nil
+            let result = ok && !overflow ? ids : nil
+            DispatchQueue.main.async { completion(result) }
+        }
+    }
+
     /// The rowids of a table in sorted order (ties broken by rowid). Nil when too slow or too large.
     func sortedRowids(table: String, alias: String, column: String, ascending: Bool, limit: Int,
                       completion: @escaping ([Int64]?) -> Void) {
@@ -447,6 +464,8 @@ final class SQLiteGridSource: GridSource {
     private var recent: [Int] = []
     private var order: (column: String, ascending: Bool)?
     private var permutation: [Int64]?
+    /// Every rowid in table order, once the worker has read them (large tables only).
+    private var positions: [Int64]?
     private(set) var rowCount: Int
     private var numeric: [Bool]
     /// The largest table we'll sort in memory (8 bytes a row).
@@ -467,6 +486,14 @@ final class SQLiteGridSource: GridSource {
         numeric = object.columns.map { column in
             let type = column.type.uppercased()
             return ["INT", "REAL", "FLOA", "DOUB", "NUM", "DEC"].contains { type.contains($0) }
+        }
+        // Large tables: learn where every page starts, so jumping anywhere is an index lookup.
+        if let alias = object.rowidAlias, rowCount > 20_000, rowCount <= Self.sortLimit {
+            worker.rowids(table: object.name, alias: alias, limit: Self.sortLimit) { [weak self] ids in
+                guard let self, let ids, self.order == nil else { return }
+                self.positions = ids
+                self.rowCount = ids.count
+            }
         }
         // Columns without a declared type (view expressions): judge by the first page.
         if object.columns.contains(where: { $0.type.isEmpty }) {
@@ -602,6 +629,9 @@ final class SQLiteGridSource: GridSource {
             if number > 0, let last = lastRowids[number - 1] {
                 sql += " WHERE \(alias) > ? ORDER BY \(alias) LIMIT \(size)"
                 bindings = [.integer(last)]
+            } else if let positions, number * size < positions.count {
+                sql += " WHERE \(alias) >= ? ORDER BY \(alias) LIMIT \(size)"
+                bindings = [.integer(positions[number * size])]
             } else {
                 sql += " ORDER BY \(alias) LIMIT \(size) OFFSET \(number * size)"
             }

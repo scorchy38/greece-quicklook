@@ -80,7 +80,6 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
     private(set) var source: GridSource
     private var showsRowNumbers: Bool
     static let rowNumberID = NSUserInterfaceItemIdentifier("#")
-    private let font = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
     let header = GridHeaderBar()
     private var headerHeight: NSLayoutConstraint!
 
@@ -243,33 +242,9 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
     func numberOfRows(in tableView: NSTableView) -> Int { source.rowCount }
 
-    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
-        guard let identifier = tableColumn?.identifier else { return nil }
-        let cell = (tableView.makeView(withIdentifier: GridCellView.reuseID, owner: nil) as? GridCellView) ?? GridCellView(font: font)
-
-        if identifier == Self.rowNumberID {
-            cell.show(String(row + 1), color: .tertiaryLabelColor, alignment: .right, italic: false)
-            return cell
-        }
-        let column = Int(identifier.rawValue) ?? 0
-        let alignment: NSTextAlignment = source.isNumeric(column: column) ? .right : .left
-        let dimmed = source.isDimmed(row: row)
-        switch source.value(row: row, column: column) {
-        case .text(let text):
-            cell.show(GridView.displayString(text), color: dimmed ? .tertiaryLabelColor : .labelColor, alignment: alignment, italic: false, struck: dimmed)
-        case .null:
-            cell.show("NULL", color: .tertiaryLabelColor, alignment: alignment, italic: true)
-        case .placeholder(let text):
-            cell.show(text, color: .tertiaryLabelColor, alignment: alignment, italic: true)
-        case .secondary(let text):
-            cell.show(GridView.displayString(text), color: dimmed ? .tertiaryLabelColor : .secondaryLabelColor, alignment: alignment, italic: false, struck: dimmed)
-        case .blob(let size):
-            cell.show("BLOB · \(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file))", color: .secondaryLabelColor, alignment: alignment, italic: false)
-        case .status(let text, let tint):
-            cell.showStatus(text, tint: tint, alignment: alignment, dimmed: dimmed)
-        }
-        return cell
-    }
+    /// Rows draw their own cells (see `GridRowView`): one view a row instead of a text field a
+    /// cell keeps scrolling smooth through a million rows.
+    func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? { nil }
 
     func tableView(_ tableView: NSTableView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
         header.needsDisplay = true
@@ -294,7 +269,91 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
     func tableView(_ tableView: NSTableView, shouldSelect tableColumn: NSTableColumn?) -> Bool { false }
 
     func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
-        (tableView.makeView(withIdentifier: GridRowView.reuseID, owner: nil) as? GridRowView) ?? GridRowView()
+        let view = (tableView.makeView(withIdentifier: GridRowView.reuseID, owner: nil) as? GridRowView) ?? GridRowView()
+        view.grid = self
+        view.row = row
+        view.needsDisplay = true
+        return view
+    }
+
+    // MARK: - Cells
+
+    private static let regular = NSFont.monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+    private static let italic = NSFontManager.shared.convert(regular, toHaveTrait: .italicFontMask)
+    private static let dot = NSFont.systemFont(ofSize: 8)
+    private static let paragraphs: [NSTextAlignment: NSParagraphStyle] = {
+        var styles: [NSTextAlignment: NSParagraphStyle] = [:]
+        for alignment in [NSTextAlignment.left, .right] {
+            let style = NSMutableParagraphStyle()
+            style.alignment = alignment
+            style.lineBreakMode = .byTruncatingTail
+            styles[alignment] = style
+        }
+        return styles
+    }()
+
+    /// Rows drawn so far (performance tests check that scrolling really drew).
+    static var drawnRows = 0
+
+    /// Draws one row's cells into its row view.
+    func drawCells(row: Int, in view: GridRowView, dirtyRect: NSRect, selected: Bool) {
+        guard row < source.rowCount else { return }
+        Self.drawnRows += 1
+        let dimmed = source.isDimmed(row: row)
+        let height = view.bounds.height
+        for (index, column) in tableView.tableColumns.enumerated() {
+            let rect = tableView.rect(ofColumn: index)
+            guard rect.maxX > dirtyRect.minX, rect.minX < dirtyRect.maxX else { continue }
+            let frame = NSRect(x: rect.minX + 9, y: 0, width: rect.width - 18, height: height)
+            if column.identifier == Self.rowNumberID {
+                draw(String(row + 1), in: frame, color: selected ? .alternateSelectedControlTextColor : .tertiaryLabelColor, alignment: .right)
+                continue
+            }
+            guard let data = Int(column.identifier.rawValue) else { continue }
+            let alignment: NSTextAlignment = source.isNumeric(column: data) ? .right : .left
+            let primary: NSColor = selected ? .alternateSelectedControlTextColor : dimmed ? .tertiaryLabelColor : .labelColor
+            let secondary: NSColor = selected ? .alternateSelectedControlTextColor : dimmed ? .tertiaryLabelColor : .secondaryLabelColor
+            let quiet: NSColor = selected ? .alternateSelectedControlTextColor : .tertiaryLabelColor
+            switch source.value(row: row, column: data) {
+            case .text(let text):
+                draw(GridView.displayString(text), in: frame, color: primary, alignment: alignment, struck: dimmed)
+            case .null:
+                draw("NULL", in: frame, color: quiet, alignment: alignment, font: Self.italic)
+            case .placeholder(let text):
+                if !text.isEmpty { draw(text, in: frame, color: quiet, alignment: alignment, font: Self.italic) }
+            case .secondary(let text):
+                draw(GridView.displayString(text), in: frame, color: secondary, alignment: alignment, struck: dimmed)
+            case .blob(let size):
+                draw("BLOB · \(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file))", in: frame, color: secondary, alignment: alignment)
+            case .status(let text, let tint):
+                let dot = NSAttributedString(string: "● ", attributes: [.font: Self.dot, .foregroundColor: selected ? NSColor.alternateSelectedControlTextColor : tint.color, .baselineOffset: 1.5])
+                let label = NSMutableAttributedString(attributedString: dot)
+                label.append(NSAttributedString(string: text, attributes: [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: primary]))
+                label.addAttribute(.paragraphStyle, value: Self.paragraphs[alignment]!, range: NSRange(location: 0, length: label.length))
+                drawCentered(label, in: frame)
+            }
+        }
+    }
+
+    private func draw(_ text: String, in frame: NSRect, color: NSColor, alignment: NSTextAlignment, font: NSFont = GridView.regular, struck: Bool = false) {
+        var attributes: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color, .paragraphStyle: Self.paragraphs[alignment]!]
+        if struck {
+            attributes[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
+            attributes[.strikethroughColor] = NSColor.tertiaryLabelColor
+        }
+        drawCentered(NSAttributedString(string: text, attributes: attributes), in: frame)
+    }
+
+    private func drawCentered(_ text: NSAttributedString, in frame: NSRect) {
+        let lineHeight: CGFloat = 15
+        text.draw(with: NSRect(x: frame.minX, y: (frame.height - lineHeight) / 2, width: frame.width, height: lineHeight),
+                  options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine])
+    }
+
+    /// A row's values as text, for VoiceOver.
+    func accessibilityText(row: Int) -> String {
+        guard row < source.rowCount else { return "" }
+        return (0..<source.columnCount).map { "\(source.title(ofColumn: $0)): \(source.value(row: row, column: $0).plainText)" }.joined(separator: ", ")
     }
 
     static func displayString(_ text: String) -> String {
@@ -327,6 +386,21 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 /// A row that draws the column rules, so they end with the last row, like Numbers.
 final class GridRowView: NSTableRowView {
     static let reuseID = NSUserInterfaceItemIdentifier("GridRow")
+    weak var grid: GridView?
+    var row = 0
+
+    override var clipsToBounds: Bool { get { true } set {} }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        grid?.drawCells(row: row, in: self, dirtyRect: dirtyRect.intersection(bounds), selected: isSelected && isEmphasized)
+    }
+
+    override var isSelected: Bool { didSet { if isSelected != oldValue { needsDisplay = true } } }
+    override var isEmphasized: Bool { didSet { if isEmphasized != oldValue { needsDisplay = true } } }
+
+    override func isAccessibilityElement() -> Bool { true }
+    override func accessibilityLabel() -> String? { grid?.accessibilityText(row: row) }
 
     override init(frame: NSRect) {
         super.init(frame: frame)
@@ -626,63 +700,3 @@ extension NSImage {
     }
 }
 
-// MARK: - Cells
-
-final class GridCellView: NSTableCellView {
-    static let reuseID = NSUserInterfaceItemIdentifier("GridCell")
-    private let label = NSTextField(labelWithString: "")
-    private let regular: NSFont
-    private let italic: NSFont
-
-    init(font: NSFont) {
-        regular = font
-        italic = NSFontManager.shared.convert(font, toHaveTrait: .italicFontMask)
-        super.init(frame: .zero)
-        identifier = Self.reuseID
-        label.font = font
-        label.lineBreakMode = .byTruncatingTail
-        label.maximumNumberOfLines = 1
-        label.cell?.usesSingleLineMode = true
-        label.cell?.truncatesLastVisibleLine = true
-        label.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(label)
-        textField = label
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 7),
-            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -7),
-            label.centerYAnchor.constraint(equalTo: centerYAnchor),
-        ])
-    }
-
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    func show(_ text: String, color: NSColor, alignment: NSTextAlignment, italic isItalic: Bool, struck: Bool = false) {
-        if struck {
-            let style = NSMutableParagraphStyle()
-            style.alignment = alignment
-            style.lineBreakMode = .byTruncatingTail
-            label.attributedStringValue = NSAttributedString(string: text, attributes: [
-                .font: regular, .foregroundColor: color, .paragraphStyle: style,
-                .strikethroughStyle: NSUnderlineStyle.single.rawValue, .strikethroughColor: NSColor.tertiaryLabelColor,
-            ])
-            return
-        }
-        label.stringValue = text
-        label.textColor = color
-        label.alignment = alignment
-        label.font = isItalic ? italic : regular
-    }
-
-    func showStatus(_ text: String, tint: GridTint, alignment: NSTextAlignment, dimmed: Bool) {
-        let style = NSMutableParagraphStyle()
-        style.alignment = alignment
-        style.lineBreakMode = .byTruncatingTail
-        let result = NSMutableAttributedString(string: "● ", attributes: [
-            .font: NSFont.systemFont(ofSize: 8), .foregroundColor: tint.color, .baselineOffset: 1.5, .paragraphStyle: style,
-        ])
-        result.append(NSAttributedString(string: text, attributes: [
-            .font: NSFont.systemFont(ofSize: 12), .foregroundColor: dimmed ? NSColor.tertiaryLabelColor : NSColor.labelColor, .paragraphStyle: style,
-        ]))
-        label.attributedStringValue = result
-    }
-}

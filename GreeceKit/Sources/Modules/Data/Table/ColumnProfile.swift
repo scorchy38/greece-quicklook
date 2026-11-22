@@ -19,29 +19,43 @@ enum DataValueParser {
     }
 
     static func number(_ text: String, integer: UnsafeMutablePointer<Bool>?) -> Double? {
-        var bytes = Array(text.utf8)
-        guard !bytes.isEmpty, bytes.count < 48 else { return nil }
-        // Trim ASCII spaces.
-        while let last = bytes.last, last == 0x20 || last == 0x09 { bytes.removeLast() }
-        var start = 0
-        while start < bytes.count, bytes[start] == 0x20 || bytes[start] == 0x09 { start += 1 }
-        guard start < bytes.count else { return nil }
-        var clean: [UInt8] = []
-        clean.reserveCapacity(bytes.count + 1)
-        var i = start
-        // Sign, then an optional currency symbol ("-$5" and "$-5").
-        if bytes[i] == UInt8(ascii: "-") || bytes[i] == UInt8(ascii: "+") { clean.append(bytes[i]); i += 1 }
-        if i < bytes.count, bytes[i] == UInt8(ascii: "$") { i += 1 }
-        else if i + 1 < bytes.count, bytes[i] == 0xC2, bytes[i + 1] == 0xA3 || bytes[i + 1] == 0xA5 { i += 2 }   // £ ¥
-        else if i + 2 < bytes.count, bytes[i] == 0xE2, bytes[i + 1] == 0x82, bytes[i + 2] == 0xAC { i += 3 }  // €
-        if clean.isEmpty, i < bytes.count, bytes[i] == UInt8(ascii: "-") || bytes[i] == UInt8(ascii: "+") { clean.append(bytes[i]); i += 1 }
-        var digits = 0, dots = 0, exponent = false, groupDigits = -1
+        let count = text.utf8.count
+        guard count > 0, count < 48 else { return nil }
+        if let result = text.utf8.withContiguousStorageIfAvailable({ number($0, integer: integer) }) { return result }
+        return Array(text.utf8).withUnsafeBufferPointer { number($0, integer: integer) }
+    }
+
+    private static func number(_ bytes: UnsafeBufferPointer<UInt8>, integer: UnsafeMutablePointer<Bool>?) -> Double? {
         var end = bytes.count
+        // Trim ASCII spaces.
+        while end > 0, bytes[end - 1] == 0x20 || bytes[end - 1] == 0x09 { end -= 1 }
+        var start = 0
+        while start < end, bytes[start] == 0x20 || bytes[start] == 0x09 { start += 1 }
+        guard start < end else { return nil }
+        // At most 48 bytes in, so the cleaned copy fits on the stack.
+        return withUnsafeTemporaryAllocation(of: UInt8.self, capacity: 64) { clean -> Double? in
+            var length = 0
+            func append(_ byte: UInt8) { clean[length] = byte; length += 1 }
+            return parse(bytes, start: start, end: end, append: append, length: { length }, clean: clean, integer: integer)
+        }
+    }
+
+    private static func parse(_ bytes: UnsafeBufferPointer<UInt8>, start: Int, end end_: Int, append: (UInt8) -> Void,
+                              length: () -> Int, clean: UnsafeMutableBufferPointer<UInt8>, integer: UnsafeMutablePointer<Bool>?) -> Double? {
+        var i = start
+        var end = end_
+        // Sign, then an optional currency symbol ("-$5" and "$-5").
+        if bytes[i] == UInt8(ascii: "-") || bytes[i] == UInt8(ascii: "+") { append(bytes[i]); i += 1 }
+        if i < end, bytes[i] == UInt8(ascii: "$") { i += 1 }
+        else if i + 1 < end, bytes[i] == 0xC2, bytes[i + 1] == 0xA3 || bytes[i + 1] == 0xA5 { i += 2 }   // £ ¥
+        else if i + 2 < end, bytes[i] == 0xE2, bytes[i + 1] == 0x82, bytes[i + 2] == 0xAC { i += 3 }  // €
+        if length() == 0, i < end, bytes[i] == UInt8(ascii: "-") || bytes[i] == UInt8(ascii: "+") { append(bytes[i]); i += 1 }
+        var digits = 0, dots = 0, exponent = false, groupDigits = -1
         if end > i, bytes[end - 1] == UInt8(ascii: "%") { end -= 1 }
         while i < end {
             let b = bytes[i]
             if b >= 48 && b <= 57 {
-                clean.append(b); digits += 1
+                append(b); digits += 1
                 if groupDigits >= 0 { groupDigits += 1 }
             } else if b == UInt8(ascii: ",") {
                 // Thousands separators only between groups of three digits, before any point.
@@ -50,11 +64,11 @@ enum DataValueParser {
             } else if b == UInt8(ascii: ".") {
                 guard dots == 0, !exponent, groupDigits == -1 || groupDigits == 3 else { return nil }
                 dots += 1; groupDigits = -1
-                clean.append(b)
+                append(b)
             } else if (b == UInt8(ascii: "e") || b == UInt8(ascii: "E")), digits > 0, !exponent {
                 exponent = true; groupDigits = -1
-                clean.append(b)
-                if i + 1 < end, bytes[i + 1] == UInt8(ascii: "-") || bytes[i + 1] == UInt8(ascii: "+") { clean.append(bytes[i + 1]); i += 1 }
+                append(b)
+                if i + 1 < end, bytes[i + 1] == UInt8(ascii: "-") || bytes[i + 1] == UInt8(ascii: "+") { append(bytes[i + 1]); i += 1 }
                 guard i + 1 < end else { return nil }
             } else if (b == UInt8(ascii: "_") || b == UInt8(ascii: "'")), digits > 0, !exponent {
                 i += 1
@@ -66,8 +80,8 @@ enum DataValueParser {
         }
         guard digits > 0, groupDigits == -1 || groupDigits == 3 else { return nil }
         integer?.pointee = dots == 0 && !exponent
-        clean.append(0)
-        let value = clean.withUnsafeBufferPointer { strtod(UnsafeRawPointer($0.baseAddress!).assumingMemoryBound(to: CChar.self), nil) }
+        append(0)
+        let value = strtod(UnsafeRawPointer(clean.baseAddress!).assumingMemoryBound(to: CChar.self), nil)
         return value.isFinite ? value : nil
     }
 
@@ -77,7 +91,13 @@ enum DataValueParser {
     }
 
     static func date(_ text: String, hasTime: UnsafeMutablePointer<Bool>?) -> Double? {
-        let b = Array(text.utf8)
+        let count = text.utf8.count
+        guard count >= 8, count <= 48 else { return nil }
+        if let result = text.utf8.withContiguousStorageIfAvailable({ date($0, hasTime: hasTime) }) { return result }
+        return Array(text.utf8).withUnsafeBufferPointer { date($0, hasTime: hasTime) }
+    }
+
+    private static func date(_ b: UnsafeBufferPointer<UInt8>, hasTime: UnsafeMutablePointer<Bool>?) -> Double? {
         var n = b.count
         while n > 0, b[n - 1] == 0x20 { n -= 1 }
         var s = 0
@@ -167,6 +187,8 @@ enum DataValueParser {
     }
 
     static func isBoolean(_ text: String) -> Bool? {
+        let count = text.utf8.count
+        guard count >= 1, count <= 5 else { return nil }
         switch text.lowercased() {
         case "true", "yes", "y", "t": return true
         case "false", "no", "n", "f": return false
