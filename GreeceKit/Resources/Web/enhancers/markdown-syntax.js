@@ -321,8 +321,10 @@
       const embed = src.charCodeAt(pos) === 0x21;
       if (embed) pos += 1;
       if (src.charCodeAt(pos) !== 0x5B || src.charCodeAt(pos + 1) !== 0x5B) return false;
-      const close = src.indexOf(']]', pos + 2);
-      if (close < 0 || close + 2 > state.posMax) return false;
+      const nearby = src.slice(pos + 2, Math.min(state.posMax, pos + 404));
+      const found = nearby.indexOf(']]');
+      if (found < 0) return false;
+      const close = pos + 2 + found;
       const inner = src.slice(pos + 2, close);
       if (!inner.trim() || inner.length > 400 || /[\n[\]]/.test(inner)) return false;
       if (!silent) {
@@ -352,33 +354,48 @@
 
   // ------------------------------------------------------------- ==mark==, ~sub~, ^sup^
 
+  /** ==mark== as paired delimiters, the way markdown-it pairs ~~strikethrough~~ (linear time,
+      however many unmatched markers a paragraph holds). Follows markdown-it-mark (MIT). */
   function markPlugin(md) {
     md.inline.ruler.before('emphasis', 'greece_mark', (state, silent) => {
-      const src = state.src;
-      const start = state.pos;
-      const max = state.posMax;
-      if (src.charCodeAt(start) !== 0x3D || src.charCodeAt(start + 1) !== 0x3D) return false;
-      const first = src.charCodeAt(start + 2);
-      if (!first || first === 0x3D || isWhitespace(first)) return false;
-      state.pos = start + 2;
-      let found = false;
-      while (state.pos < max) {
-        if (src.charCodeAt(state.pos) === 0x3D && src.charCodeAt(state.pos + 1) === 0x3D &&
-            !isWhitespace(src.charCodeAt(state.pos - 1)) && state.pos > start + 2) { found = true; break; }
-        state.md.inline.skipToken(state);
+      if (silent || state.src.charCodeAt(state.pos) !== 0x3D) return false;
+      const scanned = state.scanDelims(state.pos, true);
+      let length = scanned.length;
+      if (length < 2) return false;
+      if (length % 2) { state.push('text', '', 0).content = '='; length--; }
+      for (let i = 0; i < length; i += 2) {
+        state.push('text', '', 0).content = '==';
+        if (!scanned.can_open && !scanned.can_close) continue;
+        state.delimiters.push({ marker: 0x3D, length: 0, token: state.tokens.length - 1, end: -1, open: scanned.can_open, close: scanned.can_close });
       }
-      if (!found) { state.pos = start; return false; }
-      const end = state.pos;
-      if (!silent) {
-        state.pos = start + 2;
-        state.posMax = end;
-        state.push('mark_open', 'mark', 1).markup = '==';
-        state.md.inline.tokenize(state);
-        state.push('mark_close', 'mark', -1).markup = '==';
-        state.posMax = max;
-      }
-      state.pos = end + 2;
+      state.pos += scanned.length;
       return true;
+    });
+
+    const pair = (state, delimiters) => {
+      const lone = [];
+      for (const open of delimiters) {
+        if (open.marker !== 0x3D || open.end === -1) continue;
+        const close = delimiters[open.end];
+        const a = state.tokens[open.token];
+        a.type = 'mark_open'; a.tag = 'mark'; a.nesting = 1; a.markup = '=='; a.content = '';
+        const b = state.tokens[close.token];
+        b.type = 'mark_close'; b.tag = 'mark'; b.nesting = -1; b.markup = '=='; b.content = '';
+        const before = state.tokens[close.token - 1];
+        if (before && before.type === 'text' && before.content === '=') lone.push(close.token - 1);
+      }
+      // A lone "=" before a closing marker belongs outside it.
+      while (lone.length) {
+        const i = lone.pop();
+        let j = i + 1;
+        while (j < state.tokens.length && state.tokens[j].type === 'mark_close') j++;
+        j--;
+        if (i !== j) { const t = state.tokens[j]; state.tokens[j] = state.tokens[i]; state.tokens[i] = t; }
+      }
+    };
+    md.inline.ruler2.before('emphasis', 'greece_mark', (state) => {
+      pair(state, state.delimiters);
+      for (const meta of state.tokens_meta || []) if (meta && meta.delimiters) pair(state, meta.delimiters);
     });
   }
 
@@ -755,7 +772,8 @@
         continue;
       }
       if (/^ {0,3}<([A-Z][\w.]*|>)/.test(line)) {
-        const rest = lines.slice(i).join('\n');
+        // A component spans at most a few thousand lines; never join the whole rest of the file.
+        const rest = lines.slice(i, i + 3000).join('\n');
         const start = line.indexOf('<');
         const tag = readTag(rest, start);
         if (tag) {
