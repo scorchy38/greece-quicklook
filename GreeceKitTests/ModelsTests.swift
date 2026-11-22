@@ -184,6 +184,33 @@ final class ModelsTests: XCTestCase {
         XCTAssertEqual(encoded.u32(8), 7)
     }
 
+    func testBlockReadsSampleExactlyLikeMemory() throws {
+        let url = fixture("terrain.las")
+        let data = try Data(contentsOf: url)
+        let las = try LASFile(data: data)
+        for budget in [1, 777, 15_000, 1_000_000] {
+            let mapped = las.sample(data, budget: budget), read = las.sample(url: url, budget: budget)
+            XCTAssertEqual(mapped.positions, read.positions, "budget \(budget)")
+            XCTAssertEqual(mapped.colors, read.colors)
+            XCTAssertEqual(mapped.classes, read.classes)
+        }
+        XCTAssertEqual(las.sample(url: fixture("hostile/short.las"), budget: 10).count, 0)
+    }
+
+    func testClusteringKeepsTheSurface() throws {
+        let gear = try XCTUnwrap(STLReader.load(fixture("gear.stl"), budget: ModelBudget())?.meshes.first)
+        let simplified = gear.clustered(resolution: 24)
+        XCTAssertLessThan(simplified.triangleCount, gear.triangleCount)
+        XCTAssertGreaterThan(simplified.triangleCount, 100)
+        XCTAssertLessThan(simplified.positions.count, gear.positions.count)
+        var before = Bounds(), after = Bounds()
+        gear.positions.forEach { before.add($0) }
+        simplified.positions.forEach { after.add($0) }
+        XCTAssertEqual(after.size.x, before.size.x, accuracy: before.size.x * 0.1)
+        XCTAssertEqual(after.size.z, before.size.z, accuracy: before.size.z * 0.2)
+        XCTAssertTrue(simplified.indices.allSatisfy { Int($0) < simplified.positions.count })
+    }
+
     func testProgressiveOrderIsAPermutation() {
         for count in [0, 1, 2, 3, 5, 64, 1000, 4097] {
             let order = LASFile.progressiveOrder(count)

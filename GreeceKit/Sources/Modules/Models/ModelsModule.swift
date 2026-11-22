@@ -48,8 +48,8 @@ enum ModelsModule: PreviewModule {
         if format == .las, let las {
             let url = file.url
             document.resources = { path in
-                guard path.hasPrefix("points"), let data = try? Data(contentsOf: url, options: .alwaysMapped) else { return nil }
-                let sample = las.sample(data, budget: pointBudget, deadline: Date().addingTimeInterval(8))
+                guard path.hasPrefix("points") else { return nil }
+                let sample = las.sample(url: url, budget: pointBudget, deadline: Date().addingTimeInterval(8))
                 return (sample.encoded(), "application/octet-stream")
             }
         }

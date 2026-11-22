@@ -63,8 +63,8 @@ enum ModelThumbnails {
     }
 
     static func lasPoints(_ url: URL, budget: ModelBudget) -> ModelScene? {
-        guard let data = try? Data(contentsOf: url, options: .alwaysMapped), let las = try? LASFile(data: data), !las.header.isCompressed else { return nil }
-        let sample = las.sample(data, budget: budget.points, deadline: budget.deadline)
+        guard let las = try? LASFile(url: url), !las.header.isCompressed else { return nil }
+        let sample = las.sample(url: url, budget: budget.points, deadline: budget.deadline)
         guard sample.count > 0 else { return nil }
         var points = ModelPoints()
         points.positions.reserveCapacity(sample.count)
@@ -109,22 +109,43 @@ enum ElevationRamp {
 // MARK: - STL
 
 enum STLReader {
+    /// Above this many triangles, thumbnails draw a simplified surface.
+    static let clusterThreshold = 1_000_000
+
     static func load(_ url: URL, budget: ModelBudget) -> ModelScene? {
         guard let data = try? Data(contentsOf: url, options: .alwaysMapped) else { return nil }
         var mesh = ModelMesh()
         if data.count >= 84, 84 + Int(data.u32(80)) * 50 == data.count {
-            let count = min(Int(data.u32(80)), budget.triangles)
+            let count = Int(data.u32(80))
+            func corner(_ raw: UnsafeRawBufferPointer, _ t: Int, _ k: Int) -> SIMD3<Float> {
+                let at = 84 + t * 50 + 12 + k * 12
+                let p = SIMD3(Float(bitPattern: raw.loadUnaligned(fromByteOffset: at, as: UInt32.self).littleEndian),
+                              Float(bitPattern: raw.loadUnaligned(fromByteOffset: at + 4, as: UInt32.self).littleEndian),
+                              Float(bitPattern: raw.loadUnaligned(fromByteOffset: at + 8, as: UInt32.self).littleEndian))
+                return p.x.isFinite && p.y.isFinite && p.z.isFinite ? p : .zero
+            }
+            if count > clusterThreshold {
+                // Too many to draw one by one: stream them into a simplified surface instead of cutting the model short.
+                var bounds = Bounds()
+                var expired = false
+                data.withUnsafeBytes { raw in
+                    for t in 0..<count { for k in 0..<3 { bounds.add(corner(raw, t, k)) } }
+                    var clusterer = VertexClusterer(bounds: bounds)
+                    for t in 0..<count {
+                        if t & 0xFFFF == 0, budget.expired { expired = true; return }
+                        clusterer.add(corner(raw, t, 0), corner(raw, t, 1), corner(raw, t, 2))
+                    }
+                    mesh = clusterer.mesh
+                }
+                guard !expired, !mesh.indices.isEmpty else { return nil }
+                mesh.computeNormals()
+                mesh.material.baseColor = SIMD4(0.66, 0.68, 0.71, 1)
+                mesh.material.roughness = 0.48
+                return ModelScene(meshes: [mesh], zUp: true)
+            }
             mesh.positions.reserveCapacity(count * 3)
             data.withUnsafeBytes { raw in
-                for t in 0..<count {
-                    let base = 84 + t * 50 + 12
-                    for corner in 0..<3 {
-                        let at = base + corner * 12
-                        mesh.positions.append(SIMD3(Float(bitPattern: raw.loadUnaligned(fromByteOffset: at, as: UInt32.self).littleEndian),
-                                                    Float(bitPattern: raw.loadUnaligned(fromByteOffset: at + 4, as: UInt32.self).littleEndian),
-                                                    Float(bitPattern: raw.loadUnaligned(fromByteOffset: at + 8, as: UInt32.self).littleEndian)))
-                    }
-                }
+                for t in 0..<count { for k in 0..<3 { mesh.positions.append(corner(raw, t, k)) } }
             }
         } else {
             // ASCII: every "vertex x y z" line.

@@ -78,6 +78,60 @@ struct ModelMesh {
     }
 }
 
+/// Simplifies very large meshes for thumbnails by merging the vertices that share a cell of a fine
+/// grid and dropping the triangles that collapse. At thumbnail size the result is indistinguishable.
+struct VertexClusterer {
+    let origin: SIMD3<Float>
+    let scale: Float
+    let resolution: Int
+    private var cells: [Int: UInt32] = [:]
+    private(set) var mesh = ModelMesh()
+
+    init(bounds: Bounds, resolution: Int = 400) {
+        self.resolution = resolution
+        origin = bounds.min
+        let size = max(bounds.size.x, bounds.size.y, bounds.size.z)
+        scale = size > 0 && size.isFinite ? Float(resolution - 1) / size : 1
+    }
+
+    private mutating func vertex(_ p: SIMD3<Float>, color: SIMD4<Float>?) -> UInt32 {
+        let q = simd_clamp((p - origin) * scale, .zero, SIMD3(repeating: Float(resolution - 1)))
+        let key = Int(q.x) + Int(q.y) * resolution + Int(q.z) * resolution * resolution
+        if let index = cells[key] { return index }
+        let index = UInt32(mesh.positions.count)
+        mesh.positions.append(p)
+        if let color { mesh.colors.append(color) }
+        cells[key] = index
+        return index
+    }
+
+    mutating func add(_ a: SIMD3<Float>, _ b: SIMD3<Float>, _ c: SIMD3<Float>, colors: (SIMD4<Float>, SIMD4<Float>, SIMD4<Float>)? = nil) {
+        let i = vertex(a, color: colors?.0), j = vertex(b, color: colors?.1), k = vertex(c, color: colors?.2)
+        guard i != j, j != k, i != k else { return }
+        mesh.indices += [i, j, k]
+    }
+}
+
+extension ModelMesh {
+    /// The same surface with fewer triangles (see `VertexClusterer`); textured meshes are left alone.
+    func clustered(resolution: Int = 400) -> ModelMesh {
+        guard material.texture == nil else { return self }
+        var bounds = Bounds()
+        for p in positions { bounds.add(p) }
+        var clusterer = VertexClusterer(bounds: bounds, resolution: resolution)
+        let hasColors = colors.count == positions.count
+        for t in Swift.stride(from: 0, to: indices.count - 2, by: 3) {
+            let a = Int(indices[t]), b = Int(indices[t + 1]), c = Int(indices[t + 2])
+            guard a < positions.count, b < positions.count, c < positions.count else { continue }
+            clusterer.add(positions[a], positions[b], positions[c], colors: hasColors ? (colors[a], colors[b], colors[c]) : nil)
+        }
+        var result = clusterer.mesh
+        result.material = material
+        result.computeNormals()
+        return result
+    }
+}
+
 struct ModelPoints {
     var positions: [SIMD3<Float>] = []
     var colors: [SIMD3<Float>] = []

@@ -17,7 +17,9 @@ enum ModelRenderer {
     static func image(for model: ModelScene, pixels: Int) -> CGImage? {
         let content = SCNNode()
         for mesh in model.meshes where !mesh.indices.isEmpty {
-            content.addChildNode(SCNNode(geometry: geometry(for: mesh)))
+            // Millions of triangles add nothing at thumbnail size but time: simplify them.
+            let drawn = mesh.triangleCount > STLReader.clusterThreshold ? mesh.clustered() : mesh
+            content.addChildNode(SCNNode(geometry: geometry(for: drawn)))
         }
         var isCloud = false
         if let points = model.points, !points.positions.isEmpty {

@@ -161,85 +161,182 @@ struct LASFile {
     /// Up to `budget` points, evenly spaced through the file, ordered so that any prefix is itself
     /// an even sample (the page draws fewer points while the view moves). Stops at `deadline`.
     func sample(_ data: Data, budget: Int, deadline: Date = .distantFuture) -> Sample {
-        let h = header
-        let center = SIMD3((h.minimum[0] + h.maximum[0]) / 2, (h.minimum[1] + h.maximum[1]) / 2, (h.minimum[2] + h.maximum[2]) / 2)
-        var result = Sample(center: center.x.isFinite && center.y.isFinite && center.z.isFinite ? center : .zero)
-        guard !h.isCompressed, h.recordLength > 0, h.pointOffset > 0, h.pointOffset < data.count, budget > 0 else { return result }
-        let available = (data.count - h.pointOffset) / h.recordLength
-        let total = min(h.pointCount > 0 ? h.pointCount : available, available)
-        guard total > 0 else { return result }
-        let stride = max(1, Int((Double(total) / Double(budget)).rounded(.up)))
-        let wanted = (total + stride - 1) / stride
-        let rgbOffset = h.rgbOffset.flatMap { $0 + 6 <= h.recordLength ? $0 : nil }
+        guard var gatherer = Gatherer(header: header, available: max(0, data.count - header.pointOffset), budget: budget),
+              header.pointOffset < data.count else { return Sample(center: Gatherer.center(header)) }
+        data.withUnsafeBytes { raw in
+            _ = gatherer.gather(UnsafeRawBufferPointer(rebasing: raw[header.pointOffset...]), deadline: deadline)
+        }
+        return gatherer.finish()
+    }
 
-        var positions = [Float](repeating: 0, count: wanted * 3)
-        var colors = [UInt16](repeating: 0, count: rgbOffset == nil ? 0 : wanted * 3)
-        var intensity = [UInt16](repeating: 0, count: wanted)
-        var classes = [UInt8](repeating: 0, count: wanted)
-        var taken = 0
-        let scale = SIMD3(h.scale[0], h.scale[1], h.scale[2])
-        let shift = SIMD3(h.offset[0], h.offset[1], h.offset[2]) - result.center
-        let classOffset = h.isExtended ? 16 : 15
-        let classMask: UInt8 = h.isExtended ? 0xFF : 0x1F
-        var maxColor: UInt16 = 0
+    /// The same sample, read from disk in large sequential blocks: far faster than faulting in
+    /// a memory map record by record when the file is hundreds of megabytes.
+    func sample(url: URL, budget: Int, deadline: Date = .distantFuture) -> Sample {
+        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
+        guard var gatherer = Gatherer(header: header, available: max(0, size - header.pointOffset), budget: budget),
+              let handle = try? FileHandle(forReadingFrom: url) else { return Sample(center: Gatherer.center(header)) }
+        defer { try? handle.close() }
+        // Whole multiples of the stride per block keep every block aligned to the sample.
+        let perBlock = max(1, (16 << 20) / (header.recordLength * gatherer.stride)) * gatherer.stride
+        do {
+            try handle.seek(toOffset: UInt64(header.pointOffset))
+            var remaining = gatherer.total
+            while remaining > 0 {
+                let records = min(perBlock, remaining)
+                guard let block = try handle.read(upToCount: records * header.recordLength), block.count >= header.recordLength else { break }
+                let more = block.withUnsafeBytes { gatherer.gather($0, deadline: deadline) }
+                remaining -= block.count / header.recordLength
+                if !more || block.count < records * header.recordLength { break }
+            }
+        } catch {}
+        return gatherer.finish()
+    }
 
-        data.withUnsafeBytes { (raw: UnsafeRawBufferPointer) in
-            for index in Swift.stride(from: 0, to: total, by: stride) {
-                if taken & 0xFFFF == 0, taken > 0, Date() > deadline { break }
-                let at = h.pointOffset + index * h.recordLength
-                guard at + h.recordLength <= raw.count else { break }
-                let x = Double(raw.loadUnaligned(fromByteOffset: at, as: Int32.self).littleEndian)
-                let y = Double(raw.loadUnaligned(fromByteOffset: at + 4, as: Int32.self).littleEndian)
-                let z = Double(raw.loadUnaligned(fromByteOffset: at + 8, as: Int32.self).littleEndian)
-                let point = SIMD3(x, y, z) * scale + shift
-                positions[taken * 3] = Float(point.x)
-                positions[taken * 3 + 1] = Float(point.y)
-                positions[taken * 3 + 2] = Float(point.z)
-                intensity[taken] = raw.loadUnaligned(fromByteOffset: at + 12, as: UInt16.self).littleEndian
-                classes[taken] = raw[at + classOffset] & classMask
-                if let rgbOffset {
-                    for channel in 0..<3 {
-                        let value = raw.loadUnaligned(fromByteOffset: at + rgbOffset + channel * 2, as: UInt16.self).littleEndian
-                        colors[taken * 3 + channel] = value
-                        maxColor = Swift.max(maxColor, value)
+    /// Collects every `stride`-th record into flat arrays, then orders them progressively.
+    private struct Gatherer {
+        let header: Header
+        let total: Int
+        let stride: Int
+        let wanted: Int
+        let center: SIMD3<Double>
+        private let rgbOffset: Int?
+        private var positions: [Float]
+        private var colors: [UInt16]
+        private var intensity: [UInt16]
+        private var classes: [UInt8]
+        private var taken = 0
+        private var maxColor: UInt16 = 0
+
+        static func center(_ h: Header) -> SIMD3<Double> {
+            let c = SIMD3((h.minimum[0] + h.maximum[0]) / 2, (h.minimum[1] + h.maximum[1]) / 2, (h.minimum[2] + h.maximum[2]) / 2)
+            return c.x.isFinite && c.y.isFinite && c.z.isFinite ? c : .zero
+        }
+
+        init?(header h: Header, available bytes: Int, budget: Int) {
+            guard !h.isCompressed, h.recordLength > 0, h.pointOffset > 0, budget > 0 else { return nil }
+            let available = bytes / h.recordLength
+            total = min(h.pointCount > 0 ? h.pointCount : available, available)
+            guard total > 0 else { return nil }
+            header = h
+            stride = max(1, Int((Double(total) / Double(budget)).rounded(.up)))
+            wanted = (total + stride - 1) / stride
+            center = Self.center(h)
+            rgbOffset = h.rgbOffset.flatMap { $0 + 6 <= h.recordLength ? $0 : nil }
+            positions = [Float](repeating: 0, count: wanted * 3)
+            colors = [UInt16](repeating: 0, count: rgbOffset == nil ? 0 : wanted * 3)
+            intensity = [UInt16](repeating: 0, count: wanted)
+            classes = [UInt8](repeating: 0, count: wanted)
+        }
+
+        /// Gathers from a run of whole records that starts on a sampled one. False once full or out of time.
+        mutating func gather(_ raw: UnsafeRawBufferPointer, deadline: Date) -> Bool {
+            let h = header
+            let scale = SIMD3(h.scale[0], h.scale[1], h.scale[2])
+            let shift = SIMD3(h.offset[0], h.offset[1], h.offset[2]) - center
+            let classOffset = h.isExtended ? 16 : 15
+            let classMask: UInt8 = h.isExtended ? 0xFF : 0x1F
+            let recordLength = h.recordLength, stride = self.stride, wanted = self.wanted, rgbOffset = self.rgbOffset
+            var taken = self.taken, maxColor = self.maxColor
+            var expired = false
+            // Unsafe buffers keep the per-point loop free of copy-on-write and bounds checks.
+            positions.withUnsafeMutableBufferPointer { pos in
+                intensity.withUnsafeMutableBufferPointer { inten in
+                    classes.withUnsafeMutableBufferPointer { cls in
+                        colors.withUnsafeMutableBufferPointer { col in
+                            var at = 0
+                            while at + recordLength <= raw.count, taken < wanted {
+                                if taken & 0xFFFF == 0, taken > 0, Date() > deadline { expired = true; break }
+                                let x = Double(Int32(littleEndian: raw.loadUnaligned(fromByteOffset: at, as: Int32.self)))
+                                let y = Double(Int32(littleEndian: raw.loadUnaligned(fromByteOffset: at + 4, as: Int32.self)))
+                                let z = Double(Int32(littleEndian: raw.loadUnaligned(fromByteOffset: at + 8, as: Int32.self)))
+                                let point = SIMD3(x, y, z) * scale + shift
+                                pos[taken * 3] = Float(point.x)
+                                pos[taken * 3 + 1] = Float(point.y)
+                                pos[taken * 3 + 2] = Float(point.z)
+                                inten[taken] = UInt16(littleEndian: raw.loadUnaligned(fromByteOffset: at + 12, as: UInt16.self))
+                                cls[taken] = raw[at + classOffset] & classMask
+                                if let rgbOffset {
+                                    for channel in 0..<3 {
+                                        let value = UInt16(littleEndian: raw.loadUnaligned(fromByteOffset: at + rgbOffset + channel * 2, as: UInt16.self))
+                                        col[taken * 3 + channel] = value
+                                        maxColor = Swift.max(maxColor, value)
+                                    }
+                                }
+                                taken += 1
+                                at += stride * recordLength
+                            }
+                        }
                     }
                 }
-                taken += 1
             }
+            self.taken = taken
+            self.maxColor = maxColor
+            return !expired && taken < wanted
         }
 
-        // Bit-reversed order: every prefix of the output is spread evenly over the whole cloud.
-        let order = Self.progressiveOrder(taken)
-        result.positions.reserveCapacity(taken * 3)
-        result.intensity.reserveCapacity(taken)
-        result.classes.reserveCapacity(taken)
-        // Many writers store 8-bit colour in the 16-bit fields.
-        let colorShift: UInt16 = maxColor > 255 ? 8 : 0
-        if !colors.isEmpty { result.colors.reserveCapacity(taken * 3) }
-        for source in order {
-            result.positions.append(contentsOf: positions[(source * 3)..<(source * 3 + 3)])
-            result.intensity.append(intensity[source])
-            result.classes.append(classes[source])
-            if !colors.isEmpty {
-                for channel in 0..<3 { result.colors.append(UInt8(truncatingIfNeeded: colors[source * 3 + channel] >> colorShift)) }
+        /// Bit-reversed order: every prefix of the output is spread evenly over the whole cloud.
+        /// Many writers store 8-bit colour in the 16-bit fields.
+        func finish() -> Sample {
+            var result = Sample(center: center)
+            let taken = self.taken
+            let colorShift: UInt16 = maxColor > 255 ? 8 : 0
+            let hasColor = !colors.isEmpty
+            result.positions = [Float](repeating: 0, count: taken * 3)
+            result.intensity = [UInt16](repeating: 0, count: taken)
+            result.classes = [UInt8](repeating: 0, count: taken)
+            result.colors = [UInt8](repeating: 0, count: hasColor ? taken * 3 : 0)
+            positions.withUnsafeBufferPointer { pos in
+            intensity.withUnsafeBufferPointer { inten in
+            classes.withUnsafeBufferPointer { cls in
+            colors.withUnsafeBufferPointer { col in
+            result.positions.withUnsafeMutableBufferPointer { outPos in
+            result.intensity.withUnsafeMutableBufferPointer { outInten in
+            result.classes.withUnsafeMutableBufferPointer { outCls in
+            result.colors.withUnsafeMutableBufferPointer { outCol in
+                var j = 0
+                LASFile.forEachProgressive(taken) { source in
+                    outPos[j * 3] = pos[source * 3]
+                    outPos[j * 3 + 1] = pos[source * 3 + 1]
+                    outPos[j * 3 + 2] = pos[source * 3 + 2]
+                    outInten[j] = inten[source]
+                    outCls[j] = cls[source]
+                    if hasColor {
+                        for channel in 0..<3 { outCol[j * 3 + channel] = UInt8(truncatingIfNeeded: col[source * 3 + channel] >> colorShift) }
+                    }
+                    j += 1
+                }
+            }}}}}}}}
+            return result
+        }
+    }
+
+    private static let byteReversal: [UInt32] = (0..<256).map { value in
+        var reversed: UInt32 = 0, v = UInt32(value)
+        for _ in 0..<8 { reversed = (reversed << 1) | (v & 1); v >>= 1 }
+        return reversed
+    }
+
+    /// Calls `body` with 0..<count in bit-reversed order.
+    @inline(__always)
+    static func forEachProgressive(_ count: Int, _ body: (Int) -> Void) {
+        guard count > 0 else { return }
+        var bits = 0
+        while (1 << bits) < count { bits += 1 }
+        byteReversal.withUnsafeBufferPointer { table in
+            for value in 0..<(1 << bits) {
+                let v = UInt32(truncatingIfNeeded: value)
+                let reversed = table[Int(v & 0xFF)] << 24 | table[Int((v >> 8) & 0xFF)] << 16 | table[Int((v >> 16) & 0xFF)] << 8 | table[Int(v >> 24)]
+                let source = bits == 0 ? 0 : Int(reversed >> UInt32(32 - bits))
+                if source < count { body(source) }
             }
         }
-        return result
     }
 
     /// 0..<count in bit-reversed order.
     static func progressiveOrder(_ count: Int) -> [Int] {
-        guard count > 1 else { return Array(0..<count) }
-        var bits = 0
-        while (1 << bits) < count { bits += 1 }
         var order: [Int] = []
         order.reserveCapacity(count)
-        for value in 0..<(1 << bits) {
-            var reversed = 0
-            var v = value
-            for _ in 0..<bits { reversed = (reversed << 1) | (v & 1); v >>= 1 }
-            if reversed < count { order.append(reversed) }
-        }
+        forEachProgressive(count) { order.append($0) }
         return order
     }
 }
