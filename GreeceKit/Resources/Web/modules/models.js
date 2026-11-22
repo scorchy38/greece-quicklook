@@ -824,7 +824,7 @@
       const { kit, stats, facts, data } = this;
       const rows = [];
       const row = (label, value) => { if (value !== null && value !== undefined && value !== '') rows.push(`<div class="mv-row"><dt>${kit.esc(label)}</dt><dd>${kit.esc(value)}</dd></div>`); };
-      const number = (n) => Number(n).toLocaleString('en-US');
+      const number = (n) => Number(n).toLocaleString();
 
       const dims = this.dimensions();
       if (dims) {
@@ -871,7 +871,7 @@
       }
       const largest = Math.max(...values) * scale;
       const digits = largest >= 1000 ? 0 : largest >= 100 ? 1 : 2;
-      const format = (v) => (v * scale).toLocaleString('en-US', { maximumFractionDigits: digits });
+      const format = (v) => (v * scale).toLocaleString(undefined, { maximumFractionDigits: digits });
       const suffix = unit ? ' ' + unit : '';
       return [
         { label: 'Width', value: format(values[0]) + suffix },
@@ -1155,7 +1155,7 @@
     const units = ['bytes', 'KB', 'MB', 'GB'];
     let value = bytes, unit = 0;
     while (value >= 1000 && unit < units.length - 1) { value /= 1000; unit++; }
-    return `${value.toLocaleString('en-US', { maximumFractionDigits: value >= 100 || unit === 0 ? 0 : 1 })} ${units[unit]}`;
+    return `${value.toLocaleString(undefined, { maximumFractionDigits: value >= 100 || unit === 0 ? 0 : 1 })} ${units[unit]}`;
   }
 
   function describeError(error) {
@@ -1328,11 +1328,13 @@
         const [sx, sy, sz] = header.scale, [ox, oy, oz] = header.offset;
         const cx = (header.minimum[0] + header.maximum[0]) / 2, cy = (header.minimum[1] + header.maximum[1]) / 2, cz = (header.minimum[2] + header.maximum[2]) / 2;
         const started = Date.now();
+        // A view over the point buffer, renewed only when decoding grows wasm memory (detaching the old one).
+        let view = new DataView(module.HEAPU8.buffer, pointPointer, length);
         let n = 0, maxColor = 0;
         for (let i = 0; i < total; i++) {
           laszip.getPoint(pointPointer);
           if (i % stride) continue;
-          const view = new DataView(module.HEAPU8.buffer, pointPointer, length);
+          if (view.buffer !== module.HEAPU8.buffer) view = new DataView(module.HEAPU8.buffer, pointPointer, length);
           positions[n * 3] = view.getInt32(0, true) * sx + ox - cx;
           positions[n * 3 + 1] = view.getInt32(4, true) * sy + oy - cy;
           positions[n * 3 + 2] = view.getInt32(8, true) * sz + oz - cz;
