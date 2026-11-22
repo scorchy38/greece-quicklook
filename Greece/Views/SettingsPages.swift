@@ -63,12 +63,36 @@ private struct ValueStepper: View {
 struct MarkdownPage: View {
     @EnvironmentObject private var store: SettingsStore
     @SceneStorage("markdown.sample") private var sample = 0
+    @Environment(\.colorScheme) private var scheme
+
+    /// Whether previews are dark right now (the General appearance setting wins over the Mac's).
+    private var previewsAreDark: Bool {
+        switch store.settings.appearance {
+        case .dark: return true
+        case .light: return false
+        case .system: return scheme == .dark
+        }
+    }
 
     var body: some View {
         PreviewPage(samples: [("Document", Samples.markdown), ("Notebook", Samples.notebook)], selection: $sample) {
+            Section {
+                ReadingThemeGallery(selection: $store.settings.readingTheme, dark: previewsAreDark) { theme in
+                    // A theme comes with its own typefaces; choosing one starts from them.
+                    store.settings.readingTheme = theme.id
+                    store.settings.readingFont = .theme
+                }
+            } header: {
+                Text("Theme")
+            } footer: {
+                Text("Every reading theme has a light and a dark version and follows your Mac’s appearance.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("Typography") {
                 Picker("Font", selection: $store.settings.readingFont) {
-                    ForEach(PreviewSettings.ReadingFont.allCases) { font in Text(font.title).tag(font) }
+                    ForEach(PreviewSettings.ReadingFont.allCases) { font in
+                        Text(font == .theme ? "Theme Default (\(store.settings.markdownTheme.name))" : font.title).tag(font)
+                    }
                 }
                 ValueStepper(title: "Size", value: $store.settings.readingSize, range: 11...26)
                 Picker("Line width", selection: $store.settings.readingWidth) {
@@ -87,6 +111,28 @@ struct MarkdownPage: View {
             Section {
                 Toggle("Math", isOn: $store.settings.renderMath)
                 Toggle("Mermaid diagrams", isOn: $store.settings.renderDiagrams)
+                LabeledContent {
+                    HStack(spacing: 10) {
+                        DiagramSwatch(palette: store.settings.mermaidTheme.swatch(dark: previewsAreDark, settings: store.settings),
+                                      card: store.settings.mermaidTheme.paintsCard)
+                        Picker("Diagram theme", selection: $store.settings.diagramTheme) {
+                            Section {
+                                ForEach(DiagramTheme.all.filter(\.isAutomatic)) { theme in Text(theme.name).tag(theme.id) }
+                            }
+                            Section("Mermaid") {
+                                ForEach(DiagramTheme.all.filter(\.isBuiltIn)) { theme in Text(theme.name).tag(theme.id) }
+                            }
+                            Section("Palettes") {
+                                ForEach(DiagramTheme.all.filter { !$0.isAutomatic && !$0.isBuiltIn }) { theme in Text(theme.name).tag(theme.id) }
+                            }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                    }
+                } label: {
+                    Text("Diagram theme")
+                }
+                .disabled(!store.settings.renderDiagrams)
                 Toggle("Load remote images", isOn: $store.settings.loadRemoteImages)
             } header: {
                 Text("Rich content")
@@ -114,17 +160,25 @@ struct CodePage: View {
     var body: some View {
         PreviewPage(samples: [("Swift", Samples.swift), ("Python", Samples.python), ("JSON", Samples.json), ("Patch", Samples.patch)], selection: $sample) {
             Section {
-                ThemePicker(selection: $store.settings.theme)
-                    .padding(.vertical, 6)
+                Picker("Variant", selection: $store.settings.themeVariant) {
+                    ForEach(PreviewSettings.ThemeVariant.allCases) { variant in Text(variantTitle(variant)).tag(variant) }
+                }
+                .disabled(selectedTheme.variants != .pair)
+                CodeThemeGallery(selection: $store.settings.theme)
             } header: {
                 Text("Theme")
             } footer: {
-                Text("Every theme has a light and a dark variant and follows your Mac’s appearance.")
+                Text(selectedTheme.variants == .pair
+                     ? "\(selectedTheme.name) follows your Mac’s appearance. Choose a variant to keep it light or dark."
+                     : "\(selectedTheme.name) is a \(selectedTheme.variants == .dark ? "dark" : "light") theme and stays \(selectedTheme.variants == .dark ? "dark" : "light") in either appearance.")
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("Text") {
                 Picker("Font", selection: $store.settings.codeFont) {
                     ForEach(fonts, id: \.self) { name in Text(name).tag(name) }
+                }
+                Picker("Weight", selection: $store.settings.codeFontWeight) {
+                    ForEach(PreviewSettings.CodeFontWeight.allCases) { weight in Text(weight.title).tag(weight) }
                 }
                 ValueStepper(title: "Size", value: $store.settings.codeFontSize, range: 9...24)
                 Picker("Tab width", selection: $store.settings.tabWidth) {
@@ -138,71 +192,20 @@ struct CodePage: View {
             } header: {
                 Text("Layout")
             } footer: {
-                Text("Greece highlights more than 190 languages, decodes binary property lists, and keeps JSON keys in their original order when formatting.")
+                Text("Greece highlights \(LanguageCatalog.languageCount) languages and \(LanguageCatalog.extensionCount) file extensions, decodes binary property lists, and keeps JSON keys in their original order when formatting.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
     }
-}
 
-/// Theme thumbnails in the style of System Settings' appearance picker.
-private struct ThemePicker: View {
-    @Binding var selection: String
-    @Environment(\.colorScheme) private var scheme
+    private var selectedTheme: CodeTheme { CodeTheme.named(store.settings.theme) ?? .default }
 
-    var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 96, maximum: 120), spacing: 14)], spacing: 14) {
-            ForEach(CodeTheme.all) { theme in
-                Button { selection = theme.id } label: {
-                    VStack(spacing: 7) {
-                        ThemeThumbnail(palette: scheme == .dark ? theme.dark : theme.light, selected: selection == theme.id)
-                        Text(theme.name)
-                            .font(.caption)
-                            .foregroundStyle(selection == theme.id ? .primary : .secondary)
-                    }
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("\(theme.name) theme")
-                .accessibilityAddTraits(selection == theme.id ? .isSelected : [])
-            }
-        }
-    }
-}
-
-private struct ThemeThumbnail: View {
-    let palette: CodeTheme.Palette
-    let selected: Bool
-
-    var body: some View {
-        let lines: [[(String, CGFloat)]] = [
-            [(palette.keyword, 16), (palette.type, 26), (palette.foreground, 8)],
-            [(palette.comment, 44)],
-            [(palette.keyword, 12), (palette.function, 22), (palette.string, 18)],
-            [(palette.foreground, 10), (palette.number, 8), (palette.attribute, 20)],
-        ]
-        VStack(alignment: .leading, spacing: 5) {
-            ForEach(lines.indices, id: \.self) { row in
-                HStack(spacing: 3) {
-                    ForEach(lines[row].indices, id: \.self) { index in
-                        Capsule()
-                            .fill(Color(hex: lines[row][index].0))
-                            .frame(width: lines[row][index].1, height: 4)
-                    }
-                }
-                .padding(.leading, row == 2 || row == 3 ? 8 : 0)
-            }
-        }
-        .padding(10)
-        .frame(width: 96, height: 62, alignment: .topLeading)
-        .background(Color(hex: palette.background), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5)
-        }
-        .padding(3)
-        .overlay {
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(selected ? Color.accentColor : .clear, lineWidth: 2.5)
+    private func variantTitle(_ variant: PreviewSettings.ThemeVariant) -> String {
+        let theme = selectedTheme
+        switch variant {
+        case .automatic: return "Automatic"
+        case .light: return theme.lightName.map { "Light (\($0))" } ?? "Light"
+        case .dark: return theme.darkName.map { "Dark (\($0))" } ?? "Dark"
         }
     }
 }

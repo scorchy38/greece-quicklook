@@ -131,7 +131,10 @@ enum SnapshotRunner {
         }
         let output = URL(fileURLWithPath: args[index + 2])
         let dark = value(after: "--appearance") == "dark"
-        let size = NSSize(width: 1060, height: 780)
+        var size = NSSize(width: 1060, height: 780)
+        if let parts = value(after: "--size")?.split(separator: "x").compactMap({ Double($0) }), parts.count == 2 {
+            size = NSSize(width: parts[0], height: parts[1])
+        }
 
         let root = RootView(pinnedPage: page)
             .environmentObject(SettingsStore.shared)
