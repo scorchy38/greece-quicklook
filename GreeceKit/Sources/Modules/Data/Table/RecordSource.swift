@@ -78,17 +78,81 @@ final class DelimitedStore: RecordStore {
     }
 }
 
+/// A condition on one column, chosen from a cell's context menu or a column profile.
+struct ColumnFilter: Equatable {
+    enum Test: Equatable {
+        /// The cell reads exactly this. "" stands for an empty cell (blank or missing).
+        case equals(String)
+        case notEquals(String)
+        /// A number at least, or at most, `bound`, as `text` was written in the cell it came
+        /// from. Cells that aren't numbers don't match.
+        case atLeast(Double, text: String)
+        case atMost(Double, text: String)
+    }
+
+    var column: Int
+    var test: Test
+
+    func matches(_ text: String) -> Bool {
+        switch test {
+        case .equals(let value): return Self.same(text, value)
+        case .notEquals(let value): return !Self.same(text, value)
+        case .atLeast(let bound, _): return DataValueParser.number(text).map { $0 >= bound } ?? false
+        case .atMost(let bound, _): return DataValueParser.number(text).map { $0 <= bound } ?? false
+        }
+    }
+
+    /// Nothing there, or only spaces.
+    static func isBlank(_ text: String) -> Bool {
+        text.isEmpty || text.utf8.allSatisfy { $0 == 0x20 || $0 == 0x09 || $0 == 0x0A || $0 == 0x0D }
+    }
+
+    private static func same(_ text: String, _ value: String) -> Bool {
+        value.isEmpty ? isBlank(text) : text == value
+    }
+
+    /// True when this newer filter makes an older one pointless or contradicts it, so it takes the
+    /// older one's place: one value is shown at a time, and showing what was hidden (or hiding what
+    /// was shown) undoes the earlier choice.
+    func replaces(_ older: ColumnFilter) -> Bool {
+        guard column == older.column else { return false }
+        switch (test, older.test) {
+        case (.equals, .equals), (.equals, .notEquals), (.atLeast, .atLeast), (.atMost, .atMost):
+            return true
+        case (.notEquals(let hidden), .equals(let other)), (.notEquals(let hidden), .notEquals(let other)):
+            return hidden == other
+        default:
+            return false
+        }
+    }
+
+    /// How its token reads: "group = Cyclades", "notes is empty", "size ≥ 42".
+    func label(columnTitle title: String) -> String {
+        switch test {
+        case .equals(let value): return value.isEmpty ? "\(title) is empty" : "\(title) = \(MenuText.short(value, limit: 40))"
+        case .notEquals(let value): return value.isEmpty ? "\(title) is not empty" : "\(title) ≠ \(MenuText.short(value, limit: 40))"
+        case .atLeast(_, let text): return "\(title) ≥ \(MenuText.short(text, limit: 40))"
+        case .atMost(_, let text): return "\(title) ≤ \(MenuText.short(text, limit: 40))"
+        }
+    }
+}
+
 /// Sorts, filters and measures a `RecordStore` for `GridView`.
 final class RecordGridSource: GridSource {
     let store: RecordStore
     /// Visible rows, in display order, as indexes into the store.
     private(set) var order: [Int]
     private var sortState: (column: Int, ascending: Bool)?
+    /// Text to find in any column.
     private(set) var filter = ""
+    /// Conditions on single columns. A row shows when it meets all of them and the text filter.
+    private(set) var columnFilters: [ColumnFilter] = []
     private var searchIndex: [[UInt8]]?
     private var widths: [CGFloat]
     /// Inferred kinds from profiles, used to sort dates and numbers properly.
     var sortKinds: [Int: ColumnProfile.Kind] = [:]
+    /// Tables at least this long filter off the main thread.
+    static let backgroundRows = 20_000
 
     init(store: RecordStore) {
         self.store = store
@@ -101,6 +165,7 @@ final class RecordGridSource: GridSource {
     var columnCount: Int { store.columns.count }
     var rowCount: Int { order.count }
     var totalRows: Int { store.rowCount }
+    var isFiltered: Bool { !filter.isEmpty || !columnFilters.isEmpty }
 
     func title(ofColumn column: Int) -> String { store.columns[column].title }
     func toolTip(ofColumn column: Int) -> String? { store.columns[column].toolTip }
@@ -108,6 +173,14 @@ final class RecordGridSource: GridSource {
     func estimatedWidth(ofColumn column: Int) -> CGFloat { widths[column] }
     func value(row: Int, column: Int) -> GridValue { store.value(row: order[row], column: column) }
     func isDimmed(row: Int) -> Bool { store.isDimmed(row: order[row]) }
+    /// The raw text behind a visible cell: what column filters compare.
+    func text(row: Int, column: Int) -> String { store.text(row: order[row], column: column) }
+
+    /// Holds numbers, as declared by its store or as its profile found.
+    func holdsNumbers(column: Int) -> Bool {
+        let info = store.columns[column]
+        return info.numeric || info.sort == .numeric || sortKinds[column] == .integer || sortKinds[column] == .number
+    }
 
     private func measure(_ column: Int) -> CGFloat {
         let info = store.columns[column]
@@ -125,21 +198,40 @@ final class RecordGridSource: GridSource {
 
     func sort(column: Int, ascending: Bool, completion: @escaping (Bool) -> Void) {
         sortState = (column, ascending)
-        applyOrder()
+        // Supersedes a filter still running in the background: this order already includes it.
+        generation &+= 1
+        order = rows(for: query)
         completion(true)
     }
 
-    private func applyOrder() {
-        var rows = filter.isEmpty ? Array(0..<store.rowCount) : matchingRows(filter)
-        if let (column, ascending) = sortState {
-            rows = sorted(rows, column: column, ascending: ascending)
-        }
-        order = rows
+    /// Everything that decides the visible rows, captured on the main thread so it can be
+    /// evaluated on any.
+    private struct Query {
+        var text: String
+        var filters: [ColumnFilter]
+        var sort: (column: Int, ascending: Bool, kind: ColumnProfile.Kind?)?
     }
 
-    private func sorted(_ rows: [Int], column: Int, ascending: Bool) -> [Int] {
+    private var query: Query {
+        Query(text: filter, filters: columnFilters, sort: sortState.map { ($0.column, $0.ascending, sortKinds[$0.column]) })
+    }
+
+    /// The visible rows for a query. Reads only the store and the search index, so it can run on
+    /// any thread.
+    private func rows(for query: Query) -> [Int] {
+        var rows = query.text.isEmpty ? Array(0..<store.rowCount) : matchingRows(query.text)
+        if !query.filters.isEmpty {
+            let store = self.store
+            rows = rows.filter { row in query.filters.allSatisfy { $0.matches(store.text(row: row, column: $0.column)) } }
+        }
+        if let sort = query.sort {
+            rows = sorted(rows, column: sort.column, ascending: sort.ascending, kind: sort.kind)
+        }
+        return rows
+    }
+
+    private func sorted(_ rows: [Int], column: Int, ascending: Bool, kind: ColumnProfile.Kind?) -> [Int] {
         let info = store.columns[column]
-        let kind = sortKinds[column]
         if info.numeric || info.sort == .numeric || kind == .integer || kind == .number || kind == .date {
             // Numbers (or dates) first, in order; then anything that isn't one, in text order.
             let keys: [Double] = rows.map { row in
@@ -178,29 +270,61 @@ final class RecordGridSource: GridSource {
 
     // MARK: - Filtering
 
-    /// Keeps rows containing `query` in any column (case-insensitive). Off the main thread for
-    /// large tables; `completion` runs on the main thread.
+    /// Keeps rows containing `query` in any column (case-insensitive). `completion` runs on the
+    /// main thread once the rows are in place.
     func setFilter(_ query: String, completion: @escaping () -> Void) {
         let trimmed = query.trimmingCharacters(in: .whitespaces)
         guard trimmed != filter else { completion(); return }
         filter = trimmed
-        if store.rowCount < 20_000 {
-            applyOrder()
+        refilter(completion: completion)
+    }
+
+    /// Adds a column filter in place of any it makes pointless (see `ColumnFilter.replaces`).
+    func addColumnFilter(_ new: ColumnFilter, completion: @escaping () -> Void) {
+        setColumnFilters(columnFilters.filter { !new.replaces($0) && $0 != new } + [new], completion: completion)
+    }
+
+    func removeColumnFilter(_ old: ColumnFilter, completion: @escaping () -> Void) {
+        setColumnFilters(columnFilters.filter { $0 != old }, completion: completion)
+    }
+
+    func setColumnFilters(_ filters: [ColumnFilter], completion: @escaping () -> Void) {
+        guard filters != columnFilters else { completion(); return }
+        columnFilters = filters
+        refilter(completion: completion)
+    }
+
+    /// Clears the text filter and every column filter.
+    func clearFilters(completion: @escaping () -> Void) {
+        guard isFiltered else { completion(); return }
+        filter = ""
+        columnFilters = []
+        refilter(completion: completion)
+    }
+
+    /// Bumped by every change to the rows, so a slow filter that finishes late can't bring back
+    /// an older state.
+    private var generation = 0
+
+    /// Works the rows out again: at once for small tables, off the main thread for large ones.
+    private func refilter(completion: @escaping () -> Void) {
+        generation &+= 1
+        let current = generation
+        let query = self.query
+        guard store.rowCount >= Self.backgroundRows else {
+            order = rows(for: query)
             completion()
             return
         }
-        let generation = UUID()
-        currentFilter = generation
         DispatchQueue.global(qos: .userInitiated).async { [self] in
-            _ = buildSearchIndex()
+            let rows = self.rows(for: query)
             DispatchQueue.main.async { [self] in
-                guard currentFilter == generation else { return }
-                applyOrder()
+                if generation == current { order = rows }
                 completion()
             }
         }
     }
-    private var currentFilter: UUID?
+
     private let indexLock = NSLock()
 
     private func buildSearchIndex() -> [[UInt8]] {

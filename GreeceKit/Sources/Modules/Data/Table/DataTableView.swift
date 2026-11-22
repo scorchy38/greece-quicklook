@@ -75,8 +75,65 @@ final class DataToolbar: NSView {
     }
 }
 
-/// A table in memory with a filter field and column profiles: delimited text, JSON Lines,
-/// dBase files, lock files, string catalogs and Parquet previews.
+/// An active filter in the toolbar, like a search token: what it keeps, and a button that removes it.
+final class FilterToken: NSView {
+    private let label = NSTextField(labelWithString: "")
+    private let remove: NSButton
+    private let onRemove: () -> Void
+
+    init(text: String, onRemove: @escaping () -> Void) {
+        self.onRemove = onRemove
+        let image = NSImage(systemSymbolName: "xmark", accessibilityDescription: "Remove Filter")?
+            .withSymbolConfiguration(.init(pointSize: 8, weight: .bold)) ?? NSImage()
+        remove = NSButton(image: image, target: nil, action: nil)
+        super.init(frame: .zero)
+        label.stringValue = text
+        label.font = .systemFont(ofSize: 11)
+        label.textColor = .labelColor
+        label.lineBreakMode = .byTruncatingTail
+        label.toolTip = text
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        remove.isBordered = false
+        remove.imagePosition = .imageOnly
+        remove.contentTintColor = .secondaryLabelColor
+        remove.toolTip = "Remove Filter"
+        remove.target = self
+        remove.action = #selector(removeClicked)
+        for view in [label, remove] {
+            view.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(view)
+        }
+        NSLayoutConstraint.activate([
+            heightAnchor.constraint(equalToConstant: 20),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            label.centerYAnchor.constraint(equalTo: centerYAnchor),
+            label.widthAnchor.constraint(lessThanOrEqualToConstant: 220),
+            remove.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 3),
+            remove.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5),
+            remove.centerYAnchor.constraint(equalTo: centerYAnchor),
+            remove.widthAnchor.constraint(equalToConstant: 14),
+            remove.heightAnchor.constraint(equalToConstant: 14),
+        ])
+        setAccessibilityElement(true)
+        setAccessibilityRole(.group)
+        setAccessibilityLabel("Filter: \(text)")
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let shape = NSBezierPath(roundedRect: bounds, xRadius: bounds.height / 2, yRadius: bounds.height / 2)
+        NSColor.controlAccentColor.withAlphaComponent(0.16).setFill()
+        shape.fill()
+    }
+
+    @objc private func removeClicked() { onRemove() }
+}
+
+/// A table in memory with a filter field, column filters and column profiles: delimited text,
+/// JSON Lines, dBase files, lock files, string catalogs and Parquet previews. Column filters come
+/// from a cell's context menu or a profile's common values and show as tokens in the toolbar, so
+/// the table can be narrowed by pointer alone (Quick Look has no typing).
 final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
     struct Options {
         var unit = ("row", "rows")
@@ -97,6 +154,9 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
     private let options: Options
     private let toolbar = DataToolbar()
     private let countLabel = DataToolbar.label()
+    /// Active column filters, each removable.
+    private let tokens = NSStackView()
+    /// Only in hosts that take typing: in Quick Look, keys go to Finder.
     private let search: NSSearchField
     private var profileButton: NSButton?
     private var profiles: [Int: ColumnProfile] = [:]
@@ -116,6 +176,10 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
 
         for view in options.leading { toolbar.leading.addArrangedSubview(view) }
         toolbar.leading.addArrangedSubview(countLabel)
+        tokens.spacing = 4
+        tokens.alignment = .centerY
+        tokens.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        toolbar.leading.addArrangedSubview(tokens)
         if profileable {
             let button = DataToolbar.iconButton("chart.bar.xaxis", toolTip: "Column Profiles", target: self, action: #selector(toggleProfiles(_:)))
             button.state = .on
@@ -125,7 +189,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         search.delegate = self
         search.target = self
         search.action = #selector(filterChanged(_:))
-        toolbar.trailing.addArrangedSubview(search)
+        if PreviewHost.acceptsTyping { toolbar.trailing.addArrangedSubview(search) }
 
         for view in [toolbar, grid] {
             view.translatesAutoresizingMaskIntoConstraints = false
@@ -143,6 +207,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
 
         grid.headerStrip = { [weak self] column in self?.strip(for: column) }
         grid.onStripClick = { [weak self] column, rect, view in self?.showProfile(column, rect: rect, in: view) }
+        grid.cellMenuItems = { [weak self] row, column in self?.filterMenuItems(row: row, column: column) ?? [] }
         updateStrips()
         updateCount()
         if profileable { startProfiling() }
@@ -167,6 +232,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         grid.isHidden = view != nil
         countLabel.isHidden = view != nil
         toolbar.trailing.isHidden = view != nil
+        updateTokens()
         guard let view else { return }
         view.translatesAutoresizingMaskIntoConstraints = false
         addSubview(view)
@@ -185,23 +251,19 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         let total = source.totalRows
         let unit = total == 1 ? options.unit.0 : options.unit.1
         var text: String
-        if source.filter.isEmpty {
+        if !source.isFiltered {
             text = "\(total.formatted()) \(unit)"
         } else {
             text = "\(source.rowCount.formatted()) of \(total.formatted()) \(unit)"
         }
-        if let note = options.note, source.filter.isEmpty { text += "  ·  " + note }
+        if let note = options.note, !source.isFiltered { text += "  ·  " + note }
         countLabel.stringValue = text
     }
 
     // MARK: - Filter
 
     @objc private func filterChanged(_ sender: NSSearchField) {
-        source.setFilter(sender.stringValue) { [weak self] in
-            guard let self else { return }
-            self.grid.reloadRows()
-            self.updateCount()
-        }
+        refilter { source.setFilter(sender.stringValue, completion: $0) }
     }
 
     func controlTextDidChange(_ obj: Notification) {
@@ -213,11 +275,97 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
     @objc private func filterNow() { filterChanged(search) }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        if event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command, event.charactersIgnoringModifiers == "f" {
+        if search.superview != nil, event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
+           event.charactersIgnoringModifiers == "f" {
             window?.makeFirstResponder(search)
             return true
         }
         return super.performKeyEquivalent(with: event)
+    }
+
+    // MARK: - Column filters
+
+    /// Filter items for a right-click on a cell, then Clear Filters whenever anything is filtered.
+    func filterMenuItems(row: Int?, column: Int?) -> [NSMenuItem] {
+        var items: [NSMenuItem] = []
+        if let row, let column, row < source.rowCount {
+            let name = columnName(column)
+            let text = source.text(row: row, column: column)
+            let blank = ColumnFilter.isBlank(text)
+            let subject = blank ? "Is Empty" : "Is \(MenuText.quoted(text))"
+            let value = blank ? "" : text
+            items.append(toggleItem("Show Only Rows Where \(name) \(subject)", ColumnFilter(column: column, test: .equals(value))))
+            items.append(toggleItem("Hide Rows Where \(name) \(subject)", ColumnFilter(column: column, test: .notEquals(value))))
+            if source.holdsNumbers(column: column), let number = DataValueParser.number(text) {
+                let shown = MenuText.short(text)
+                items.append(toggleItem("Show Only Rows Where \(name) ≥ \(shown)", ColumnFilter(column: column, test: .atLeast(number, text: text))))
+                items.append(toggleItem("Show Only Rows Where \(name) ≤ \(shown)", ColumnFilter(column: column, test: .atMost(number, text: text))))
+            }
+        }
+        if source.isFiltered {
+            if !items.isEmpty { items.append(.separator()) }
+            items.append(ActionMenuItem("Clear Filters") { [weak self] in self?.clearFilters() })
+        }
+        return items
+    }
+
+    /// A filter's item, checked while the filter is on; choosing it then turns the filter off.
+    private func toggleItem(_ title: String, _ filter: ColumnFilter) -> NSMenuItem {
+        let active = source.columnFilters.contains(filter)
+        return ActionMenuItem(title, state: active ? .on : .off) { [weak self] in
+            if active { self?.removeFilter(filter) } else { self?.addFilter(filter) }
+        }
+    }
+
+    func addFilter(_ filter: ColumnFilter) {
+        refilter { source.addColumnFilter(filter, completion: $0) }
+    }
+
+    func removeFilter(_ filter: ColumnFilter) {
+        refilter { source.removeColumnFilter(filter, completion: $0) }
+    }
+
+    /// Clears the column filters and the text filter.
+    func clearFilters() {
+        search.stringValue = ""
+        refilter { source.clearFilters(completion: $0) }
+    }
+
+    /// Starts a change to the filters; the tokens follow at once, the rows when they're ready
+    /// (a moment later for large tables, filtered off the main thread).
+    private func refilter(_ change: (@escaping () -> Void) -> Void) {
+        var finished = false
+        change { [weak self] in
+            finished = true
+            guard let self else { return }
+            // The selection was of rows by position; after filtering those are other rows.
+            self.grid.tableView.deselectAll(nil)
+            self.grid.reloadRows()
+            self.updateCount()
+            self.updateTokens()
+        }
+        if !finished {
+            updateTokens()
+            countLabel.stringValue = "Filtering…"
+        }
+    }
+
+    private func columnName(_ column: Int) -> String {
+        let title = source.title(ofColumn: column).trimmingCharacters(in: .whitespaces)
+        return title.isEmpty ? "Column \(DelimitedTable.columnLetter(column))" : title
+    }
+
+    private func updateTokens() {
+        tokens.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        for filter in source.columnFilters {
+            let token = FilterToken(text: filter.label(columnTitle: columnName(filter.column))) { [weak self] in self?.removeFilter(filter) }
+            token.menu = .context([
+                ActionMenuItem("Remove Filter") { [weak self] in self?.removeFilter(filter) },
+                ActionMenuItem("Clear Filters") { [weak self] in self?.clearFilters() },
+            ])
+            tokens.addArrangedSubview(token)
+        }
+        tokens.isHidden = source.columnFilters.isEmpty || alternate != nil
     }
 
     // MARK: - Profiles
@@ -283,7 +431,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         guard profilesShown, let profile = profiles[column] else { return }
         popover?.close()
         let controller = NSViewController()
-        controller.view = ProfilePopoverView(title: source.title(ofColumn: column), profile: profile)
+        controller.view = profileView(column, profile)
         let popover = NSPopover()
         popover.behavior = .transient
         popover.contentViewController = controller
@@ -291,18 +439,47 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         self.popover = popover
     }
 
+    /// A column's profile; choosing one of its common values shows only the rows with it.
+    private func profileView(_ column: Int, _ profile: ColumnProfile) -> ProfilePopoverView {
+        ProfilePopoverView(title: columnName(column), profile: profile) { [weak self] value in
+            self?.popover?.close()
+            self?.addFilter(ColumnFilter(column: column, test: .equals(value)))
+        }
+    }
+
     // MARK: - Snapshots
 
     #if DEBUG
-    /// `GREECE_STATE=filter:<text>` or `profile:<column>` shows a state for design review
-    /// (the render command has no mouse).
+    /// `GREECE_STATE` shows a state for design review (the render command has no mouse). Parts,
+    /// separated by `;`: `filter:<text>`, `profile:<column>`, `show:<column>=<value>`,
+    /// `hide:<column>=<value>`, and `menu:<row>,<column>`, which prints that cell's menu.
     private func applySnapshotState() {
         guard let state = ProcessInfo.processInfo.environment["GREECE_STATE"] else { return }
-        if state.hasPrefix("filter:") {
-            search.stringValue = String(state.dropFirst(7))
-            source.setFilter(search.stringValue) { [weak self] in self?.grid.reloadRows(); self?.updateCount() }
-        } else if state.hasPrefix("profile:"), let column = Int(state.dropFirst(8)) {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.pinProfile(column) }
+        for part in state.split(separator: ";").map(String.init) {
+            let (name, argument) = part.firstIndex(of: ":").map { (String(part[..<$0]), String(part[part.index(after: $0)...])) } ?? (part, "")
+            let pair = argument.firstIndex(of: "=").map { (Int(argument[..<$0]), String(argument[argument.index(after: $0)...])) }
+            switch name {
+            case "filter":
+                search.stringValue = argument
+                filterChanged(search)
+            case "profile":
+                guard let column = Int(argument) else { continue }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in self?.pinProfile(column) }
+            case "show", "hide":
+                guard let pair, let column = pair.0, column < source.columnCount else { continue }
+                addFilter(ColumnFilter(column: column, test: name == "show" ? .equals(pair.1) : .notEquals(pair.1)))
+            case "menu":
+                let cell = argument.split(separator: ",").compactMap { Int($0) }
+                guard cell.count == 2 else { continue }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    guard let self else { return }
+                    self.grid.tableView.selectRowIndexes([cell[0]], byExtendingSelection: false)
+                    let menu = self.grid.menu(forRow: cell[0], column: cell[1])
+                    print(menu.items.map { $0.isSeparatorItem ? "—" : ($0.state == .on ? "✓ " : "  ") + $0.title }.joined(separator: "\n"))
+                }
+            default:
+                continue
+            }
         }
     }
 
@@ -315,7 +492,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         card.layer?.cornerRadius = 12
         card.layer?.borderWidth = 0.5
         card.layer?.borderColor = NSColor.separatorColor.cgColor
-        let content = ProfilePopoverView(title: source.title(ofColumn: column), profile: profile)
+        let content = profileView(column, profile)
         content.translatesAutoresizingMaskIntoConstraints = false
         card.addSubview(content)
         card.translatesAutoresizingMaskIntoConstraints = false
