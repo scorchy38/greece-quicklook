@@ -41,17 +41,31 @@ enum LaTeXPreview {
         var details: [String] = []
         let title: String
         if project.isBeamer {
-            title = "Beamer Slides"
+            title = String(localized: "Beamer Slides", bundle: .greeceKit, comment: "Info bar title: a LaTeX slide deck made with Beamer")
             let frames = countFrames(project.source)
-            details.append(DocumentsModule.count(frames, "slide"))
+            details.append(String(localized: "\(frames) slides", bundle: .greeceKit, comment: "Info bar detail: slides in a presentation"))
         } else {
-            title = sweave ? "Sweave Document" : "LaTeX Document"
+            title = sweave
+                ? String(localized: "Sweave Document", bundle: .greeceKit, comment: "Info bar title: a LaTeX document with R code (Sweave)")
+                : String(localized: "LaTeX Document", bundle: .greeceKit, comment: "Info bar title")
             details += DocumentsModule.readingFacts(words: TeXText.wordCount(project.source))
         }
-        if let host = project.host { details.append("Part of \(host.lastPathComponent)") }
-        else if !project.files.isEmpty { details.append(DocumentsModule.count(project.files.count + 1, "file")) }
-        if !project.bibliography.isEmpty { details.append(DocumentsModule.count(project.bibliography.count, "reference")) }
-        if !project.missing.isEmpty { details.append("\(project.missing.count) missing") }
+        if let host = project.host {
+            let name = host.lastPathComponent
+            details.append(String(localized: "Part of \(name)", bundle: .greeceKit,
+                                  comment: "Info bar detail: this LaTeX file is included by another. The argument is that file’s name, such as “thesis.tex”"))
+        } else if !project.files.isEmpty {
+            let files = project.files.count + 1
+            details.append(String(localized: "\(files) files", bundle: .greeceKit, comment: "Info bar detail: files in a project"))
+        }
+        if !project.bibliography.isEmpty {
+            let references = project.bibliography.count
+            details.append(String(localized: "\(references) references", bundle: .greeceKit, comment: "Info bar detail: entries in a BibTeX file or cited by a LaTeX document"))
+        }
+        if !project.missing.isEmpty {
+            let missing = project.missing.count
+            details.append(String(localized: "\(missing) missing", bundle: .greeceKit, comment: "Info bar detail: files a LaTeX document includes that weren’t found"))
+        }
         let summary = FileSummary(symbol: project.isBeamer ? "rectangle.on.rectangle" : "function", title: title, details: details, trailing: file.modifiedText)
         return .web(document, summary, NSSize(width: project.isBeamer ? 1040 : 980, height: 800))
     }
@@ -63,10 +77,13 @@ enum LaTeXPreview {
         let document = WebDocument(module: .init("pgf"), data: payload, scripts: ["modules/documents.js"], styles: ["modules/documents.css"], libraries: [.math])
         var details: [String] = []
         if let w = figure.width, let h = figure.height {
-            details.append(String(format: "%.1f × %.1f in", w / 72, h / 72))
+            let style = FloatingPointFormatStyle<Double>.number.precision(.fractionLength(1))
+            let width = (w / 72).formatted(style), height = (h / 72).formatted(style)
+            details.append(String(localized: "\(width) × \(height) in", bundle: .greeceKit,
+                                  comment: "Info bar detail: a figure’s width and height in inches, such as “6.4 × 4.8 in”"))
         }
         if let size = file.sizeText { details.append(size) }
-        return .web(document, FileSummary(symbol: "chart.xyaxis.line", title: "PGF Figure", details: details, trailing: file.modifiedText),
+        return .web(document, FileSummary(symbol: "chart.xyaxis.line", title: String(localized: "PGF Figure", bundle: .greeceKit, comment: "Info bar title: a figure exported from matplotlib or TikZ as PGF"), details: details, trailing: file.modifiedText),
                     NSSize(width: 900, height: 700))
     }
 
@@ -89,7 +106,8 @@ enum TypstPreview {
     static func prepare(_ file: FileInfo) throws -> PreparedPreview {
         let text = try TextFile(url: file.url)
         let document = WebDocument(kind: .code, text: text.text, grammar: "typst", baseDirectory: file.url.deletingLastPathComponent(), truncated: text.truncated)
-        var details = [DocumentsModule.count(text.lineCount, "line")]
+        let lines = text.lineCount
+        var details = [String(localized: "\(lines) lines", bundle: .greeceKit, comment: "Info bar detail: lines in a text file")]
         details += DocumentsModule.readingFacts(words: PreviewFactory.wordCount(TypstPreview.prose(text.text))).prefix(1)
         if let size = file.sizeText { details.append(size) }
         return .web(document, FileSummary(symbol: "doc.text", title: "Typst", details: details, trailing: file.modifiedText), NSSize(width: 920, height: 720))

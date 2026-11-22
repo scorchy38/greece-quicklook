@@ -201,7 +201,7 @@ enum DocumentThumbnails {
                 if let date { add(date, serif(body * 1.05), secondary, paragraph(alignment: .center, spacing: body * 0.6)) }
             }
             if let abstract, !abstract.isEmpty {
-                add("Abstract", serif(body * 0.92, weight: .semibold), ink, paragraph(alignment: .center, spacingBefore: body * 0.9, spacing: body * 0.35))
+                add(String(localized: "Abstract", bundle: .greeceKit, comment: "Heading above a paper’s abstract on a LaTeX thumbnail"), serif(body * 0.92, weight: .semibold), ink, paragraph(alignment: .center, spacingBefore: body * 0.9, spacing: body * 0.35))
                 add(abstract, serif(body * 0.9), ink, paragraph(alignment: .justified, spacing: body * 0.6, head: body * 2.6, tail: body * 2.6, lineHeight: 1.18))
             }
             for section in sections {
@@ -256,7 +256,7 @@ enum DocumentThumbnails {
             let body = max(rect.width / 34, 1)
             var y = rect.maxY - margin
             let width = rect.width - margin * 2
-            let title = NSAttributedString(string: "References", attributes: [.font: NSFont.systemFont(ofSize: body * 1.45, weight: .bold), .foregroundColor: ink])
+            let title = NSAttributedString(string: String(localized: "References", bundle: .greeceKit, comment: "Heading on a BibTeX file’s thumbnail"), attributes: [.font: NSFont.systemFont(ofSize: body * 1.45, weight: .bold), .foregroundColor: ink])
             title.draw(at: CGPoint(x: rect.minX + margin, y: y - body * 1.6))
             y -= body * 2.5
             let accent = NSColor(srgbRed: 0.0, green: 0.42, blue: 0.9, alpha: 1)
@@ -265,7 +265,7 @@ enum DocumentThumbnails {
                 hairline.setFill()
                 CGRect(x: rect.minX + margin, y: y, width: width, height: max(0.5, rect.width / 600)).fill()
                 y -= body * 0.55
-                let type = (BibTeX.typeNames[entry.type] ?? entry.type.capitalized).uppercased()
+                let type = BibTeX.typeName(entry.type)?.localizedUppercase ?? entry.type.uppercased()
                 let label = NSMutableAttributedString()
                 label.append(NSAttributedString(string: BibTeX.shortCitation(entry), attributes: [.font: NSFont.systemFont(ofSize: body * 0.92, weight: .semibold), .foregroundColor: ink]))
                 label.append(NSAttributedString(string: "   " + type, attributes: [.font: NSFont.systemFont(ofSize: body * 0.62, weight: .semibold), .foregroundColor: accent, .kern: body * 0.03]))

@@ -40,7 +40,7 @@ enum ProsePreview {
         case .rmarkdown: return NotebookMarkdown.convert(text, format: "R Markdown")
         case .livebook: return NotebookMarkdown.convert(text, format: "Livebook")
         case .multiMarkdown: return NotebookMarkdown.convert(text, format: "MultiMarkdown")
-        default: return ProseDocument(format: "Text", markdown: text)
+        default: return ProseDocument(format: String(localized: "Text", bundle: .greeceKit, comment: "Info bar title: a plain text document"), markdown: text)
         }
     }
 
@@ -53,7 +53,11 @@ enum ProsePreview {
         let words = PreviewFactory.wordCount(proseText(document.markdown))
         var details = DocumentsModule.readingFacts(words: words)
         let tasks = document.tasks.open + document.tasks.done
-        if tasks > 0 { details.append("\(document.tasks.done) of \(tasks) done") }
+        if tasks > 0 {
+            let done = document.tasks.done
+            details.append(String(localized: "\(done) of \(tasks) done", bundle: .greeceKit,
+                                  comment: "Info bar detail: tasks checked off in a document, such as “3 of 8 done”"))
+        }
         let symbol: String
         switch format {
         case .org: symbol = "list.bullet.indent"
@@ -164,11 +168,14 @@ enum MD {
         return "<div class=\"\(kind)\">" + items.map { "<span class=\"chip\">\(html($0))</span>" }.joined() + "</div>"
     }
 
+    /// "Included: chapter2.adoc", a chip where a document includes another file.
+    static func included(_ name: String) -> String {
+        String(localized: "Included: \(name)", bundle: .greeceKit, comment: "Label where a document includes another file. The argument is its path, such as “chapter2.adoc”")
+    }
+
+    /// Today as a document would print it ("November 20, 2026"), in the reader's language.
     static func todayLong() -> String {
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "MMMM d, yyyy"
-        return formatter.string(from: Date())
+        Date().formatted(date: .long, time: .omitted)
     }
 }
 
@@ -219,15 +226,15 @@ enum OrgConverter {
                 case "subtitle": doc.subtitle = value
                 case "author": doc.authors += value.components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
                 case "date": doc.date = OrgInline.timestampText(value) ?? value
-                case "email": doc.meta.append(["Email", value])
+                case "email": doc.meta.append([String(localized: "Email", bundle: .greeceKit, comment: "Label in a document’s title block: the author’s email address"), value])
                 case "filetags": doc.tags += value.split(separator: ":").map(String.init).filter { !$0.isEmpty }.flatMap { $0.split(separator: " ").map(String.init) }
                 case "description": doc.abstract = value
-                case "keywords": doc.meta.append(["Keywords", value])
+                case "keywords": doc.meta.append([String(localized: "Keywords", bundle: .greeceKit, comment: "Label in a document’s title block"), value])
                 case "caption": pendingCaption = value
                 case "results":
                     // Results that follow: fixed-width lines or a block.
-                    out.append(MD.chips(["Results"], kind: "chunk-meta result"))
-                case "include": out.append(MD.chips(["Included: " + value]))
+                    out.append(MD.chips([String(localized: "Results", bundle: .greeceKit, comment: "Label above the output of a code block in an Org document")], kind: "chunk-meta result"))
+                case "include": out.append(MD.chips([MD.included(value)]))
                 default: break
                 }
                 i += 1
@@ -494,9 +501,14 @@ enum OrgConverter {
         let regex = try! NSRegularExpression(pattern: #"(SCHEDULED|DEADLINE|CLOSED):\s*([<\[][^>\]]+[>\]])"#)
         for m in regex.matches(in: t, range: NSRange(t.startIndex..., in: t)) {
             guard let k = Range(m.range(at: 1), in: t), let v = Range(m.range(at: 2), in: t) else { continue }
-            let label = t[k].capitalized
+            let label: String
+            switch t[k] {
+            case "SCHEDULED": label = String(localized: "Scheduled", bundle: .greeceKit, comment: "Label before an Org task’s scheduled date")
+            case "DEADLINE": label = String(localized: "Deadline", bundle: .greeceKit, comment: "Label before an Org task’s deadline")
+            default: label = String(localized: "Closed", bundle: .greeceKit, comment: "Label before the date an Org task was closed (done)")
+            }
             let value = OrgInline.timestampText(String(t[v])) ?? String(t[v])
-            chips.append("<span class=\"org-plan \(t[k].lowercased())\"><span class=\"k\">\(label)</span> \(MD.html(value))</span>")
+            chips.append("<span class=\"org-plan \(t[k].lowercased())\"><span class=\"k\">\(MD.html(label))</span> \(MD.html(value))</span>")
         }
         return chips.isEmpty ? nil : "<div class=\"org-planning\">\(chips.joined())</div>"
     }
@@ -643,10 +655,7 @@ enum OrgInline {
         func group(_ n: Int) -> String? { Range(m.range(at: n), in: stamp).map { String(stamp[$0]) } }
         guard let y = group(1).flatMap(Int.init), let mo = group(2).flatMap(Int.init), let d = group(3).flatMap(Int.init),
               let date = Calendar(identifier: .gregorian).date(from: DateComponents(year: y, month: mo, day: d)) else { return nil }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "EEE, MMM d, yyyy"
-        var text = formatter.string(from: date)
+        var text = date.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().year())
         if let time = group(4) { text += " " + time + (group(5).map { "–" + $0 } ?? "") }
         return text
     }
