@@ -8,6 +8,8 @@ public final class PreviewView: NSView {
     /// A comfortable size for Quick Look's panel when it opens.
     public let preferredSize: NSSize
     private var infoBar: InfoBarView?
+    /// The previewed file, for the info bar's tooltip and menu (Copy Path, Show in Finder).
+    public var fileURL: URL? { didSet { infoBar?.fileURL = fileURL } }
     private var bottomConstraint: NSLayoutConstraint?
 
     init(content: NSView, summary: FileSummary, preferredSize: NSSize, settings: PreviewSettings) {
@@ -63,6 +65,7 @@ public final class PreviewView: NSView {
         bottomConstraint?.isActive = false
         if visible {
             let bar = InfoBarView(summary: summary)
+            bar.fileURL = fileURL
             bar.translatesAutoresizingMaskIntoConstraints = false
             addSubview(bar)
             NSLayoutConstraint.activate([

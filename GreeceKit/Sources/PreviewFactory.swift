@@ -19,6 +19,7 @@ public enum PreviewFactory {
             prepared = .web(document, summary, size)
         }
         let view = try build(prepared, url: url, settings: settings)
+        view.fileURL = url
         await view.waitUntilReady()
         if let scroll { view.restoreScroll(scroll) }
         return view

@@ -26,6 +26,11 @@ final class InfoBarView: NSView {
     private let details = NSTextField(labelWithString: "")
     private let trailing = NSTextField(labelWithString: "")
 
+    /// The file: its path as the tooltip, and the bar's menu acts on it.
+    var fileURL: URL? {
+        didSet { toolTip = fileURL.map { ($0.path as NSString).abbreviatingWithTildeInPath } }
+    }
+
     init(summary: FileSummary) {
         super.init(frame: .zero)
 
@@ -94,6 +99,17 @@ final class InfoBarView: NSView {
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
         setAccessibilityLabel(([summary.title] + summary.details + [summary.trailing].compactMap { $0 }).joined(separator: ", "))
+    }
+
+    /// The pointer's way to the file's whereabouts (Quick Look keeps ⌘C for Finder).
+    override func menu(for event: NSEvent) -> NSMenu? {
+        guard let url = fileURL else { return nil }
+        return NSMenu.context([
+            ActionMenuItem("Copy Path") { Clipboard.copy(url.path) },
+            ActionMenuItem("Copy Name") { Clipboard.copy(url.lastPathComponent) },
+            .separator(),
+            ActionMenuItem("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) },
+        ])
     }
 
     override func layout() {

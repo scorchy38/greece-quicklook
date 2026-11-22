@@ -145,6 +145,16 @@ final class PointerOnlyTests: XCTestCase {
         XCTAssertEqual(count, "4 of 4")
     }
 
+    func testTheInfoBarKnowsTheFile() async throws {
+        let (preview, _) = try await page()
+        let bar = try XCTUnwrap(preview.subviews.compactMap { $0 as? InfoBarView }.first)
+        XCTAssertEqual(bar.toolTip, (directory.appendingPathComponent("Lamp.swift").path as NSString).abbreviatingWithTildeInPath)
+        let event = try XCTUnwrap(NSEvent.mouseEvent(with: .rightMouseDown, location: .zero, modifierFlags: [], timestamp: 0,
+                                                     windowNumber: 0, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
+        let titles = bar.menu(for: event)?.items.map { $0.isSeparatorItem ? "—" : $0.title }
+        XCTAssertEqual(titles, ["Copy Path", "Copy Name", "—", "Show in Finder"])
+    }
+
     func testMenuKeepsUsefulWebKitItemsAndDropsTheRest() throws {
         let web = PreviewWebView(frame: NSRect(x: 0, y: 0, width: 400, height: 300), configuration: WKWebViewConfiguration())
         let menu = NSMenu()
