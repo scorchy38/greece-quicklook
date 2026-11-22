@@ -4,6 +4,8 @@
 (function (global) {
   'use strict';
   const Smart = global.GreeceSmart = global.GreeceSmart || {};
+  /** The page's strings (Smart.kit), looked up when used: code-smart.js, which sets it, may load after this file. */
+  const kit = new Proxy({}, { get: (_, name) => Smart.kit[name] });
   const str = (v, max) => Smart.text(v, max || 200);
   const entries = (v, limit) => Smart.entries(v, limit || 500);
   const arr = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
@@ -70,15 +72,15 @@
     const { stages } = parseDockerfile(file.text);
     if (!stages.length) return;
     const final = stages[stages.length - 1];
-    const ref = (s) => s.name || `stage ${s.index + 1}`;
+    const ref = (s) => s.name || kit.t('stage {0}', s.index + 1);
     const facts = [
-      { label: 'Base', value: final.image, mono: true },
-      { label: 'Ports', value: final.expose.join(', '), mono: true },
-      { label: 'Entrypoint', value: final.entrypoint, mono: true },
-      { label: 'Command', value: final.cmd, mono: true },
-      { label: 'Workdir', value: final.workdir, mono: true },
-      { label: 'User', value: final.user, mono: true },
-      { label: 'Healthcheck', value: final.healthcheck ? 'Yes' : '' },
+      { label: kit.t('Base'), value: final.image, mono: true },
+      { label: kit.t('Ports'), value: final.expose.join(', '), mono: true },
+      { label: kit.t('Entrypoint'), value: final.entrypoint, mono: true },
+      { label: kit.t('Command'), value: final.cmd, mono: true },
+      { label: kit.t('Workdir'), value: final.workdir, mono: true },
+      { label: kit.t('User'), value: final.user, mono: true },
+      { label: kit.t('Healthcheck'), value: final.healthcheck ? kit.t('Yes') : '' },
     ];
     let body = Smart.facts(facts);
     if (stages.length > 1) {
@@ -90,12 +92,12 @@
         if (base) edges.push([String(base.index), String(s.index)]);
         s.copiesFrom.forEach((f) => { const from = find(f); if (from && from !== s) edges.push([String(from.index), String(s.index)]); });
       });
-      const graph = Smart.graph(stages.map((s) => ({ id: String(s.index), label: ref(s), sub: find(s.image) ? `from ${ref(find(s.image))}` : s.image, tone: s === final ? 'final' : '' })), edges, { label: 'Build stages' });
-      body += Smart.section('Stages', `<div class="smart-graph-wrap">${graph}</div>`, { count: stages.length, wide: true });
+      const graph = Smart.graph(stages.map((s) => ({ id: String(s.index), label: ref(s), sub: find(s.image) ? kit.t('from {0}', ref(find(s.image))) : s.image, tone: s === final ? 'final' : '' })), edges, { label: kit.t('Build stages') });
+      body += Smart.section(kit.t('Stages'), `<div class="smart-graph-wrap">${graph}</div>`, { count: stages.length, wide: true });
     }
     Smart.card(root, {
       kind: 'docker', icon: 'container', title: /^containerfile/.test(file.lower) ? 'Containerfile' : 'Dockerfile',
-      subtitle: stages.length > 1 ? `${Smart.plural(stages.length, 'stage')} · Final: ${ref(final)}` : final.image,
+      subtitle: stages.length > 1 ? `${kit.plural(stages.length, '{0} stages')} · ${kit.t('Final: {0}', ref(final))}` : final.image,
       body,
     });
   }
@@ -142,17 +144,17 @@
       `<td class="svc-image">${s.image ? `<code title="${esc(s.image)}">${esc(s.image)}</code>` : ''}${s.build ? `<span class="smart-dim">build</span> <code>${esc(s.build)}</code>` : ''}</td>` +
       `<td class="svc-ports">${s.ports.map((p) => `<code>${esc(p)}</code>`).join(' ')}</td>` +
       `<td class="svc-volumes">${s.volumes.slice(0, 3).map((v) => `<code title="${esc(v)}">${esc(v)}</code>`).join(' ')}${s.volumes.length > 3 ? `<span class="smart-dim">+${s.volumes.length - 3}</span>` : ''}</td></tr>`);
-    const head = '<thead><tr><th>Service</th><th>Image</th><th>Ports</th><th>Volumes</th></tr></thead>';
+    const head = `<thead><tr><th>${esc(kit.t('Service'))}</th><th>${esc(kit.t('Image [container]'))}</th><th>${esc(kit.t('Ports'))}</th><th>${esc(kit.t('Volumes'))}</th></tr></thead>`;
     let body = `<div class="smart-scroll"><table class="smart-table services">${head}<tbody>${rows.join('')}</tbody></table></div>`;
     const edges = [];
     compose.services.forEach((s) => s.depends.forEach((d) => edges.push([d, s.name])));
     if (edges.length) {
-      const graph = Smart.graph(compose.services.map((s) => ({ id: s.name, label: s.name, sub: s.image ? s.image.split('/').pop() : s.build ? 'build' : '' })), edges, { label: 'Start order' });
-      body += Smart.section('Start Order', `<div class="smart-graph-wrap">${graph}</div>`, { wide: true, aside: 'depends_on' });
+      const graph = Smart.graph(compose.services.map((s) => ({ id: s.name, label: s.name, sub: s.image ? s.image.split('/').pop() : s.build ? 'build' : '' })), edges, { label: kit.t('Start Order') });
+      body += Smart.section(kit.t('Start Order'), `<div class="smart-graph-wrap">${graph}</div>`, { wide: true, aside: 'depends_on' });
     }
     Smart.card(root, {
       kind: 'compose', icon: 'stack', title: compose.name || 'Compose', label: compose.name ? 'Compose' : '',
-      subtitle: [Smart.plural(compose.services.length, 'service'), compose.volumes ? Smart.plural(compose.volumes, 'volume') : '', compose.networks ? Smart.plural(compose.networks, 'network') : ''].filter(Boolean).join(' · '),
+      subtitle: [kit.plural(compose.services.length, '{0} services'), compose.volumes ? kit.plural(compose.volumes, '{0} volumes') : '', compose.networks ? kit.plural(compose.networks, '{0} networks') : ''].filter(Boolean).join(' · '),
       body,
     });
   }
@@ -163,16 +165,18 @@
     const out = [];
     const describe = (name, value) => {
       const v = Smart.isObject(value) ? value : {};
-      const branches = arr(v.branches).concat(arr(v.tags).map((t) => `tag ${t}`)).map((b) => str(b, 60)).slice(0, 6);
+      const branches = arr(v.branches).concat(arr(v.tags).map((t) => kit.t('tag {0}', str(t, 60)))).map((b) => str(b, 60)).slice(0, 6);
+      // "1 input" is its own phrase: plural forms for 1 may also serve 21, 31… (Russian, Ukrainian).
+      const inputs = (n) => (n === 1 ? kit.t('1 input') : kit.plural(n, '{0} inputs'));
       switch (name) {
-        case 'push': return { name: 'Push', detail: branches.length ? `to ${branches.join(', ')}` : '' };
-        case 'pull_request': case 'pull_request_target': return { name: name === 'pull_request' ? 'Pull request' : 'Pull request target', detail: [arr(v.types).join(', '), branches.length ? `into ${branches.join(', ')}` : ''].filter(Boolean).join(' · ') };
-        case 'schedule': return { name: 'Schedule', detail: arr(value).map((s) => (Smart.isObject(s) && s.cron ? ((Smart.cron && Smart.cron.describe(s.cron)) || s.cron) : '')).filter(Boolean).join('; ') };
-        case 'workflow_dispatch': return { name: 'Manual', detail: Smart.isObject(v.inputs) ? Smart.plural(Object.keys(v.inputs).length, 'input') : '' };
-        case 'workflow_call': return { name: 'Called by workflows', detail: Smart.isObject(v.inputs) ? Smart.plural(Object.keys(v.inputs).length, 'input') : '' };
-        case 'release': return { name: 'Release', detail: arr(v.types).join(', ') };
-        case 'workflow_run': return { name: 'After workflow', detail: arr(v.workflows).map((w) => str(w, 60)).join(', ') };
-        default: return { name: name.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase()), detail: arr(v.types).join(', ') };
+        case 'push': return { event: name, name: kit.t('Push'), detail: branches.length ? kit.t('to {0}', branches.join(', ')) : '' };
+        case 'pull_request': case 'pull_request_target': return { event: name, name: name === 'pull_request' ? kit.t('Pull request') : kit.t('Pull request target'), detail: [arr(v.types).join(', '), branches.length ? kit.t('into {0}', branches.join(', ')) : ''].filter(Boolean).join(' · ') };
+        case 'schedule': return { event: name, name: kit.t('Schedule'), detail: arr(value).map((s) => (Smart.isObject(s) && s.cron ? ((Smart.cron && Smart.cron.describe(s.cron)) || s.cron) : '')).filter(Boolean).join('; ') };
+        case 'workflow_dispatch': return { event: name, name: kit.t('Manual'), detail: Smart.isObject(v.inputs) ? inputs(Object.keys(v.inputs).length) : '' };
+        case 'workflow_call': return { event: name, name: kit.t('Called by workflows'), detail: Smart.isObject(v.inputs) ? inputs(Object.keys(v.inputs).length) : '' };
+        case 'release': return { event: name, name: kit.t('Release'), detail: arr(v.types).join(', ') };
+        case 'workflow_run': return { event: name, name: kit.t('After workflow'), detail: arr(v.workflows).map((w) => str(w, 60)).join(', ') };
+        default: return { event: name, name: name.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase()), detail: arr(v.types).join(', ') };
       }
     };
     if (typeof on === 'string') out.push(describe(on, null));
@@ -204,35 +208,43 @@
     return { name: str(doc.name, 120), triggers: triggers(on), jobs };
   }
 
+  /** A trigger as it reads inside the card's subtitle, "On push, pull request and schedule". */
+  const TRIGGER_RUN_IN = {
+    push: () => kit.t('push'), pull_request: () => kit.t('pull request'), pull_request_target: () => kit.t('pull request target'),
+    schedule: () => kit.t('schedule'), workflow_dispatch: () => kit.t('manual'), workflow_call: () => kit.t('called by workflows'),
+    release: () => kit.t('release'), workflow_run: () => kit.t('after workflow'),
+  };
+
   function workflowCard({ root, file, Smart }) {
     const esc = Smart.esc;
     const flow = parseWorkflow(Smart.yaml(file.text));
     if (!flow || !flow.jobs.length) return;
     const triggerHTML = flow.triggers.length ? `<ul class="smart-list triggers">${flow.triggers.map((t) => `<li><span class="smart-name plain">${esc(t.name)}</span><span class="smart-description">${esc(t.detail)}</span></li>`).join('')}</ul>` : '';
     let body = '';
-    let top = triggerHTML ? Smart.section('Triggers', triggerHTML) : '';
+    let top = triggerHTML ? Smart.section(kit.t('Triggers'), triggerHTML) : '';
     const hasNeeds = flow.jobs.some((j) => j.needs.length);
     if (hasNeeds) {
       const edges = [];
       flow.jobs.forEach((j) => j.needs.forEach((n) => edges.push([n, j.id])));
-      const graph = Smart.graph(flow.jobs.map((j) => ({ id: j.id, label: j.name || j.id, sub: j.uses ? 'reusable workflow' : `${Smart.plural(j.steps.length, 'step')}${j.matrix.length ? ' · matrix' : ''}` })), edges, { label: 'Jobs' });
-      top += Smart.section('Jobs', `<div class="smart-graph-wrap">${graph}</div>`, { count: flow.jobs.length, aside: 'needs' });
+      const graph = Smart.graph(flow.jobs.map((j) => ({ id: j.id, label: j.name || j.id, sub: j.uses ? kit.t('reusable workflow') : `${kit.plural(j.steps.length, '{0} steps')}${j.matrix.length ? ' · matrix' : ''}` })), edges, { label: kit.t('Jobs') });
+      top += Smart.section(kit.t('Jobs'), `<div class="smart-graph-wrap">${graph}</div>`, { count: flow.jobs.length, aside: 'needs' });
     }
     const jobsHTML = flow.jobs.map((j) => {
       const steps = j.steps.map((s, k) => {
         const what = s.uses || s.run;
         const label = s.name ? `<span class="step-name">${esc(s.name)}</span>${what ? `<code class="step-detail" title="${esc(what)}">${esc(what)}</code>` : ''}`
-          : what ? `<code class="step-detail only" title="${esc(what)}">${esc(what)}</code>` : '<span class="step-name">Step</span>';
+          : what ? `<code class="step-detail only" title="${esc(what)}">${esc(what)}</code>` : `<span class="step-name">${esc(kit.t('Step'))}</span>`;
         return `<li><span class="step-n">${k + 1}</span>${label}</li>`;
       }).join('');
       const meta = [j.runsOn && `<code>${esc(j.runsOn)}</code>`, j.matrix.length && `<span class="smart-dim">matrix</span> ${esc(j.matrix.join(', '))}`, j.environment && `<span class="smart-dim">env</span> ${esc(j.environment)}`, j.needs.length && `<span class="smart-dim">needs</span> ${esc(j.needs.join(', '))}`].filter(Boolean).join('<span class="sep"></span>');
-      return `<details class="job"${!hasNeeds && flow.jobs.length <= 2 ? ' open' : ''}><summary><span class="job-name">${esc(j.name || j.id)}</span>${j.name && j.name !== j.id ? `<code class="smart-dim">${esc(j.id)}</code>` : ''}<span class="job-meta">${meta}</span><span class="smart-count">${j.uses ? 'reusable' : Smart.plural(j.steps.length, 'step')}</span></summary>${j.uses ? `<p class="job-uses"><span class="smart-dim">Uses</span> <code>${esc(j.uses)}</code></p>` : steps ? `<ol class="steps">${steps}</ol>` : ''}</details>`;
+      return `<details class="job"${!hasNeeds && flow.jobs.length <= 2 ? ' open' : ''}><summary><span class="job-name">${esc(j.name || j.id)}</span>${j.name && j.name !== j.id ? `<code class="smart-dim">${esc(j.id)}</code>` : ''}<span class="job-meta">${meta}</span><span class="smart-count">${esc(j.uses ? kit.t('reusable') : kit.plural(j.steps.length, '{0} steps'))}</span></summary>${j.uses ? `<p class="job-uses"><span class="smart-dim">${esc(kit.t('Uses'))}</span> <code>${esc(j.uses)}</code></p>` : steps ? `<ol class="steps">${steps}</ol>` : ''}</details>`;
     }).join('');
     if (top) body += `<div class="smart-grid">${top}</div>`;
-    body += Smart.section(hasNeeds ? 'Steps' : 'Jobs', `<div class="jobs">${jobsHTML}</div>`, { count: hasNeeds ? undefined : flow.jobs.length, wide: true });
+    body += Smart.section(hasNeeds ? kit.t('Steps') : kit.t('Jobs'), `<div class="jobs">${jobsHTML}</div>`, { count: hasNeeds ? undefined : flow.jobs.length, wide: true });
     Smart.card(root, {
       kind: 'workflow', icon: 'workflow', title: flow.name || file.name, label: 'GitHub Actions',
-      subtitle: [Smart.plural(flow.jobs.length, 'job'), Smart.plural(flow.jobs.reduce((n, j) => n + j.steps.length, 0), 'step'), flow.triggers.length ? 'On ' + flow.triggers.map((t) => t.name.toLowerCase()).join(', ') : ''].filter(Boolean).join(' · '),
+      subtitle: [kit.plural(flow.jobs.length, '{0} jobs'), kit.plural(flow.jobs.reduce((n, j) => n + j.steps.length, 0), '{0} steps'),
+        flow.triggers.length ? kit.t('On {0}', flow.triggers.map((t) => (TRIGGER_RUN_IN[t.event] ? TRIGGER_RUN_IN[t.event]() : t.event.replace(/_/g, ' '))).join(', ')) : ''].filter(Boolean).join(' · '),
       body,
     });
   }
@@ -261,22 +273,22 @@
       const spec = Smart.isObject(doc.spec) ? doc.spec : {};
       const containers = containersOf(spec).filter(Smart.isObject).slice(0, 20);
       const details = [];
-      if (spec.replicas != null) details.push({ label: 'replicas', value: str(spec.replicas, 10) });
+      if (spec.replicas != null) details.push({ label: kit.t('replicas'), value: str(spec.replicas, 10) });
       if (doc.kind === 'Service') {
-        if (spec.type) details.push({ label: 'type', value: str(spec.type, 30) });
+        if (spec.type) details.push({ label: kit.t('type'), value: str(spec.type, 30) });
         const ports = arr(spec.ports).filter(Smart.isObject).slice(0, 8).map((p) => `${p.port}${p.targetPort != null && p.targetPort !== p.port ? '→' + p.targetPort : ''}${p.protocol && p.protocol !== 'TCP' ? '/' + p.protocol : ''}`);
-        if (ports.length) details.push({ label: 'ports', value: ports.join(', ') });
+        if (ports.length) details.push({ label: kit.t('ports'), value: ports.join(', ') });
       }
       if (doc.kind === 'Ingress') {
         const hosts = arr(spec.rules).filter(Smart.isObject).map((r) => str(r.host, 80)).filter(Boolean);
-        if (hosts.length) details.push({ label: 'hosts', value: hosts.slice(0, 4).join(', ') });
+        if (hosts.length) details.push({ label: kit.t('hosts'), value: hosts.slice(0, 4).join(', ') });
       }
-      if (doc.kind === 'CronJob' && spec.schedule) details.push({ label: 'schedule', value: (Smart.cron && Smart.cron.describe(spec.schedule)) || str(spec.schedule, 40) });
+      if (doc.kind === 'CronJob' && spec.schedule) details.push({ label: kit.t('schedule'), value: (Smart.cron && Smart.cron.describe(spec.schedule)) || str(spec.schedule, 40) });
       if ((doc.kind === 'ConfigMap' || doc.kind === 'Secret') && (Smart.isObject(doc.data) || Smart.isObject(doc.stringData))) {
         const keys = Object.keys(Object.assign({}, Smart.isObject(doc.data) ? doc.data : {}, Smart.isObject(doc.stringData) ? doc.stringData : {}));
-        details.push({ label: 'keys', value: Smart.number(keys.length) });
+        details.push({ label: kit.t('keys'), value: kit.number(keys.length) });
       }
-      if (doc.kind === 'HorizontalPodAutoscaler' && spec.minReplicas != null) details.push({ label: 'replicas', value: `${spec.minReplicas}–${spec.maxReplicas}` });
+      if (doc.kind === 'HorizontalPodAutoscaler' && spec.minReplicas != null) details.push({ label: kit.t('replicas'), value: `${spec.minReplicas}–${spec.maxReplicas}` });
       resources.push({
         kind: doc.kind, apiVersion: doc.apiVersion, name: str(meta.name || meta.generateName, 120), namespace: str(meta.namespace, 80),
         images: Array.from(new Set(containers.map((c) => str(c.image, 160)).filter(Boolean))), details,
@@ -295,13 +307,14 @@
     const counts = new Map();
     resources.forEach((r) => counts.set(r.kind, (counts.get(r.kind) || 0) + 1));
     const rows = resources.map((r) => `<li class="k8s-resource"><span class="k8s-kind">${Smart.tag(r.kind, KIND_TONE[r.kind] || 'gray')}</span>` +
-      `<span class="k8s-name"><code>${esc(r.name || '(unnamed)')}</code>${r.namespace ? `<span class="smart-dim">${esc(r.namespace)}</span>` : ''}</span>` +
+      `<span class="k8s-name"><code>${esc(r.name || kit.t('(unnamed)'))}</code>${r.namespace ? `<span class="smart-dim">${esc(r.namespace)}</span>` : ''}</span>` +
       `<span class="k8s-details">${r.images.map((i) => `<code class="k8s-image" title="${esc(i)}">${esc(i)}</code>`).join('')}${r.details.map((d) => `<span><span class="smart-dim">${esc(d.label)}</span> ${esc(d.value)}</span>`).join('')}</span></li>`);
     const namespaces = new Set(resources.map((r) => r.namespace).filter(Boolean));
     Smart.card(root, {
       kind: 'kubernetes', icon: 'cluster', title: resources.length === 1 ? resources[0].name || resources[0].kind : 'Kubernetes', label: resources.length === 1 ? resources[0].kind : '',
-      subtitle: [Smart.plural(resources.length, 'resource'), Array.from(counts.entries()).slice(0, 5).map(([k, n]) => (n > 1 ? `${n} ${k}s` : k)).join(', '), namespaces.size ? `namespace ${Array.from(namespaces).slice(0, 2).join(', ')}` : ''].filter(Boolean).join(' · '),
-      body: `<ul class="k8s-list">${Smart.more(rows, 10, '')}</ul>`,
+      subtitle: [kit.plural(resources.length, '{0} resources'), Array.from(counts.entries()).slice(0, 5).map(([k, n]) => (n > 1 ? kit.plural(n, '{0} {1}s', k) : k)).join(', '),
+        namespaces.size ? kit.t('namespace {0}', Array.from(namespaces).slice(0, 2).join(', ')) : ''].filter(Boolean).join(' · '),
+      body: `<ul class="k8s-list">${Smart.more(rows, 10)}</ul>`,
     });
   }
 

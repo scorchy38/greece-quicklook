@@ -4,6 +4,8 @@
 (function (global) {
   'use strict';
   const Smart = global.GreeceSmart = global.GreeceSmart || {};
+  /** The page's strings (Smart.kit), looked up when used: code-smart.js, which sets it, may load after this file. */
+  const kit = new Proxy({}, { get: (_, name) => Smart.kit[name] });
   const str = (v, max) => Smart.text(v, max || 200);
   const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
 
@@ -63,7 +65,7 @@
           if (swaggerBody) body = { type: 'body', schema: schemaType(swaggerBody.schema, resolve), required: swaggerBody.required === true };
         }
         const responses = Smart.entries(op.responses, 30).map(([code, r]) => ({ code: str(code, 10), description: str(Smart.isObject(resolve(r)) ? resolve(r).description : '', 120) }));
-        const tags = Array.isArray(op.tags) && op.tags.length ? op.tags.map((t) => str(t, 80)) : ['Other'];
+        const tags = Array.isArray(op.tags) && op.tags.length ? op.tags.map((t) => str(t, 80)) : [kit.t('Other')];
         const endpoint = { method: method.toUpperCase(), path: str(path, 300), summary: str(op.summary || op.operationId || '', 200), description: str(op.description, 400), deprecated: op.deprecated === true, params, body, responses };
         const tag = tags[0];
         if (!groups.has(tag)) groups.set(tag, []);
@@ -89,16 +91,16 @@
     const api = parse(doc);
     if (!api || !api.count) return;
     const endpoint = (e) => {
-      const params = e.params.length ? `<table class="smart-table params"><tbody>${e.params.map((p) => `<tr><td><code>${esc(p.name)}</code>${p.required ? '<span class="required" title="Required">*</span>' : ''}</td><td class="smart-dim">${esc(p.in)}</td><td><code class="type">${esc(p.type)}</code></td><td class="desc">${esc(p.description)}</td></tr>`).join('')}</tbody></table>` : '';
-      const body = e.body ? `<p class="api-row"><span class="smart-dim">Body</span> <code>${esc(e.body.type)}</code>${e.body.schema ? ` <code class="type">${esc(e.body.schema)}</code>` : ''}${e.body.required ? '<span class="required" title="Required">*</span>' : ''}</p>` : '';
+      const params = e.params.length ? `<table class="smart-table params"><tbody>${e.params.map((p) => `<tr><td><code>${esc(p.name)}</code>${p.required ? `<span class="required" title="${esc(kit.t('Required'))}">*</span>` : ''}</td><td class="smart-dim">${esc(p.in)}</td><td><code class="type">${esc(p.type)}</code></td><td class="desc">${esc(p.description)}</td></tr>`).join('')}</tbody></table>` : '';
+      const body = e.body ? `<p class="api-row"><span class="smart-dim">${esc(kit.t('Body'))}</span> <code>${esc(e.body.type)}</code>${e.body.schema ? ` <code class="type">${esc(e.body.schema)}</code>` : ''}${e.body.required ? `<span class="required" title="${esc(kit.t('Required'))}">*</span>` : ''}</p>` : '';
       const responses = e.responses.length ? `<p class="api-row responses">${e.responses.map((r) => `<span class="status s${esc(r.code[0])}" title="${esc(r.description)}">${esc(r.code)}</span>`).join('')}</p>` : '';
       const detail = (e.description && e.description !== e.summary ? `<p class="api-description">${esc(e.description)}</p>` : '') + params + body + responses;
-      return `<details class="endpoint${e.deprecated ? ' deprecated' : ''}"><summary><span class="method m-${e.method.toLowerCase()}">${esc(e.method)}</span><code class="path">${esc(e.path)}</code><span class="summary">${esc(e.summary)}</span>${e.params.length ? `<span class="smart-count">${Smart.plural(e.params.length, 'param')}</span>` : ''}</summary>${detail ? `<div class="endpoint-detail">${detail}</div>` : ''}</details>`;
+      return `<details class="endpoint${e.deprecated ? ' deprecated' : ''}"><summary><span class="method m-${e.method.toLowerCase()}">${esc(e.method)}</span><code class="path">${esc(e.path)}</code><span class="summary">${esc(e.summary)}</span>${e.params.length ? `<span class="smart-count">${esc(kit.plural(e.params.length, '{0} params'))}</span>` : ''}</summary>${detail ? `<div class="endpoint-detail">${detail}</div>` : ''}</details>`;
     };
-    const groups = api.groups.map((g) => `<section class="api-group"><h4>${esc(g.name)}<span class="smart-count">${Smart.number(g.endpoints.length)}</span>${g.description ? `<span class="smart-dim">${esc(g.description)}</span>` : ''}</h4>${g.endpoints.slice(0, 400).map(endpoint).join('')}</section>`).join('');
+    const groups = api.groups.map((g) => `<section class="api-group"><h4>${esc(g.name)}<span class="smart-count">${kit.number(g.endpoints.length)}</span>${g.description ? `<span class="smart-dim">${esc(g.description)}</span>` : ''}</h4>${g.endpoints.slice(0, 400).map(endpoint).join('')}</section>`).join('');
     Smart.card(root, {
       kind: 'openapi', icon: 'api', title: api.title, version: api.version, label: api.spec,
-      subtitle: [Smart.plural(api.count, 'endpoint'), api.groups.length > 1 ? Smart.plural(api.groups.length, 'tag') : '', api.schemas ? Smart.plural(api.schemas, 'schema') : '', api.servers[0] || ''].filter(Boolean).join(' · '),
+      subtitle: [kit.plural(api.count, '{0} endpoints'), api.groups.length > 1 ? kit.plural(api.groups.length, '{0} tags') : '', api.schemas ? kit.plural(api.schemas, '{0} schemas') : '', api.servers[0] || ''].filter(Boolean).join(' · '),
       body: (api.description ? `<p class="api-intro">${esc(api.description)}</p>` : '') + `<div class="api-groups">${groups}</div>`,
     });
   }
