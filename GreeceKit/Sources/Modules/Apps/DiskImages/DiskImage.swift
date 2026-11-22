@@ -107,13 +107,16 @@ final class DiskImage {
     var format: (code: String, description: String, compression: String?) {
         switch container {
         case .udif: return udif!.format
-        case .sparseImage: return ("UDSP", "Sparse image", nil)
-        case .sparseBundle: return ("UDSB", "Sparse bundle", nil)
-        case .asif: return ("ASIF", "Apple sparse image", nil)
-        case .encrypted: return ("", "Encrypted", nil)
+        case .sparseImage: return ("UDSP", String(localized: "Sparse image", bundle: .greeceKit, comment: "A disk image format"), nil)
+        case .sparseBundle: return ("UDSB", String(localized: "Sparse bundle", bundle: .greeceKit, comment: "A disk image format"), nil)
+        case .asif: return ("ASIF", String(localized: "Apple sparse image", bundle: .greeceKit, comment: "A disk image format"), nil)
+        case .encrypted: return ("", String(localized: "Encrypted", bundle: .greeceKit, comment: "A disk image that needs a password to open"), nil)
         case .raw:
-            if let device, FileSystemKind.detect(device) == .iso9660 { return ("ISO", "CD/DVD image (ISO 9660)", nil) }
-            return url.pathExtension.lowercased() == "cdr" ? ("UDTO", "DVD/CD master", nil) : ("RAW", "Raw disk image", nil)
+            if let device, FileSystemKind.detect(device) == .iso9660 {
+                return ("ISO", String(localized: "CD/DVD image (ISO 9660)", bundle: .greeceKit, comment: "A disk image format"), nil)
+            }
+            return url.pathExtension.lowercased() == "cdr" ? ("UDTO", String(localized: "DVD/CD master", bundle: .greeceKit, comment: "A disk image format"), nil)
+                                                           : ("RAW", String(localized: "Raw disk image", bundle: .greeceKit, comment: "A disk image format"), nil)
         }
     }
 

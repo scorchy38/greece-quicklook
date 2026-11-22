@@ -12,6 +12,17 @@ enum FileSystemKind: String, Equatable {
     case ntfs = "NTFS"
     case udf = "UDF"
 
+    /// The name Disk Utility shows: "Mac OS Extended", "APFS".
+    var title: String {
+        switch self {
+        case .hfsPlus: return String(localized: "Mac OS Extended", bundle: .greeceKit, comment: "A file system, as Disk Utility names it")
+        case .hfsX: return String(localized: "Mac OS Extended (Case-sensitive)", bundle: .greeceKit, comment: "A file system, as Disk Utility names it")
+        case .hfs: return String(localized: "Mac OS Standard", bundle: .greeceKit, comment: "A file system, as Disk Utility names it")
+        case .fat: return String(localized: "MS-DOS (FAT)", bundle: .greeceKit, comment: "A file system, as Disk Utility names it")
+        case .apfs, .iso9660, .exfat, .ntfs, .udf: return rawValue
+        }
+    }
+
     /// Reads the signatures at the start of a partition.
     static func detect(_ device: DiskDevice) -> FileSystemKind? {
         guard let head = try? device.read(at: 0, count: 4096), head.count >= 1536 else { return nil }
@@ -48,7 +59,19 @@ struct DiskPartition: Equatable {
 }
 
 struct PartitionMap: Equatable {
-    enum Scheme: String { case guid = "GUID Partition Map", apple = "Apple Partition Map", mbr = "Master Boot Record", none = "None" }
+    enum Scheme: String {
+        case guid = "GUID Partition Map", apple = "Apple Partition Map", mbr = "Master Boot Record", none = "None"
+
+        /// The name Disk Utility shows.
+        var title: String {
+            switch self {
+            case .guid: return String(localized: "GUID Partition Map", bundle: .greeceKit, comment: "A partition scheme, as Disk Utility names it")
+            case .apple: return String(localized: "Apple Partition Map", bundle: .greeceKit, comment: "A partition scheme, as Disk Utility names it")
+            case .mbr: return String(localized: "Master Boot Record", bundle: .greeceKit, comment: "A partition scheme, as Disk Utility names it")
+            case .none: return String(localized: "None", bundle: .greeceKit, comment: "No partition scheme")
+            }
+        }
+    }
     var scheme: Scheme
     var partitions: [DiskPartition]
 
@@ -172,7 +195,9 @@ struct PartitionMap: Equatable {
                                           0x0E: "FAT16", 0x83: "Linux", 0xAF: "Apple_HFS", 0xA8: "Apple_UFS"]
             let offset = UInt64(first) * 512
             let length = UInt64(count) * 512
-            var partition = DiskPartition(name: "", type: names[type] ?? String(format: "Type 0x%02X", type), offset: offset, length: length)
+            let code = String(format: "0x%02X", type)
+            let typeName = names[type] ?? String(localized: "Type \(code)", bundle: .greeceKit, comment: "An unknown partition type. The argument is a hexadecimal code, such as “0x0C”")
+            var partition = DiskPartition(name: "", type: typeName, offset: offset, length: length)
             partition.fileSystem = FileSystemKind.detect(SliceDevice(device, start: offset, length: length))
             partitions.append(partition)
         }

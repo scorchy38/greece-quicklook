@@ -32,7 +32,9 @@ final class UDIFImage: DiskDevice {
             case 2: return "CRC-32"
             case 3: return "MD5"
             case 4: return "SHA-1"
-            default: return "Type \(type)"
+            default:
+                let number = String(type)
+                return String(localized: "Type \(number)", bundle: .greeceKit, comment: "An unknown checksum type in a disk image. The argument is its number")
             }
         }
         /// "$A030D4BB", as hdiutil prints it.
@@ -196,12 +198,17 @@ final class UDIFImage: DiskDevice {
     /// hdiutil's format code and a plain description.
     var format: (code: String, description: String, compression: String?) {
         let types = chunkTypes
-        if types.contains(ChunkType.lzfse) { return ("ULFO", "Compressed (LZFSE)", "LZFSE") }
-        if types.contains(ChunkType.lzma) { return ("ULMO", "Compressed (LZMA)", "LZMA") }
-        if types.contains(ChunkType.bzip2) { return ("UDBZ", "Compressed (bzip2)", "bzip2") }
-        if types.contains(ChunkType.zlib) { return ("UDZO", "Compressed (zlib)", "zlib") }
-        if types.contains(ChunkType.adc) { return ("UDCO", "Compressed (ADC)", "ADC") }
-        return ("UDRO", "Read-only", nil)
+        if types.contains(ChunkType.lzfse) { return ("ULFO", compressed("LZFSE"), "LZFSE") }
+        if types.contains(ChunkType.lzma) { return ("ULMO", compressed("LZMA"), "LZMA") }
+        if types.contains(ChunkType.bzip2) { return ("UDBZ", compressed("bzip2"), "bzip2") }
+        if types.contains(ChunkType.zlib) { return ("UDZO", compressed("zlib"), "zlib") }
+        if types.contains(ChunkType.adc) { return ("UDCO", compressed("ADC"), "ADC") }
+        return ("UDRO", String(localized: "Read-only", bundle: .greeceKit, comment: "A disk image format: uncompressed and read-only"), nil)
+    }
+
+    /// "Compressed (zlib)".
+    private func compressed(_ method: String) -> String {
+        String(localized: "Compressed (\(method))", bundle: .greeceKit, comment: "A disk image format. The argument is a compression method, such as “zlib” or “LZFSE”")
     }
 
     /// Bytes of chunk data actually stored.
