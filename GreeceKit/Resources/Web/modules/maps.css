@@ -5,7 +5,7 @@ html.kind-map, html.kind-map body {
   overflow: hidden;
 }
 html.kind-map body {
-  --glass: rgba(252, 252, 253, 0.8);
+  --glass: rgba(250, 250, 252, 0.9);
   --glass-edge: rgba(0, 0, 0, 0.1);
   --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 22px rgba(0, 0, 0, 0.12);
   --control: rgba(0, 0, 0, 0.62);
@@ -21,7 +21,7 @@ html.kind-map body {
 }
 @media (prefers-color-scheme: dark) {
   html.kind-map body {
-    --glass: rgba(44, 44, 47, 0.76);
+    --glass: rgba(40, 40, 43, 0.9);
     --glass-edge: rgba(255, 255, 255, 0.12);
     --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 26px rgba(0, 0, 0, 0.42);
     --control: rgba(255, 255, 255, 0.66);

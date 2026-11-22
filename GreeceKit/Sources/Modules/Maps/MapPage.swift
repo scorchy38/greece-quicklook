@@ -12,6 +12,8 @@ struct MapPageData: Encodable {
         var lines: Int
         var polygons: Int
         var hidden: Bool
+        /// Palette index for the layer's default colour.
+        var color: Int
     }
     struct Overlay: Encodable {
         var name: String?
@@ -50,7 +52,8 @@ enum MapPageBuilder {
             var s = GeoStats()
             for feature in layer.features { s.add(feature.geometry) }
             layers.append(.init(id: offsets[index], name: layer.name, url: "greece://module/layer/\(index).json", role: layer.role,
-                                count: layer.features.count, points: s.points, lines: s.lines + s.mixed, polygons: s.polygons, hidden: layer.isHidden))
+                                count: layer.features.count, points: s.points, lines: s.lines + s.mixed, polygons: s.polygons, hidden: layer.isHidden,
+                                color: layer.colorIndex ?? index))
         }
         var tileBounds = GeoBounds()
         for set in document.tileSets {
@@ -76,7 +79,7 @@ enum MapPageBuilder {
         var page = WebDocument(module: .init("map"), data: data,
                                scripts: ["vendor/maplibre/maplibre-gl.js", "modules/maps.js"],
                                styles: ["vendor/maplibre/maplibre-gl.css", "modules/maps.css"])
-        let resources = MapResources(document: document, source: file.url)
+        let resources = MapResources(document: document)
         page.resources = { path in resources.serve(path) }
         return .web(page, summary(document, file: file), NSSize(width: 1040, height: 760))
     }
@@ -163,14 +166,10 @@ enum MapFormatting {
 /// Serves a document's data to its page, off the main thread.
 final class MapResources: @unchecked Sendable {
     private let document: MapDocument
-    private let source: URL
     private let lock = NSLock()
-    private var layerCache: [Int: Data] = [:]
-    private var zip: ZipMembers?
 
-    init(document: MapDocument, source: URL) {
+    init(document: MapDocument) {
         self.document = document
-        self.source = source
     }
 
     func serve(_ path: String) -> (data: Data, mimeType: String)? {
@@ -178,14 +177,12 @@ final class MapResources: @unchecked Sendable {
         guard let first = parts.first else { return nil }
         switch first {
         case "layer":
+            // Written on request and not kept: the page asks for each layer once.
             guard parts.count == 2, let index = Int(parts[1].replacingOccurrences(of: ".json", with: "")),
                   index >= 0, index < document.layers.count else { return nil }
             lock.lock()
             defer { lock.unlock() }
-            if let cached = layerCache[index] { return (cached, "application/json") }
-            let data = GeoJSONWriter.layer(document.layers[index], firstID: document.layerOffsets[index])
-            layerCache[index] = data
-            return (data, "application/json")
+            return (GeoJSONWriter.layer(document.layers[index], firstID: document.layerOffsets[index]), "application/json")
 
         case "feature":
             guard parts.count == 2, let id = Int(parts[1]) else { return nil }

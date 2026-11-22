@@ -138,8 +138,11 @@ enum GPXReader {
         let waypoints = GeoLayer(name: "Waypoints")
         let routes = GeoLayer(name: "Routes")
         let tracks = GeoLayer(name: "Tracks")
-        routes.role = .track
+        routes.role = .route
+        routes.colorIndex = 1
         tracks.role = .track
+        tracks.colorIndex = 0
+        waypoints.colorIndex = 2
         var budget = GeoBudget(limits)
 
         let stream = XMLStream(deadline: limits.deadline)
@@ -256,7 +259,13 @@ enum GPXReader {
         guard sawGPX, parsed, !(stream.failed && empty) else { throw GeoError.invalid("This GPX file is damaged.") }
         if stream.timedOut || budget.exhausted { document.truncated = true }
         document.title = metadataName
-        document.layers = [tracks, routes, waypoints].filter { !$0.features.isEmpty }
+        // Drawn bottom to top: the planned route under the recorded track.
+        document.layers = [routes, tracks, waypoints].filter { !$0.features.isEmpty }
+        // The profile card opens on what was recorded (timestamps), then on the most detailed.
+        document.tracks.sort { a, b in
+            if (a.duration != nil) != (b.duration != nil) { return a.duration != nil }
+            return a.pointCount > b.pointCount
+        }
         let count = waypoints.features.count
         if count > 0 { document.facts.append("\(count.formatted()) \(count == 1 ? "waypoint" : "waypoints")") }
         return document

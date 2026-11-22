@@ -179,6 +179,8 @@ enum LayerRole: String, Encodable {
     case data
     /// A GPX or KML track: a thick line with a casing, like a route in Maps.
     case track
+    /// A planned GPX route: dashed, under the recorded track.
+    case route
     /// OpenStreetMap layers, styled per feature: roads get casings, paths and rail dashes.
     case area, road, path, rail, place
 }
@@ -188,6 +190,8 @@ final class GeoLayer {
     var features: [GeoFeature]
     var role: LayerRole = .data
     var isHidden = false
+    /// Index into the palette, when it shouldn't follow the drawing order.
+    var colorIndex: Int?
 
     init(name: String, features: [GeoFeature] = []) {
         self.name = name

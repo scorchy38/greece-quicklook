@@ -242,7 +242,7 @@ enum MapThumbnail {
         let pointRadius: CGFloat = (total > 2000 ? 1.3 : total > 150 ? 1.9 : 3.2) * unit
         for pass in 0..<3 {
             for (layerIndex, layer) in document.layers.enumerated() where !layer.isHidden {
-                let base = Palette.layerColors[layerIndex % Palette.layerColors.count]
+                let base = Palette.layerColors[(layer.colorIndex ?? layerIndex) % Palette.layerColors.count]
                 for feature in layer.features {
                     guard let g = feature.geometry else { continue }
                     if pass == 2, let index = feature.style?.icon, let icon = icons[index] {
@@ -320,7 +320,9 @@ enum MapThumbnail {
         context.addPath(path)
         context.setStrokeColor(color.cgColor)
         context.setLineWidth(max(width, 0.6 * unit))
+        if role == .route { context.setLineDash(phase: 0, lengths: [2.4 * unit, 2 * unit]) }
         context.strokePath()
+        context.setLineDash(phase: 0, lengths: [])
     }
 
     private static func dot(_ context: CGContext, _ p: CGPoint, radius: CGFloat, color: NSColor, unit: CGFloat) {

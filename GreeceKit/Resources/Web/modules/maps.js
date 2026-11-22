@@ -311,12 +311,13 @@
       return { step, data: { type: 'FeatureCollection', features } };
     }
 
+    /** "119.75°W" on a quarter-degree grid, "120°W" where the line is whole. */
     function formatDegree(value, positive, negative, step) {
-      const digits = step >= 1 ? 0 : step >= 0.1 ? 1 : step >= 0.01 ? 2 : 3;
+      const digits = (String(step).split('.')[1] || '').length;
       let v = value;
       if (positive === 'E') { v = ((v + 540) % 360) - 180; }
-      if (Math.abs(v) < 1e-9) return '0°';
-      return `${Math.abs(v).toFixed(digits)}°${v < 0 ? negative : positive}`;
+      if (Math.abs(v) < step / 1000) return '0°';
+      return `${Number(Math.abs(v).toFixed(digits))}°${v < 0 ? negative : positive}`;
     }
 
     let graticuleFrame = 0;
@@ -410,7 +411,6 @@
 
     const interactive = [];
     const dataLayers = [];
-    const sourceOfLayer = {};
 
     function color(index) { return theme.layers[index % theme.layers.length]; }
 
@@ -434,7 +434,7 @@
     }
 
     function paintFor(layer, index) {
-      const c = color(index);
+      const c = color(layer.color != null ? layer.color : index);
       const role = layer.role;
       const area = role === 'area';
       const track = role === 'track';
@@ -442,7 +442,7 @@
       // Streets widen as you zoom in, like a real map; other data keeps its stroke.
       const streetStops = road || role === 'path' || role === 'rail' ? [[11, 0.35], [14, 0.9], [16, 2], [18, 5]] : null;
       const areaStops = area ? [[12, 0.5], [16, 1], [18, 1.6]] : null;
-      const baseWidth = track ? 4 : 2.2;
+      const baseWidth = track ? 4 : role === 'route' ? 2.6 : 2.2;
       const lineWidth = (k, extra) => ['+', ['*', ['coalesce', ['get', 'stroke-width'], baseWidth], k], extra];
       const many = data.stats.points > 5000;
       return {
@@ -467,12 +467,15 @@
         },
         point: {
           'circle-color': styled('marker-color', c, role),
+          // Dense point clouds use small, slightly translucent dots so density reads as tone.
           'circle-radius': ['interpolate', ['linear'], ['zoom'],
-            0, ['+', many ? 1.6 : 3.6, hover(2, 0)],
-            10, ['+', many ? 3 : 5, hover(2, 0)],
+            0, ['+', many ? 1 : 3.6, hover(2, 0)],
+            6, ['+', many ? 1.8 : 4.2, hover(2, 0)],
+            10, ['+', many ? 3.2 : 5, hover(2, 0)],
             16, ['+', 6.5, hover(2, 0)]],
+          'circle-opacity': many ? ['interpolate', ['linear'], ['zoom'], 4, 0.7, 10, 1] : 1,
           'circle-stroke-color': theme.halo,
-          'circle-stroke-width': many ? ['interpolate', ['linear'], ['zoom'], 4, 0, 8, 1.2] : 1.6,
+          'circle-stroke-width': many ? ['interpolate', ['linear'], ['zoom'], 7, 0, 10, 1.2] : 1.6,
         },
       };
     }
@@ -486,41 +489,51 @@
       layers.forEach((layer, index) => {
         const json = results[index];
         if (!json) return;
-        const source = 'data-' + index;
-        map.addSource(source, { type: 'geojson', data: json, tolerance: 0.3, buffer: 48, maxzoom: 20 });
+        // MapLibre indexes each GeoJSON source in one worker: big layers are split so several
+        // workers index them in parallel and the map fills in sooner.
+        const features = json.features || [];
+        const parts = Math.min(6, Math.max(1, Math.ceil(features.length / 15000)));
+        const size = Math.ceil(features.length / parts);
         const p = paintFor(layer, index);
         const ids = [];
+        const sources = [];
         const polygonFilter = ['==', ['geometry-type'], 'Polygon'];
         const lineFilter = ['==', ['geometry-type'], 'LineString'];
         const pointFilter = ['all', ['==', ['geometry-type'], 'Point'], ['!', ['has', 'icon']]];
-        if (layer.polygons) {
-          order.fill.push({ id: source + '-fill', type: 'fill', source, filter: polygonFilter, paint: p.fill });
-          order.outline.push({ id: source + '-outline', type: 'line', source, filter: polygonFilter, layout: { 'line-join': 'round' }, paint: p.outline });
-          ids.push(source + '-fill', source + '-outline');
-          interactive.push(source + '-fill');
-        }
-        if (layer.lines) {
-          if (layer.role === 'track' || layer.role === 'road') {
-            order.casing.push({ id: source + '-casing', type: 'line', source, filter: lineFilter, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: p.casing });
-            ids.push(source + '-casing');
+        for (let part = 0; part < parts; part++) {
+          const source = parts === 1 ? 'data-' + index : `data-${index}-${part}`;
+          const chunk = parts === 1 ? json : { type: 'FeatureCollection', features: features.slice(part * size, (part + 1) * size) };
+          map.addSource(source, { type: 'geojson', data: chunk, tolerance: 0.4, buffer: 48, maxzoom: 20 });
+          sources.push(source);
+          if (layer.polygons) {
+            order.fill.push({ id: source + '-fill', type: 'fill', source, filter: polygonFilter, paint: p.fill });
+            order.outline.push({ id: source + '-outline', type: 'line', source, filter: polygonFilter, layout: { 'line-join': 'round' }, paint: p.outline });
+            ids.push(source + '-fill', source + '-outline');
+            interactive.push(source + '-fill');
           }
-          const layout = { 'line-cap': 'round', 'line-join': 'round' };
-          const paint = { ...p.line };
-          if (layer.role === 'path') paint['line-dasharray'] = [2, 1.5];
-          if (layer.role === 'rail') paint['line-dasharray'] = [3, 2];
-          order.line.push({ id: source + '-line', type: 'line', source, filter: lineFilter, layout, paint });
-          ids.push(source + '-line');
-          interactive.push(source + '-line');
+          if (layer.lines) {
+            if (layer.role === 'track' || layer.role === 'road') {
+              order.casing.push({ id: source + '-casing', type: 'line', source, filter: lineFilter, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: p.casing });
+              ids.push(source + '-casing');
+            }
+            const layout = { 'line-cap': 'round', 'line-join': 'round' };
+            const paint = { ...p.line };
+            if (layer.role === 'path') paint['line-dasharray'] = [2, 1.5];
+            if (layer.role === 'route') paint['line-dasharray'] = [1.6, 1.4];
+            if (layer.role === 'rail') paint['line-dasharray'] = [3, 2];
+            order.line.push({ id: source + '-line', type: 'line', source, filter: lineFilter, layout, paint });
+            ids.push(source + '-line');
+            interactive.push(source + '-line');
+          }
+          if (layer.points) {
+            order.icon.push({ id: source + '-icon', type: 'symbol', source, filter: ['all', ['==', ['geometry-type'], 'Point'], ['has', 'icon']],
+              layout: { 'icon-image': ['get', 'icon'], 'icon-size': ['coalesce', ['get', 'icon-scale'], 1], 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
+            order.point.push({ id: source + '-point', type: 'circle', source, filter: pointFilter, paint: p.point });
+            ids.push(source + '-icon', source + '-point');
+            interactive.push(source + '-point', source + '-icon');
+          }
         }
-        if (layer.points) {
-          order.icon.push({ id: source + '-icon', type: 'symbol', source, filter: ['all', ['==', ['geometry-type'], 'Point'], ['has', 'icon']],
-            layout: { 'icon-image': ['get', 'icon'], 'icon-size': ['coalesce', ['get', 'icon-scale'], 1], 'icon-allow-overlap': true, 'icon-ignore-placement': true } });
-          order.point.push({ id: source + '-point', type: 'circle', source, filter: pointFilter, paint: p.point });
-          ids.push(source + '-icon', source + '-point');
-          interactive.push(source + '-point', source + '-icon');
-        }
-        dataLayers.push({ layer, index, ids, source, json });
-        ids.forEach((id) => { sourceOfLayer[id] = source; });
+        dataLayers.push({ layer, index, ids, sources, json });
       });
       ['fill', 'outline', 'casing', 'line', 'icon', 'point'].forEach((kind) => order[kind].forEach((spec) => map.addLayer(spec)));
       dataLayers.forEach((d) => { if (d.layer.hidden) setLayerVisible(d, false); });
@@ -689,6 +702,8 @@
         const template = document.createElement('template');
         template.innerHTML = /<[a-z][\s\S]*>/i.test(details.detail) ? details.detail : esc(details.detail).replace(/\n/g, '<br>');
         kit.sanitize(template.content);
+        // Remote images stay blocked unless the user allows them; don't leave broken-image glyphs.
+        template.content.querySelectorAll('img').forEach((img) => img.addEventListener('error', () => img.remove(), { once: true }));
         detail.appendChild(template.content);
         detail.hidden = false;
       }
@@ -718,7 +733,7 @@
           if (d.layer.polygons) counts.push(`${d.layer.polygons.toLocaleString()} ${d.layer.polygons === 1 ? 'area' : 'areas'}`);
           if (d.layer.lines) counts.push(`${d.layer.lines.toLocaleString()} ${d.layer.lines === 1 ? 'line' : 'lines'}`);
           if (d.layer.points) counts.push(`${d.layer.points.toLocaleString()} ${d.layer.points === 1 ? 'point' : 'points'}`);
-          const swatch = OSM_ROLES.has(d.layer.role) ? '' : `<span class="swatch" style="--swatch:${color(d.index)}"></span>`;
+          const swatch = OSM_ROLES.has(d.layer.role) ? '' : `<span class="swatch" style="--swatch:${color(d.layer.color != null ? d.layer.color : d.index)}"></span>`;
           return `<label class="row"><input type="checkbox" data-layer="${d.index}" ${d.layer.hidden ? '' : 'checked'}>${swatch}<span class="name">${esc(d.layer.name)}</span><span class="count">${esc(counts.join(', '))}</span></label>`;
         }).join('');
         sections.push(`<h3>${esc(data.format === 'geopackage' ? 'Tables' : data.format === 'topojson' ? 'Objects' : 'Layers')}</h3>${rows}`);
@@ -975,12 +990,14 @@
       set('graticule', 'line-color', theme.graticule);
       dataLayers.forEach((d) => {
         const p = paintFor(d.layer, d.index);
-        set(d.source + '-fill', 'fill-color', p.fill['fill-color']);
-        set(d.source + '-outline', 'line-color', p.outline['line-color']);
-        set(d.source + '-casing', 'line-color', p.casing['line-color']);
-        set(d.source + '-line', 'line-color', p.line['line-color']);
-        set(d.source + '-point', 'circle-color', p.point['circle-color']);
-        set(d.source + '-point', 'circle-stroke-color', p.point['circle-stroke-color']);
+        d.sources.forEach((source) => {
+          set(source + '-fill', 'fill-color', p.fill['fill-color']);
+          set(source + '-outline', 'line-color', p.outline['line-color']);
+          set(source + '-casing', 'line-color', p.casing['line-color']);
+          set(source + '-line', 'line-color', p.line['line-color']);
+          set(source + '-point', 'circle-color', p.point['circle-color']);
+          set(source + '-point', 'circle-stroke-color', p.point['circle-stroke-color']);
+        });
       });
       Object.values(vectorLayerIDs).forEach((v) => v.ids.forEach((id) => { if (id.endsWith('-point')) set(id, 'circle-stroke-color', theme.halo); }));
       if (!layersPanel.hidden) renderLayersPanel();
@@ -995,16 +1012,24 @@
     addTiles();
     addOverlays();
     addGraticule();
-    await addDataLayers();
-    addLabels();
     showNotices();
     showTileCard();
     showTrack(0);
     if (html.classList.contains('has-track')) fitAll(false);
-    if (!dataLayers.length && !tiles.length && !(data.overlays || []).length) {
-      $('.notices').insertAdjacentHTML('beforeend', `<div class="glass notice-pill">${ICONS.info}<span>${esc('No features to draw')}</span></div>`);
+
+    const finish = async () => {
+      await addDataLayers();
+      addLabels();
+      if (!dataLayers.length && !tiles.length && !(data.overlays || []).length) {
+        $('.notices').insertAdjacentHTML('beforeend', `<div class="glass notice-pill">${ICONS.info}<span>${esc('No features to draw')}</span></div>`);
+      }
+    };
+    // Small files appear complete; big ones show the map at once and stream their features in.
+    if (data.stats.features > 20000) {
+      finish().catch((e) => kit.post('log', 'data: ' + e));
+      return;
     }
-    // Let the first frame with data render before Quick Look shows the page.
+    await finish();
     await Promise.race([new Promise((r) => map.once('idle', r)), new Promise((r) => setTimeout(r, 1500))]);
   });
 })();

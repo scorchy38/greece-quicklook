@@ -495,7 +495,9 @@ final class MapsTests: XCTestCase {
         XCTAssertNotNil(track.averageHeartRate)
         XCTAssertLessThanOrEqual(track.samples.count, 1601)
         let ride = try load(fixture("ride.gpx"))
-        let rideTrack = try XCTUnwrap(ride.tracks.max { $0.distance < $1.distance })
+        // The recorded ride comes before the planned route.
+        XCTAssertNotNil(ride.tracks.first?.duration)
+        let rideTrack = try XCTUnwrap(ride.tracks.first)
         XCTAssertEqual(rideTrack.distance, 39_980, accuracy: 800)
         XCTAssertEqual(rideTrack.duration ?? 0, 6130, accuracy: 2)
         XCTAssertGreaterThan(rideTrack.maxSpeed ?? 0, 5)
