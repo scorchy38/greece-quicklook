@@ -15,7 +15,7 @@ enum LaTeXPreview {
 
     static func prepare(_ file: FileInfo, sweave: Bool) throws -> PreparedPreview {
         let project = try LaTeXProject.load(file.url, sweave: sweave)
-        let root = file.url.deletingLastPathComponent()
+        let root = project.mainURL.deletingLastPathComponent()
         let payload = Payload(
             source: project.source,
             fileName: file.url.lastPathComponent,
@@ -48,7 +48,8 @@ enum LaTeXPreview {
             title = sweave ? "Sweave Document" : "LaTeX Document"
             details += DocumentsModule.readingFacts(words: TeXText.wordCount(project.source))
         }
-        if !project.files.isEmpty { details.append(DocumentsModule.count(project.files.count + 1, "file")) }
+        if let host = project.host { details.append("Part of \(host.lastPathComponent)") }
+        else if !project.files.isEmpty { details.append(DocumentsModule.count(project.files.count + 1, "file")) }
         if !project.bibliography.isEmpty { details.append(DocumentsModule.count(project.bibliography.count, "reference")) }
         if !project.missing.isEmpty { details.append("\(project.missing.count) missing") }
         let summary = FileSummary(symbol: project.isBeamer ? "rectangle.on.rectangle" : "function", title: title, details: details, trailing: file.modifiedText)

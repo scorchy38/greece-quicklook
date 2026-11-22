@@ -51,11 +51,44 @@ enum DocumentThumbnails {
         }
     }
 
-    /// Drops Markdown escapes and chip rows the thumbnail drawer doesn't understand.
+    /// Markdown for the page drawer: escapes and chips dropped, soft-wrapped lines joined into
+    /// paragraphs, list numbers counted, callout markers and footnote marks removed.
     static func unescape(_ markdown: String) -> String {
-        markdown.replacingOccurrences(of: #"\\([\\`*_\[\]<>#|$~!&])"#, with: "$1", options: .regularExpression)
+        let cleaned = markdown.replacingOccurrences(of: #"\\([\\`*_\[\]<>#|$~!&])"#, with: "$1", options: .regularExpression)
             .replacingOccurrences(of: #"<div class="(chunk-meta|org-properties|org-planning)[^"]*">.*</div>"#, with: "", options: .regularExpression)
-            .replacingOccurrences(of: #"^> \[!(\w+)\]"#, with: "> $1", options: [.regularExpression])
+            .replacingOccurrences(of: #"\[\^[^\]]*\]"#, with: "", options: .regularExpression)
+            .replacingOccurrences(of: #"\^\[[^\]]*\]"#, with: "", options: .regularExpression)
+        var out: [String] = []
+        var fence = false
+        var number = 0
+        for raw in cleaned.components(separatedBy: "\n") {
+            let line = raw.trimmingCharacters(in: .whitespaces)
+            if line.hasPrefix("```") || line.hasPrefix("~~~") { fence.toggle(); out.append(raw); continue }
+            if fence { out.append(raw); continue }
+            if line == ">" || line.range(of: #"^> \[!\w+\]$"#, options: .regularExpression) != nil { continue }
+            if let m = line.range(of: #"^\d+\. "#, options: .regularExpression), raw.hasPrefix(line.prefix(1)) {
+                number += 1
+                out.append("\(number). " + line[m.upperBound...])
+                continue
+            }
+            if !line.hasPrefix("- ") && !line.hasPrefix("* ") { number = line.isEmpty ? number : 0 }
+            let blockTag = line.range(of: #"^</?(div|aside|p|dl|dt|dd|table|a id)\b"#, options: .regularExpression) != nil
+            // Quote lines continue the quote above them.
+            if line.hasPrefix("> "), let last = out.last, last.hasPrefix("> "), !last.hasPrefix("> **") {
+                out[out.count - 1] = last + " " + line.dropFirst(2)
+                continue
+            }
+            let structural = line.isEmpty || line.hasPrefix("#") || line.hasPrefix("- ") || line.hasPrefix("* ") || line.hasPrefix("|")
+                || line.hasPrefix(">") || blockTag || line.range(of: #"^\d+\. "#, options: .regularExpression) != nil
+            if !structural, let last = out.last, !last.trimmingCharacters(in: .whitespaces).isEmpty, !last.hasPrefix("#"), !last.hasPrefix("|"),
+               !last.hasPrefix("```"), !last.hasPrefix(">"), last.range(of: #"^</?(div|aside|p|dl|dt|dd|table|a id)\b"#, options: .regularExpression) == nil,
+               !last.hasSuffix("<br>") {
+                out[out.count - 1] = last + " " + line
+            } else {
+                out.append(raw)
+            }
+        }
+        return out.joined(separator: "\n")
     }
 
     static func fit(_ aspect: CGSize, in maximum: CGSize) -> CGSize {
@@ -128,11 +161,11 @@ enum DocumentThumbnails {
                 if !starred { number += 1 }
                 var rest = segment[headingRange.upperBound...]
                 if rest.hasPrefix("}") { rest = rest.dropFirst() }
-                let paragraph = TeXText.tidy(TeXText.plain(stripFloats(String(rest)), keepMath: false), paragraphs: true)
+                let paragraph = TeXText.tidy(TeXText.plain(stripFloats(String(rest))), paragraphs: true)
                 sections.append((TeXText.tidy(TeXText.plain(heading)), starred ? nil : "\(number)", paragraph))
             }
             if sections.isEmpty, title == nil {
-                let paragraph = TeXText.tidy(TeXText.plain(stripFloats(String(body.prefix(6000))), keepMath: false), paragraphs: true)
+                let paragraph = TeXText.tidy(TeXText.plain(stripFloats(String(body.prefix(6000)))), paragraphs: true)
                 if !paragraph.isEmpty { sections.append(("", nil, paragraph)) }
             }
         }
@@ -147,7 +180,8 @@ enum DocumentThumbnails {
                 let e = NSRegularExpression.escapedPattern(for: env)
                 text = text.replacingOccurrences(of: "\\\\begin\\{\(e)\\}[\\s\\S]*?\\\\end\\{\(e)\\}", with: " ", options: .regularExpression)
             }
-            text = text.replacingOccurrences(of: #"\\(label|ref|cite[pt]?|eqref|autoref|footnote)\s*(\[[^\]]*\])?\{[^}]*\}"#, with: "", options: .regularExpression)
+            text = text.replacingOccurrences(of: #"[~ ]*\\(label|cite[pt]?|citealp|citeauthor|parencite|textcite|footnote)\s*(\[[^\]]*\])*\{[^}]*\}"#, with: "", options: .regularExpression)
+            text = text.replacingOccurrences(of: #"[~ ]*\\(ref|eqref|autoref|cref|Cref)\s*\{[^}]*\}"#, with: "", options: .regularExpression)
             text = text.replacingOccurrences(of: #"\\(sub)*section\*?\{[^}]*\}"#, with: "\n\n", options: .regularExpression)
             return text
         }

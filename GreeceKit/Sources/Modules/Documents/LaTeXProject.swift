@@ -38,13 +38,31 @@ struct LaTeXProject {
 
     // MARK: - Loading
 
+    /// The main file that includes this one, when this one is a section of a bigger project.
+    var host: URL?
+
     static func load(_ url: URL, sweave: Bool = false) throws -> LaTeXProject {
         let file = try TextFile(url: url, limit: fileLimit)
         var main = file.text
         if sweave { main = Sweave.latex(main) }
         var project = LaTeXProject(mainURL: url, source: "")
         project.truncated = file.truncated
-        let root = url.deletingLastPathComponent().resolvingSymlinksInPath().standardizedFileURL
+        var root = url.deletingLastPathComponent().resolvingSymlinksInPath().standardizedFileURL
+        // A section of a larger project borrows its main file's preamble (macros, theorems,
+        // bibliography) and folder, so it previews as it reads in the full document.
+        if let host = hostDocument(for: url, text: main), let hostText = try? TextFile(url: host, limit: fileLimit).text,
+           let begin = hostText.range(of: "\\begin{document}") {
+            project.host = host
+            project.mainURL = host
+            root = host.deletingLastPathComponent().resolvingSymlinksInPath().standardizedFileURL
+            var bibliography = ""
+            if ["bibliography", "printbibliography"].contains(where: { hostText.contains("\\" + $0) }) && !main.contains("\\bibliography") {
+                // Citations in this part resolve against the project's references, in its style.
+                if let style = TeXText.argument(of: "bibliographystyle", in: hostText) { bibliography += "\n\\bibliographystyle{\(style)}" }
+                bibliography += TeXText.argument(of: "bibliography", in: hostText).map { "\n\\bibliography{\($0)}" } ?? "\n\\printbibliography"
+            }
+            main = String(hostText[..<begin.lowerBound]) + "\\begin{document}\n" + main + bibliography + "\n\\end{document}\n"
+        }
         var resolver = IncludeResolver(root: root, mainDirectory: root)
         resolver.visiting = [url.resolvingSymlinksInPath().standardizedFileURL.path]
         project.source = resolver.expand(main, directory: root, depth: 0)
@@ -56,6 +74,27 @@ struct LaTeXProject {
         project.loadBibliography(root: root)
         project.languages = LaTeXProject.listingLanguages(project.source)
         return project
+    }
+
+    /// For a file without \\documentclass: a .tex file beside it or one folder up that has a
+    /// preamble and includes it (\\input, \\include, \\subfile, \\import).
+    static func hostDocument(for url: URL, text: String) -> URL? {
+        guard !text.contains("\\documentclass") else { return nil }
+        let stem = url.deletingPathExtension().lastPathComponent
+        let folder = url.deletingLastPathComponent()
+        let manager = FileManager.default
+        for directory in [folder, folder.deletingLastPathComponent()] {
+            guard let names = try? manager.contentsOfDirectory(atPath: directory.path) else { continue }
+            for name in names.sorted().prefix(200) where ["tex", "ltx"].contains((name as NSString).pathExtension.lowercased()) {
+                let candidate = directory.appendingPathComponent(name)
+                guard candidate.standardizedFileURL != url.standardizedFileURL,
+                      let size = (try? candidate.resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size < 2 * 1024 * 1024,
+                      let head = try? TextFile(url: candidate, limit: 2 * 1024 * 1024).text, head.contains("\\documentclass") else { continue }
+                let pattern = #"\\(input|include|subfile|import|subimport)\s*(\{[^}]*\}\s*)?\{[^}]*\b"# + NSRegularExpression.escapedPattern(for: stem) + #"(\.tex)?\}"#
+                if head.range(of: pattern, options: .regularExpression) != nil { return candidate }
+            }
+        }
+        return nil
     }
 
     // MARK: - Figures

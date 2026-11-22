@@ -278,6 +278,18 @@ final class LaTeXProjectTests: DocumentsTestCase {
         XCTAssertGreaterThan(TeXText.wordCount(project.source), 800)
     }
 
+    func testSectionsBorrowTheirMainFile() throws {
+        let section = fixtures.appendingPathComponent("latex/paper/sections/method.tex")
+        let project = try LaTeXProject.load(section)
+        XCTAssertEqual(project.host?.lastPathComponent, "main.tex")
+        XCTAssertTrue(project.source.contains("\\newcommand{\\topk}"))
+        XCTAssertTrue(project.source.contains("\\bibliographystyle{plainnat}"))
+        XCTAssertEqual(project.bibliography.count, 12)
+        XCTAssertEqual(project.figures["figures/pipeline"]?.kind, "pdf")
+        XCTAssertNil(LaTeXProject.hostDocument(for: fixtures.appendingPathComponent("latex/paper/main.tex"), text: "\\documentclass{article}"))
+        XCTAssertNil(LaTeXProject.hostDocument(for: try file("loose.tex", "Just a fragment."), text: "Just a fragment."))
+    }
+
     func testSweaveChunks() {
         let latex = Sweave.latex("Text\n<<plot, echo=FALSE>>=\nx %>% filter(y > 1)\n@\n\\Sexpr{1+1}")
         XCTAssertTrue(latex.contains("\\begin{greececode}{plot}{echo=FALSE}"))
