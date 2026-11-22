@@ -1,0 +1,30 @@
+PODS:
+  - Alamofire (5.10.1)
+  - Firebase/Analytics (11.4.0):
+    - Firebase/Core
+  - Firebase/Core (11.4.0):
+    - FirebaseAnalytics (~> 11.4.0)
+  - FirebaseAnalytics (11.4.0)
+  - HarbourKit (0.3.0)
+
+DEPENDENCIES:
+  - Alamofire (~> 5.10)
+  - Firebase/Analytics
+  - HarbourKit (from `../HarbourKit`)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - Firebase
+    - FirebaseAnalytics
+
+EXTERNAL SOURCES:
+  HarbourKit:
+    :path: "../HarbourKit"
+
+SPEC CHECKSUMS:
+  Alamofire: 7193b3b92c74a07f85569e1a6c4f4237291e7496
+
+PODFILE CHECKSUM: 6b2e9d2f2c3d
+
+COCOAPODS: 1.16.2

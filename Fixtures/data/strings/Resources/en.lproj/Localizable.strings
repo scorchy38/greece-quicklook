@@ -1,0 +1,10 @@
+/* Tab title */
+"timetable.title" = "Timetable";
+
+/* Button on the sailing screen */
+"sailing.book" = "Book a cabin";
+
+"sailing.departs" = "Departs %@";
+
+/* Shown when wind is above 7 Beaufort */
+"weather.warning" = "Gale warning in the \"Cyclades\"";

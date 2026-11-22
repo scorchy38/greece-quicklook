@@ -440,3 +440,451 @@ final class TableDataTests: XCTestCase {
         XCTAssertLessThan(CFAbsoluteTimeGetCurrent() - started, 3)
     }
 }
+
+final class FormatDataTests: XCTestCase {
+
+    private func info(_ path: String) -> FileInfo { FileInfo(url: fixtures.appendingPathComponent(path)) }
+
+    // MARK: Detection
+
+    func testDetection() throws {
+        XCTAssertEqual(DataModule.kind(of: info("events.jsonl")), .jsonLines)
+        XCTAssertEqual(DataModule.kind(of: info("ferries.har")), .har)
+        XCTAssertEqual(DataModule.kind(of: info("dbf/foxpro/fleet.dbf")), .dbf)
+        XCTAssertEqual(DataModule.kind(of: info("parquet/plain.parquet")), .parquet)
+        XCTAssertEqual(DataModule.kind(of: info("strings/Localizable.xcstrings")), .stringCatalog)
+        XCTAssertEqual(DataModule.kind(of: info("strings/Resources/en.lproj/Localizable.strings")), .strings)
+        XCTAssertEqual(DataModule.kind(of: info("strings/Resources/en.lproj/Localizable.stringsdict")), .stringsdict)
+        XCTAssertEqual(DataModule.kind(of: info("lock/cargo/Cargo.lock")), .lockFile(.cargo))
+        XCTAssertEqual(DataModule.kind(of: info("lock/swiftpm/Package.resolved")), .lockFile(.swiftpm))
+        XCTAssertNil(DataModule.kind(of: info("islands.tsv")), "delimited text stays with Greece's own table")
+        XCTAssertNil(DataModule.kind(of: info("harbour.sqlite")), "SQLite stays with Greece's own browser")
+        XCTAssertEqual(FileKind.detect(fixtures.appendingPathComponent("events.jsonl")), .module("data"))
+
+        // GeoJSON features in JSON Lines are left for the map preview; random .dbf and .json aren't claimed.
+        let folder = try temporaryFolder()
+        let geo = folder.appendingPathComponent("places.jsonl")
+        try Data(#"{"type": "Feature", "geometry": {"type": "Point", "coordinates": [1, 2]}}"#.utf8).write(to: geo)
+        XCTAssertNil(DataModule.kind(of: FileInfo(url: geo)))
+        let notDBF = folder.appendingPathComponent("notes.dbf")
+        try Data("just some text that is long enough to be a header".utf8).write(to: notDBF)
+        XCTAssertNil(DataModule.kind(of: FileInfo(url: notDBF)))
+        let plainJSON = folder.appendingPathComponent("data.json")
+        try Data(#"{"log": "not a capture"}"#.utf8).write(to: plainJSON)
+        XCTAssertNil(DataModule.kind(of: FileInfo(url: plainJSON)))
+    }
+
+    // MARK: JSON
+
+    func testOrderedJSONKeepsKeyOrderAndRejectsBombs() throws {
+        let value = try JSONReader.parse(Data(#"{"z": 1, "a": [true, null, "xé\n"], "m": {"k": -1.5e3}}"#.utf8))
+        guard case .object(let pairs) = value else { return XCTFail("not an object") }
+        XCTAssertEqual(pairs.map(\.0), ["z", "a", "m"])
+        XCTAssertEqual(value["a"], .array([.bool(true), .null, .string("xé\n")]))
+        XCTAssertEqual(value["m"]?["k"], .number("-1.5e3"))
+        XCTAssertEqual(try JSONReader.parse(Data(#""😀""#.utf8)), .string("😀"))
+        let deep = String(repeating: "[", count: 100_000) + String(repeating: "]", count: 100_000)
+        XCTAssertThrowsError(try JSONReader.parse(Data(deep.utf8)))
+        for bad in ["{", "[1,]", "{\"a\" 1}", "tru", "\"unterminated", "{} trailing", "-"] {
+            XCTAssertThrowsError(try JSONReader.parse(Data(bad.utf8)), bad)
+        }
+    }
+
+    func testJSONLinesUnionsKeysInOrder() throws {
+        let lines = try XCTUnwrap(try JSONLinesTable.load(fixtures.appendingPathComponent("events.jsonl"), maxRows: 1000))
+        XCTAssertEqual(lines.table.rowCount, 60)
+        XCTAssertEqual(lines.invalid, 1)
+        XCTAssertEqual(Array(lines.table.columns.map(\.title).prefix(7)), ["id", "event", "port", "at", "passengers", "on_time", "vessel"])
+        XCTAssertTrue(lines.table.columns.map(\.title).contains("delay_minutes"))
+        XCTAssertTrue(lines.table.columns[0].numeric)
+        XCTAssertEqual(lines.table.value(row: 0, column: 6), .secondary(#"{"name": "Aegean 1", "imo": 9000000}"#))
+        let delay = try XCTUnwrap(lines.table.columns.firstIndex { $0.title == "delay_minutes" })
+        XCTAssertEqual(lines.table.value(row: 1, column: delay), .placeholder(""), "missing keys are empty")
+        XCTAssertNil(try JSONLinesTable.load(fixtures.appendingPathComponent("matrix.ndjson"), maxRows: 1000), "arrays read better as code")
+    }
+
+    func testJSONLinesCapsColumnsAndRows() {
+        let wide = "{" + (0..<5000).map { "\"k\($0)\": \($0)" }.joined(separator: ",") + "}\n"
+        let table = JSONLinesTable.parse(wide + wide, maxRows: 1)
+        XCTAssertEqual(table?.table.columns.count, JSONLinesTable.maxColumns)
+        XCTAssertEqual(table?.skippedColumns, 5000 - JSONLinesTable.maxColumns)
+        XCTAssertEqual(table?.table.rowCount, 1)
+        XCTAssertEqual(table?.lines, 2)
+        XCTAssertEqual(table?.truncated, true)
+    }
+
+    // MARK: Lock files
+
+    private func lock(_ path: String) throws -> LockFile {
+        try XCTUnwrap(try LockFile.load(fixtures.appendingPathComponent(path)), path)
+    }
+
+    private func kinds(_ lock: LockFile) -> [String: LockedPackage.Kind] {
+        Dictionary(lock.packages.map { ($0.name, $0.kind) }) { a, _ in a }
+    }
+
+    func testEveryLockFormat() throws {
+        let npm = try lock("lock/npm/package-lock.json")
+        XCTAssertEqual(npm.packages.count, 9)
+        XCTAssertEqual(kinds(npm)["react"], .direct)
+        XCTAssertEqual(kinds(npm)["vite"], .directDev)
+        XCTAssertEqual(kinds(npm)["esbuild"], .dev)
+        XCTAssertEqual(kinds(npm)["scheduler"], .transitive)
+        XCTAssertEqual(kinds(npm)["my-local"], .workspace)
+        XCTAssertEqual(npm.packages.first { $0.name == "react" }?.source, "registry.npmjs.org")
+        XCTAssertEqual(npm.detail, "Lockfile v3")
+
+        let shrinkwrap = try lock("lock/npm-shrinkwrap/npm-shrinkwrap.json")
+        XCTAssertEqual(Set(shrinkwrap.packages.map(\.name)), ["lodash", "mocha", "ms"])
+
+        let yarn = try lock("lock/yarn/yarn.lock")
+        XCTAssertEqual(kinds(yarn)["@babel/core"], .direct, "package.json beside the lock file says so")
+        XCTAssertEqual(kinds(yarn)["jest"], .directDev)
+        XCTAssertEqual(kinds(yarn)["@babel/code-frame"], .transitive)
+        XCTAssertEqual(yarn.packages.first { $0.name == "lodash" }?.version, "4.17.21")
+        XCTAssertEqual(yarn.packages.first { $0.name == "harbour-ui" }?.source, "git")
+
+        let berry = try lock("lock/yarn-berry/yarn.lock")
+        XCTAssertEqual(berry.packages.first { $0.name == "react" }?.version, "18.3.1")
+        XCTAssertEqual(kinds(berry)["harbour"], .workspace)
+
+        let pnpm = try lock("lock/pnpm/pnpm-lock.yaml")
+        XCTAssertEqual(kinds(pnpm)["express"], .direct)
+        XCTAssertEqual(kinds(pnpm)["typescript"], .directDev)
+        XCTAssertEqual(kinds(pnpm)["accepts"], .transitive)
+        XCTAssertEqual(pnpm.packages.first { $0.name == "typescript" }?.version, "5.6.3")
+
+        let cargo = try lock("lock/cargo/Cargo.lock")
+        XCTAssertEqual(kinds(cargo)["harbour"], .workspace)
+        XCTAssertEqual(kinds(cargo)["serde"], .direct)
+        XCTAssertEqual(kinds(cargo)["serde_derive"], .transitive)
+        XCTAssertEqual(cargo.packages.first { $0.name == "serde" }?.source, "crates.io")
+        XCTAssertEqual(cargo.packages.first { $0.name == "nautical" }?.source, "git")
+
+        let gems = try lock("lock/bundler/Gemfile.lock")
+        XCTAssertEqual(kinds(gems)["actionpack"], .direct)
+        XCTAssertEqual(kinds(gems)["rack"], .transitive)
+        XCTAssertEqual(gems.packages.first { $0.name == "tide" }?.source, "git")
+        XCTAssertEqual(gems.packages.first { $0.name == "nokogiri" }?.version, "1.16.7-arm64-darwin")
+        XCTAssertEqual(gems.detail, "Bundler 2.5.22")
+
+        let poetry = try lock("lock/poetry/poetry.lock")
+        XCTAssertEqual(kinds(poetry)["requests"], .direct)
+        XCTAssertEqual(kinds(poetry)["pytest"], .directDev)
+        XCTAssertEqual(kinds(poetry)["certifi"], .transitive)
+        XCTAssertEqual(poetry.packages.first { $0.name == "harbour-tools" }?.source, "pypi.harbour.example")
+
+        let uv = try lock("lock/uv/uv.lock")
+        XCTAssertEqual(kinds(uv)["httpx"], .direct)
+        XCTAssertEqual(kinds(uv)["ruff"], .directDev)
+        XCTAssertEqual(kinds(uv)["anyio"], .transitive)
+        XCTAssertEqual(kinds(uv)["harbour"], .workspace)
+
+        let pods = try lock("lock/cocoapods/Podfile.lock")
+        XCTAssertEqual(kinds(pods)["Alamofire"], .direct)
+        XCTAssertEqual(kinds(pods)["FirebaseAnalytics"], .transitive)
+        XCTAssertEqual(pods.packages.first { $0.name == "HarbourKit" }?.source, "local")
+        XCTAssertEqual(pods.packages.first { $0.name == "Alamofire" }?.source, "CocoaPods trunk")
+
+        let swiftpm = try lock("lock/swiftpm/Package.resolved")
+        XCTAssertEqual(swiftpm.packages.map(\.name), ["harbourkit", "swift-argument-parser", "swift-collections"])
+        XCTAssertEqual(swiftpm.packages.first?.version, "branch main")
+        XCTAssertEqual(swiftpm.packages.last?.source, "github.com")
+
+        let composer = try lock("lock/composer/composer.lock")
+        XCTAssertEqual(kinds(composer)["monolog/monolog"], .direct)
+        XCTAssertEqual(kinds(composer)["phpunit/phpunit"], .directDev)
+        XCTAssertEqual(kinds(composer)["psr/log"], .transitive)
+        XCTAssertEqual(kinds(composer)["sebastian/diff"], .dev)
+
+        let go = try lock("lock/go/go.sum")
+        XCTAssertEqual(go.packages.count, 4, "go.mod-only lines aren't modules")
+        XCTAssertEqual(kinds(go)["github.com/spf13/cobra"], .direct)
+        XCTAssertEqual(kinds(go)["golang.org/x/sync"], .transitive, "// indirect")
+
+        let mix = try lock("lock/mix/mix.lock")
+        XCTAssertEqual(mix.packages.first { $0.name == "jason" }?.version, "1.4.4")
+        XCTAssertEqual(mix.packages.first { $0.name == "tide" }?.source, "git")
+
+        let pub = try lock("lock/pub/pubspec.lock")
+        XCTAssertEqual(kinds(pub)["http"], .direct)
+        XCTAssertEqual(kinds(pub)["flutter_test"], .directDev)
+        XCTAssertEqual(kinds(pub)["async"], .transitive)
+        XCTAssertEqual(pub.packages.first { $0.name == "harbour_ui" }?.source, "local")
+
+        let pipenv = try lock("lock/pipenv/Pipfile.lock")
+        XCTAssertEqual(pipenv.packages.first { $0.name == "requests" }?.version, "2.32.3")
+        XCTAssertEqual(kinds(pipenv)["pytest"], .dev)
+
+        let bun = try lock("lock/bun/bun.lock")
+        XCTAssertEqual(kinds(bun)["hono"], .direct)
+        XCTAssertEqual(kinds(bun)["@types/bun"], .directDev)
+        XCTAssertEqual(kinds(bun)["bun-types"], .transitive)
+
+        let flake = try lock("lock/nix/flake.lock")
+        XCTAssertEqual(kinds(flake)["nixpkgs"], .direct)
+        XCTAssertEqual(kinds(flake)["systems"], .transitive)
+        XCTAssertEqual(flake.packages.first { $0.name == "nixpkgs" }?.source, "github:NixOS/nixpkgs")
+
+        let gradle = try lock("lock/gradle/gradle.lockfile")
+        XCTAssertEqual(gradle.packages.count, 4)
+        XCTAssertEqual(kinds(gradle)["org.junit.jupiter:junit-jupiter"], .dev)
+
+        let nuget = try lock("lock/nuget/packages.lock.json")
+        XCTAssertEqual(kinds(nuget)["Newtonsoft.Json"], .direct)
+        XCTAssertEqual(kinds(nuget)["System.Diagnostics.DiagnosticSource"], .transitive)
+    }
+
+    func testMalformedLockFilesDontCrash() {
+        for format in LockFile.Format.allCases {
+            for garbage in ["", "{", "[[package]]\nname = ", "\u{0}\u{1}\u{2}", String(repeating: "  - x (\n", count: 1000), "packages:\n  /:\n    resolution: {"] {
+                _ = LockFile.parse(Data(garbage.utf8), format: format)
+            }
+        }
+        XCTAssertEqual(LockFile.pnpmKey("/@scope/name@1.2.3(react@18.0.0)").name, "@scope/name")
+        XCTAssertEqual(LockFile.pnpmKey("/@scope/name@1.2.3(react@18.0.0)").version, "1.2.3")
+        XCTAssertEqual(LockFile.pnpmKey("/lodash/4.17.21").version, "4.17.21")
+        XCTAssertEqual(LockFile.packageName(fromSpec: "\"@babel/core@npm:^7.0.0\""), "@babel/core")
+    }
+
+    // MARK: Strings
+
+    func testStringCatalogStates() throws {
+        let data = try Data(contentsOf: fixtures.appendingPathComponent("strings/Localizable.xcstrings"))
+        let catalog = try XCTUnwrap(StringTable.catalog(data))
+        XCTAssertEqual(catalog.sourceLanguage, "en")
+        XCTAssertEqual(catalog.languages.first, "en")
+        XCTAssertEqual(Set(catalog.languages), ["en", "de", "el", "fr", "ja"])
+        let book = try XCTUnwrap(catalog.rows.first { $0.key == "Book a cabin" })
+        XCTAssertEqual(book.entries["fr"]?.state, .needsReview)
+        XCTAssertEqual(book.comment, "Button on the sailing detail screen")
+        XCTAssertEqual(catalog.rows.first { $0.key == "Aegean Ferries" }?.entries["de"]?.state, .notTranslated)
+        XCTAssertEqual(catalog.rows.first { $0.key == "Cancelled" }?.entries["de"]?.state, .stale)
+        let plural = try XCTUnwrap(catalog.rows.first { $0.key == "%lld passengers" })
+        XCTAssertEqual(plural.entries["el"]?.state, .needsReview, "the worst state among variations")
+        XCTAssertEqual(plural.entries["de"]?.value, "%lld Passagiere")
+        let german = catalog.completion("de")
+        XCTAssertEqual(german.done, 6)
+        XCTAssertEqual(german.total, 7, "the untranslatable key doesn't count")
+    }
+
+    func testStringsJoinSiblingLanguagesAndKeepComments() throws {
+        let table = try XCTUnwrap(try StringTable.strings(fixtures.appendingPathComponent("strings/Resources/en.lproj/Localizable.strings")))
+        XCTAssertEqual(table.languages, ["en", "de", "el"])
+        XCTAssertEqual(table.rows.map(\.key), ["timetable.title", "sailing.book", "sailing.departs", "weather.warning"])
+        XCTAssertEqual(table.rows[3].entries["en"]?.value, "Gale warning in the \"Cyclades\"")
+        XCTAssertEqual(table.rows[3].entries["el"]?.value, "Προειδοποίηση θυελλωδών ανέμων στις \"Κυκλάδες\"", "UTF-16 sibling")
+        XCTAssertNil(table.rows[2].entries["el"])
+        XCTAssertEqual(table.rows[1].comment, "Button on the sailing screen")
+        let binary = try XCTUnwrap(try StringTable.strings(fixtures.appendingPathComponent("strings/binary/InfoPlist.strings")))
+        XCTAssertEqual(binary.rows.map(\.key), ["CFBundleDisplayName", "NSLocationWhenInUseUsageDescription"])
+        let rules = try XCTUnwrap(StringTable.stringsdict(try Data(contentsOf: fixtures.appendingPathComponent("strings/Resources/en.lproj/Localizable.stringsdict"))))
+        XCTAssertEqual(rules.count, 2)
+        XCTAssertEqual(rules.first { $0.key == "%d sailings" }?.forms["zero"], "No sailings")
+        // Unterminated input ends cleanly.
+        _ = StringTable.parseStrings(Data("\"unterminated = \"value".utf8))
+        _ = StringTable.parseStrings(Data("/* never closed".utf8))
+    }
+
+    // MARK: DBF
+
+    func testDBaseIIIWithMemosAndDeletedRows() throws {
+        let table = try DBFTable.load(fixtures.appendingPathComponent("dbf/dbase3/ports.dbf"))
+        XCTAssertEqual(table.versionName, "dBase III with memo")
+        XCTAssertEqual(table.recordCount, 5)
+        XCTAssertEqual(table.fields.map(\.name), ["NAME", "REGION", "LAT", "LON", "OPENED", "YEARROUND", "NOTES"])
+        XCTAssertEqual(table.deleted, [1])
+        XCTAssertEqual(table.rows[0][0], .text("Piraeus"))
+        XCTAssertEqual(table.rows[0][2], .text("37.9425"))
+        XCTAssertEqual(table.rows[0][4], .text("1835-05-01"))
+        XCTAssertEqual(table.rows[0][5], .text("true"))
+        XCTAssertEqual(table.rows[0][6], .text("Main port of Athens and the busiest passenger port in Europe."))
+        XCTAssertEqual(table.rows[3][4], .null, "blank date")
+        XCTAssertEqual(table.rows[1][6], .null, "no memo")
+        XCTAssertEqual(table.memoFile, "ports.dbt")
+    }
+
+    func testDBaseIVMemos() throws {
+        let table = try DBFTable.load(fixtures.appendingPathComponent("dbf/dbase4/harbours.dbf"))
+        XCTAssertEqual(table.versionName, "dBase IV with memo")
+        XCTAssertEqual(table.rows[4][2], .text("Overnight ferries to Piraeus."))
+        XCTAssertEqual(table.encodingName, "Windows ANSI (1252)")
+    }
+
+    func testVisualFoxProTypesNullsAndCodePage() throws {
+        let table = try DBFTable.load(fixtures.appendingPathComponent("dbf/foxpro/fleet.dbf"))
+        XCTAssertEqual(table.versionName, "Visual FoxPro")
+        XCTAssertEqual(table.encodingName, "Windows Greek (1253)")
+        XCTAssertFalse(table.fields.filter { !$0.isSystem }.map(\.name).contains("_NullFlags"))
+        XCTAssertEqual(table.rows[0][0], .text("1"))
+        XCTAssertEqual(table.rows[0][4], .text("1250.5000"), "currency")
+        XCTAssertEqual(table.rows[0][5], .text("2025-05-30 07:25:00"), "datetime")
+        XCTAssertEqual(table.rows[0][6], .text("0.82"), "double")
+        XCTAssertEqual(table.rows[0][7], .text("Λιμάνι Πειραιά"), "Greek from code page 1253")
+        XCTAssertEqual(table.rows[0][8], .text("Flagship on the western Cyclades line."), "FoxPro memo")
+        XCTAssertEqual(table.rows[1][7], .null, "null flag")
+        XCTAssertEqual(table.rows[2][1], .text("Αιγαίο Πέλαγος"))
+        XCTAssertEqual(table.rows[2][8], .text("Ρυμουλκό λιμένος."))
+        XCTAssertEqual(table.deleted, [3])
+    }
+
+    func testMalformedDBFIsRefusedOrTruncatedSafely() throws {
+        let original = try Data(contentsOf: fixtures.appendingPathComponent("dbf/dbase3/ports.dbf"))
+        // Cut short while claiming a billion records: no crash, no huge allocation.
+        var bytes = [UInt8](original.prefix(300))
+        bytes[4] = 0xFF; bytes[5] = 0xFF; bytes[6] = 0xFF; bytes[7] = 0x3F
+        let table = try DBFTable.parse(Data(bytes))
+        XCTAssertLessThan(table.rows.count, 10)
+        XCTAssertThrowsError(try DBFTable.parse(Data([0x03] + [UInt8](repeating: 0, count: 40))))
+        var fieldsOnly = [UInt8](original.prefix(32))
+        fieldsOnly[8] = 0xFF; fieldsOnly[9] = 0xFF
+        XCTAssertThrowsError(try DBFTable.parse(Data(fieldsOnly)))
+        // A memo block number pointing far past the end of the memo file.
+        let memo = try XCTUnwrap(MemoFile.make(Data(count: 1024), name: "x.fpt", foxPro: true))
+        if case .missing = memo.read(block: Int.max / 2) {} else { XCTFail("read past the end") }
+    }
+
+    // MARK: HAR
+
+    func testHARWaterfallAndDetails() throws {
+        let capture = try HARCapture.load(fixtures.appendingPathComponent("ferries.har"))
+        let summary = capture.summary
+        XCTAssertEqual(summary.entries.count, 33)
+        XCTAssertEqual(summary.pages.first?.title, "Aegean Ferries — Timetable")
+        XCTAssertNotNil(summary.pages.first?.load)
+        XCTAssertEqual(summary.entries[0].status, 301)
+        XCTAssertEqual(summary.entries[0].type, "document")
+        XCTAssertEqual(summary.entries[0].start, 0)
+        XCTAssertTrue(summary.entries.contains { $0.failed })
+        XCTAssertTrue(summary.entries.contains { $0.status == 404 })
+        XCTAssertEqual(summary.entries.first { $0.path.hasPrefix("/v2/sailings") }?.host, "api.ferries.example")
+        let index = try XCTUnwrap(summary.entries.firstIndex { $0.method == "POST" })
+        let detail = try XCTUnwrap(capture.detail(index))
+        let json = try XCTUnwrap(try JSONSerialization.jsonObject(with: detail) as? [String: Any])
+        XCTAssertEqual(json["method"] as? String, "POST")
+        XCTAssertTrue((json["postText"] as? String)?.contains("BSD-0725") == true)
+        XCTAssertNil(capture.detail(9999))
+        XCTAssertThrowsError(try HARCapture.parse(Data("{\"log\": 5}".utf8)))
+        XCTAssertThrowsError(try HARCapture.parse(Data("not json".utf8)))
+    }
+
+    func testHARPageKeepsCaptureTextOutOfMarkup() throws {
+        // Hostile strings reach the page as JSON data, never as markup.
+        let har = #"{"log": {"version": "1.2", "creator": {"name": "</script><script>alert(1)</script>"}, "entries": [{"startedDateTime": "2025-01-01T00:00:00Z", "time": 1, "request": {"method": "GET", "url": "https://x.example/<img src=x onerror=alert(1)>", "headers": []}, "response": {"status": 200, "content": {"mimeType": "text/html"}}, "timings": {}}]}}"#
+        let url = try temporaryFolder().appendingPathComponent("hostile.har")
+        try Data(har.utf8).write(to: url)
+        guard case .web(let document, _, _) = try HARPage.prepare(FileInfo(url: url), modified: nil) else { return XCTFail("not a web page") }
+        let html = document.html(settings: PreviewSettings())
+        XCTAssertFalse(html.contains("</script><script>alert"))
+        XCTAssertFalse(html.contains("<img src=x"))
+    }
+
+    // MARK: Parquet
+
+    func testParquetSchemaAndRows() throws {
+        for (name, codec) in [("plain", "Uncompressed"), ("sailings", "Snappy"), ("gzip", "Gzip")] {
+            let url = fixtures.appendingPathComponent("parquet/\(name).parquet")
+            let parquet = try ParquetFile.open(url)
+            XCTAssertEqual(parquet.codecs, [codec], name)
+            XCTAssertEqual(parquet.columns.first?.name, "sailing")
+            XCTAssertEqual(parquet.columns.first?.kind, .string)
+            XCTAssertTrue(parquet.nested.contains("stops.list.element"), name)
+            let (values, reasons) = parquet.firstRows(url, limit: 50)
+            let names = try XCTUnwrap(values[0], "\(name): \(reasons[0] ?? "")")
+            XCTAssertEqual(names.first, .text("S0000"), name)
+            XCTAssertEqual(names.count > 49 ? names[49] : nil, .text("S0049"), name)
+            XCTAssertEqual(values[2]?.first, .text("2025-06-01 06:00:00"), name)
+            XCTAssertEqual(values[3]?.first, .text("2025-06-01"), "\(name): date")
+            XCTAssertEqual(values[5]?.first, .null, "\(name): a null in an optional column")
+            XCTAssertNotNil(values[6]?.first?.plainText.firstMatch(of: #/^\d+\.\d\d$/#), "\(name): decimal(8,2)")
+            XCTAssertNotNil(values[8]?.first, "\(name): boolean")
+            XCTAssertNil(values[9], "\(name): nested lists aren't flattened")
+        }
+        let snappy = try ParquetFile.open(fixtures.appendingPathComponent("parquet/sailings.parquet"))
+        XCTAssertEqual(snappy.rows, 400)
+        XCTAssertEqual(snappy.groups.map(\.rows), [150, 150, 100])
+        let zstd = fixtures.appendingPathComponent("parquet/zstd.parquet")
+        let (values, reasons) = try ParquetFile.open(zstd).firstRows(zstd, limit: 10)
+        XCTAssertNil(values[0])
+        XCTAssertEqual(reasons[0], "Zstandard")
+    }
+
+    func testSnappyAndHostileParquet() throws {
+        XCTAssertEqual(try Snappy.decompress(Data([5, 0x10, 0x68, 0x65, 0x6C, 0x6C, 0x6F])), Data("hello".utf8))
+        // A one-byte literal, then a copy of length 9 at offset 1 that overlaps itself: "aaaaaaaaaa".
+        XCTAssertEqual(try Snappy.decompress(Data([10, 0x00, 0x61, 0x15, 0x01])), Data(repeating: 0x61, count: 10))
+        XCTAssertThrowsError(try Snappy.decompress(Data([0xFF, 0xFF, 0xFF, 0xFF, 0x0F])), "huge declared length")
+        XCTAssertThrowsError(try Snappy.decompress(Data([4, 0x09, 0x10])), "copy before any output")
+        // Footers: absurd lengths, garbage, endless nesting.
+        let folder = try temporaryFolder()
+        let footers: [[UInt8]] = [
+            Array("PAR1".utf8) + [0xFF, 0xFF, 0xFF, 0x7F] + Array("PAR1".utf8),
+            Array("PAR1".utf8) + [0x15, 0x00, 0x19, 0xFC] + [0x04, 0x00, 0x00, 0x00] + Array("PAR1".utf8),
+            Array("PAR1".utf8) + [UInt8](repeating: 0x1C, count: 4000) + [0xA0, 0x0F, 0x00, 0x00] + Array("PAR1".utf8),
+        ]
+        for (index, bytes) in footers.enumerated() {
+            let url = folder.appendingPathComponent("bad\(index).parquet")
+            try Data(bytes).write(to: url)
+            XCTAssertThrowsError(try ParquetFile.open(url), "footer \(index)")
+        }
+        XCTAssertEqual(try Hybrid.decode(Data([0x08, 0x01])[...], bitWidth: 1, count: 4), [1, 1, 1, 1])
+        XCTAssertEqual(ParquetFile.decimal("12345", negative: true, scale: 2), "-123.45")
+        XCTAssertEqual(ParquetFile.bigEndianDecimalString([0x01, 0x00]), "256")
+    }
+
+    // MARK: Previews and thumbnails
+
+    func testEveryFixturePreparesAndDrawsAThumbnail() throws {
+        let files = try FileManager.default.subpathsOfDirectory(atPath: fixtures.path)
+            .map { fixtures.appendingPathComponent($0) }
+            .filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]))?.isDirectory == false }
+            .filter { !["py", "md", "dbt", "fpt", "toml", "mod"].contains($0.pathExtension) && !["package.json", "composer.json"].contains($0.lastPathComponent) }
+        XCTAssertGreaterThan(files.count, 30)
+        for url in files {
+            let info = FileInfo(url: url)
+            if case .module = FileKind.detect(info), let module = PreviewModules.claiming(info) {
+                XCTAssertNoThrow(try module.prepare(info, settings: PreviewSettings()), url.lastPathComponent)
+            }
+            let page = Thumbnailer.page(for: url, maximumSize: CGSize(width: 256, height: 256), settings: PreviewSettings())
+            if DataModule.kind(of: info) != nil || ["sqlite", "tsv", "psv"].contains(url.pathExtension) {
+                XCTAssertNotNil(page, "thumbnail for \(url.lastPathComponent)")
+                if let page {
+                    let image = NSImage(size: page.size, flipped: false) { _ in page.draw(); return true }
+                    XCTAssertNotNil(image.tiffRepresentation)
+                }
+            }
+        }
+    }
+
+    func testDataExtensionsReachGreece() throws {
+        // Like CoverageTests: each extension must resolve to a content type Greece claims.
+        func list(_ kind: String) throws -> Set<String> {
+            var result = Set<String>()
+            let folder = repo.appendingPathComponent("Types/\(kind)")
+            for name in try FileManager.default.contentsOfDirectory(atPath: folder.path) where name.hasSuffix(".txt") {
+                for line in try String(contentsOf: folder.appendingPathComponent(name), encoding: .utf8).split(separator: "\n") {
+                    let type = line.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false)[0].trimmingCharacters(in: .whitespaces)
+                    if !type.isEmpty { result.insert(type) }
+                }
+            }
+            return result
+        }
+        var declared: [String: String] = [:]
+        let folder = repo.appendingPathComponent("Types/declarations")
+        for name in try FileManager.default.contentsOfDirectory(atPath: folder.path) where name.hasSuffix(".plist") {
+            let declarations = try PropertyListSerialization.propertyList(from: Data(contentsOf: folder.appendingPathComponent(name)), format: nil) as? [[String: Any]] ?? []
+            for declaration in declarations {
+                guard let identifier = declaration["UTTypeIdentifier"] as? String, let tags = declaration["UTTypeTagSpecification"] as? [String: Any] else { continue }
+                for ext in (tags["public.filename-extension"] as? [String]) ?? [] { declared[ext.lowercased()] = identifier }
+            }
+        }
+        let previews = try list("preview"), thumbnails = try list("thumbnails")
+        var missing: [String] = []
+        for ext in ["dbf", "jsonl", "ndjson", "har", "xcstrings", "strings", "stringsdict", "parquet", "tsv", "psv", "sqlite", "db", "lock", "resolved", "sum", "lockfile"] {
+            guard let type = declared[ext] ?? UTType(filenameExtension: ext).map(\.identifier) else { missing.append("\(ext): no type"); continue }
+            if !previews.contains(type) { missing.append("\(ext) (\(type)): not previewed") }
+            if !thumbnails.contains(type) { missing.append("\(ext) (\(type)): no thumbnail") }
+        }
+        XCTAssert(missing.isEmpty, missing.joined(separator: "\n"))
+    }
+}
