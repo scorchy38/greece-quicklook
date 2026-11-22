@@ -108,9 +108,9 @@ struct MachOFile {
             case .driverKit: return "DriverKit"
             case .visionOS: return "visionOS"
             case .visionOSSimulator: return "visionOS Simulator"
-            case .firmware: return "Firmware"
+            case .firmware: return String(localized: "Firmware", bundle: .greeceKit, comment: "A platform a binary is built for")
             case .sepOS: return "sepOS"
-            case .other(let raw): return "Platform \(raw)"
+            case .other(let raw): return String(localized: "Platform \(String(raw))", bundle: .greeceKit, comment: "An unknown platform a binary is built for. The argument is its number")
             }
         }
     }
@@ -453,17 +453,17 @@ struct MachOFile {
 
     var fileTypeName: String {
         switch slices.first?.fileType ?? 0 {
-        case 1: return "Object File"
-        case 2: return "Executable"
-        case 4: return "Core Dump"
-        case 6: return "Dynamic Library"
-        case 7: return "Dynamic Linker"
-        case 8: return "Bundle"
-        case 9: return "Library Stub"
-        case 10: return "Debug Symbols"
-        case 11: return "Kernel Extension"
-        case 12: return "Kernel Collection"
-        default: return "Mach-O File"
+        case 1: return String(localized: "Object File", bundle: .greeceKit)
+        case 2: return String(localized: "Executable", bundle: .greeceKit, comment: "A kind of Mach-O file: a program")
+        case 4: return String(localized: "Core Dump", bundle: .greeceKit)
+        case 6: return String(localized: "Dynamic Library", bundle: .greeceKit)
+        case 7: return String(localized: "Dynamic Linker", bundle: .greeceKit)
+        case 8: return String(localized: "Bundle", bundle: .greeceKit, comment: "A kind of Mach-O file: a loadable bundle")
+        case 9: return String(localized: "Library Stub", bundle: .greeceKit)
+        case 10: return String(localized: "Debug Symbols", bundle: .greeceKit, comment: "Info bar title, section title and kind of file: a .dSYM bundle or Mach-O debug symbols file")
+        case 11: return String(localized: "Kernel Extension", bundle: .greeceKit)
+        case 12: return String(localized: "Kernel Collection", bundle: .greeceKit)
+        default: return String(localized: "Mach-O File", bundle: .greeceKit)
         }
     }
 
@@ -499,14 +499,14 @@ enum ArchitectureSupport: Equatable {
     var badge: InspectorBadge {
         switch self {
         case .universal:
-            return InspectorBadge("architecture", symbol: "cpu", title: "Universal", tone: .neutral,
-                                  help: "Runs natively on Apple silicon and Intel Macs.")
+            return InspectorBadge("architecture", symbol: "cpu", title: String(localized: "Universal", bundle: .greeceKit, comment: "Badge: a program that runs on both Apple silicon and Intel Macs"), tone: .neutral,
+                                  help: String(localized: "Runs natively on Apple silicon and Intel Macs.", bundle: .greeceKit))
         case .appleSilicon:
-            return InspectorBadge("architecture", symbol: "cpu", title: "Apple Silicon", tone: .neutral,
-                                  help: "Runs natively on Apple silicon only. Intel Macs can’t run it.")
+            return InspectorBadge("architecture", symbol: "cpu", title: String(localized: "Apple Silicon", bundle: .greeceKit, comment: "Badge: a program that runs only on Macs with Apple silicon"), tone: .neutral,
+                                  help: String(localized: "Runs natively on Apple silicon only. Intel Macs can’t run it.", bundle: .greeceKit))
         case .intel:
-            return InspectorBadge("architecture", symbol: "exclamationmark.triangle", title: "Intel Only", tone: .caution,
-                                  help: "Built for Intel only. On Apple silicon it needs Rosetta, which future versions of macOS won’t include.")
+            return InspectorBadge("architecture", symbol: "exclamationmark.triangle", title: String(localized: "Intel Only", bundle: .greeceKit, comment: "Badge: a program built only for Intel Macs"), tone: .caution,
+                                  help: String(localized: "Built for Intel only. On Apple silicon it needs Rosetta, which future versions of macOS won’t include.", bundle: .greeceKit))
         case .other(let names):
             return InspectorBadge("architecture", symbol: "cpu", title: names.joined(separator: ", "), tone: .neutral)
         }
