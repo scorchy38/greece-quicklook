@@ -86,6 +86,8 @@ public struct WebDocument {
         var options: Options
         var diffLanguages: [String: String]?
         var fileName: String?
+        /// A state to open in, for renders and tests (`GREECE_STATE`, e.g. "find:query").
+        var state: String?
     }
 
     // MARK: - Feature detection
@@ -194,7 +196,8 @@ public struct WebDocument {
                            remoteImages: settings.loadRemoteImages, frontMatter: settings.showFrontMatter,
                            scroll: initialScroll.map { [Double($0.x), Double($0.y)] }),
             diffLanguages: diffLanguages.isEmpty ? nil : diffLanguages,
-            fileName: fileName)
+            fileName: fileName,
+            state: ProcessInfo.processInfo.environment["GREECE_STATE"])
         let json = (try? JSONEncoder().encode(payload)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         // Make the JSON inert inside <script>: no "<" can ever close the element or open a comment.
         let safeJSON = json.replacingOccurrences(of: "<", with: "\\u003c")
@@ -218,9 +221,11 @@ public struct WebDocument {
         var classes = WebDocument.classes(settings: settings, kind: kind).filter(\.value).map(\.key).sorted().joined(separator: " ")
         if usesMarkdown { classes += " reading" }
         if !PreviewHost.acceptsTyping { classes += " no-typing" }
+        // The page's own words in the reader's language (WebStrings), which also drives hyphenation and fonts.
+        let language = WebStrings.language
         return """
         <!DOCTYPE html>
-        <html lang="en" class="\(classes)">
+        <html lang="\(WebDocument.attribute(language))" class="\(classes)">
         <head>
         <meta charset="utf-8">
         <meta http-equiv="Content-Security-Policy" content="\(csp)">
@@ -229,7 +234,8 @@ public struct WebDocument {
         \(styles.map { "<link rel=\"stylesheet\" href=\"greece://asset/\(WebDocument.attribute($0))\">" }.joined(separator: "\n"))
         <style id="theme">\(settings.codeTheme.css)</style>
         <style id="vars">\(WebDocument.variablesCSS(settings))</style>
-        <script id="payload" type="application/json">\(safeJSON)</script>\(safeData.map { "\n<script id=\"data\" type=\"application/json\">\($0)</script>" } ?? "")
+        <script id="payload" type="application/json">\(safeJSON)</script>
+        \(WebStrings.element(for: language))\(safeData.map { "\n<script id=\"data\" type=\"application/json\">\($0)</script>" } ?? "")
         </head>
         <body>
         <main id="root"></main>
