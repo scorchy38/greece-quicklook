@@ -339,8 +339,8 @@ enum PaletteParser {
     // MARK: - Procreate (.swatches)
 
     static func procreate(_ data: Data) throws -> Palette {
-        guard let zip = MediaZip(data), let entry = zip.entry(named: "Swatches.json") ?? zip.entries.first(where: { $0.name.hasSuffix(".json") }),
-              let json = zip.contents(of: entry, limit: 8 * 1024 * 1024),
+        guard let zip = ZIPArchive.media(data), let entry = zip.member(named: "Swatches.json") ?? zip.members.first(where: { $0.path.hasSuffix(".json") }),
+              let json = try? zip.contents(of: entry, limit: 8 * 1024 * 1024),
               let object = try? JSONSerialization.jsonObject(with: json) else { throw MediaError.unreadable("These swatches are damaged.") }
         let palettes = (object as? [[String: Any]]) ?? [(object as? [String: Any]) ?? [:]]
         var groups: [PaletteGroup] = []

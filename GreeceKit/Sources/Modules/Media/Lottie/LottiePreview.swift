@@ -90,10 +90,10 @@ enum LottiePreview {
     }
 
     static func unpack(_ data: Data) throws -> Package {
-        guard let zip = MediaZip(data) else { throw MediaError.unreadable("This dotLottie file is damaged.") }
+        guard let zip = ZIPArchive.media(data) else { throw MediaError.unreadable("This dotLottie file is damaged.") }
         var package = Package(animations: [], generator: nil, author: nil, themes: 0)
         var ids: [String] = []
-        if let entry = zip.entry(named: "manifest.json"), let manifest = zip.contents(of: entry, limit: 1024 * 1024),
+        if let entry = zip.member(named: "manifest.json"), let manifest = try? zip.contents(of: entry, limit: 1024 * 1024),
            let object = try? JSONSerialization.jsonObject(with: manifest) as? [String: Any] {
             ids = (object["animations"] as? [[String: Any]] ?? []).compactMap { $0["id"] as? String }
             package.generator = object["generator"] as? String
@@ -102,15 +102,15 @@ enum LottiePreview {
         }
         let folders = ["animations/", "a/"]
         if ids.isEmpty {
-            ids = zip.entries.compactMap { entry in
-                guard let folder = folders.first(where: { entry.name.hasPrefix($0) }), entry.name.hasSuffix(".json") else { return nil }
-                return String(entry.name.dropFirst(folder.count).dropLast(5))
+            ids = zip.members.compactMap { entry in
+                guard let folder = folders.first(where: { entry.path.hasPrefix($0) }), entry.path.hasSuffix(".json") else { return nil }
+                return String(entry.path.dropFirst(folder.count).dropLast(5))
             }
         }
         var budget = jsonLimit
         for id in ids.prefix(32) where !id.contains("/") && !id.contains("..") {
-            guard let entry = folders.lazy.compactMap({ zip.entry(named: $0 + id + ".json") }).first,
-                  var json = zip.contents(of: entry, limit: min(budget, jsonLimit)) else { continue }
+            guard let entry = folders.lazy.compactMap({ zip.member(named: $0 + id + ".json") }).first,
+                  var json = try? zip.contents(of: entry, limit: min(budget, jsonLimit)) else { continue }
             budget -= json.count
             json = embedImages(json, zip: zip, budget: &budget)
             package.animations.append((id, json))
@@ -121,7 +121,7 @@ enum LottiePreview {
     }
 
     /// Image assets stored beside the animation in the package become data URLs inside it.
-    private static func embedImages(_ json: Data, zip: MediaZip, budget: inout Int) -> Data {
+    private static func embedImages(_ json: Data, zip: ZIPArchive, budget: inout Int) -> Data {
         guard var root = try? JSONSerialization.jsonObject(with: json) as? [String: Any],
               var assets = root["assets"] as? [[String: Any]] else { return json }
         var changed = false
@@ -129,8 +129,8 @@ enum LottiePreview {
             guard let name = assets[index]["p"] as? String, !name.hasPrefix("data:"), (assets[index]["e"] as? Int ?? 0) == 0,
                   !name.contains(".."), name.count < 256 else { continue }
             let file = (name as NSString).lastPathComponent
-            guard let entry = ["images/" + file, "i/" + file].lazy.compactMap({ zip.entry(named: $0) }).first,
-                  let bytes = zip.contents(of: entry, limit: min(budget, 16 * 1024 * 1024)) else { continue }
+            guard let entry = ["images/" + file, "i/" + file].lazy.compactMap({ zip.member(named: $0) }).first,
+                  let bytes = try? zip.contents(of: entry, limit: min(budget, 16 * 1024 * 1024)) else { continue }
             let type: String
             switch (file as NSString).pathExtension.lowercased() {
             case "png": type = "image/png"
