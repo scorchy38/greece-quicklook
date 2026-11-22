@@ -45,12 +45,17 @@
       return null;
     }
 
+    // One highlight, emptied and refilled: WebKit only repaints ranges a highlight loses when
+    // that same object changes, so replacing it could leave the last pair painted.
+    const pair = new Highlight();
+    CSS.highlights.set('greece-bracket', pair);
+
     function show(index) {
       if (index === shown) return;
       shown = index;
-      if (index < 0 || B.match[index] < 0) { CSS.highlights.delete('greece-bracket'); return; }
-      const ranges = [rangeAt(B.pos[index]), rangeAt(B.match[index])].filter(Boolean);
-      CSS.highlights.set('greece-bracket', new Highlight(...ranges));
+      pair.clear();
+      if (index < 0 || B.match[index] < 0) return;
+      for (const range of [rangeAt(B.pos[index]), rangeAt(B.match[index])]) if (range) pair.add(range);
     }
 
     function highlightAt(line, col) {
