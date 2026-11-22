@@ -52,7 +52,7 @@ public enum PropertyListTree {
             hex += String(format: "%02x", byte)
         }
         let more = data.count > shown.count ? "…" : ""
-        let count = data.count == 1 ? "1 byte" : "\(data.count.formatted()) bytes"
+        let count = String(localized: "\(data.count) bytes", bundle: .greeceKit, comment: "Length of a data value in a property list’s tree view")
         return "<\(hex)\(more)>  (\(count))"
     }
 }
