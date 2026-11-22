@@ -33,17 +33,17 @@ enum ShapefileReader {
     }
 
     /// Every shapefile inside a ZIP, with its sidecars.
-    static func sources(in zip: MapZipMembers, maxBytes: Int) -> [Sources] {
+    static func sources(in zip: ZIPArchive, maxBytes: Int) -> [Sources] {
         var result: [Sources] = []
-        let shps = zip.members.filter { $0.name.lowercased().hasSuffix(".shp") && !$0.name.hasPrefix("__MACOSX") && !($0.name as NSString).lastPathComponent.hasPrefix("._") }
+        let shps = zip.members.filter { $0.path.lowercased().hasSuffix(".shp") && !$0.path.hasPrefix("__MACOSX") && !($0.path as NSString).lastPathComponent.hasPrefix("._") }
         var budget = maxBytes
         for member in shps.prefix(64) {
-            let base = String(member.name.dropLast(4))
-            guard let shp = zip.data(member, limit: budget) else { continue }
+            let base = String(member.path.dropLast(4))
+            guard let shp = try? zip.contents(of: member, limit: budget) else { continue }
             budget -= shp.count
             func sidecar(_ ext: String, limit: Int) -> Data? {
                 guard let m = zip.member(named: base + "." + ext) else { return nil }
-                return zip.data(m, limit: min(limit, max(budget, 0)))
+                return try? zip.contents(of: m, limit: min(limit, max(budget, 0)))
             }
             let dbf = sidecar("dbf", limit: maxBytes)
             budget -= dbf?.count ?? 0

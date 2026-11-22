@@ -176,10 +176,10 @@ enum MapDetection {
     /// A ZIP made of one or more shapefiles (and their sidecars). Reads only the central directory.
     static func isZippedShapefile(_ url: URL) -> Bool {
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-        guard size > 0, size <= 1 << 30, let zip = try? MapZipMembers(url: url, maxMembers: 400) else { return false }
-        let files = zip.members.filter { !$0.name.hasSuffix("/") && !$0.name.hasPrefix("__MACOSX") && !($0.name as NSString).lastPathComponent.hasPrefix(".") }
+        guard size > 0, size <= 1 << 30, let zip = try? ZIPArchive(url: url, memberLimit: 400) else { return false }
+        let files = zip.members.filter { !$0.path.hasSuffix("/") && !$0.path.hasPrefix("__MACOSX") && !($0.path as NSString).lastPathComponent.hasPrefix(".") }
         guard !files.isEmpty, files.count < 400 else { return false }
-        let extensions = files.map { ($0.name as NSString).pathExtension.lowercased() }
+        let extensions = files.map { ($0.path as NSString).pathExtension.lowercased() }
         guard extensions.contains("shp"), extensions.contains("dbf") || extensions.contains("shx") else { return false }
         let parts = extensions.filter { shapefileParts.contains($0) }.count
         return parts * 10 >= files.count * 8
@@ -189,6 +189,14 @@ enum MapDetection {
 // MARK: - Loading
 
 enum MapLoader {
+    /// A KMZ or zipped shapefile's ZIP (at most 10,000 members), with damage reported the maps way.
+    static func openZip(_ url: URL) throws -> ZIPArchive {
+        do {
+            return try ZIPArchive(url: url, memberLimit: 10_000)
+        } catch ArchiveError.corrupt {
+            throw GeoError.invalid("This archive is damaged.")
+        }
+    }
 
     static func load(_ file: FileInfo, format: MapFormat, limits: GeoLimits) throws -> MapDocument {
         let size = file.fileSize ?? 0
@@ -256,15 +264,15 @@ enum MapLoader {
             return document
 
         case .kmz:
-            let zip = try MapZipMembers(url: file.url)
-            let kml = zip.member(named: "doc.kml") ?? zip.members.first { $0.name.lowercased().hasSuffix(".kml") && !$0.name.hasPrefix("__MACOSX") }
-            guard let kml, let data = zip.data(kml, limit: limits.maxBytes) else { throw GeoError.invalid("This KMZ has no readable KML inside.") }
-            let base = (kml.name as NSString).deletingLastPathComponent
+            let zip = try openZip(file.url)
+            let kml = zip.member(named: "doc.kml") ?? zip.members.first { $0.path.lowercased().hasSuffix(".kml") && !$0.path.hasPrefix("__MACOSX") }
+            guard let kml, let data = try? zip.contents(of: kml, limit: limits.maxBytes) else { throw GeoError.invalid("This KMZ has no readable KML inside.") }
+            let base = (kml.path as NSString).deletingLastPathComponent
             func memberPath(_ href: String) -> String? {
                 guard !href.contains("://") else { return nil }
                 let joined = base.isEmpty ? href : base + "/" + href
                 let normalized = (joined as NSString).standardizingPath
-                if let member = zip.member(named: normalized) ?? zip.member(named: href) { return member.name }
+                if let member = zip.member(named: normalized) ?? zip.member(named: href) { return member.path }
                 return nil
             }
             var icons: [String] = []
@@ -285,7 +293,7 @@ enum MapLoader {
                 lock.lock()
                 defer { lock.unlock() }
                 guard let member = zip.member(named: name) else { return nil }
-                return zip.data(member, limit: limit)
+                return try? zip.contents(of: member, limit: limit)
             }
             return document
 
@@ -324,7 +332,7 @@ enum MapLoader {
             return document
 
         case .zippedShapefile:
-            let zip = try MapZipMembers(url: file.url)
+            let zip = try openZip(file.url)
             let all = ShapefileReader.sources(in: zip, maxBytes: limits.maxBytes)
             guard !all.isEmpty else { throw GeoError.invalid("No readable shapefile in this archive.") }
             var budget = GeoBudget(limits)
