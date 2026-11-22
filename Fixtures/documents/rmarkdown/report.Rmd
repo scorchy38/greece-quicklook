@@ -1,0 +1,72 @@
+---
+title: "Stopping Distances of 1920s Cars"
+author: "Helena Marsh"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: kable
+params:
+  units: imperial
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(ggplot2)
+library(dplyr)
+```
+
+## Introduction
+
+The `cars` data set records the speed of `r nrow(cars)` cars and the distance
+each took to stop. The measurements were made in the 1920s, so the speeds are
+in miles per hour and the distances in feet.
+
+## Summary statistics
+
+```{r summary-stats, echo=TRUE}
+cars %>%
+  summarise(
+    mean_speed = mean(speed),
+    mean_dist  = mean(dist),
+    max_dist   = max(dist)
+  )
+```
+
+| Statistic | Speed (mph) | Distance (ft) |
+|-----------|------------:|--------------:|
+| Minimum   |           4 |             2 |
+| Median    |          15 |            36 |
+| Mean      |        15.4 |          42.98 |
+| Maximum   |          25 |           120 |
+
+## Speed and distance
+
+```{r plot, fig.cap="Stopping distance against speed, with a quadratic fit.", fig.width=6, fig.height=4}
+ggplot(cars, aes(speed, dist)) +
+  geom_point(colour = "steelblue") +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se = TRUE) +
+  labs(x = "Speed (mph)", y = "Stopping distance (ft)")
+```
+
+Physics predicts that braking distance grows with the square of speed,
+$d \propto v^2$, while reaction distance grows linearly. A quadratic model
+fits well:
+
+```{r model}
+fit <- lm(dist ~ speed + I(speed^2), data = cars)
+summary(fit)$r.squared
+```
+
+The model explains `r round(summary(fit)$r.squared * 100)`% of the variance.
+
+## Conclusion
+
+> Stopping distance roughly quadruples when speed doubles.
+
+Session details are recorded below for reproducibility.
+
+```{r session, echo=FALSE}
+sessionInfo()
+```

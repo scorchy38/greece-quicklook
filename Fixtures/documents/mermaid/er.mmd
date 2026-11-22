@@ -1,0 +1,30 @@
+erDiagram
+    ROUTE ||--o{ SAILING : schedules
+    VESSEL ||--o{ SAILING : operates
+    SAILING ||--o{ DELAY_NOTICE : "may have"
+    HARBOUR ||--|{ PIER : has
+    ROUTE }o--|| HARBOUR : "departs from"
+
+    ROUTE {
+        string id PK
+        string name
+        int duration_minutes
+    }
+    SAILING {
+        string id PK
+        string route_id FK
+        string vessel_id FK
+        datetime scheduled
+        datetime actual
+    }
+    VESSEL {
+        string id PK
+        string name
+        int capacity
+    }
+    DELAY_NOTICE {
+        string id PK
+        string sailing_id FK
+        int minutes
+        string reason
+    }

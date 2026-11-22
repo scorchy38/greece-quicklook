@@ -1,0 +1,13 @@
+architecture-beta
+    group harbour(cloud)[Harbour Authority]
+
+    service ais(internet)[AIS receiver]
+    service queue(disk)[Position queue] in harbour
+    service api(server)[Timetable API] in harbour
+    service db(database)[Sailing archive] in harbour
+    service app(internet)[Passenger app]
+
+    ais:R --> L:queue
+    queue:R --> L:api
+    api:B --> T:db
+    api:R --> L:app

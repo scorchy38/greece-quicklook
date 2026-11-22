@@ -1,0 +1,74 @@
+# Counting Words with Elixir
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.14"},
+  {:req, "~> 0.5"}
+])
+```
+
+## Introduction
+
+This notebook counts the most common words in a short text, first with plain
+`Enum` functions and then with a stream, so it scales to files that do not fit
+in memory.
+
+<!-- livebook:{"break_markdown":true} -->
+
+The pipeline has three steps:
+
+```mermaid
+graph LR
+  A[Text] --> B[Split into words]
+  B --> C[Count]
+  C --> D[Top 10]
+```
+
+## Plain Enum
+
+```elixir
+text = """
+Alice was beginning to get very tired of sitting by her sister on the bank,
+and of having nothing to do: once or twice she had peeped into the book her
+sister was reading, but it had no pictures or conversations in it.
+"""
+
+text
+|> String.downcase()
+|> String.split(~r/[^\p{L}']+/u, trim: true)
+|> Enum.frequencies()
+|> Enum.sort_by(fn {_word, count} -> -count end)
+|> Enum.take(5)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+[{"her", 2}, {"of", 2}, {"sister", 2}, {"the", 2}, {"to", 2}]
+```
+
+## Streaming a large file
+
+```elixir
+"alice.txt"
+|> File.stream!()
+|> Stream.flat_map(&String.split(String.downcase(&1), ~r/[^\p{L}']+/u, trim: true))
+|> Enum.reduce(%{}, fn word, acc -> Map.update(acc, word, 1, &(&1 + 1)) end)
+|> Enum.sort_by(&elem(&1, 1), :desc)
+|> Enum.take(10)
+|> Kino.DataTable.new(name: "Top words")
+```
+
+<!-- livebook:{"output":true} -->
+
+```text
+%Kino.DataTable{name: "Top words", rows: 10}
+```
+
+> **Tip:** `File.stream!/1` reads line by line, so memory stays flat no matter
+> how long the book is.
+
+## Next steps
+
+- Strip stop words such as *the* and *and*
+- Plot the frequencies with `Kino.VegaLite`

@@ -1,0 +1,17 @@
+gantt
+    title Timetable rewrite, spring 2026
+    dateFormat YYYY-MM-DD
+    axisFormat %d %b
+    excludes weekends
+
+    section Backend
+    Ingest AIS positions       :done,    ais,   2026-03-02, 5d
+    Arrival model              :active,  model, after ais, 10d
+    GTFS-Realtime feed         :         feed,  after model, 8d
+
+    section Apps
+    Delay notices in the app   :         app,   after feed, 6d
+    Tidal window on route page :         tide,  2026-03-23, 5d
+
+    section Launch
+    Public beta                :milestone, beta, 2026-04-15, 0d

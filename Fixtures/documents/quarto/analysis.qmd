@@ -1,0 +1,98 @@
+---
+title: "Ferry Punctuality, Winter 2026"
+subtitle: "How late are the boats, and when?"
+author:
+  - name: Ingrid Sæther
+    affiliation: Harbour Authority
+  - name: Tomás Okafor
+date: 2026-03-04
+format:
+  html:
+    toc: true
+    code-fold: true
+    theme: cosmo
+execute:
+  echo: false
+  warning: false
+jupyter: python3
+---
+
+## Summary
+
+Across 3,420 sailings between December and February, **91.6%** departed within
+two minutes of the timetable. Delays cluster on the Skerry route in the
+evening, when one vessel covers two rotations (@fig-delays).
+
+::: {.callout-note}
+## Data source
+Departure times come from the harbour's AIS receiver, matched to the published
+timetable by vessel and route. Sailings with no position report are excluded.
+:::
+
+```{python}
+#| label: setup
+import pandas as pd
+import matplotlib.pyplot as plt
+
+sailings = pd.read_parquet("data/sailings-winter-2026.parquet")
+sailings["delay"] = (sailings.actual - sailings.scheduled).dt.total_seconds() / 60
+```
+
+## Delays by route
+
+```{python}
+#| label: fig-delays
+#| fig-cap: "Median delay by hour of day, per route."
+#| fig-width: 7
+#| echo: false
+by_hour = sailings.groupby(["route", sailings.scheduled.dt.hour]).delay.median()
+by_hour.unstack(0).plot(drawstyle="steps-mid")
+plt.ylabel("median delay (min)")
+```
+
+| Route              | Sailings | On time | Median delay |
+|:-------------------|---------:|--------:|-------------:|
+| Harbour – Skerry   |    1,512 |   87.9% |      1.4 min |
+| Harbour – Lindholm |    1,020 |   95.2% |      0.3 min |
+| Lindholm – Outer   |      888 |   93.8% |      0.6 min |
+
+: On-time share by route. {#tbl-routes}
+
+## A model of knock-on delay
+
+If a vessel leaves late by $d_0$ minutes and each turnaround recovers $r$
+minutes, the delay after $n$ rotations is
+
+$$
+d_n = \max\left(0,\; d_0 - n r\right) + \sum_{k=1}^{n} \varepsilon_k
+$$ {#eq-knock-on}
+
+where $\varepsilon_k$ is the fresh delay picked up on rotation $k$. With
+$r \approx 1.5$ the Skerry evening rotations never catch up (@eq-knock-on).
+
+::: {.callout-warning}
+## Small samples
+The Outer route runs only twice a day in winter. Treat its figures as
+indicative.
+:::
+
+::: {.panel-tabset}
+## By month
+
+```{python}
+sailings.groupby(sailings.scheduled.dt.month).delay.describe()
+```
+
+## By weather
+
+```{python}
+sailings.groupby("wind_band").delay.mean().round(1)
+```
+:::
+
+The full notebook runs in under a minute; the slowest step is `pd.read_parquet`.
+Code is in `analysis/` and the data dictionary in [Appendix A](#appendix).
+
+## Appendix {#appendix}
+
+Columns used: `route`, `vessel`, `scheduled`, `actual`, `wind_band`.

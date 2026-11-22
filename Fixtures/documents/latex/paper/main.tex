@@ -1,0 +1,207 @@
+% Sparse Attention for Long-Context Retrieval
+% A sample paper for Greece's LaTeX preview. Original text, written for this repository.
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage[authoryear,round]{natbib}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{hyperref}
+
+% ---------------------------------------------------------------- Macros
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\softmax}{\operatorname{softmax}}
+\newcommand{\topk}[2]{\operatorname{top}_{#1}\!\left(#2\right)}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\title{Sparse Attention for Long-Context Retrieval}
+\author{%
+  Helena Marsh\thanks{Department of Computer Science, Northfield University. Correspondence to \texttt{h.marsh@northfield.example}.}
+  \and
+  Tomás Okafor\thanks{Lighthouse Research Lab.}
+  \and
+  Ingrid Sæther
+}
+\date{March 2026}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Transformer language models answer questions about long documents by attending
+over every token they have seen, at a cost that grows quadratically with the
+length of the context. We present \textsc{Sieve}, a retrieval-aware attention
+mechanism that keeps only the $k$ most relevant key blocks for each query block
+and reuses that selection across layers. On four long-context benchmarks
+\textsc{Sieve} matches dense attention within 0.4 points of accuracy while
+reading $11\times$ fewer keys at 128k tokens. We prove that the block selection
+recovers the dense output up to an error bounded by the attention mass it
+discards, and we release an implementation that runs on commodity GPUs.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+\label{sec:intro}
+
+Long-context models promise to read an entire codebase, a legal archive or a
+year of meeting notes in a single pass~\citep{vaswani2017attention,beltagy2020longformer}.
+In practice, most of the attention mass for any given query concentrates on a
+small fraction of the context: a handful of passages that actually answer the
+question. Dense attention nevertheless pays for every key, and its memory
+traffic, not its arithmetic, dominates the cost of inference~\citep{dao2022flashattention}.
+
+This paper asks a simple question: \emph{how much of the context does a model
+really need to look at?} We make three contributions:
+\begin{itemize}
+  \item a block-sparse attention operator, \textsc{Sieve}, that selects the
+        top-$k$ key blocks per query block using a cheap summary of each block;
+  \item a bound (Theorem~\ref{thm:error}) relating the error of the sparse
+        output to the attention mass it discards;
+  \item an empirical study on four benchmarks showing that \textsc{Sieve}
+        reads an order of magnitude fewer keys with no loss in accuracy
+        (Section~\ref{sec:results}).
+\end{itemize}
+
+Our approach is closest to routing attention~\citep{roy2021efficient} and to
+the retrieval-augmented models of \citet{borgeaud2022improving}, but unlike
+retrieval methods it needs no external index and no second model.\footnote{An
+external index can still be combined with \textsc{Sieve}; we leave that to
+future work.}
+
+\section{Background}
+\label{sec:background}
+
+\subsection{Scaled dot-product attention}
+
+Given queries $Q \in \R^{n \times d}$, keys $K \in \R^{m \times d}$ and values
+$V \in \R^{m \times d}$, attention computes
+\begin{equation}
+  \operatorname{Attn}(Q, K, V) = \softmax\!\left(\frac{QK^\top}{\sqrt{d}}\right) V .
+  \label{eq:attention}
+\end{equation}
+For a single query $q$ the output is a convex combination of the values,
+weighted by $a_j = \exp(q \cdot k_j / \sqrt{d}) / Z$ where
+$Z = \sum_{j=1}^{m} \exp(q \cdot k_j / \sqrt{d})$ is the partition function.
+Equation~\eqref{eq:attention} costs $O(nmd)$ time and, without care,
+$O(nm)$ memory.
+
+\subsection{Block structure}
+
+We partition the $m$ keys into $B = m / b$ contiguous blocks of size $b$ and
+summarise each block by the mean of its keys,
+\begin{align}
+  \bar{k}_i &= \frac{1}{b} \sum_{j \in \mathcal{B}_i} k_j, \label{eq:summary}\\
+  s_i(q)    &= q \cdot \bar{k}_i + \tfrac{1}{2}\, \norm{q}\, \sigma_i , \nonumber
+\end{align}
+where $\sigma_i$ is the spread of the block's keys around their mean. The score
+$s_i$ is an optimistic estimate of the largest logit inside block $i$.
+
+\subsection*{Notation}
+
+Throughout, $\norm{\cdot}$ is the Euclidean norm, $[m] = \{1, \dots, m\}$, and
+logarithms are natural. We write \texttt{dense} for the exact operator and
+\texttt{sieve-}$k$ for ours.
+
+\input{sections/method}
+
+\section{Analysis}
+\label{sec:analysis}
+
+\begin{definition}
+The \emph{discarded mass} of a selection $S \subseteq [B]$ for query $q$ is
+$\delta(S) = \sum_{i \notin S} \sum_{j \in \mathcal{B}_i} a_j$.
+\end{definition}
+
+\begin{theorem}[Selection error]
+\label{thm:error}
+Let $o$ be the dense output for query $q$ and $\hat{o}$ the output of attention
+restricted to the blocks in $S$. If every value satisfies $\norm{v_j} \le R$, then
+\[
+  \norm{o - \hat{o}} \;\le\; 2R\,\delta(S).
+\]
+\end{theorem}
+
+\begin{proof}
+Write $o = (1-\delta)\,\hat{o} + \delta\, u$, where $u$ is the attention-weighted
+mean of the discarded values. Then $o - \hat{o} = \delta\,(u - \hat{o})$ and both
+$u$ and $\hat{o}$ lie in the ball of radius $R$, so
+$\norm{u - \hat{o}} \le 2R$.
+\end{proof}
+
+Theorem~\ref{thm:error} says the error is small exactly when the discarded
+blocks carry little attention, which is what the block scores of
+Equation~\eqref{eq:summary} are designed to detect.
+
+\paragraph{Cost.} With $k$ selected blocks per query block, \textsc{Sieve}
+reads $kb$ keys per query instead of $m$, so its cost is $O(nkbd + nBd)$, where
+the second term pays for scoring the summaries. For $m = 131{,}072$, $b = 64$
+and $k = 16$ this is roughly $11\times$ fewer key reads than dense attention.
+
+\include{sections/results}
+
+\section{Related work}
+\label{sec:related}
+
+Sparse attention patterns were introduced for images and audio by
+\citet{child2019generating} and extended with global tokens by
+\citet{beltagy2020longformer} and \citet{zaheer2020bigbird}. Kernel methods
+approximate the softmax instead of sparsifying it~\citep{choromanski2021rethinking}.
+IO-aware kernels such as FlashAttention~\citep{dao2022flashattention} make dense
+attention fast but not cheaper in the number of keys read, and
+\citet{muller2024sparse} find that only a few heads retrieve at all. Our selection rule
+is a learned-free variant of the routing of~\citet{roy2021efficient}; see also
+the survey by \citet{tay2022efficient} and the textbook treatment
+in~\cite{goodfellow2016deep}.
+
+\section{Conclusion}
+
+Most of a long context is irrelevant to most queries, and a model can find
+out which part matters for the price of reading one summary per block.
+\textsc{Sieve} turns that observation into an operator that is exact where it
+counts, cheap everywhere else, and simple enough to drop into an existing
+model --- no retraining, no index, no second network. Code and data are
+available at \url{https://example.org/sieve}~\citep{sieve2026code}; see also the project page at
+\href{https://example.org/sieve/docs}{example.org/sieve/docs}.
+
+\paragraph{Acknowledgements.} We thank the reviewers for ``careful and
+generous'' comments, and the Northfield cluster team for pages 3--7 of
+the run book.
+
+\appendix
+
+\section{Implementation details}
+\label{app:impl}
+
+The selection kernel is a fused top-$k$ over block scores. A reference
+implementation in Python reads:
+
+\begin{lstlisting}[language=Python]
+def sieve(q, k, v, block=64, keep=16):
+    summaries = k.unflatten(-2, (-1, block)).mean(-2)
+    scores = q @ summaries.transpose(-1, -2)
+    chosen = scores.topk(keep, dim=-1).indices
+    return block_attention(q, k, v, chosen, block)
+\end{lstlisting}
+
+All experiments use \texttt{bfloat16} activations and \texttt{float32}
+accumulators. Hyper-parameters are listed in Table~\ref{tab:results}.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

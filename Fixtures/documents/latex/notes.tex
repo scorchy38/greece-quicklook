@@ -1,0 +1,116 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{amsmath,amssymb,amsthm}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\inner}[2]{\left\langle #1, #2 \right\rangle}
+\newcommand{\N}{\mathbb{N}}
+
+\title{Notes on Fixed Points and Contractions}
+\author{Ren\'e Lefebvre \\ \small Seminar in Analysis, Winter Term}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Motivation}
+
+Many problems in analysis reduce to solving an equation of the form $x = T(x)$.
+Newton's method, the Picard iteration for differential equations and the
+value iteration of dynamic programming are all instances. These notes, typeset
+with \LaTeX, collect the basic results; see \S\ref{sec:banach} for the main
+theorem and~\cite{banach1922,granas2003} for history and generalisations.
+
+\begin{quote}
+  ``The contraction principle is perhaps the most widely applied fixed-point
+  theorem in all of analysis.'' --- a remark attributed to many teachers.
+\end{quote}
+
+\section{The Banach fixed-point theorem}
+\label{sec:banach}
+
+Let $(X, d)$ be a metric space. A map $T \colon X \to X$ is a
+\emph{contraction} if there is $q \in [0, 1)$ with
+\begin{equation}
+  d\bigl(T(x), T(y)\bigr) \le q\, d(x, y) \qquad \text{for all } x, y \in X.
+  \label{eq:contraction}
+\end{equation}
+
+\begin{lemma}
+\label{lem:cauchy}
+If $T$ satisfies \eqref{eq:contraction}, then for any $x_0 \in X$ the sequence
+$x_{n+1} = T(x_n)$ is Cauchy, and $d(x_m, x_n) \le \frac{q^n}{1-q}\, d(x_1, x_0)$
+for $m > n$.
+\end{lemma}
+
+\begin{proof}
+By induction $d(x_{k+1}, x_k) \le q^k d(x_1, x_0)$. Summing the geometric series
+from $k = n$ to $m - 1$ gives the bound, which tends to $0$ as $n \to \infty$.
+\end{proof}
+
+\begin{theorem}[Banach, 1922]
+\label{thm:banach}
+Every contraction of a non-empty complete metric space has exactly one fixed
+point, and every Picard sequence converges to it.
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:cauchy} the sequence $(x_n)$ converges to some $x^\ast$, and
+continuity of $T$ gives $T(x^\ast) = x^\ast$. If $y^\ast$ were another fixed
+point, then $d(x^\ast, y^\ast) \le q\, d(x^\ast, y^\ast)$ forces
+$d(x^\ast, y^\ast) = 0$.
+\end{proof}
+
+\section{Worked examples}
+
+\begin{enumerate}
+  \item The map $T(x) = \cos x$ on $[0, 1]$:
+    \begin{enumerate}
+      \item $\abs{T'(x)} = \abs{\sin x} \le \sin 1 < 0.85$, so $T$ is a contraction;
+      \item the fixed point is the Dottie number, $x^\ast \approx 0.739085$.
+    \end{enumerate}
+  \item Linear systems $x = Ax + b$ with $\lVert A \rVert < 1$ in some operator norm.
+  \item Initial value problems, via the Picard operator
+    \[
+      (Ty)(t) = y_0 + \int_{t_0}^{t} f\bigl(s, y(s)\bigr)\, ds .
+    \]
+\end{enumerate}
+
+\begin{center}
+  \begin{tabular}{|c|l|r|}
+    \hline
+    $n$ & $x_n = \cos x_{n-1}$ & error \\
+    \hline
+    0 & 1.000000 & $2.6 \times 10^{-1}$ \\
+    1 & 0.540302 & $2.0 \times 10^{-1}$ \\
+    5 & 0.701369 & $3.8 \times 10^{-2}$ \\
+    20 & 0.739071 & $1.4 \times 10^{-5}$ \\
+    \hline
+  \end{tabular}
+\end{center}
+
+The convergence is linear with rate $q$, slow compared with Newton's method
+but guaranteed from any starting point. Sch\"onberg's and K\"onig's later
+refinements are discussed in~\cite{granas2003}; an elementary treatment is
+in~\cite{kreyszig1978}.
+
+\begin{thebibliography}{9}
+\bibitem{banach1922}
+  S.~Banach,
+  \emph{Sur les op\'erations dans les ensembles abstraits et leur application aux \'equations int\'egrales},
+  Fundamenta Mathematicae \textbf{3} (1922), 133--181.
+
+\bibitem{granas2003}
+  A.~Granas and J.~Dugundji,
+  \emph{Fixed Point Theory},
+  Springer Monographs in Mathematics, Springer, New York, 2003.
+
+\bibitem{kreyszig1978}
+  E.~Kreyszig,
+  \emph{Introductory Functional Analysis with Applications},
+  Wiley, 1978.
+\end{thebibliography}
+
+\end{document}

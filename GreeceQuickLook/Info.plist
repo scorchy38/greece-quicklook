@@ -262,6 +262,16 @@
 				<string>com.apple.interfacebuilder.document.cocoa</string>
 				<string>com.apple.dt.interfacebuilder.document.storyboard</string>
 				<string>com.apple.xcode.strings-dictionary</string>
+				<string>com.scorchy.greece.tex-support</string>
+				<string>com.scorchy.greece.bibtex</string>
+				<string>org.idpf.epub-container</string>
+				<string>com.scorchy.greece.org</string>
+				<string>com.scorchy.greece.asciidoc</string>
+				<string>com.scorchy.greece.restructuredtext</string>
+				<string>com.scorchy.greece.sweave</string>
+				<string>com.scorchy.greece.mermaid</string>
+				<string>com.scorchy.greece.typst</string>
+				<string>com.scorchy.greece.pgf</string>
 				<string>com.scorchy.greece.geojson-lines</string>
 				<string>com.scorchy.greece.topojson</string>
 				<string>com.google.earth.kml</string>

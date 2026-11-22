@@ -1,0 +1,27 @@
+classDiagram
+    direction LR
+    class Route {
+        +String name
+        +List~Sailing~ sailings
+        +nextDeparture(after: Time) Sailing
+    }
+    class Sailing {
+        +Time scheduled
+        +Time actual
+        +delayMinutes() int
+    }
+    class Vessel {
+        +String name
+        +int capacity
+        +Position lastPosition
+    }
+    class Harbour {
+        <<abstract>>
+        +String name
+        +tidalWindow(date) Interval
+    }
+    class Pier
+    Route "1" *-- "many" Sailing : timetable
+    Sailing "many" --> "1" Vessel : operated by
+    Route --> "2" Harbour : connects
+    Harbour <|-- Pier
