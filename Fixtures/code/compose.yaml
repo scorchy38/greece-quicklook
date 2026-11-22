@@ -1,0 +1,39 @@
+# Harbour services for local development.
+name: harbour
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://harbour:harbour@db:5432/harbour
+      LOG_LEVEL: debug
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: harbour
+      POSTGRES_PASSWORD: harbour
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "harbour"]
+      interval: 5s
+      retries: 10
+
+  tiles:
+    image: maptiler/tileserver-gl:v5
+    volumes:
+      - ./tiles:/data:ro
+    ports:
+      - "8081:8080"
+
+volumes:
+  pgdata: {}
