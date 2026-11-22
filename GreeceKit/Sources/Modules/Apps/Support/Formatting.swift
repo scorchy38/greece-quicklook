@@ -19,6 +19,7 @@ enum Format {
     /// "in 3 months", "2 years ago".
     static func relative(_ date: Date, to now: Date = Date()) -> String {
         let formatter = RelativeDateTimeFormatter()
+        formatter.locale = .greeceKitText
         formatter.unitsStyle = .full
         formatter.dateTimeStyle = .named
         return formatter.localizedString(for: date, relativeTo: now)

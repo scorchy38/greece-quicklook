@@ -343,12 +343,13 @@ public enum PreviewFactory {
         if age >= 0 && age < 60 { return String(localized: "Modified just now", bundle: .greeceKit, comment: "Info bar: when the file last changed") }
         if age >= 0 && age < 7 * 86_400 {
             let formatter = RelativeDateTimeFormatter()
+            formatter.locale = .greeceKitText
             formatter.unitsStyle = .full
             let relative = formatter.localizedString(for: date, relativeTo: Date())
             return String(localized: "Modified \(relative)", bundle: .greeceKit,
                           comment: "Info bar: when the file last changed. The argument is a relative time, such as “3 hours ago”")
         }
-        let day = date.formatted(date: .abbreviated, time: .omitted)
+        let day = date.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(.greeceKitText))
         return String(localized: "Modified \(day)", bundle: .greeceKit,
                       comment: "Info bar: when the file last changed. The argument is a date, such as “Mar 12, 2024”")
     }
