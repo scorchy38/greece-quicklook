@@ -70,6 +70,21 @@ final class PackageHeaderView: NSView {
             separator.trailingAnchor.constraint(equalTo: trailingAnchor),
             separator.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
+        let items = PackageHeaderView.menuItems(info)
+        if !items.isEmpty { menu = .context(items) }
+    }
+
+    /// Copying without ⌘C (Quick Look sends keys to Finder): the name, version and dependencies.
+    static func menuItems(_ info: PackageInfo) -> [NSMenuItem] {
+        var items: [NSMenuItem] = []
+        if let name = info.name { items.append(ActionMenuItem("Copy Name") { Clipboard.copy(name) }) }
+        if let version = info.version { items.append(ActionMenuItem("Copy Version") { Clipboard.copy(version) }) }
+        if !info.dependencies.isEmpty {
+            let title = info.kind == .apk || info.kind == .aab ? "Copy Permissions" : "Copy Dependencies"
+            items.append(ActionMenuItem(title) { Clipboard.copy(info.dependencies.joined(separator: "\n")) })
+        }
+        if let homepage = info.homepage { items.append(ActionMenuItem("Copy Homepage") { Clipboard.copy(homepage) }) }
+        return items
     }
 
     /// Above the stack views' hugging, below required: labels stay whole unless space runs out.

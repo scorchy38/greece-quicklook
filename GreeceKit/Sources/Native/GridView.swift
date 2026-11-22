@@ -71,8 +71,9 @@ extension GridSource {
     func isDimmed(row: Int) -> Bool { false }
 }
 
-/// A spreadsheet-quality table: row numbers, numeric alignment, sorting, copy as TSV, and an
-/// optional strip under each header (column types, profiles, progress).
+/// A spreadsheet-quality table: row numbers, numeric alignment, sorting, copy as TSV, context
+/// menus on cells and titles, and an optional strip under each header (column types, profiles,
+/// progress).
 final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
     let scrollView = NSScrollView()
@@ -97,6 +98,9 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
     var onBusy: ((Bool) -> Void)?
     /// Called when a sort couldn't finish (too slow, failed).
     var onSortFailed: (() -> Void)?
+    /// The owner's items for a cell's context menu (filters), after the copy items. `row` is nil
+    /// off the rows, `column` on the row numbers.
+    var cellMenuItems: ((_ row: Int?, _ column: Int?) -> [NSMenuItem])?
 
     private var ignoreSortChange = false
 
@@ -120,6 +124,7 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.copyHandler = { [weak self] in self?.copySelection() }
+        tableView.grid = self
         // The header is drawn by `GridHeaderBar` above the scroll view: full control over its
         // height and strips, and nothing for the scroll view to inset.
         tableView.headerView = nil
@@ -381,17 +386,97 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
     private func copySelection() {
         let rows = tableView.selectedRowIndexes
         guard !rows.isEmpty else { return }
+        Clipboard.copy(tsv(rows: rows))
+    }
+
+    /// Rows as tab-separated lines (at most 100,000), the way ⌘C copies them.
+    func tsv(rows: IndexSet) -> String {
         let columns = tableView.tableColumns.compactMap { Int($0.identifier.rawValue) }
         var lines: [String] = []
-        for row in rows.prefix(100_000) {
-            let fields = columns.map { column -> String in
-                source.value(row: row, column: column).plainText
-                    .replacingOccurrences(of: "\t", with: " ").replacingOccurrences(of: "\n", with: " ")
-            }
-            lines.append(fields.joined(separator: "\t"))
+        for row in rows.prefix(100_000) where row < source.rowCount {
+            lines.append(columns.map { Self.field(source.value(row: row, column: $0)) }.joined(separator: "\t"))
         }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(lines.joined(separator: "\n"), forType: .string)
+        return lines.joined(separator: "\n")
+    }
+
+    /// One column's values, one a line (at most 100,000).
+    func columnText(_ column: Int) -> String {
+        (0..<min(source.rowCount, 100_000)).map { Self.field(source.value(row: $0, column: column)) }.joined(separator: "\n")
+    }
+
+    private static func field(_ value: GridValue) -> String {
+        value.plainText.replacingOccurrences(of: "\t", with: " ").replacingOccurrences(of: "\n", with: " ")
+    }
+
+    // MARK: - Context menus
+
+    /// The menu for a right-click on a cell (`column` nil on the row numbers) or off the rows
+    /// (`row` nil): copy what was clicked, then the owner's items. In Quick Look, where ⌘C goes to
+    /// Finder, this is how values leave the preview.
+    func menu(forRow row: Int?, column: Int?) -> NSMenu {
+        var items: [NSMenuItem] = []
+        if let row, row < source.rowCount {
+            if let column, let text = Self.copyableText(source.value(row: row, column: column)) {
+                items.append(ActionMenuItem("Copy \(MenuText.quoted(text))") { Clipboard.copy(text) })
+            }
+            items.append(ActionMenuItem("Copy Row") { [weak self] in
+                guard let self else { return }
+                Clipboard.copy(self.tsv(rows: IndexSet(integer: row)))
+            })
+            let selected = tableView.selectedRowIndexes
+            if selected.count > 1, selected.contains(row) {
+                items.append(ActionMenuItem("Copy Selected Rows") { [weak self] in self?.copySelection() })
+            }
+        }
+        let extra = cellMenuItems?(row, column) ?? []
+        if !items.isEmpty, !extra.isEmpty, !extra[0].isSeparatorItem { items.append(.separator()) }
+        items += extra
+        return .context(items)
+    }
+
+    /// The text a "Copy “…”" item copies, or nil when the cell holds nothing worth copying.
+    private static func copyableText(_ value: GridValue) -> String? {
+        switch value {
+        case .null, .placeholder, .blob: return nil
+        case .text(let text), .secondary(let text), .status(let text, _):
+            return ColumnFilter.isBlank(text) ? nil : text
+        }
+    }
+
+    /// The menu for a right-click on a column's title: sorting, and copying the column.
+    func headerMenu(forColumn column: Int) -> NSMenu {
+        let sort = tableView.sortDescriptors.first
+        let sorted = sort?.key == String(column)
+        let title = source.title(ofColumn: column)
+        var items: [NSMenuItem] = [
+            ActionMenuItem("Sort Ascending", state: sorted && sort?.ascending == true ? .on : .off) { [weak self] in
+                self?.tableView.sortDescriptors = [NSSortDescriptor(key: String(column), ascending: true)]
+            },
+            ActionMenuItem("Sort Descending", state: sorted && sort?.ascending == false ? .on : .off) { [weak self] in
+                self?.tableView.sortDescriptors = [NSSortDescriptor(key: String(column), ascending: false)]
+            },
+            .separator(),
+        ]
+        if !title.isEmpty { items.append(ActionMenuItem("Copy \(MenuText.quoted(title))") { Clipboard.copy(title) }) }
+        items.append(ActionMenuItem("Copy Column", enabled: source.rowCount > 0) { [weak self] in
+            guard let self else { return }
+            Clipboard.copy(self.columnText(column))
+        })
+        return .context(items)
+    }
+
+    /// Right-clicking a row outside the selection selects it, as in Finder, so the menu and the
+    /// highlight agree on what's meant.
+    fileprivate func contextMenu(for event: NSEvent) -> NSMenu? {
+        let point = tableView.convert(event.locationInWindow, from: nil)
+        let row = tableView.row(at: point)
+        let index = tableView.column(at: point)
+        let column = index >= 0 ? Int(tableView.tableColumns[index].identifier.rawValue) : nil
+        if row >= 0, !tableView.selectedRowIndexes.contains(row) {
+            tableView.selectRowIndexes([row], byExtendingSelection: false)
+        }
+        let menu = menu(forRow: row >= 0 ? row : nil, column: column)
+        return menu.items.isEmpty ? nil : menu
     }
 }
 
@@ -436,8 +521,13 @@ final class GridRowView: NSTableRowView {
 
 final class GridTableView: NSTableView {
     var copyHandler: (() -> Void)?
+    weak var grid: GridView?
 
     @objc func copy(_ sender: Any?) { copyHandler?() }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        grid?.contextMenu(for: event) ?? super.menu(for: event)
+    }
 
     override func validateUserInterfaceItem(_ item: NSValidatedUserInterfaceItem) -> Bool {
         if item.action == #selector(copy(_:)) { return selectedRow >= 0 }
@@ -594,6 +684,13 @@ final class GridHeaderBar: NSView, NSViewToolTipOwner {
            Int(table.tableColumns[index].identifier.rawValue) == column {
             grid?.toggleSort(column: column)
         }
+    }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let point = convert(event.locationInWindow, from: nil)
+        guard let index = columnIndex(at: point.x), let table, let grid,
+              let data = Int(table.tableColumns[index].identifier.rawValue) else { return nil }
+        return grid.headerMenu(forColumn: data)
     }
 
     override func resetCursorRects() {

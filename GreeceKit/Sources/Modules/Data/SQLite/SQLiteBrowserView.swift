@@ -1,7 +1,7 @@
 import AppKit
 
 /// Tables and views on the left; their rows, schema, or the relationships between them on the right.
-final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegate, PreviewSettingsAware {
+final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate, PreviewSettingsAware {
     private enum Item: Equatable {
         case header(String)
         case diagram
@@ -19,6 +19,8 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
     private let modes = NSSegmentedControl(labels: ["Data", "Schema"], trackingMode: .selectOne, target: nil, action: nil)
     private let titleLabel = DataToolbar.label()
     private let countLabel = DataToolbar.label()
+    /// The grid's active filters, each removable.
+    private let tokens = NSStackView()
     private let spinner = NSProgressIndicator()
     private let status = DataToolbar.label()
     private var items: [Item] = []
@@ -46,6 +48,9 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         sidebar.delegate = self
         sidebar.focusRingType = .none
         sidebar.floatsGroupRows = false
+        let sidebarMenu = NSMenu()
+        sidebarMenu.delegate = self
+        sidebar.menu = sidebarMenu
 
         let sidebarScroll = NSScrollView()
         sidebarScroll.documentView = sidebar
@@ -78,6 +83,10 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         toolbar.leading.addArrangedSubview(modes)
         toolbar.leading.addArrangedSubview(titleLabel)
         toolbar.leading.addArrangedSubview(countLabel)
+        tokens.spacing = 4
+        tokens.alignment = .centerY
+        tokens.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        toolbar.leading.addArrangedSubview(tokens)
         toolbar.trailing.addArrangedSubview(status)
         toolbar.trailing.addArrangedSubview(spinner)
 
@@ -223,6 +232,23 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         show(items[row])
     }
 
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.removeAllItems()
+        menu.autoenablesItems = false
+        for item in sidebarMenuItems(forRow: sidebar.clickedRow) { menu.addItem(item) }
+    }
+
+    /// A table's name and definition to copy, from a right-click in the sidebar.
+    func sidebarMenuItems(forRow row: Int) -> [NSMenuItem] {
+        guard row >= 0, row < items.count, case .object(let index) = items[row] else { return [] }
+        let object = database.objects[index]
+        var items: [NSMenuItem] = [ActionMenuItem("Copy Name") { Clipboard.copy(object.name) }]
+        if let sql = object.sql {
+            items.append(ActionMenuItem("Copy CREATE Statement") { Clipboard.copy(SQLFormatter.format(sql)) })
+        }
+        return items
+    }
+
     /// Exact counts for tables that were only estimated, worked out off the main thread.
     private func refineCounts() {
         for (row, item) in items.enumerated() {
@@ -265,6 +291,7 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         case .diagram:
             let diagramView = SQLiteDiagramView(diagram: diagram)
             diagramView.canvas.onOpen = { [weak self] name in self?.open(name) }
+            diagramView.canvas.onShowSchema = { [weak self] name in self?.open(name, mode: .schema) }
             view = diagramView
             onSelectionChange?(nil)
         case .object(let index):
@@ -282,6 +309,7 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
                     self.updateToolbar()
                 }
                 grid.onSortFailed = { [weak self] in self?.status.stringValue = "Too large to sort here" }
+                grid.cellMenuItems = { [weak self] row, column in self?.filterMenuItems(row: row, column: column) ?? [] }
                 self.grid = grid
                 self.source = source
                 view = grid
@@ -297,6 +325,52 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
             view.trailingAnchor.constraint(equalTo: content.trailingAnchor),
         ])
         updateToolbar()
+        updateTokens()
+    }
+
+    // MARK: - Filters
+
+    private var filterMenu: FilterMenu? {
+        guard let source else { return nil }
+        return FilterMenu(active: source.filters,
+                          add: { [weak self] in self?.applyFilters(ColumnFilter.adding($0, to: source.filters)) },
+                          remove: { [weak self] filter in self?.applyFilters(source.filters.filter { $0 != filter }) },
+                          clear: source.filters.isEmpty ? nil : { [weak self] in self?.applyFilters([]) })
+    }
+
+    /// Filter items for a right-click on a cell of the data grid, then Clear Filters.
+    func filterMenuItems(row: Int?, column: Int?) -> [NSMenuItem] {
+        guard let source, let filterMenu else { return [] }
+        let cell = row.flatMap { row in column.map { source.filterCell(row: row, column: $0) } }
+        return filterMenu.items(column: column ?? 0, name: column.map(source.title(ofColumn:)) ?? "",
+                                cell: cell, numeric: column.map(source.isNumeric(column:)) ?? false)
+    }
+
+    /// Filters the grid in SQL, on the worker; the tokens show at once, the rows when they're found.
+    func applyFilters(_ filters: [ColumnFilter]) {
+        guard let source, let grid else { return }
+        spinner.startAnimation(nil)
+        status.stringValue = "Filtering…"
+        var finished = false
+        source.setFilters(filters) { [weak self, weak source] ok in
+            finished = true
+            guard let self, let source, self.source === source else { return }
+            self.spinner.stopAnimation(nil)
+            self.status.stringValue = ok ? "" : "Too large to filter here"
+            // The selection was of rows by position; after filtering those are other rows.
+            grid.tableView.deselectAll(nil)
+            grid.reloadRows()
+            self.updateToolbar()
+            self.updateTokens()
+        }
+        if !finished { updateTokens() }
+    }
+
+    private func updateTokens() {
+        tokens.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        guard let source, let filterMenu, mode == .data else { tokens.isHidden = true; return }
+        for token in filterMenu.tokens(name: source.title(ofColumn:)) { tokens.addArrangedSubview(token) }
+        tokens.isHidden = source.filters.isEmpty
     }
 
     private func updateToolbar() {
@@ -316,29 +390,34 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
             if mode == .schema {
                 countLabel.stringValue = ""
             } else if let source {
-                let exact = object.rowCount != nil
+                let about = object.rowCount != nil ? "" : "about "
                 let rows = source.rowCount
-                countLabel.stringValue = (exact ? "" : "about ") + "\(rows.formatted()) \(rows == 1 ? "row" : "rows")"
-                    + (database.hasPendingLog ? "  ·  Unsaved changes in the write-ahead log aren’t shown" : "")
+                if source.filters.isEmpty {
+                    countLabel.stringValue = about + "\(rows.formatted()) \(rows == 1 ? "row" : "rows")"
+                        + (database.hasPendingLog ? "  ·  Unsaved changes in the write-ahead log aren’t shown" : "")
+                } else {
+                    countLabel.stringValue = "\(rows.formatted()) of \(about)\(source.tableRows.formatted()) rows"
+                }
             }
         default:
             break
         }
     }
 
-    /// Opens a table by name in the data view (from the diagram).
-    private func open(_ name: String) {
+    /// Opens a table by name (from the diagram), in the data view or its schema.
+    private func open(_ name: String, mode: Mode = .data) {
         guard let index = database.objects.firstIndex(where: { $0.name == name }),
               let row = items.firstIndex(of: .object(index)) else { return }
-        mode = .data
-        modes.selectedSegment = 0
+        self.mode = mode
+        modes.selectedSegment = mode.rawValue
         sidebar.selectRowIndexes([row], byExtendingSelection: false)
         sidebar.scrollRowToVisible(row)
     }
 
     #if DEBUG
     /// `GREECE_STATE` for design review: `diagram`, `schema`, `schema:<table>`, `table:<name>`,
-    /// `sort:<column>` (descending with a leading `-`).
+    /// `sort:<column>` (descending with a leading `-`), `show:` and `hide:<column>=<value>`, and
+    /// `menu:<row>/<column>`.
     private func applySnapshotState() {
         guard let state = ProcessInfo.processInfo.environment["GREECE_STATE"] else { return }
         for part in state.split(separator: ",") {
@@ -359,6 +438,22 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
                 let name = descending ? String(pieces[1].dropFirst()) : pieces[1]
                 if let column = source.object.columns.firstIndex(where: { $0.name == name }) {
                     grid?.tableView.sortDescriptors = [NSSortDescriptor(key: String(column), ascending: !descending)]
+                }
+            case "show", "hide":
+                // `show:<column>=<value>`, `hide:<column>=<value>`.
+                guard pieces.count > 1, let source, let equals = pieces[1].firstIndex(of: "=") else { continue }
+                let name = String(pieces[1][..<equals]), value = String(pieces[1][pieces[1].index(after: equals)...])
+                guard let column = source.object.columns.firstIndex(where: { $0.name == name }) else { continue }
+                let filter = ColumnFilter(column: column, test: pieces[0] == "show" ? .equals(value) : .notEquals(value))
+                applyFilters(ColumnFilter.adding(filter, to: source.filters))
+            case "menu":
+                // `menu:<row>/<column>` prints that cell's context menu.
+                let cell = pieces.count > 1 ? pieces[1].split(separator: "/").compactMap { Int($0) } : []
+                guard cell.count == 2, let grid else { continue }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    grid.tableView.selectRowIndexes([cell[0]], byExtendingSelection: false)
+                    let menu = grid.menu(forRow: cell[0], column: cell[1])
+                    print(menu.items.map { $0.isSeparatorItem ? "—" : ($0.state == .on ? "✓ " : "  ") + $0.title }.joined(separator: "\n"))
                 }
             default:
                 break

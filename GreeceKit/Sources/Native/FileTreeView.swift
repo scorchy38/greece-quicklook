@@ -252,7 +252,9 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         outline.dataSource = self
         outline.delegate = self
         outline.target = self
-        outline.doubleAction = #selector(toggle(_:))
+        // In Quick Look a double-click opens the previewed file in its app, whatever the preview
+        // does with it; there, folders open by their triangles or the context menu instead.
+        if PreviewHost.acceptsTyping { outline.doubleAction = #selector(toggle(_:)) }
         outline.owner = self
 
         addColumn("name", title: "Name", width: 300, min: 160)
@@ -396,26 +398,57 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
             }
             return
         }
-        let row = outline.clickedRow
-        guard row >= 0, let node = outline.item(atRow: row) as? FileNode else { return }
+        for item in rowMenuItems(forRow: outline.clickedRow) { menu.addItem(item) }
+    }
+
+    /// The items for a right-click on a row: Get Info, then its name and path to copy, or those of
+    /// the whole selection when the row is part of one.
+    func rowMenuItems(forRow row: Int) -> [NSMenuItem] {
+        guard row >= 0, let node = outline.item(atRow: row) as? FileNode else { return [] }
         if !outline.selectedRowIndexes.contains(row) { outline.selectRowIndexes([row], byExtendingSelection: false) }
+        var items: [NSMenuItem] = []
         if onGetInfo != nil {
-            let info = NSMenuItem(title: "Get Info", action: #selector(getInfo(_:)), keyEquivalent: "i")
-            info.target = self
-            info.representedObject = node
-            menu.addItem(info)
-            menu.addItem(.separator())
+            let info = ActionMenuItem("Get Info") { [weak self] in self?.onGetInfo?(node) }
+            // Shown only where ⌘I reaches the preview: in Quick Look, Finder would take it.
+            if PreviewHost.acceptsTyping { info.keyEquivalent = "i" }
+            items += [info, .separator()]
         }
-        let copyName = NSMenuItem(title: "Copy Name", action: #selector(copyText(_:)), keyEquivalent: "")
-        copyName.target = self
-        copyName.representedObject = node.name
-        menu.addItem(copyName)
-        let path = node.url?.path ?? node.path
-        if !path.isEmpty, path != node.name {
-            let copyPath = NSMenuItem(title: "Copy Path", action: #selector(copyText(_:)), keyEquivalent: "")
-            copyPath.target = self
-            copyPath.representedObject = path
-            menu.addItem(copyPath)
+        if node.isExpandable {
+            let expanded = outline.isItemExpanded(node)
+            items.append(ActionMenuItem(expanded ? "Collapse" : "Expand") { [weak self] in
+                guard let self else { return }
+                if expanded { self.outline.collapseItem(node) } else { self.outline.expandItem(node) }
+            })
+            items.append(ActionMenuItem(expanded ? "Collapse All" : "Expand All") { [weak self] in
+                guard let self else { return }
+                if expanded { self.outline.collapseItem(node, collapseChildren: true) } else { self.expandAll(node) }
+            })
+            items.append(.separator())
+        }
+        let nodes = selectedNodes.count > 1 ? selectedNodes : [node]
+        let several = nodes.count > 1
+        let names = nodes.map(\.name)
+        items.append(ActionMenuItem(several ? "Copy Names" : "Copy Name") { Clipboard.copy(names.joined(separator: "\n")) })
+        let paths = nodes.map { $0.url?.path ?? $0.path }
+        if !paths.contains(where: \.isEmpty), paths != names {
+            items.append(ActionMenuItem(several ? "Copy Paths" : "Copy Path") { Clipboard.copy(paths.joined(separator: "\n")) })
+        }
+        return items
+    }
+
+    /// Expands a folder and the folders inside it, breadth first, stopping after a few thousand
+    /// rows so a huge archive or folder stays quick.
+    private func expandAll(_ node: FileNode) {
+        var queue = [node]
+        var index = 0
+        var shown = 0
+        while index < queue.count, shown < 5_000 {
+            let next = queue[index]
+            index += 1
+            outline.expandItem(next)
+            let children = next.children ?? []
+            shown += children.count
+            queue += children.filter(\.isExpandable)
         }
     }
 
@@ -425,16 +458,6 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         UserDefaults.standard.set(chosenColumns.sorted(), forKey: columnsKey)
         // In a narrow list the column may stay hidden for now; widening shows it.
         applyColumns()
-    }
-
-    @objc private func getInfo(_ sender: NSMenuItem) {
-        if let node = sender.representedObject as? FileNode { onGetInfo?(node) }
-    }
-
-    @objc private func copyText(_ sender: NSMenuItem) {
-        guard let text = sender.representedObject as? String else { return }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
     }
 
     fileprivate func handleKey(_ event: NSEvent) -> Bool {

@@ -183,11 +183,16 @@ final class RelationshipDiagram {
     }
 }
 
-/// Draws a `RelationshipDiagram`. Hover a table to light up its relationships; double-click to
-/// open it.
+/// Draws a `RelationshipDiagram`. Hover a table to light up its relationships; double-click it, or
+/// use its context menu, to open it (Quick Look takes double-clicks for itself).
 final class DiagramCanvas: NSView {
     let diagram: RelationshipDiagram
+    /// Shows a table's rows.
     var onOpen: ((String) -> Void)?
+    /// Shows a table's schema.
+    var onShowSchema: ((String) -> Void)?
+    /// Items for a right-click between the tables (zooming).
+    var backgroundMenuItems: (() -> [NSMenuItem])?
     private var hovered: Int?
 
     init(diagram: RelationshipDiagram) {
@@ -203,7 +208,28 @@ final class DiagramCanvas: NSView {
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         trackingAreas.forEach(removeTrackingArea)
-        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect], owner: self))
+        // Always active: a Quick Look panel is never the key window, and hovering should still work.
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let point = convert(event.locationInWindow, from: nil)
+        guard let index = diagram.cards.firstIndex(where: { $0.frame.contains(point) }) else {
+            let items = backgroundMenuItems?() ?? []
+            return items.isEmpty ? nil : .context(items)
+        }
+        // Light up the table the menu is for.
+        if hovered != index { hovered = index; needsDisplay = true }
+        return .context(menuItems(forTable: diagram.cards[index].name))
+    }
+
+    func menuItems(forTable name: String) -> [NSMenuItem] {
+        [
+            ActionMenuItem("Show Data") { [weak self] in self?.onOpen?(name) },
+            ActionMenuItem("Show Schema") { [weak self] in self?.onShowSchema?(name) },
+            .separator(),
+            ActionMenuItem("Copy Name") { Clipboard.copy(name) },
+        ]
     }
 
     override func mouseMoved(with event: NSEvent) {
@@ -217,7 +243,9 @@ final class DiagramCanvas: NSView {
     }
 
     override func mouseDown(with event: NSEvent) {
-        guard event.clickCount == 2 else { return }
+        // In Quick Look a double-click opens the database in its app instead; there, tables open
+        // from their context menus.
+        guard event.clickCount == 2, PreviewHost.acceptsTyping else { return }
         let point = convert(event.locationInWindow, from: nil)
         if let card = diagram.cards.first(where: { $0.frame.contains(point) }) { onOpen?(card.name) }
     }
@@ -393,9 +421,29 @@ final class SQLiteDiagramView: NSView {
             scroll.leadingAnchor.constraint(equalTo: leadingAnchor),
             scroll.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
+        canvas.backgroundMenuItems = { [weak self] in self?.zoomMenuItems() ?? [] }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    /// Zooming by pointer: there's no ⌘+ in Quick Look, and not every pointer can pinch.
+    func zoomMenuItems() -> [NSMenuItem] {
+        let scale = scroll.magnification
+        return [
+            ActionMenuItem("Zoom In", enabled: scale < scroll.maxMagnification - 0.01) { [weak self] in self?.zoom(by: 1.25) },
+            ActionMenuItem("Zoom Out", enabled: scale > scroll.minMagnification + 0.01) { [weak self] in self?.zoom(by: 0.8) },
+            .separator(),
+            ActionMenuItem("Zoom to Fit") { [weak self] in self?.zoomToFit() },
+            ActionMenuItem("Actual Size", enabled: abs(scale - 1) > 0.01) { [weak self] in self?.zoom(by: 1 / scale) },
+        ]
+    }
+
+    /// Zooms about the middle of what's showing.
+    private func zoom(by factor: CGFloat) {
+        let visible = scroll.contentView.bounds
+        let scale = min(max(scroll.magnification * factor, scroll.minMagnification), scroll.maxMagnification)
+        scroll.setMagnification(scale, centeredAt: NSPoint(x: visible.midX, y: visible.midY))
+    }
 
     private var fitted = false
 

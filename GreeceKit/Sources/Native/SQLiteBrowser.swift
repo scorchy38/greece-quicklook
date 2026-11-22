@@ -99,7 +99,7 @@ final class SQLiteDatabase {
         }
     }
 
-    enum Binding { case text(String), integer(Int64) }
+    enum Binding: Equatable { case text(String), integer(Int64), real(Double) }
 
     let url: URL
     let handle: OpaquePointer
@@ -343,6 +343,7 @@ final class SQLiteDatabase {
             switch binding {
             case .text(let text): sqlite3_bind_text(statement, Int32(index + 1), text, -1, Self.transient)
             case .integer(let value): sqlite3_bind_int64(statement, Int32(index + 1), value)
+            case .real(let value): sqlite3_bind_double(statement, Int32(index + 1), value)
             }
         }
         let columns = sqlite3_column_count(statement)
@@ -430,6 +431,20 @@ final class SQLiteWorker {
         }
     }
 
+    /// The rows meeting a condition, counted. Nil when too slow, or replaced by newer work.
+    func count(_ table: String, where condition: SQLCondition, completion: @escaping (Int?) -> Void) {
+        let expected = currentGeneration
+        queue.async { [self] in
+            var result: Int?
+            if expected == currentGeneration, let db = database() {
+                let sql = "SELECT count(*) FROM \(SQLiteDatabase.quote(table)) WHERE \(condition.sql)"
+                result = (try? db.query(sql, bindings: condition.bindings, budget: 15))?.first?.first.flatMap { Int($0.plainText) }
+            }
+            if expected != currentGeneration { result = nil }
+            DispatchQueue.main.async { completion(result) }
+        }
+    }
+
     /// Every rowid in order: lets a page anywhere in the table start with an index lookup instead of
     /// an OFFSET scan.
     func rowids(table: String, alias: String, limit: Int, completion: @escaping ([Int64]?) -> Void) {
@@ -447,21 +462,28 @@ final class SQLiteWorker {
         }
     }
 
-    /// The rowids of a table in sorted order (ties broken by rowid). Nil when too slow or too large.
-    func sortedRowids(table: String, alias: String, column: String, ascending: Bool, limit: Int,
-                      completion: @escaping ([Int64]?) -> Void) {
+    /// The rowids of a table in sorted order (ties broken by rowid), of the rows meeting a condition
+    /// when there is one. Nil when too slow or too large.
+    func sortedRowids(table: String, alias: String, order: (column: String, ascending: Bool)?, where condition: SQLCondition? = nil,
+                      limit: Int, completion: @escaping ([Int64]?) -> Void) {
         let expected = currentGeneration
         queue.async { [self] in
             guard expected == currentGeneration, let db = database() else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
-            let direction = ascending ? "ASC" : "DESC"
-            let sql = "SELECT \(alias) FROM \(SQLiteDatabase.quote(table)) ORDER BY \(SQLiteDatabase.quote(column)) \(direction), \(alias) \(direction)"
+            var sql = "SELECT \(alias) FROM \(SQLiteDatabase.quote(table))"
+            if let condition { sql += " WHERE \(condition.sql)" }
+            if let order {
+                let direction = order.ascending ? "ASC" : "DESC"
+                sql += " ORDER BY \(SQLiteDatabase.quote(order.column)) \(direction), \(alias) \(direction)"
+            } else {
+                sql += " ORDER BY \(alias)"
+            }
             var ids: [Int64] = []
             var overflow = false
             do {
-                try db.forEachRow(sql, budget: 20) { statement, _ in
+                try db.forEachRow(sql, bindings: condition?.bindings ?? [], budget: 20) { statement, _ in
                     ids.append(sqlite3_column_int64(statement, 0))
                     if ids.count > limit { overflow = true; return false }
                     return expected == currentGeneration
@@ -478,10 +500,49 @@ final class SQLiteWorker {
 
 // MARK: - Paging
 
+/// A WHERE clause and the values bound into it.
+struct SQLCondition: Equatable {
+    var sql: String
+    var bindings: [SQLiteDatabase.Binding] = []
+
+    /// All of them at once.
+    static func all(_ conditions: [SQLCondition]) -> SQLCondition? {
+        guard !conditions.isEmpty else { return nil }
+        return SQLCondition(sql: conditions.map(\.sql).joined(separator: " AND "), bindings: conditions.flatMap(\.bindings))
+    }
+}
+
+extension ColumnFilter {
+    /// The filter in SQL, matching what the grid shows: values compare as text (CAST reads numbers
+    /// the way SQLite prints them in the grid), and NULL is told apart from empty text.
+    func sql(column name: String) -> SQLCondition {
+        let column = SQLiteDatabase.quote(name)
+        let text = "CAST(\(column) AS TEXT)"
+        let blank = "trim(\(text), ' ' || char(9, 10, 13)) = ''"
+        switch test {
+        case .equals(let value):
+            return value.isEmpty ? SQLCondition(sql: "(\(column) IS NOT NULL AND \(blank))")
+                : SQLCondition(sql: "\(text) = ?", bindings: [.text(value)])
+        case .notEquals(let value):
+            // Hiding a value keeps the NULLs, which SQL's <> alone would drop.
+            return value.isEmpty ? SQLCondition(sql: "(\(column) IS NULL OR NOT \(blank))")
+                : SQLCondition(sql: "(\(column) IS NULL OR \(text) <> ?)", bindings: [.text(value)])
+        case .null:
+            return SQLCondition(sql: "\(column) IS NULL")
+        case .notNull:
+            return SQLCondition(sql: "\(column) IS NOT NULL")
+        case .atLeast(let bound, _):
+            return SQLCondition(sql: "(typeof(\(column)) IN ('integer', 'real') AND \(column) >= ?)", bindings: [.real(bound)])
+        case .atMost(let bound, _):
+            return SQLCondition(sql: "(typeof(\(column)) IN ('integer', 'real') AND \(column) <= ?)", bindings: [.real(bound)])
+        }
+    }
+}
+
 /// Pages rows in on demand, so huge tables open instantly and scroll smoothly:
 /// - rowid tables continue from the previous page's last rowid (no OFFSET scans while scrolling);
-/// - sorted rowid tables fetch pages by rowid from a sort order built once, off the main thread;
-/// - views and WITHOUT ROWID tables use LIMIT/OFFSET, each page against a deadline.
+/// - sorted or filtered rowid tables fetch pages by rowid from an order built once, off the main thread;
+/// - views and WITHOUT ROWID tables use LIMIT/OFFSET (and WHERE), each page against a deadline.
 final class SQLiteGridSource: GridSource {
     private let database: SQLiteDatabase
     private let worker: SQLiteWorker
@@ -494,7 +555,12 @@ final class SQLiteGridSource: GridSource {
     private var permutation: [Int64]?
     /// Every rowid in table order, once the worker has read them (large tables only).
     private var positions: [Int64]?
+    /// Rows showing: the table's, or those meeting the filters.
     private(set) var rowCount: Int
+    /// Rows in the table, filtered or not.
+    private(set) var tableRows: Int
+    /// Conditions on columns, all of which a row must meet. Applied in SQL.
+    private(set) var filters: [ColumnFilter] = []
     private var numeric: [Bool]
     /// The largest table we'll sort in memory (8 bytes a row).
     static let sortLimit = 10_000_000
@@ -511,6 +577,7 @@ final class SQLiteGridSource: GridSource {
             object.rowCount = database.count(object.name, budget: 0.6)
         }
         rowCount = object.rowCount ?? object.estimatedRows ?? (object.isView ? Self.viewWindow : 0)
+        tableRows = rowCount
         numeric = object.columns.map { column in
             let type = column.type.uppercased()
             return ["INT", "REAL", "FLOA", "DOUB", "NUM", "DEC"].contains { type.contains($0) }
@@ -518,8 +585,10 @@ final class SQLiteGridSource: GridSource {
         // Large tables: learn where every page starts, so jumping anywhere is an index lookup.
         if let alias = object.rowidAlias, rowCount > 20_000, rowCount <= Self.sortLimit {
             worker.rowids(table: object.name, alias: alias, limit: Self.sortLimit) { [weak self] ids in
-                guard let self, let ids, self.order == nil else { return }
+                guard let self, let ids else { return }
+                self.tableRows = ids.count
                 self.positions = ids
+                guard self.order == nil, self.filters.isEmpty else { return }
                 self.rowCount = ids.count
             }
         }
@@ -535,7 +604,20 @@ final class SQLiteGridSource: GridSource {
     }
 
     /// A count that arrived later (exact for a huge table).
-    func updateRowCount(_ count: Int) { rowCount = count }
+    func updateRowCount(_ count: Int) {
+        tableRows = count
+        if filters.isEmpty { rowCount = count }
+    }
+
+    /// What a visible cell offers to filter by.
+    func filterCell(row: Int, column: Int) -> FilterMenu.Cell {
+        switch value(row: row, column: column) {
+        case .null: return .null
+        // Longer text was cut short for the grid.
+        case .text(let text): return text.utf8.count >= 4096 ? .unfilterable : ColumnFilter.isBlank(text) ? .empty : .text(text)
+        default: return .unfilterable
+        }
+    }
 
     var columnCount: Int { object.columns.count }
 
@@ -596,7 +678,7 @@ final class SQLiteGridSource: GridSource {
     func sort(column: Int, ascending: Bool, completion: @escaping (Bool) -> Void) {
         let name = object.columns[column].name
         worker.cancelPending()
-        guard let alias = object.rowidAlias, rowCount <= Self.sortLimit else {
+        guard let alias = object.rowidAlias, tableRows <= Self.sortLimit else {
             // Views and WITHOUT ROWID tables sort in SQL, a page at a time.
             order = (name, ascending)
             permutation = nil
@@ -606,13 +688,68 @@ final class SQLiteGridSource: GridSource {
             completion(!failed)
             return
         }
-        worker.sortedRowids(table: object.name, alias: alias, column: name, ascending: ascending, limit: Self.sortLimit) { [weak self] ids in
+        worker.sortedRowids(table: object.name, alias: alias, order: (name, ascending), where: condition, limit: Self.sortLimit) { [weak self] ids in
             guard let self else { return }
             guard let ids else { completion(false); return }
             self.order = (name, ascending)
             self.permutation = ids
             self.rowCount = ids.count
             self.resetPages()
+            completion(true)
+        }
+    }
+
+    // MARK: Filtering
+
+    /// The filters as one WHERE clause; nil without filters.
+    private var condition: SQLCondition? {
+        SQLCondition.all(filters.map { $0.sql(column: object.columns[$0.column].name) })
+    }
+
+    /// Filters the rows in SQL. Rowid tables gather the matching rowids on the worker and page
+    /// through them; views and WITHOUT ROWID tables add the condition to every page and count on
+    /// the worker. `completion` runs on the main thread, false when the filter was too slow and
+    /// the old filters stay; it doesn't run for a change that a newer one replaced.
+    func setFilters(_ new: [ColumnFilter], completion: @escaping (Bool) -> Void) {
+        let previous = filters
+        filters = new
+        worker.cancelPending()
+        let condition = self.condition
+        failed = false
+        if let alias = object.rowidAlias, tableRows <= Self.sortLimit {
+            guard condition != nil || order != nil else {
+                // Back to the table as it is, paged by rowid.
+                permutation = nil
+                rowCount = positions?.count ?? tableRows
+                resetPages()
+                completion(true)
+                return
+            }
+            worker.sortedRowids(table: object.name, alias: alias, order: order, where: condition, limit: Self.sortLimit) { [weak self] ids in
+                guard let self, self.filters == new else { return }
+                guard let ids else {
+                    self.filters = previous
+                    completion(false)
+                    return
+                }
+                self.permutation = ids
+                self.rowCount = ids.count
+                self.resetPages()
+                completion(true)
+            }
+            return
+        }
+        resetPages()
+        guard let condition else {
+            rowCount = tableRows
+            completion(true)
+            return
+        }
+        worker.count(object.name, where: condition) { [weak self] count in
+            guard let self, self.filters == new else { return }
+            self.resetPages()
+            // Uncounted (too slow): page until the rows run out.
+            self.rowCount = count ?? Self.viewWindow
             completion(true)
         }
     }
@@ -650,7 +787,8 @@ final class SQLiteGridSource: GridSource {
             for row in rows { if let id = Int64(row.first?.plainText ?? "") { byRowid[id] = Array(row.dropFirst()) } }
             return ids.map { byRowid[$0] ?? [] }
         }
-        if let alias = object.rowidAlias, order == nil {
+        let condition = self.condition
+        if let alias = object.rowidAlias, order == nil, condition == nil {
             // Continue from the previous page's last rowid when we know it: no OFFSET scan.
             var sql = "SELECT \(alias), * FROM \(table)"
             var bindings: [SQLiteDatabase.Binding] = []
@@ -668,13 +806,20 @@ final class SQLiteGridSource: GridSource {
             return rows.map { Array($0.dropFirst()) }
         }
         var sql = "SELECT * FROM \(table)"
+        if let condition { sql += " WHERE \(condition.sql)" }
         if let order { sql += " ORDER BY \(database.quote(order.column)) \(order.ascending ? "ASC" : "DESC")" }
         sql += " LIMIT \(size) OFFSET \(number * size)"
-        guard let rows = try? database.query(sql, budget: 2) else { failed = true; return [] }
-        if object.isView, object.rowCount == nil, rows.count < size {
-            // Reached the end of an uncounted view: now we know its size.
-            let total = number * size + rows.count
-            if total < rowCount { rowCount = total; object.rowCount = total }
+        guard let rows = try? database.query(sql, bindings: condition?.bindings ?? [], budget: 2) else { failed = true; return [] }
+        let total = number * size + rows.count
+        if rows.count < size, total < rowCount {
+            // Reached the end of an uncounted view or filter: now we know its size.
+            if condition != nil {
+                rowCount = total
+            } else if object.isView, object.rowCount == nil {
+                rowCount = total
+                tableRows = total
+                object.rowCount = total
+            }
         }
         return rows
     }

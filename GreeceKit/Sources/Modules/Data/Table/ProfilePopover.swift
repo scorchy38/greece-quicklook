@@ -1,10 +1,11 @@
 import AppKit
 
-/// The full profile of a column: kind, counts, spread and top values.
+/// The full profile of a column: kind, counts, spread and top values. With `onPick`, each common
+/// value can be chosen, to show only the rows that hold it.
 final class ProfilePopoverView: NSView {
     private let profile: ColumnProfile
 
-    init(title: String, profile: ColumnProfile) {
+    init(title: String, profile: ColumnProfile, onPick: ((String) -> Void)? = nil) {
         self.profile = profile
         super.init(frame: .zero)
 
@@ -107,29 +108,47 @@ final class ProfilePopoverView: NSView {
             heading.textColor = .secondaryLabelColor
             stack.addArrangedSubview(heading)
             stack.setCustomSpacing(6, after: heading)
-            let list = NSGridView(numberOfColumns: 3, rows: 0)
-            list.rowSpacing = 5
-            list.columnSpacing = 10
             let filled = max(profile.filled, 1)
-            for entry in profile.top {
+            let values = profile.top.map { entry -> NSTextField in
                 let value = NSTextField(labelWithString: entry.value.replacingOccurrences(of: "\n", with: " "))
                 value.font = .systemFont(ofSize: 12)
                 value.lineBreakMode = .byTruncatingTail
-                value.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-                value.widthAnchor.constraint(lessThanOrEqualToConstant: 150).isActive = true
-                let bar = ShareBar(share: CGFloat(entry.count) / CGFloat(filled))
-                bar.translatesAutoresizingMaskIntoConstraints = false
-                bar.widthAnchor.constraint(equalToConstant: 60).isActive = true
-                bar.heightAnchor.constraint(equalToConstant: 6).isActive = true
+                return value
+            }
+            let counts = profile.top.map { entry -> NSTextField in
                 let count = NSTextField(labelWithString: "\(entry.count.formatted())  \(ColumnProfile.percent(Double(entry.count) / Double(filled)))")
                 count.font = .monospacedDigitSystemFont(ofSize: 11, weight: .regular)
                 count.textColor = .secondaryLabelColor
                 count.alignment = .right
-                list.addRow(with: [value, bar, count])
+                return count
             }
-            list.column(at: 2).xPlacement = .trailing
-            list.rowAlignment = .none
-            for row in 0..<list.numberOfRows { list.row(at: row).yPlacement = .center }
+            // Columns as a grid would line them up: values as wide as the widest (up to 150), then
+            // the bars, then the counts flush right.
+            let valueWidth = min(150, ceil(values.map(\.intrinsicContentSize.width).max() ?? 0))
+            let countWidth = ceil(counts.map(\.intrinsicContentSize.width).max() ?? 0)
+            let list = NSStackView()
+            list.orientation = .vertical
+            list.alignment = .leading
+            list.spacing = 5
+            for (index, entry) in profile.top.enumerated() {
+                let bar = ShareBar(share: CGFloat(entry.count) / CGFloat(filled))
+                bar.translatesAutoresizingMaskIntoConstraints = false
+                NSLayoutConstraint.activate([
+                    bar.widthAnchor.constraint(equalToConstant: 60),
+                    bar.heightAnchor.constraint(equalToConstant: 6),
+                    values[index].widthAnchor.constraint(equalToConstant: valueWidth),
+                    counts[index].widthAnchor.constraint(equalToConstant: countWidth),
+                ])
+                // Values longer than the profile kept are cut short: they can't be matched exactly.
+                let pickable = onPick != nil && entry.value.utf8.count < 512
+                let row = CommonValueRow(views: [values[index], bar, counts[index]], onPick: pickable ? { onPick?(entry.value) } : nil)
+                if pickable {
+                    row.toolTip = "Show Only Rows Where \(title) Is \(MenuText.quoted(entry.value))"
+                    row.setAccessibilityLabel(entry.value)
+                    row.setAccessibilityHelp(row.toolTip)
+                }
+                list.addArrangedSubview(row)
+            }
             stack.addArrangedSubview(list)
         }
 
@@ -158,6 +177,89 @@ final class ProfilePopoverView: NSView {
         line.translatesAutoresizingMaskIntoConstraints = false
         line.widthAnchor.constraint(equalToConstant: 268).isActive = true
         return line
+    }
+}
+
+/// One of a column's most common values: the value, its share and its count. When it can be
+/// picked, it lights up under the pointer like a menu item and a click picks it.
+final class CommonValueRow: NSView {
+    private let onPick: (() -> Void)?
+    private var hovered = false { didSet { if hovered != oldValue { needsDisplay = true } } }
+    private var pressed = false { didSet { if pressed != oldValue { needsDisplay = true } } }
+    /// Room for the highlight around the content, outside its alignment rect so the text still
+    /// lines up with the rest of the popover.
+    private static let inset = NSEdgeInsets(top: 2, left: 6, bottom: 2, right: 6)
+
+    init(views: [NSView], onPick: (() -> Void)?) {
+        self.onPick = onPick
+        super.init(frame: .zero)
+        let row = NSStackView(views: views)
+        row.spacing = 10
+        row.alignment = .centerY
+        row.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(row)
+        // Anchors are the alignment rect, so the content fills it and the frame reaches past it.
+        NSLayoutConstraint.activate([
+            row.topAnchor.constraint(equalTo: topAnchor),
+            row.bottomAnchor.constraint(equalTo: bottomAnchor),
+            row.leadingAnchor.constraint(equalTo: leadingAnchor),
+            row.trailingAnchor.constraint(equalTo: trailingAnchor),
+        ])
+        if onPick != nil {
+            setAccessibilityElement(true)
+            setAccessibilityRole(.button)
+        }
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    var isPickable: Bool { onPick != nil }
+
+    override var alignmentRectInsets: NSEdgeInsets { Self.inset }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        guard onPick != nil else { return }
+        // Always active: a Quick Look panel is never the key window.
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { hovered = true }
+    override func mouseExited(with event: NSEvent) { hovered = false }
+
+    /// The whole row takes the click, not the labels in it.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard onPick != nil else { return super.hitTest(point) }
+        return frame.contains(point) ? self : nil
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard onPick != nil else { return super.mouseDown(with: event) }
+        pressed = true
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard onPick != nil else { return }
+        pressed = bounds.contains(convert(event.locationInWindow, from: nil))
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        guard let onPick else { return super.mouseUp(with: event) }
+        let inside = bounds.contains(convert(event.locationInWindow, from: nil))
+        pressed = false
+        if inside { onPick() }
+    }
+
+    override func accessibilityPerformPress() -> Bool {
+        onPick?()
+        return onPick != nil
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard onPick != nil, hovered || pressed else { return }
+        NSColor.labelColor.withAlphaComponent(pressed ? 0.14 : 0.07).setFill()
+        NSBezierPath(roundedRect: bounds, xRadius: 5, yRadius: 5).fill()
     }
 }
 

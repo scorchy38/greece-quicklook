@@ -189,6 +189,59 @@ final class SQLiteDataTests: XCTestCase {
         XCTAssertLessThan(sortedPage, 0.05)
     }
 
+    /// Filtering a million rows by a cell's value: the worker finds the rows while the main thread
+    /// stays free, then pages through them by rowid.
+    func testMillionRowsFilterOffTheMainThread() throws {
+        let url = try millionRowDatabase()
+        let database = try SQLiteDatabase(url: url)
+        let orders = try XCTUnwrap(database.objects.first { $0.name == "orders" })
+        let source = SQLiteGridSource(database: database, worker: SQLiteWorker(url: url), object: orders)
+
+        var started = CFAbsoluteTimeGetCurrent()
+        let filtered = expectation(description: "filtered")
+        var returnedAfter = 0.0
+        source.setFilters([ColumnFilter(column: 3, test: .equals("order note 42"))]) { ok in
+            XCTAssertTrue(ok)
+            filtered.fulfill()
+        }
+        returnedAfter = CFAbsoluteTimeGetCurrent() - started
+        wait(for: [filtered], timeout: 30)
+        let filterTime = CFAbsoluteTimeGetCurrent() - started
+        XCTAssertGreaterThan(source.rowCount, 100)
+        XCTAssertLessThan(source.rowCount, 400)
+        XCTAssertEqual(source.tableRows, 1_000_000)
+        XCTAssertTrue((0..<source.rowCount).allSatisfy { source.value(row: $0, column: 3).plainText == "order note 42" })
+
+        // Sorted and filtered at once, then a bound on a number.
+        started = CFAbsoluteTimeGetCurrent()
+        let sorted = expectation(description: "sorted")
+        source.sort(column: 2, ascending: false) { _ in sorted.fulfill() }
+        wait(for: [sorted], timeout: 30)
+        let amounts = (0..<source.rowCount).map { Double(source.value(row: $0, column: 2).plainText) ?? -1 }
+        XCTAssertEqual(amounts, amounts.sorted(by: >))
+        let bounded = expectation(description: "bounded")
+        source.setFilters(source.filters + [ColumnFilter(column: 2, test: .atLeast(500, text: "500"))]) { _ in bounded.fulfill() }
+        wait(for: [bounded], timeout: 30)
+        let both = CFAbsoluteTimeGetCurrent() - started
+        XCTAssertTrue((0..<source.rowCount).allSatisfy { (Double(source.value(row: $0, column: 2).plainText) ?? 0) >= 500 })
+
+        // A view filters in every page's query, and counts on the worker.
+        let view = try XCTUnwrap(database.objects.first { $0.name == "big_orders" })
+        let big = SQLiteGridSource(database: database, worker: SQLiteWorker(url: url), object: view)
+        started = CFAbsoluteTimeGetCurrent()
+        let counted = expectation(description: "view")
+        big.setFilters([ColumnFilter(column: 3, test: .equals("order note 7"))]) { _ in counted.fulfill() }
+        wait(for: [counted], timeout: 30)
+        let viewTime = CFAbsoluteTimeGetCurrent() - started
+        XCTAssertGreaterThan(big.rowCount, 0)
+        XCTAssertEqual(big.value(row: big.rowCount - 1, column: 3).plainText, "order note 7")
+
+        print(String(format: "SQLite 1M rows filter: returns in %.2f ms · equality %.0f ms · sort + bound %.0f ms · view %.0f ms",
+                     returnedAfter * 1000, filterTime * 1000, both * 1000, viewTime * 1000))
+        XCTAssertLessThan(returnedAfter, 0.01, "the main thread only hands the work over")
+        XCTAssertLessThan(filterTime, 5)
+    }
+
     /// Scrolling a real table view over a million rows: every frame fetches and lays out rows.
     @MainActor
     func testMillionRowsScrollSmoothly() throws {

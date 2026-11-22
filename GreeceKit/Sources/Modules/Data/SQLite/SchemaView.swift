@@ -1,8 +1,9 @@
 import AppKit
 
 /// A table drawn in one view: aligned columns, a quiet header, hairlines between rows. Used for
-/// schema pages (columns, indexes, triggers), where a full NSTableView would be heavy.
-final class SchemaTableView: NSView {
+/// schema pages (columns, indexes, triggers), where a full NSTableView would be heavy. Its rows
+/// can't be selected, so a right-click offers the copying instead.
+final class SchemaTableView: NSView, NSMenuDelegate {
     struct Cell {
         enum Style { case name, code, secondary, link, tertiary }
         var text: String
@@ -132,7 +133,62 @@ final class SchemaTableView: NSView {
                 NSColor.separatorColor.withAlphaComponent(0.4).setFill()
                 NSRect(x: 16, y: y + Self.rowHeight - line, width: bounds.width - 24, height: line).fill()
             }
+            if r == menuRow {
+                // Like Finder's ring around the item a context menu is for.
+                let ring = NSBezierPath(roundedRect: NSRect(x: 5, y: y + 2, width: bounds.width - 10, height: Self.rowHeight - 4), xRadius: 5, yRadius: 5)
+                ring.lineWidth = 2
+                NSColor.controlAccentColor.setStroke()
+                ring.stroke()
+            }
         }
+    }
+
+    // MARK: - Context menu
+
+    /// The row a context menu is open for.
+    private var menuRow: Int? { didSet { needsDisplay = true } }
+
+    func row(at point: NSPoint) -> Int? {
+        guard point.y >= Self.headerHeight else { return nil }
+        let index = Int((point.y - Self.headerHeight) / Self.rowHeight)
+        return index < rows.count ? index : nil
+    }
+
+    private func column(at x: CGFloat) -> Int? {
+        columnFrames().firstIndex { x >= $0.x && x < $0.x + $0.width }
+    }
+
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let point = convert(event.locationInWindow, from: nil)
+        guard let row = row(at: point) else { return nil }
+        let menu = NSMenu.context(menuItems(row: row, column: column(at: point.x)))
+        menu.delegate = self
+        menuRow = row
+        return menu
+    }
+
+    func menuDidClose(_ menu: NSMenu) { menuRow = nil }
+
+    /// The clicked value, its row, or the whole table, as tab-separated text.
+    func menuItems(row: Int, column: Int?) -> [NSMenuItem] {
+        var items: [NSMenuItem] = []
+        if let column, column < rows[row].count, rows[row][column].style != .tertiary {
+            let text = rows[row][column].text
+            items.append(ActionMenuItem("Copy \(MenuText.quoted(text))") { Clipboard.copy(text) })
+        }
+        let line = Self.line(rows[row])
+        items.append(ActionMenuItem("Copy Row") { Clipboard.copy(line) })
+        let table = ([headers.joined(separator: "\t")] + rows.map(Self.line)).joined(separator: "\n")
+        items.append(ActionMenuItem("Copy Table") { Clipboard.copy(table) })
+        return items
+    }
+
+    /// A row as tab-separated text, without the "—" that stands for nothing.
+    private static func line(_ row: [Cell]) -> String {
+        row.map { cell in
+            guard cell.style != .tertiary else { return "" }
+            return cell.detail.map { "\(cell.text) (\($0))" } ?? cell.text
+        }.joined(separator: "\t")
     }
 
     override func setFrameSize(_ newSize: NSSize) {
@@ -282,8 +338,9 @@ class SchemaPageView: NSView {
     }
 }
 
-/// Highlighted SQL, sized to its content, restyled for light and dark.
-final class SQLTextView: NSView {
+/// Highlighted SQL, sized to its content, restyled for light and dark. Its context menu copies
+/// all of it, since ⌘A doesn't reach it in Quick Look.
+final class SQLTextView: NSView, NSTextViewDelegate {
     private let text: String
     private let theme: CodeTheme
     private let textView = NSTextView()
@@ -300,6 +357,7 @@ final class SQLTextView: NSView {
         textView.textContainer?.widthTracksTextView = true
         textView.textContainer?.lineFragmentPadding = 0
         textView.isVerticallyResizable = false
+        textView.delegate = self
         textView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(textView)
         height = heightAnchor.constraint(equalToConstant: 40)
@@ -343,6 +401,12 @@ final class SQLTextView: NSView {
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         restyle()
+    }
+
+    func textView(_ view: NSTextView, menu: NSMenu, for event: NSEvent, at charIndex: Int) -> NSMenu? {
+        menu.insertItem(ActionMenuItem("Copy SQL") { [text] in Clipboard.copy(text) }, at: 0)
+        menu.insertItem(.separator(), at: 1)
+        return menu
     }
 }
 

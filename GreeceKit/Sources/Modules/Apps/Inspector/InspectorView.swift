@@ -127,7 +127,7 @@ private struct SectionView: View {
         let visible = expanded ? section.rows : Array(section.rows.prefix(limit))
         Section {
             ForEach(Array(visible.enumerated()), id: \.offset) { _, row in
-                RowView(row: row, settings: model.settings)
+                RowView(row: row, settings: model.settings, section: section)
             }
             if !expanded && limit < section.rows.count {
                 Button {
@@ -199,6 +199,15 @@ private struct InspectorHeaderView: View {
         .padding(.bottom, 6)
         .textCase(nil)
         .foregroundStyle(.primary)
+        .contextMenu {
+            Button("Copy Name") { Clipboard.copy(header.title) }
+            if let subtitle = header.subtitle {
+                Button("Copy " + MenuText.quoted(subtitle)) { Clipboard.copy(subtitle) }
+            }
+            if let identifier = header.identifier {
+                Button("Copy Identifier") { Clipboard.copy(identifier) }
+            }
+        }
     }
 }
 
@@ -287,19 +296,21 @@ struct IconView: View {
 private struct RowView: View {
     let row: InspectorRow
     let settings: PreviewSettings
+    /// The section the row is in, for Copy Section.
+    var section: InspectorSection?
 
     var body: some View {
         switch row {
         case .item(let item):
             if item.details.isEmpty {
-                ItemView(item: item)
+                ItemView(item: item, section: section)
             } else {
                 DisclosureGroup {
                     ForEach(Array(item.details.enumerated()), id: \.offset) { _, detail in
-                        RowView(row: .item(detail), settings: settings)
+                        RowView(row: .item(detail), settings: settings, section: section)
                     }
                 } label: {
-                    ItemView(item: item)
+                    ItemView(item: item, section: section)
                 }
             }
         case .code(let code):
@@ -316,6 +327,10 @@ private struct RowView: View {
                     .fixedSize(horizontal: false, vertical: true)
                 Spacer(minLength: 0)
             }
+            .contextMenu {
+                Button("Copy Text") { Clipboard.copy(note.text) }
+                CopySectionButton(section: section)
+            }
         case .pending(_, let title):
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
@@ -328,6 +343,7 @@ private struct RowView: View {
 
 private struct ItemView: View {
     let item: InspectorItem
+    var section: InspectorSection?
 
     var body: some View {
         HStack(alignment: item.subtitle == nil ? .center : .top, spacing: 10) {
@@ -378,6 +394,57 @@ private struct ItemView: View {
             }
         }
         .help(item.help ?? "")
+        .contextMenu {
+            // A row with a value copies the value; one without is its own content.
+            if let value = item.value {
+                Button("Copy " + MenuText.quoted(value)) { Clipboard.copy(value) }
+            } else {
+                Button("Copy " + MenuText.quoted(item.title)) { Clipboard.copy(item.title) }
+            }
+            if let subtitle = item.subtitle {
+                Button("Copy " + MenuText.quoted(subtitle)) { Clipboard.copy(subtitle) }
+            }
+            CopySectionButton(section: section)
+        }
+    }
+}
+
+/// Copies a whole section as text, one row a line: a way to take a list of entitlements or
+/// frameworks out of Quick Look, where ⌘A and ⌘C don't reach the preview.
+private struct CopySectionButton: View {
+    let section: InspectorSection?
+
+    var body: some View {
+        if let section, section.rows.count > 1 {
+            Divider()
+            Button("Copy Section") { Clipboard.copy(section.copyText) }
+        }
+    }
+}
+
+extension InspectorItem {
+    /// "Title: Value", then the subtitle and any details indented beneath.
+    func copyText(indent: String = "") -> String {
+        var lines = [indent + (value.map { "\(title): \($0)" } ?? title)]
+        if let subtitle { lines.append(indent + "    " + subtitle) }
+        lines += details.map { $0.copyText(indent: indent + "    ") }
+        return lines.joined(separator: "\n")
+    }
+}
+
+extension InspectorSection {
+    /// The section's title, then its rows as text.
+    var copyText: String {
+        let body = rows.compactMap { row -> String? in
+            switch row {
+            case .item(let item): return item.copyText()
+            case .note(let note): return note.text
+            case .code(let code): return code.title + "\n" + code.text
+            case .sizes(let sizes): return sizes.segments.map { "\($0.title): \(Format.bytes($0.bytes))" }.joined(separator: "\n")
+            case .pending: return nil
+            }
+        }
+        return ([title].compactMap { $0 } + body).joined(separator: "\n")
     }
 }
 
@@ -419,6 +486,9 @@ private struct CodeView: View {
             }
         } label: {
             ItemView(item: InspectorItem(symbol: code.symbol, title: code.title, subtitle: code.subtitle, tone: code.tone))
+        }
+        .contextMenu {
+            Button("Copy Contents") { Clipboard.copy(code.text) }
         }
     }
 
