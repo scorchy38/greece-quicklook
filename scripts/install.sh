@@ -6,7 +6,8 @@ repo="$(cd "$(dirname "$0")/.." && pwd)"
 src="${1:-$repo/build/dd/Build/Products/Release/Greece.app}"
 dest=/Applications/Greece.app
 lsregister=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister
-ids=(com.scorchy.greece.quicklook com.scorchy.greece.thumbnails)
+ids=()
+for appex in "$src"/Contents/PlugIns/*.appex; do ids+=("$(defaults read "$appex/Contents/Info" CFBundleIdentifier)"); done
 
 # Stop the build product's extensions competing with the installed copy. (Never `lsregister -u`
 # a copy: it can drop the shared bundle identifiers, and with them the installed registration.)

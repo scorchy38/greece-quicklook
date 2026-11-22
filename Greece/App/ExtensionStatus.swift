@@ -44,9 +44,25 @@ final class ExtensionStatus: ObservableObject {
         Task { await enableAndWait() }
     }
 
-    /// Every extension Greece ships, by bundle identifier and file name.
-    nonisolated static let extensions = [("com.scorchy.greece.quicklook", "GreeceQuickLook.appex"),
-                                         ("com.scorchy.greece.thumbnails", "GreeceThumbnails.appex")]
+    /// Every extension inside this copy of Greece: the preview families and the thumbnails.
+    nonisolated static var extensions: [(identifier: String, file: String)] {
+        guard let plugins = Bundle.main.builtInPlugInsURL,
+              let names = try? FileManager.default.contentsOfDirectory(atPath: plugins.path) else { return [] }
+        return names.filter { $0.hasSuffix(".appex") }.sorted().compactMap { name in
+            let info = plugins.appendingPathComponent(name).appendingPathComponent("Contents/Info.plist")
+            guard let id = (NSDictionary(contentsOf: info) as? [String: Any])?["CFBundleIdentifier"] as? String else { return nil }
+            return (id, name)
+        }
+    }
+
+    /// The preview families (everything but thumbnails), for the Preview Kinds settings.
+    nonisolated static var previewFamilies: [(identifier: String, file: String, name: String)] {
+        guard let plugins = Bundle.main.builtInPlugInsURL else { return [] }
+        return extensions.filter { $0.identifier != "com.scorchy.greece.thumbnails" }.map { item in
+            let info = NSDictionary(contentsOf: plugins.appendingPathComponent(item.file).appendingPathComponent("Contents/Info.plist")) as? [String: Any]
+            return (item.identifier, item.file, info?["CFBundleDisplayName"] as? String ?? item.file)
+        }
+    }
 
     func enableAndWait() async {
         guard let plugins = Bundle.main.builtInPlugInsURL else { return }

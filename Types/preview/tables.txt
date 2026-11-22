@@ -1,0 +1,6 @@
+# Tab-, pipe- and comma-separated tables, and SQLite databases.
+public.comma-separated-values-text
+public.tab-separated-values-text
+public.utf8-tab-separated-values-text
+public.delimited-values-text
+org.sqlite.sqlite3

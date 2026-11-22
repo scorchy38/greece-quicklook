@@ -62,9 +62,14 @@ final class RecentFiles: ObservableObject {
 
     // MARK: - Previewed in Quick Look
 
+    /// Each preview family keeps its own list (extensions can't share storage); merge them.
     nonisolated private static func previewedFiles() -> [Item] {
-        let path = NSHomeDirectory() + "/Library/Containers/com.scorchy.greece.quicklook/Data/Library/Preferences/com.scorchy.greece.quicklook.plist"
-        guard let plist = NSDictionary(contentsOfFile: path), let recents = plist["recent-files.v1"] as? [[String: Any]] else { return [] }
+        let containers = NSHomeDirectory() + "/Library/Containers"
+        let families = ((try? FileManager.default.contentsOfDirectory(atPath: containers)) ?? []).filter { $0.hasPrefix("com.scorchy.greece.quicklook") }
+        let recents = families.flatMap { id -> [[String: Any]] in
+            let plist = NSDictionary(contentsOfFile: "\(containers)/\(id)/Data/Library/Preferences/\(id).plist")
+            return plist?["recent-files.v1"] as? [[String: Any]] ?? []
+        }.sorted { ($0["date"] as? Double ?? 0) > ($1["date"] as? Double ?? 0) }
         return recents.compactMap { entry -> Item? in
             guard let path = entry["path"] as? String, let time = entry["date"] as? Double,
                   !["/private/var/folders/", "/var/folders/", "/private/tmp/", "/tmp/"].contains(where: { path.hasPrefix($0) }),

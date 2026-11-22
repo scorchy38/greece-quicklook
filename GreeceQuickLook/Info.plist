@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Greece</string>
+	<string>Code &amp; Text</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -30,90 +30,6 @@
 			<false/>
 			<key>QLSupportedContentTypes</key>
 			<array>
-				<string>com.apple.application-bundle</string>
-				<string>com.apple.application-and-system-extension</string>
-				<string>com.apple.framework</string>
-				<string>com.apple.generic-bundle</string>
-				<string>com.apple.plugin</string>
-				<string>com.apple.kernel-extension</string>
-				<string>com.apple.system-extension</string>
-				<string>com.apple.driver-extension</string>
-				<string>com.apple.xpc-service</string>
-				<string>com.apple.quicklook-generator</string>
-				<string>com.apple.metadata-importer</string>
-				<string>com.apple.systempreference.screen-saver</string>
-				<string>com.apple.systempreference.prefpane</string>
-				<string>com.apple.xcode.archive</string>
-				<string>com.apple.xcode.dsym</string>
-				<string>com.apple.installer-package-archive</string>
-				<string>com.apple.installer-package</string>
-				<string>com.apple.disk-image-udif</string>
-				<string>com.apple.disk-image</string>
-				<string>public.iso-image</string>
-				<string>com.apple.disk-image-cdr</string>
-				<string>com.apple.disk-image-sparse</string>
-				<string>com.apple.disk-image-sparse-bundle</string>
-				<string>com.roxio.disk-image-toast</string>
-				<string>com.apple.itunes.ipa</string>
-				<string>com.scorchy.greece.android-package</string>
-				<string>com.scorchy.greece.android-app-bundle</string>
-				<string>com.apple.mach-o-binary</string>
-				<string>com.apple.mach-o-dylib</string>
-				<string>public.unix-executable</string>
-				<string>public.object-code</string>
-				<string>com.microsoft.windows-executable</string>
-				<string>com.microsoft.windows-dynamic-link-library</string>
-				<string>com.apple.mobileprovision</string>
-				<string>com.apple.provisionprofile</string>
-				<string>com.apple.mobileconfig</string>
-				<string>org.bittorrent.torrent</string>
-				<string>public.zip-archive</string>
-				<string>com.pkware.zip-archive</string>
-				<string>public.zip-archive.first-part</string>
-				<string>com.winzip.zipx-archive</string>
-				<string>com.sun.java-archive</string>
-				<string>com.sun.web-application-archive</string>
-				<string>org.7-zip.7-zip-archive</string>
-				<string>com.rarlab.rar-archive</string>
-				<string>public.tar-archive</string>
-				<string>org.gnu.gnu-tar-archive</string>
-				<string>org.gnu.gnu-zip-archive</string>
-				<string>org.gnu.gnu-zip-tar-archive</string>
-				<string>public.bzip2-archive</string>
-				<string>public.tar-bzip2-archive</string>
-				<string>org.tukaani.xz-archive</string>
-				<string>org.tukaani.tar-xz-archive</string>
-				<string>org.tukaani.lzma-archive</string>
-				<string>public.z-archive</string>
-				<string>com.microsoft.cab</string>
-				<string>cx.c3.lha-archive</string>
-				<string>com.apple.xar-archive</string>
-				<string>public.cpio-archive</string>
-				<string>com.redhat.rpm-archive</string>
-				<string>org.debian.deb-archive</string>
-				<string>org.chromium.extension</string>
-				<string>com.android.package-archive</string>
-				<string>com.scorchy.greece.zstd-archive</string>
-				<string>com.scorchy.greece.tar-zstd-archive</string>
-				<string>com.scorchy.greece.lzip-archive</string>
-				<string>com.scorchy.greece.tar-lzma-archive</string>
-				<string>com.scorchy.greece.tar-compress-archive</string>
-				<string>com.scorchy.greece.tar-bzip2-archive</string>
-				<string>com.scorchy.greece.split-archive</string>
-				<string>com.scorchy.greece.comic-zip</string>
-				<string>com.scorchy.greece.comic-rar</string>
-				<string>com.scorchy.greece.comic-7z</string>
-				<string>com.scorchy.greece.comic-tar</string>
-				<string>com.scorchy.greece.python-wheel</string>
-				<string>com.scorchy.greece.ruby-gem</string>
-				<string>com.scorchy.greece.nuget-package</string>
-				<string>com.scorchy.greece.vsix</string>
-				<string>com.scorchy.greece.firefox-extension</string>
-				<string>com.scorchy.greece.enterprise-archive</string>
-				<string>net.daringfireball.markdown</string>
-				<string>com.scorchy.greece.markdown</string>
-				<string>org.textbundle.package</string>
-				<string>org.textbundle.textpack</string>
 				<string>public.swift-source</string>
 				<string>public.swift-interface</string>
 				<string>public.c-source</string>
@@ -199,11 +115,9 @@
 				<string>org.clojure.clojure</string>
 				<string>com.docker.dockerfile</string>
 				<string>org.cmake.cmake</string>
-				<string>org.latex-project.latex</string>
 				<string>com.scorchy.greece.source</string>
 				<string>com.scorchy.greece.text</string>
 				<string>public.json</string>
-				<string>public.geojson</string>
 				<string>public.ndjson</string>
 				<string>com.scorchy.greece.json-variant</string>
 				<string>public.xml</string>
@@ -218,14 +132,7 @@
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xcode.app-privacy-property-list</string>
 				<string>com.apple.dt.document.scheme</string>
-				<string>public.comma-separated-values-text</string>
-				<string>public.tab-separated-values-text</string>
-				<string>public.utf8-tab-separated-values-text</string>
-				<string>public.delimited-values-text</string>
-				<string>org.sqlite.sqlite3</string>
-				<string>org.jupyter.ipynb</string>
 				<string>public.patch-file</string>
-				<string>public.folder</string>
 				<string>public.mpeg-2-transport-stream</string>
 				<string>public.avchd-mpeg-2-transport-stream</string>
 				<string>public.plain-text</string>
@@ -266,76 +173,6 @@
 				<string>com.apple.dt.xctestplancontenttype</string>
 				<string>com.apple.sirikit.intentdefinition</string>
 				<string>com.sun.java-web-start</string>
-				<string>com.scorchy.greece.dbf</string>
-				<string>org.libreoffice.dbf-document</string>
-				<string>com.scorchy.greece.json-lines</string>
-				<string>com.scorchy.greece.har</string>
-				<string>com.scorchy.greece.parquet</string>
-				<string>com.scorchy.greece.psv</string>
-				<string>com.scorchy.greece.package-resolved</string>
-				<string>com.scorchy.greece.go-sum</string>
-				<string>com.scorchy.greece.gradle-lockfile</string>
-				<string>com.scorchy.greece.tex-support</string>
-				<string>com.scorchy.greece.bibtex</string>
-				<string>org.idpf.epub-container</string>
-				<string>com.scorchy.greece.org</string>
-				<string>com.scorchy.greece.asciidoc</string>
-				<string>com.scorchy.greece.restructuredtext</string>
-				<string>com.scorchy.greece.sweave</string>
-				<string>com.scorchy.greece.mermaid</string>
-				<string>com.scorchy.greece.typst</string>
-				<string>com.scorchy.greece.pgf</string>
-				<string>com.scorchy.greece.geojson-lines</string>
-				<string>com.scorchy.greece.topojson</string>
-				<string>com.google.earth.kml</string>
-				<string>com.google.earth.kmz</string>
-				<string>com.topografix.gpx</string>
-				<string>com.scorchy.greece.shapefile</string>
-				<string>com.scorchy.greece.geopackage</string>
-				<string>com.scorchy.greece.mbtiles</string>
-				<string>com.scorchy.greece.osm</string>
-				<string>com.scorchy.greece.wkt</string>
-				<string>public.truetype-ttf-font</string>
-				<string>public.opentype-font</string>
-				<string>public.truetype-collection-font</string>
-				<string>public.opentype-collection-font</string>
-				<string>com.scorchy.greece.woff</string>
-				<string>com.scorchy.greece.woff2</string>
-				<string>com.scorchy.greece.subrip</string>
-				<string>org.w3.webvtt</string>
-				<string>com.scorchy.greece.substation</string>
-				<string>com.scorchy.greece.sami</string>
-				<string>com.scorchy.greece.ttml</string>
-				<string>com.scorchy.greece.sbv</string>
-				<string>com.scorchy.greece.microdvd</string>
-				<string>com.scorchy.greece.lrc</string>
-				<string>public.svg-image</string>
-				<string>com.scorchy.greece.lottie</string>
-				<string>com.scorchy.greece.ase</string>
-				<string>org.aseprite.aseprite.sprite</string>
-				<string>com.scorchy.greece.aco</string>
-				<string>com.scorchy.greece.act</string>
-				<string>com.apple.color-file</string>
-				<string>com.scorchy.greece.gpl</string>
-				<string>com.scorchy.greece.procreate-swatches</string>
-				<string>com.scorchy.greece.sketchpalette</string>
-				<string>org.khronos.gltf</string>
-				<string>org.khronos.glb</string>
-				<string>com.autodesk.mac.fbx</string>
-				<string>org.khronos.collada.digital-asset-exchange</string>
-				<string>public.geometry-definition-format</string>
-				<string>public.standard-tesselated-geometry-format</string>
-				<string>public.polygon-file-format</string>
-				<string>com.scorchy.greece.3mf</string>
-				<string>com.scorchy.greece.off</string>
-				<string>com.scorchy.greece.3ds</string>
-				<string>com.scorchy.greece.vrml</string>
-				<string>com.scorchy.greece.amf</string>
-				<string>com.scorchy.greece.vox</string>
-				<string>com.scorchy.greece.vrm</string>
-				<string>com.scorchy.greece.las</string>
-				<string>com.scorchy.greece.laz</string>
-				<string>com.scorchy.greece.pcd</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>

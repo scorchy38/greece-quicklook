@@ -48,6 +48,7 @@ struct SettingsEntry: Identifiable, Hashable {
         .init(title: "Remember scroll position", page: .general, keywords: "resume reading position where I left off"),
         .init(title: "Remember window size", page: .general, keywords: "panel size quick look window"),
         .init(title: "Forget positions and sizes", page: .general, keywords: "reset clear memory privacy"),
+        .init(title: "Preview kinds", page: .general, keywords: "turn off formats extensions code documents data archives apps 3d models maps fonts media hand back apple"),
         .init(title: "Menu bar", page: .general, keywords: "status item recent files agents claude codex"),
         .init(title: "Recently previewed files", page: .general, keywords: "history recents privacy"),
         .init(title: "Open at login", page: .general, keywords: "startup launch login items"),

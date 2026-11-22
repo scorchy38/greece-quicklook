@@ -269,6 +269,7 @@ struct GeneralPage: View {
     @State private var cliPath = CommandLineInstaller.installedPath
     @State private var cliMessage: String?
     @StateObject private var loginItem = LoginItem()
+    @StateObject private var previewKinds = PreviewKinds()
 
     var body: some View {
         Form {
@@ -298,6 +299,26 @@ struct GeneralPage: View {
                 Text("While You Read")
             } footer: {
                 Text("Save a file while its preview is open and the preview updates in place, at the same spot. Greece can also reopen files where you left off, and the window at the size you last chose.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
+            Section {
+                ForEach(previewKinds.kinds) { kind in
+                    Toggle(isOn: Binding(get: { kind.isOn }, set: { previewKinds.set(kind.id, on: $0) })) {
+                        Label {
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(kind.name)
+                                Text(kind.detail).font(.caption).foregroundStyle(.secondary)
+                            }
+                        } icon: {
+                            Image(systemName: kind.symbol).foregroundStyle(Color.accentColor)
+                        }
+                    }
+                }
+            } header: {
+                Text("Preview Kinds")
+            } footer: {
+                Text("Turn a kind off and macOS shows those files with its own viewer, as if Greece weren’t installed. The same switches are in System Settings › General › Login Items & Extensions › Quick Look.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -353,6 +374,7 @@ struct GeneralPage: View {
             }
         }
         .formStyle(.grouped)
+        .onAppear { previewKinds.refresh() }
         .confirmationDialog("Restore all preview settings to their defaults?", isPresented: $confirmReset) {
             Button("Restore Defaults", role: .destructive) { store.reset() }
             Button("Cancel", role: .cancel) {}

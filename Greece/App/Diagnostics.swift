@@ -107,7 +107,16 @@ final class Diagnostics: ObservableObject {
         greeceTypes = Self.ownTypes()
 
         var results: [Finding] = []
-        results.append(registration(of: "com.scorchy.greece.quicklook", appex: "GreeceQuickLook.appex", noun: "Previews", lowercase: "previews", in: all))
+        // Eight preview families: one summary when they're all fine, otherwise each issue.
+        let families = ExtensionStatus.previewFamilies
+        let familyFindings = families.map { registration(of: $0.identifier, appex: $0.file, noun: "\($0.name) previews", lowercase: "\($0.name) previews", in: all) }
+        let issues = familyFindings.filter { $0.severity > .ok }
+        if issues.isEmpty {
+            results.append(Finding(id: "previews", severity: .ok, title: "Previews are on",
+                                   detail: "All \(families.count) kinds of preview use this copy of Greece.", fix: nil))
+        } else {
+            results += issues
+        }
         results.append(registration(of: "com.scorchy.greece.thumbnails", appex: "GreeceThumbnails.appex", noun: "Finder thumbnails", lowercase: "Finder thumbnails", in: all))
         if !Bundle.main.bundlePath.hasPrefix("/Applications/") {
             results.append(Finding(id: "location", severity: .warning, title: "Greece isn’t in Applications",
@@ -145,8 +154,8 @@ final class Diagnostics: ObservableObject {
                            detail: "Quick Look is using \(active.path). Repair to use this copy and remove the others.", fix: .reregister)
         }
         if !active.enabled {
-            return Finding(id: identifier, severity: .problem, title: "\(noun) are turned off",
-                           detail: "Greece’s extension is switched off in System Settings.", fix: .reregister)
+            return Finding(id: identifier, severity: .info, title: "\(noun) are off",
+                           detail: "macOS shows these files itself. Turn them back on in General › Preview Kinds.", fix: nil)
         }
         if copies.count > 1 {
             return Finding(id: identifier, severity: .warning, title: "\(noun): \(copies.count) copies of Greece are registered",
@@ -302,10 +311,13 @@ final class Diagnostics: ObservableObject {
 
     // MARK: - Reading the system
 
+    /// Every type Greece's preview families claim.
     private static func ownTypes() -> Set<String> {
-        guard let url = Bundle.main.builtInPlugInsURL?.appendingPathComponent("GreeceQuickLook.appex/Contents/Info.plist"),
-              let plist = NSDictionary(contentsOf: url) as? [String: Any] else { return [] }
-        return types(in: plist)
+        guard let plugins = Bundle.main.builtInPlugInsURL else { return [] }
+        return ExtensionStatus.previewFamilies.reduce(into: Set<String>()) { all, family in
+            let url = plugins.appendingPathComponent(family.file).appendingPathComponent("Contents/Info.plist")
+            if let plist = NSDictionary(contentsOf: url) as? [String: Any] { all.formUnion(types(in: plist)) }
+        }
     }
 
     private static func types(in plist: [String: Any]) -> Set<String> {

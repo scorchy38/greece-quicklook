@@ -24,6 +24,29 @@ settings:
     # zlib + bzip2 module map, used privately by GreeceKit's archive readers.
     SWIFT_INCLUDE_PATHS: $(SRCROOT)/GreeceKit/CArchive
 
+targetTemplates:
+  # A Quick Look preview extension. Thin: hands every file to GreeceKit. Greece ships one per
+  # family of formats (Types/families.json) so each can be turned off and handed back to macOS.
+  PreviewExtension:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: GreeceQuickLook
+        excludes:
+          - "Info.plist"
+          - "Families/**"
+    dependencies:
+      - target: GreeceKit
+        embed: false
+    settings:
+      base:
+        CODE_SIGN_ENTITLEMENTS: GreeceQuickLook/GreeceQuickLook.entitlements
+        SKIP_INSTALL: YES
+        LD_RUNPATH_SEARCH_PATHS:
+          - "$(inherited)"
+          - "@executable_path/../Frameworks"
+          - "@executable_path/../../../../Frameworks"
+
 targets:
 
   # Shared rendering engine: detection, parsers, native + web renderers, bundled web assets.
@@ -53,26 +76,77 @@ targets:
         DYLIB_INSTALL_NAME_BASE: "@rpath"
         OTHER_LDFLAGS: ["-lz", "-lbz2", "-larchive"]
 
-  # Quick Look preview extension. Thin: hands every file to GreeceKit.
+  # Quick Look previews: Code & Text.
   GreeceQuickLook:
-    type: app-extension
-    platform: macOS
-    sources:
-      - path: GreeceQuickLook
-    dependencies:
-      - target: GreeceKit
-        embed: false
+    templates: [PreviewExtension]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook
         PRODUCT_NAME: GreeceQuickLook
         INFOPLIST_FILE: GreeceQuickLook/Info.plist
-        CODE_SIGN_ENTITLEMENTS: GreeceQuickLook/GreeceQuickLook.entitlements
-        SKIP_INSTALL: YES
-        LD_RUNPATH_SEARCH_PATHS:
-          - "$(inherited)"
-          - "@executable_path/../Frameworks"
-          - "@executable_path/../../../../Frameworks"
+
+  # Quick Look previews: Markdown & Documents.
+  GreeceDocuments:
+    templates: [PreviewExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook.documents
+        PRODUCT_NAME: GreeceDocuments
+        INFOPLIST_FILE: GreeceQuickLook/Families/GreeceDocuments/Info.plist
+
+  # Quick Look previews: Data & Tables.
+  GreeceData:
+    templates: [PreviewExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook.data
+        PRODUCT_NAME: GreeceData
+        INFOPLIST_FILE: GreeceQuickLook/Families/GreeceData/Info.plist
+
+  # Quick Look previews: Archives & Folders.
+  GreeceArchives:
+    templates: [PreviewExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook.archives
+        PRODUCT_NAME: GreeceArchives
+        INFOPLIST_FILE: GreeceQuickLook/Families/GreeceArchives/Info.plist
+
+  # Quick Look previews: Apps & Installers.
+  GreeceApps:
+    templates: [PreviewExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook.apps
+        PRODUCT_NAME: GreeceApps
+        INFOPLIST_FILE: GreeceQuickLook/Families/GreeceApps/Info.plist
+
+  # Quick Look previews: 3D Models.
+  GreeceModels:
+    templates: [PreviewExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook.models
+        PRODUCT_NAME: GreeceModels
+        INFOPLIST_FILE: GreeceQuickLook/Families/GreeceModels/Info.plist
+
+  # Quick Look previews: Maps.
+  GreeceMaps:
+    templates: [PreviewExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook.maps
+        PRODUCT_NAME: GreeceMaps
+        INFOPLIST_FILE: GreeceQuickLook/Families/GreeceMaps/Info.plist
+
+  # Quick Look previews: Fonts & Media.
+  GreeceMedia:
+    templates: [PreviewExtension]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.scorchy.greece.quicklook.media
+        PRODUCT_NAME: GreeceMedia
+        INFOPLIST_FILE: GreeceQuickLook/Families/GreeceMedia/Info.plist
 
   # The companion app: onboarding, live-preview settings, sample files.
   # Finder thumbnails: miniature pages of Markdown, code and tables.
@@ -105,6 +179,48 @@ targets:
     dependencies:
       - target: GreeceKit
       - target: GreeceQuickLook
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceDocuments
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceData
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceArchives
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceApps
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceModels
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceMaps
+        embed: true
+        codeSign: true
+        buildPhase:
+          copyFiles:
+            destination: plugins
+      - target: GreeceMedia
         embed: true
         codeSign: true
         buildPhase:

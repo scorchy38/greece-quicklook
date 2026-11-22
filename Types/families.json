@@ -1,0 +1,13 @@
+{
+  "comment": "Each Quick Look preview extension Greece ships, and the type lists (Types/preview/<list>.txt) it claims. Every list belongs to exactly one family. Turning a family off in Greece or System Settings hands its types back to macOS.",
+  "families": [
+    {"id": "code", "target": "GreeceQuickLook", "bundle": "com.scorchy.greece.quicklook", "name": "Code & Text", "lists": ["core"]},
+    {"id": "documents", "target": "GreeceDocuments", "bundle": "com.scorchy.greece.quicklook.documents", "name": "Markdown & Documents", "lists": ["markdown", "documents"]},
+    {"id": "data", "target": "GreeceData", "bundle": "com.scorchy.greece.quicklook.data", "name": "Data & Tables", "lists": ["tables", "data"]},
+    {"id": "archives", "target": "GreeceArchives", "bundle": "com.scorchy.greece.quicklook.archives", "name": "Archives & Folders", "lists": ["archives", "folders"]},
+    {"id": "apps", "target": "GreeceApps", "bundle": "com.scorchy.greece.quicklook.apps", "name": "Apps & Installers", "lists": ["apps"]},
+    {"id": "models", "target": "GreeceModels", "bundle": "com.scorchy.greece.quicklook.models", "name": "3D Models", "lists": ["models"]},
+    {"id": "maps", "target": "GreeceMaps", "bundle": "com.scorchy.greece.quicklook.maps", "name": "Maps", "lists": ["maps"]},
+    {"id": "media", "target": "GreeceMedia", "bundle": "com.scorchy.greece.quicklook.media", "name": "Fonts & Media", "lists": ["media"]}
+  ]
+}

@@ -21,7 +21,6 @@ com.microsoft.cab
 cx.c3.lha-archive
 com.apple.xar-archive
 public.cpio-archive
-public.iso-image
 com.redhat.rpm-archive
 org.debian.deb-archive
 org.chromium.extension
