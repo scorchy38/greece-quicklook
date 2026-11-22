@@ -1,7 +1,7 @@
 import AppKit
 
 /// Tables and views on the left; their rows, schema, or the relationships between them on the right.
-final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegate, PreviewSettingsAware {
+final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegate, NSMenuDelegate, PreviewSettingsAware {
     private enum Item: Equatable {
         case header(String)
         case diagram
@@ -46,6 +46,9 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         sidebar.delegate = self
         sidebar.focusRingType = .none
         sidebar.floatsGroupRows = false
+        let sidebarMenu = NSMenu()
+        sidebarMenu.delegate = self
+        sidebar.menu = sidebarMenu
 
         let sidebarScroll = NSScrollView()
         sidebarScroll.documentView = sidebar
@@ -223,6 +226,23 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         show(items[row])
     }
 
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.removeAllItems()
+        menu.autoenablesItems = false
+        for item in sidebarMenuItems(forRow: sidebar.clickedRow) { menu.addItem(item) }
+    }
+
+    /// A table's name and definition to copy, from a right-click in the sidebar.
+    func sidebarMenuItems(forRow row: Int) -> [NSMenuItem] {
+        guard row >= 0, row < items.count, case .object(let index) = items[row] else { return [] }
+        let object = database.objects[index]
+        var items: [NSMenuItem] = [ActionMenuItem("Copy Name") { Clipboard.copy(object.name) }]
+        if let sql = object.sql {
+            items.append(ActionMenuItem("Copy CREATE Statement") { Clipboard.copy(SQLFormatter.format(sql)) })
+        }
+        return items
+    }
+
     /// Exact counts for tables that were only estimated, worked out off the main thread.
     private func refineCounts() {
         for (row, item) in items.enumerated() {
@@ -265,6 +285,7 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         case .diagram:
             let diagramView = SQLiteDiagramView(diagram: diagram)
             diagramView.canvas.onOpen = { [weak self] name in self?.open(name) }
+            diagramView.canvas.onShowSchema = { [weak self] name in self?.open(name, mode: .schema) }
             view = diagramView
             onSelectionChange?(nil)
         case .object(let index):
@@ -326,12 +347,12 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         }
     }
 
-    /// Opens a table by name in the data view (from the diagram).
-    private func open(_ name: String) {
+    /// Opens a table by name (from the diagram), in the data view or its schema.
+    private func open(_ name: String, mode: Mode = .data) {
         guard let index = database.objects.firstIndex(where: { $0.name == name }),
               let row = items.firstIndex(of: .object(index)) else { return }
-        mode = .data
-        modes.selectedSegment = 0
+        self.mode = mode
+        modes.selectedSegment = mode.rawValue
         sidebar.selectRowIndexes([row], byExtendingSelection: false)
         sidebar.scrollRowToVisible(row)
     }
