@@ -130,14 +130,14 @@ final class CodeFormatterTests: XCTestCase {
         XCTAssertNil(XMLFormatter.prettyPrinted("<a><!-- never closed </a>"))
     }
 
-    func testFormattersRefuseHostileInputQuickly() {
+    func testFormattersRefuseHostileInputQuickly() throws {
         let start = Date()
         XCTAssertNil(XMLFormatter.prettyPrinted(String(repeating: "<a>", count: 200_000)), "nesting bomb")
         XCTAssertNil(GraphQLFormatter.prettyPrinted(String(repeating: "{", count: 200_000)))
         XCTAssertNil(CodeFormatter.format(String(repeating: "a;", count: 600_000), style: .javascript(jsx: false)), "too large to format quickly")
         XCTAssertNil(CodeFormatter.format(String(repeating: "select 1,", count: 3_000), style: .sql(dialect: "sql")), "too large for sql-formatter")
         XCTAssertNil(XMLFormatter.prettyPrinted(String(repeating: "<", count: 1_000_000)))
-        XCTAssertLessThan(Date().timeIntervalSince(start), 3)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(start), 3)
     }
 
     // MARK: Through the preview pipeline
@@ -410,7 +410,7 @@ final class CodeAnalysisTests: XCTestCase {
 
     // MARK: Hostile input
 
-    func testHostileInputFinishesQuickly() {
+    func testHostileInputFinishesQuickly() throws {
         let start = Date()
         let result = evaluate("""
         (function () {
@@ -428,7 +428,7 @@ final class CodeAnalysisTests: XCTestCase {
         })()
         """)
         XCTAssertEqual(result, "[0,1,100000,1,50001,1000001,2,true]")
-        XCTAssertLessThan(Date().timeIntervalSince(start), 5)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(start), 5)
     }
 
     // MARK: Scripts

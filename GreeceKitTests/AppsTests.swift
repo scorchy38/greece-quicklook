@@ -846,7 +846,7 @@ final class WindowsTests: XCTestCase {
         for offset in stride(from: headers + 0x1000, to: data.count, by: 8) { data.replaceSubrange(offset..<(offset + 8), with: ordinal) }
         let started = Date()
         let file = try PEFile(data: data)
-        XCTAssertLessThan(Date().timeIntervalSince(started), 3)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 3)
         XCTAssertEqual(file.sections.count, 256)
         XCTAssertLessThanOrEqual(file.imports.reduce(0) { $0 + $1.functionCount }, PEFile.maxThunksTotal)
         XCTAssertTrue(file.imports.allSatisfy { $0.functions.count <= PEFile.maxNamesKept })
@@ -864,7 +864,7 @@ final class WindowsTests: XCTestCase {
         patch32(&data, at: file.directoriesOffset + 4 * 8 + 4, 0xFFFF_FFFF)
         let started = Date()
         let damaged = try PEFile(data: data)
-        XCTAssertLessThan(Date().timeIntervalSince(started), 1)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 1)
         XCTAssertNil(damaged.certificateTable)
         XCTAssertNil(AuthenticodeSignature(file: damaged))
         _ = WindowsPage.page(for: damaged, url: fixture("hello.exe"))
@@ -880,7 +880,7 @@ final class WindowsTests: XCTestCase {
         XCTAssertLessThanOrEqual(inflated.exports?.functionCount ?? 0, exports.count)
     }
 
-    func testHostileVersionBlocksAndSignatures() {
+    func testHostileVersionBlocksAndSignatures() throws {
         XCTAssertNil(PEVersionInfo(data: Data()))
         XCTAssertNil(PEVersionInfo(data: Data(repeating: 0xFF, count: 64)))
         // A block whose length is zero must not loop.
@@ -893,7 +893,7 @@ final class WindowsTests: XCTestCase {
         let endless = Data(String(repeating: "<requestedExecutionLevel level", count: 2000).utf8)
         let started = Date()
         _ = PEManifest(data: endless)
-        XCTAssertLessThan(Date().timeIntervalSince(started), 1)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 1)
     }
 
     func testMutatedImagesNeverCrash() throws {
@@ -922,7 +922,7 @@ final class WindowsTests: XCTestCase {
             _ = WindowsPage.icon(of: file)
             if let signature = AuthenticodeSignature(file: file) { _ = signature.integrity(of: file) }
         }
-        XCTAssertLessThan(Date().timeIntervalSince(started), 20)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 20)
     }
 }
 
@@ -1122,7 +1122,7 @@ final class InstallerPackageTests: XCTestCase {
         guard FileManager.default.fileExists(atPath: url.path) else { throw XCTSkip("Xcode's MobileDevice.pkg isn't installed") }
         let started = Date()
         let package = try InstallerPackage.read(url)
-        XCTAssertLessThan(Date().timeIntervalSince(started), 2)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 2)
         let signature = try XCTUnwrap(package.signature)
         XCTAssertEqual(signature.verdict, .valid)
         XCTAssertTrue(signature.chainsToApple)
@@ -1601,7 +1601,7 @@ final class AndroidTests: XCTestCase {
         }
     }
 
-    func testHostileStringPoolIsRejectedCheaply() {
+    func testHostileStringPoolIsRejectedCheaply() throws {
         // An XML chunk whose string pool claims two billion strings.
         var data = Data()
         func u16(_ value: UInt16) { withUnsafeBytes(of: value.littleEndian) { data.append(contentsOf: $0) } }
@@ -1611,7 +1611,7 @@ final class AndroidTests: XCTestCase {
         let started = Date()
         XCTAssertThrowsError(try AndroidBinaryXML.parse(data))
         XCTAssertNil(AndroidStringPool(data: data, chunk: 8))
-        XCTAssertLessThan(Date().timeIntervalSince(started), 0.5)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 0.5)
     }
 
     func testDeeplyNestedBinaryXMLIsBounded() throws {
@@ -1628,7 +1628,7 @@ final class AndroidTests: XCTestCase {
         }
         let started = Date()
         let root = try? AndroidBinaryXML.parse(data, deadline: Date().addingTimeInterval(2))
-        XCTAssertLessThan(Date().timeIntervalSince(started), 2)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 2)
         var depth = 0
         var node = root
         while let current = node { depth += 1; node = current.children.first }
@@ -1737,7 +1737,7 @@ final class AndroidTests: XCTestCase {
             _ = try? AndroidPage.page(for: url, settings: PreviewSettings())
             _ = AndroidPage.icon(for: url)
         }
-        XCTAssertLessThan(Date().timeIntervalSince(started), 20)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 20)
     }
 
     func testIconDecodingRefusesGiantDimensions() {
@@ -1772,7 +1772,7 @@ final class AndroidTests: XCTestCase {
         XCTAssertEqual(package.features, [.init(name: "OpenGL ES 3.0", required: true)])
     }
 
-    func testSVGPathData() {
+    func testSVGPathData() throws {
         XCTAssertNotNil(SVGPath.parse("M0,0 L10,10 Z"))
         XCTAssertNotNil(SVGPath.parse("m1 1h2v2h-2z M5,5 c1,1 2,2 3,3 s1,1 2,2 q1,1 2,2 t1,1 a2,2 0 1,1 4,0"))
         XCTAssertNotNil(SVGPath.parse("M0,0a0,0 0 0,1 5,5"))       // zero radius becomes a line
@@ -1782,7 +1782,7 @@ final class AndroidTests: XCTestCase {
         let started = Date()
         _ = SVGPath.parse("M0,0" + String(repeating: "z1", count: 200_000))
         _ = SVGPath.parse(String(repeating: "L", count: 300_000))
-        XCTAssertLessThan(Date().timeIntervalSince(started), 2)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 2)
     }
 }
 
@@ -2157,7 +2157,7 @@ final class DiskImageTests: XCTestCase {
         let url = try write("loop.dmg", disk)
         let started = Date()
         let contents = try XCTUnwrap(DiskImage(url: url).contents())
-        XCTAssertLessThan(Date().timeIntervalSince(started), 2)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 2)
         XCTAssertLessThanOrEqual(contents.entries.count, 16)
     }
 

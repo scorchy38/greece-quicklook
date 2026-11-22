@@ -408,7 +408,7 @@ final class LaTeXConverterTests: DocumentsTestCase {
     func testMacroBombsStop() throws {
         let start = Date()
         let result = try convert("\\def\\a{\\a\\a}\\a \\newcommand{\\b}{\\b x}\\b")
-        XCTAssertLessThan(Date().timeIntervalSince(start), 6)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(start), 6)
         XCTAssertNotNil(result["stopped"] as? String)
     }
 
@@ -425,7 +425,7 @@ final class LaTeXConverterTests: DocumentsTestCase {
         let huge = "\\begin{document}" + String(repeating: paragraph + "\n\n", count: 40_000) + "\\end{document}"
         let start = Date()
         let result = try convert(huge)
-        XCTAssertLessThan(Date().timeIntervalSince(start), 12)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(start), 12)
         XCTAssertNotNil(result["html"])
     }
 
@@ -796,7 +796,7 @@ final class PGFTests: DocumentsTestCase {
         let huge = "\\begin{pgfpicture}" + String(repeating: "\\pgfpathlineto{\\pgfqpoint{1in}{1in}}", count: 500_000) + "\\pgfusepath{stroke}"
         let start = Date()
         _ = PGF.parse(huge)
-        XCTAssertLessThan(Date().timeIntervalSince(start), 6)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(start), 6)
         XCTAssertNil(PGF.parse("not pgf at all"))
         let recursive = "\\pgfsys@defobject{a}{}{}{\\pgfsys@useobject{a}{}}\\pgfsys@useobject{a}{}"
         _ = PGF.parse(recursive)

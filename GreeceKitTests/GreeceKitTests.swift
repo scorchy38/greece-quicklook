@@ -336,11 +336,11 @@ final class HardeningTests: XCTestCase {
         XCTAssertEqual(FileNode.tree(from: listing, showHidden: false).size, .max)
     }
 
-    func testJSONNestingBombIsRefusedQuickly() {
+    func testJSONNestingBombIsRefusedQuickly() throws {
         let bomb = String(repeating: "[", count: 20_000) + "1" + String(repeating: "]", count: 20_000)
         let start = Date()
         XCTAssertNil(JSONFormatter.prettyPrinted(bomb))
-        XCTAssertLessThan(Date().timeIntervalSince(start), 1)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(start), 1)
     }
 
     func testColumnFloodIsCapped() {

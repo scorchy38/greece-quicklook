@@ -176,12 +176,12 @@ final class MarkdownExtrasTests: XCTestCase {
         for (index, source) in cases.enumerated() {
             let started = Date()
             _ = try render(source)
-            XCTAssertLessThan(Date().timeIntervalSince(started), 3, "case \(index)")
+            try XCTAssertWithinBudget(Date().timeIntervalSince(started), 3, "case \(index)")
         }
         for source in [String(repeating: "<Foo>\n", count: 3_000), String(repeating: "{", count: 30_000), String(repeating: "import {\n", count: 3_000)] {
             let started = Date()
             _ = try render(source, fileName: "x.mdx")
-            XCTAssertLessThan(Date().timeIntervalSince(started), 3)
+            try XCTAssertWithinBudget(Date().timeIntervalSince(started), 3)
         }
     }
 

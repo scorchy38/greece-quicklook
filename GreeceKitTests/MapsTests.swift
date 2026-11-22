@@ -477,7 +477,7 @@ final class MapsTests: XCTestCase {
         """
         let start = CFAbsoluteTimeGetCurrent()
         let document = try? load(try file("bomb.kml", entities))
-        XCTAssertLessThan(CFAbsoluteTimeGetCurrent() - start, 10)
+        try XCTAssertWithinBudget(CFAbsoluteTimeGetCurrent() - start, 10)
         XCTAssertFalse((document?.layers.first?.features.first?.name ?? "").contains("root:"))
     }
 

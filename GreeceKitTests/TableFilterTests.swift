@@ -186,7 +186,7 @@ final class TableFilterTests: XCTestCase {
         func text(row: Int, column: Int) -> String { column == 0 ? String(row) : cities[row % 4] }
     }
 
-    func testMillionRowsFilterOffTheMainThread() {
+    func testMillionRowsFilterOffTheMainThread() throws {
         let source = RecordGridSource(store: MillionRows())
         let started = CFAbsoluteTimeGetCurrent()
         let done = expectation(description: "filtered")
@@ -204,8 +204,8 @@ final class TableFilterTests: XCTestCase {
         XCTAssertEqual(source.rowCount, 250)
         print(String(format: "Table 1M rows filter: returns in %.2f ms · equality %.0f ms · plus a number bound %.0f ms",
                      returned * 1000, equality * 1000, bound * 1000))
-        XCTAssertLessThan(returned, 0.01, "the main thread only hands the work over")
-        XCTAssertLessThan(equality, 5)
+        try XCTAssertWithinBudget(returned, 0.01, "the main thread only hands the work over")
+        try XCTAssertWithinBudget(equality, 5)
     }
 
     // MARK: - Menus

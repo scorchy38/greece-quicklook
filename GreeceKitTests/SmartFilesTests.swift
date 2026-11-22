@@ -578,6 +578,6 @@ final class SmartFilesTests: XCTestCase {
         let started = Date()
         let rows = try js("return GreeceSmart.kind('log').analyse(input).rows;", input: text).toInt32()
         XCTAssertEqual(rows, 100_000)
-        XCTAssertLessThan(Date().timeIntervalSince(started), 2.0)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(started), 2.0)
     }
 }

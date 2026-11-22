@@ -293,7 +293,7 @@ final class MediaTests: XCTestCase {
         XCTAssertNil(SubtitleParser.assColor("&HZZZ"))
     }
 
-    func testGiantSubtitlesAreCapped() {
+    func testGiantSubtitlesAreCapped() throws {
         var text = ""
         text.reserveCapacity(9_000_000)
         for index in 0..<(SubtitleParser.cueLimit + 5000) {
@@ -303,7 +303,7 @@ final class MediaTests: XCTestCase {
         let document = SubtitleParser.parse(text, format: .srt)
         XCTAssertEqual(document.cues.count, SubtitleParser.cueLimit)
         XCTAssertTrue(document.truncated)
-        XCTAssertLessThan(Date().timeIntervalSince(start), 20)
+        try XCTAssertWithinBudget(Date().timeIntervalSince(start), 20)
     }
 
     func testHostileSubtitles() throws {
