@@ -16,14 +16,14 @@ final class PreviewKinds: ObservableObject {
     @Published private(set) var working = false
 
     private static let descriptions: [String: (detail: String, symbol: String)] = [
-        "com.scorchy.greece.quicklook": ("Source code, JSON, property lists, patches and logs", "chevron.left.forwardslash.chevron.right"),
-        "com.scorchy.greece.quicklook.documents": ("Markdown, notebooks, LaTeX, EPUB, Org and more", "doc.richtext"),
-        "com.scorchy.greece.quicklook.data": ("TSV, SQLite, HAR, lock files, Parquet and more", "tablecells"),
-        "com.scorchy.greece.quicklook.archives": ("ZIP, 7z, RAR, tar, comics, packages and folders", "archivebox"),
-        "com.scorchy.greece.quicklook.apps": ("Apps, installers, disk images, profiles and binaries", "app.badge"),
-        "com.scorchy.greece.quicklook.models": ("glTF, FBX, STL, OBJ, 3MF and point clouds", "cube"),
-        "com.scorchy.greece.quicklook.maps": ("GeoJSON, KML, GPX, shapefiles and map tiles", "map"),
-        "com.scorchy.greece.quicklook.media": ("Fonts, subtitles, SVG, Lottie and colour palettes", "textformat"),
+        "com.scorchy.greece.quicklook": (String(localized: "Source code, JSON, property lists, patches and logs", comment: "Preview Kinds: what this kind covers"), "chevron.left.forwardslash.chevron.right"),
+        "com.scorchy.greece.quicklook.documents": (String(localized: "Markdown, notebooks, LaTeX, EPUB, Org and more", comment: "Preview Kinds: what this kind covers"), "doc.richtext"),
+        "com.scorchy.greece.quicklook.data": (String(localized: "TSV, SQLite, HAR, lock files, Parquet and more", comment: "Preview Kinds: what this kind covers"), "tablecells"),
+        "com.scorchy.greece.quicklook.archives": (String(localized: "ZIP, 7z, RAR, tar, comics, packages and folders", comment: "Preview Kinds: what this kind covers"), "archivebox"),
+        "com.scorchy.greece.quicklook.apps": (String(localized: "Apps, installers, disk images, profiles and binaries", comment: "Preview Kinds: what this kind covers"), "app.badge"),
+        "com.scorchy.greece.quicklook.models": (String(localized: "glTF, FBX, STL, OBJ, 3MF and point clouds", comment: "Preview Kinds: what this kind covers"), "cube"),
+        "com.scorchy.greece.quicklook.maps": (String(localized: "GeoJSON, KML, GPX, shapefiles and map tiles", comment: "Preview Kinds: what this kind covers"), "map"),
+        "com.scorchy.greece.quicklook.media": (String(localized: "Fonts, subtitles, SVG, Lottie and colour palettes", comment: "Preview Kinds: what this kind covers"), "textformat"),
     ]
 
     func refresh() {

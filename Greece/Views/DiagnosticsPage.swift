@@ -30,7 +30,8 @@ struct DiagnosticsPage: View {
                 .padding(.vertical, 6)
                 HStack {
                     Button("Check Again") { Task { await diagnostics.run() } }.disabled(diagnostics.running)
-                    Button(copied ? "Copied" : "Copy Report") {
+                    Button(copied ? String(localized: "Copied", comment: "Shown briefly after copying the report")
+                                  : String(localized: "Copy Report", comment: "Copies a plain-text diagnostics report")) {
                         NSPasteboard.general.clearContents()
                         NSPasteboard.general.setString(diagnostics.report, forType: .string)
                         copied = true
@@ -43,12 +44,14 @@ struct DiagnosticsPage: View {
                 }
             }
 
-            Section("Greece") {
+            Section {
                 ForEach(diagnostics.findings) { finding in
                     FindingRow(finding: finding) { fix in
                         Task { await diagnostics.perform(fix, status: status) }
                     }
                 }
+            } header: {
+                Text(verbatim: "Greece")
             }
 
             Section {
@@ -70,11 +73,14 @@ struct DiagnosticsPage: View {
                 } else {
                     ForEach(others) { item in
                         LabeledContent {
-                            Text(item.enabled ? "On" : "Off").foregroundStyle(.secondary)
+                            Text(item.enabled ? String(localized: "On", comment: "Extension state") : String(localized: "Off", comment: "Extension state"))
+                                .foregroundStyle(.secondary)
                         } label: {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(item.app)
-                                Text("\(item.isThumbnail ? "Finder thumbnails" : "Previews") · \(item.types.count) file types")
+                                Text(item.isThumbnail
+                                     ? String(localized: "Finder thumbnails · \(item.types.count) file types", comment: "Another app’s thumbnail extension")
+                                     : String(localized: "Previews · \(item.types.count) file types", comment: "Another app’s preview extension"))
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }
@@ -87,12 +93,9 @@ struct DiagnosticsPage: View {
     }
 
     private var headline: String {
-        if diagnostics.findings.isEmpty { return "Checking…" }
-        switch attention {
-        case 0: return "Everything looks right"
-        case 1: return "One thing needs attention"
-        default: return "\(attention) things need attention"
-        }
+        if diagnostics.findings.isEmpty { return String(localized: "Checking…") }
+        if attention == 0 { return String(localized: "Everything looks right", comment: "Diagnostics found no problems") }
+        return String(localized: "\(attention) things need attention", comment: "Diagnostics headline")
     }
 }
 
@@ -133,13 +136,14 @@ private struct RouteRow: View {
             }
             Spacer(minLength: 8)
             verdict
-            Group {
-                if route.checking {
-                    ProgressView().controlSize(.small).frame(width: 52)
-                } else {
-                    Button("Check", action: check).controlSize(.small).frame(width: 52)
+            // The button keeps its room while checking, so rows don't shift and every language fits.
+            Button("Check", action: check)
+                .controlSize(.small)
+                .opacity(route.checking ? 0 : 1)
+                .disabled(route.checking)
+                .overlay {
+                    if route.checking { ProgressView().controlSize(.small) }
                 }
-            }
         }
         .padding(.vertical, 1)
     }
@@ -147,19 +151,32 @@ private struct RouteRow: View {
     @ViewBuilder private var verdict: some View {
         if let observed = route.observed {
             switch observed {
-            case .greece: badge("Greece", "checkmark.seal.fill", .green, help: "Confirmed in Quick Look just now.")
-            case .otherExtension: badge("Another app", "puzzlepiece.extension.fill", .orange, help: "Quick Look picked another app’s extension.")
-            case .macOS(let viewer): badge("macOS", "apple.logo", .secondary, help: "Quick Look used \(viewer).")
-            case .noAnswer: badge("No answer", "questionmark.circle", .secondary, help: "Quick Look didn’t report a viewer in time. Try again.")
+            case .greece:
+                badge("Greece", "checkmark.seal.fill", .green, help: String(localized: "Confirmed in Quick Look just now."))
+            case .otherExtension:
+                badge(String(localized: "Another app", comment: "Diagnostics: another app’s extension showed the file"), "puzzlepiece.extension.fill", .orange,
+                      help: String(localized: "Quick Look picked another app’s extension."))
+            case .macOS(let viewer):
+                badge("macOS", "apple.logo", .secondary,
+                      help: String(localized: "Quick Look used \(viewer).", comment: "The argument is a viewer, such as Apple’s text viewer"))
+            case .noAnswer:
+                badge(String(localized: "No answer", comment: "Diagnostics: Quick Look didn’t say which viewer it used"), "questionmark.circle", .secondary,
+                      help: String(localized: "Quick Look didn’t report a viewer in time. Try again."))
             }
         } else {
             switch route.verdict {
-            case .greece: badge("Greece", "checkmark.circle.fill", .green, help: "Greece claims this type.")
-            case .greeceShared(let others): badge("Greece, also \(others.joined(separator: ", "))", "exclamationmark.triangle.fill", .orange,
-                                                  help: "More than one extension claims this type; Quick Look shows only one.")
-            case .otherApp(let app): badge(app, "puzzlepiece.extension", .secondary, help: "\(app) claims this type.")
-            case .macOSKeeps(let reason): badge("macOS keeps", "lock.fill", .secondary, help: reason)
-            case .macOS: badge("macOS", "apple.logo", .secondary, help: "Shown by Apple’s built-in viewer.")
+            case .greece:
+                badge("Greece", "checkmark.circle.fill", .green, help: String(localized: "Greece claims this type."))
+            case .greeceShared(let others):
+                badge(String(localized: "Greece, also \(others.formatted(.list(type: .and)))", comment: "The argument lists other apps that claim the same file type"),
+                      "exclamationmark.triangle.fill", .orange,
+                      help: String(localized: "More than one extension claims this type; Quick Look shows only one."))
+            case .otherApp(let app):
+                badge(app, "puzzlepiece.extension", .secondary, help: String(localized: "\(app) claims this type.", comment: "The argument is an app’s name"))
+            case .macOSKeeps(let reason):
+                badge(String(localized: "macOS keeps", comment: "Diagnostics: macOS always shows this file type itself"), "lock.fill", .secondary, help: reason)
+            case .macOS:
+                badge("macOS", "apple.logo", .secondary, help: String(localized: "Shown by Apple’s built-in viewer."))
             }
         }
     }

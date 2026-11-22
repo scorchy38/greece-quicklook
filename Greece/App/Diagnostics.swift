@@ -38,10 +38,10 @@ final class Diagnostics: ObservableObject {
 
         var title: String {
             switch self {
-            case .reregister: return "Repair"
-            case .restartQuickLook: return "Restart Quick Look"
-            case .turnOff: return "Turn Off"
-            case .moveToApplications: return "Show in Finder"
+            case .reregister: return String(localized: "Repair", comment: "Button: registers this copy of Greece again")
+            case .restartQuickLook: return String(localized: "Restart Quick Look")
+            case .turnOff: return String(localized: "Turn Off", comment: "Button: turns another app’s Quick Look extension off")
+            case .moveToApplications: return String(localized: "Show in Finder")
             }
         }
     }
@@ -109,59 +109,100 @@ final class Diagnostics: ObservableObject {
         var results: [Finding] = []
         // Eight preview families: one summary when they're all fine, otherwise each issue.
         let families = ExtensionStatus.previewFamilies
-        let familyFindings = families.map { registration(of: $0.identifier, appex: $0.file, noun: "\($0.name) previews", lowercase: "\($0.name) previews", in: all) }
+        let familyFindings = families.map { registration(of: $0.identifier, appex: $0.file, subject: .previews($0.name), in: all) }
         let issues = familyFindings.filter { $0.severity > .ok }
         if issues.isEmpty {
-            results.append(Finding(id: "previews", severity: .ok, title: "Previews are on",
-                                   detail: "All \(families.count) kinds of preview use this copy of Greece.", fix: nil))
+            results.append(Finding(id: "previews", severity: .ok, title: String(localized: "Previews are on"),
+                                   detail: String(localized: "All \(families.count) kinds of preview use this copy of Greece."), fix: nil))
         } else {
             results += issues
         }
-        results.append(registration(of: "com.scorchy.greece.thumbnails", appex: "GreeceThumbnails.appex", noun: "Finder thumbnails", lowercase: "Finder thumbnails", in: all))
+        results.append(registration(of: "com.scorchy.greece.thumbnails", appex: "GreeceThumbnails.appex", subject: .thumbnails, in: all))
         if !Bundle.main.bundlePath.hasPrefix("/Applications/") {
-            results.append(Finding(id: "location", severity: .warning, title: "Greece isn’t in Applications",
-                                   detail: "macOS may stop using Greece’s extensions when it runs from another folder. Move it to Applications and open it from there.",
+            results.append(Finding(id: "location", severity: .warning, title: String(localized: "Greece isn’t in Applications"),
+                                   detail: String(localized: "macOS may stop using Greece’s extensions when it runs from another folder. Move it to Applications and open it from there."),
                                    fix: .moveToApplications))
         }
         // Third-party extensions that claim the same files as Greece compete for them.
         for other in all where !other.isApple && !other.isGreece && other.enabled && !other.isThumbnail {
             let overlap = other.types.intersection(greeceTypes)
             guard !overlap.isEmpty else { continue }
-            let examples = overlap.compactMap { UTType($0)?.localizedDescription ?? $0 }.sorted().prefix(4).joined(separator: ", ")
-            results.append(Finding(id: "overlap-\(other.id)", severity: .warning, title: "\(other.app) also previews \(overlap.count) of Greece’s file types",
-                                   detail: "Quick Look shows only one of them for \(examples)\(overlap.count > 4 ? " and more" : ""). Turn \(other.app)’s extension off to let Greece show them.",
+            let names = overlap.map { UTType($0)?.localizedDescription ?? $0 }.sorted()
+            let examples = names.count > 4
+                ? Array(names.prefix(4)) + [String(localized: "other types", comment: "Ends a list of file types, as in “JSON, YAML and other types”")]
+                : names
+            let list = examples.formatted(.list(type: .and))
+            results.append(Finding(id: "overlap-\(other.id)", severity: .warning,
+                                   title: String(localized: "\(other.app) also previews \(overlap.count) of Greece’s file types", comment: "The first argument is an app’s name"),
+                                   detail: String(localized: "Quick Look shows only one of them for \(list). Turn \(other.app)’s extension off to let Greece show them.",
+                                                  comment: "The first argument lists file types; the second is an app’s name"),
                                    fix: .turnOff(identifier: other.id, name: other.app)))
         }
         let legacy = Self.legacyGenerators()
         if !legacy.isEmpty {
-            results.append(Finding(id: "legacy", severity: .info, title: "\(legacy.count) older Quick Look plug-in\(legacy.count == 1 ? "" : "s") installed",
-                                   detail: legacy.map { ($0 as NSString).lastPathComponent }.joined(separator: ", ") + ". These use Apple’s retired plug-in system. If previews look wrong for a file type, removing them can help.",
+            let names = legacy.map { ($0 as NSString).lastPathComponent }.formatted(.list(type: .and))
+            results.append(Finding(id: "legacy", severity: .info,
+                                   title: String(localized: "\(legacy.count) older Quick Look plug-ins installed", comment: "Legacy .qlgenerator plug-ins"),
+                                   detail: String(localized: "\(names). These use Apple’s retired plug-in system. If previews look wrong for a file type, removing them can help.",
+                                                  comment: "The argument lists plug-in file names"),
                                    fix: nil))
         }
         findings = results.sorted { $0.severity > $1.severity }
         routes = routes.map(resolve)
     }
 
-    private func registration(of identifier: String, appex: String, noun: String, lowercase: String, in all: [InstalledExtension]) -> Finding {
+    /// What a registration finding is about: one family of previews (by its name), or Finder thumbnails.
+    /// Each gets whole sentences, so every language can phrase them its own way.
+    private enum Subject {
+        case previews(String)
+        case thumbnails
+
+        func say(previews: (String) -> String, thumbnails: @autoclosure () -> String) -> String {
+            switch self {
+            case .previews(let name): return previews(name)
+            case .thumbnails: return thumbnails()
+            }
+        }
+    }
+
+    private func registration(of identifier: String, appex: String, subject: Subject, in all: [InstalledExtension]) -> Finding {
         let own = Bundle.main.builtInPlugInsURL?.appendingPathComponent(appex).resolvingSymlinksInPath().path
         let copies = all.filter { $0.id == identifier }
         guard let active = copies.first else {
-            return Finding(id: identifier, severity: .problem, title: "\(noun) aren’t registered with macOS",
-                           detail: "Quick Look doesn’t know about Greece’s \(lowercase) yet.", fix: .reregister)
+            return Finding(id: identifier, severity: .problem,
+                           title: subject.say(previews: { String(localized: "\($0) previews aren’t registered with macOS", comment: "The argument is a kind of preview, such as Code & Text") },
+                                              thumbnails: String(localized: "Finder thumbnails aren’t registered with macOS")),
+                           detail: subject.say(previews: { String(localized: "Quick Look doesn’t know about Greece’s \($0) previews yet.", comment: "The argument is a kind of preview, such as Code & Text") },
+                                               thumbnails: String(localized: "Quick Look doesn’t know about Greece’s Finder thumbnails yet.")),
+                           fix: .reregister)
         }
         if URL(fileURLWithPath: active.path).resolvingSymlinksInPath().path != own {
-            return Finding(id: identifier, severity: .problem, title: "\(noun) come from another copy of Greece",
-                           detail: "Quick Look is using \(active.path). Repair to use this copy and remove the others.", fix: .reregister)
+            return Finding(id: identifier, severity: .problem,
+                           title: subject.say(previews: { String(localized: "\($0) previews come from another copy of Greece", comment: "The argument is a kind of preview, such as Code & Text") },
+                                              thumbnails: String(localized: "Finder thumbnails come from another copy of Greece")),
+                           detail: String(localized: "Quick Look is using \(active.path). Repair to use this copy and remove the others.",
+                                          comment: "The argument is the path of another copy’s extension"),
+                           fix: .reregister)
         }
         if !active.enabled {
-            return Finding(id: identifier, severity: .info, title: "\(noun) are off",
-                           detail: "macOS shows these files itself. Turn them back on in General › Preview Kinds.", fix: nil)
+            return Finding(id: identifier, severity: .info,
+                           title: subject.say(previews: { String(localized: "\($0) previews are off", comment: "The argument is a kind of preview, such as Code & Text") },
+                                              thumbnails: String(localized: "Finder thumbnails are off")),
+                           detail: String(localized: "macOS shows these files itself. Turn them back on in General › Preview Kinds.",
+                                          comment: "General is the settings page, Preview Kinds its section"),
+                           fix: nil)
         }
         if copies.count > 1 {
-            return Finding(id: identifier, severity: .warning, title: "\(noun): \(copies.count) copies of Greece are registered",
-                           detail: "Extra copies (old downloads, builds) can take over after updates. Repair removes them.", fix: .reregister)
+            return Finding(id: identifier, severity: .warning,
+                           title: subject.say(previews: { String(localized: "\($0) previews: \(copies.count) copies of Greece are registered", comment: "The first argument is a kind of preview, such as Code & Text") },
+                                              thumbnails: String(localized: "Finder thumbnails: \(copies.count) copies of Greece are registered")),
+                           detail: String(localized: "Extra copies (old downloads, builds) can take over after updates. Repair removes them."),
+                           fix: .reregister)
         }
-        return Finding(id: identifier, severity: .ok, title: "\(noun) are on", detail: "Quick Look uses this copy of Greece.", fix: nil)
+        return Finding(id: identifier, severity: .ok,
+                       title: subject.say(previews: { String(localized: "\($0) previews are on", comment: "The argument is a kind of preview, such as Code & Text") },
+                                          thumbnails: String(localized: "Finder thumbnails are on")),
+                       detail: String(localized: "Quick Look uses this copy of Greece."), fix: nil)
     }
 
     // MARK: - Routes
@@ -174,15 +215,17 @@ final class Diagnostics: ObservableObject {
         let id = type.identifier
 
         if id == UTType.commaSeparatedText.identifier {
-            route.verdict = .macOSKeeps("Quick Look always opens CSV in Apple’s Office previewer, before any extension.")
+            route.verdict = .macOSKeeps(String(localized: "Quick Look always opens CSV in Apple’s Office previewer, before any extension."))
         } else if type.conforms(to: .audiovisualContent) {
-            route.verdict = .macOSKeeps("This version of macOS treats .\((route.sampleName as NSString).pathExtension) files as video, so Quick Look opens its movie viewer.")
+            let ext = (route.sampleName as NSString).pathExtension
+            route.verdict = .macOSKeeps(String(localized: "This version of macOS treats .\(ext) files as video, so Quick Look opens its movie viewer.",
+                                               comment: "The argument is a file name extension, such as ts"))
         } else if id == UTType.plainText.identifier {
-            route.verdict = .macOSKeeps("Quick Look keeps plain text for its own text viewer.")
+            route.verdict = .macOSKeeps(String(localized: "Quick Look keeps plain text for its own text viewer."))
         } else if id == "public.svg-image" {
-            route.verdict = .macOSKeeps("Quick Look opens SVG in Apple’s web viewer, before any extension. Greece shows SVGs inside archives.")
+            route.verdict = .macOSKeeps(String(localized: "Quick Look opens SVG in Apple’s web viewer, before any extension. Greece shows SVGs inside archives."))
         } else if (route.sampleName as NSString).pathExtension == "mobileprovision" {
-            route.verdict = .macOSKeeps("Quick Look shows provisioning profiles with its text viewer. Greece shows them inside apps and archives.")
+            route.verdict = .macOSKeeps(String(localized: "Quick Look shows provisioning profiles with its text viewer. Greece shows them inside apps and archives."))
         } else {
             let others = extensions.filter { !$0.isGreece && !$0.isThumbnail && $0.enabled && !$0.isApple && $0.types.contains(id) }.map(\.app)
             if greeceTypes.contains(id) {
@@ -263,14 +306,15 @@ final class Diagnostics: ObservableObject {
     }
 
     private static func viewerName(_ bundle: String) -> String {
+        // Each completes “Quick Look used …”.
         switch bundle.split(separator: ".").last.map(String.init) ?? bundle {
-        case "Web2", "Web": return "Apple’s document previewer"
-        case "Movie": return "Apple’s movie viewer"
-        case "Text": return "Apple’s text viewer"
-        case "Image": return "Apple’s image viewer"
-        case "PDF": return "Apple’s PDF viewer"
-        case "Audio": return "Apple’s audio player"
-        default: return "a built-in viewer"
+        case "Web2", "Web": return String(localized: "Apple’s document previewer", comment: "Completes “Quick Look used %@.”")
+        case "Movie": return String(localized: "Apple’s movie viewer", comment: "Completes “Quick Look used %@.”")
+        case "Text": return String(localized: "Apple’s text viewer", comment: "Completes “Quick Look used %@.”")
+        case "Image": return String(localized: "Apple’s image viewer", comment: "Completes “Quick Look used %@.”")
+        case "PDF": return String(localized: "Apple’s PDF viewer", comment: "Completes “Quick Look used %@.”")
+        case "Audio": return String(localized: "Apple’s audio player", comment: "Completes “Quick Look used %@.”")
+        default: return String(localized: "a built-in viewer", comment: "Completes “Quick Look used %@.”")
         }
     }
 
@@ -280,13 +324,14 @@ final class Diagnostics: ObservableObject {
         switch fix {
         case .reregister:
             await status.enableAndWait()
-            message = "Greece is registered and on. Quick Look was restarted."
+            message = String(localized: "Greece is registered and on. Quick Look was restarted.")
         case .restartQuickLook:
             status.resetQuickLook()
         case .turnOff(let identifier, let name):
             _ = await ExtensionStatus.run("/usr/bin/pluginkit", ["-e", "ignore", "-i", identifier])
             _ = await ExtensionStatus.run("/usr/bin/qlmanage", ["-r"])
-            message = "\(name)’s Quick Look extension is off. You can turn it back on in System Settings › General › Login Items & Extensions."
+            message = String(localized: "\(name)’s Quick Look extension is off. You can turn it back on in System Settings › General › Login Items & Extensions.",
+                             comment: "The argument is an app’s name. Use the System Settings names macOS shows in this language.")
         case .moveToApplications:
             NSWorkspace.shared.activateFileViewerSelecting([Bundle.main.bundleURL])
         }
@@ -381,35 +426,35 @@ final class Diagnostics: ObservableObject {
         Route(id: "js", title: "JavaScript", sampleName: "app.js", sample: "const greece = true;\n"),
         Route(id: "ts", title: "TypeScript (.ts)", sampleName: "app.ts", sample: "const greece: boolean = true;\n"),
         Route(id: "tsx", title: "TypeScript (.tsx)", sampleName: "App.tsx", sample: "export const A = () => <div />;\n"),
-        Route(id: "sh", title: "Shell script", sampleName: "build.sh", sample: "#!/bin/sh\necho greece\n"),
+        Route(id: "sh", title: String(localized: "Shell script", comment: "Diagnostics: a kind of file"), sampleName: "build.sh", sample: "#!/bin/sh\necho greece\n"),
         Route(id: "go", title: "Go", sampleName: "main.go", sample: "package main\n"),
         Route(id: "rs", title: "Rust", sampleName: "main.rs", sample: "fn main() {}\n"),
         Route(id: "docker", title: "Dockerfile", sampleName: "Dockerfile", sample: "FROM swift\n"),
         Route(id: "make", title: "Makefile", sampleName: "Makefile", sample: "all:\n\techo greece\n"),
-        Route(id: "txt", title: "Plain text", sampleName: "readme.txt", sample: "Greece\n"),
-        Route(id: "log", title: "Log", sampleName: "server.log", sample: "INFO started\n"),
+        Route(id: "txt", title: String(localized: "Plain text", comment: "Diagnostics: a kind of file"), sampleName: "readme.txt", sample: "Greece\n"),
+        Route(id: "log", title: String(localized: "Log", comment: "Diagnostics: a kind of file"), sampleName: "server.log", sample: "INFO started\n"),
         Route(id: "csv", title: "CSV", sampleName: "table.csv", sample: "a,b\n1,2\n"),
         Route(id: "tsv", title: "TSV", sampleName: "table.tsv", sample: "a\tb\n1\t2\n"),
-        Route(id: "ipynb", title: "Jupyter notebook", sampleName: "analysis.ipynb", sample: "{\"cells\": [], \"metadata\": {}, \"nbformat\": 4, \"nbformat_minor\": 5}\n"),
-        Route(id: "patch", title: "Patch", sampleName: "change.patch", sample: "--- a/x\n+++ b/x\n@@ -1 +1 @@\n-a\n+b\n"),
-        Route(id: "plist", title: "Property list", sampleName: "Info.plist", sample: "<?xml version=\"1.0\"?><plist version=\"1.0\"><dict/></plist>\n"),
-        Route(id: "geojson", title: "GeoJSON map", sampleName: "places.geojson", sample: "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[25.4,37.1]}}]}\n"),
-        Route(id: "gpx", title: "GPX track", sampleName: "hike.gpx", sample: "<?xml version=\"1.0\"?><gpx version=\"1.1\" creator=\"Greece\"><trk><trkseg><trkpt lat=\"37.1\" lon=\"25.4\"/><trkpt lat=\"37.2\" lon=\"25.5\"/></trkseg></trk></gpx>\n"),
+        Route(id: "ipynb", title: String(localized: "Jupyter notebook", comment: "Diagnostics: a kind of file"), sampleName: "analysis.ipynb", sample: "{\"cells\": [], \"metadata\": {}, \"nbformat\": 4, \"nbformat_minor\": 5}\n"),
+        Route(id: "patch", title: String(localized: "Patch", comment: "Diagnostics: a kind of file"), sampleName: "change.patch", sample: "--- a/x\n+++ b/x\n@@ -1 +1 @@\n-a\n+b\n"),
+        Route(id: "plist", title: String(localized: "Property list", comment: "Diagnostics: a kind of file"), sampleName: "Info.plist", sample: "<?xml version=\"1.0\"?><plist version=\"1.0\"><dict/></plist>\n"),
+        Route(id: "geojson", title: String(localized: "GeoJSON map", comment: "Diagnostics: a kind of file"), sampleName: "places.geojson", sample: "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[25.4,37.1]}}]}\n"),
+        Route(id: "gpx", title: String(localized: "GPX track", comment: "Diagnostics: a kind of file"), sampleName: "hike.gpx", sample: "<?xml version=\"1.0\"?><gpx version=\"1.1\" creator=\"Greece\"><trk><trkseg><trkpt lat=\"37.1\" lon=\"25.4\"/><trkpt lat=\"37.2\" lon=\"25.5\"/></trkseg></trk></gpx>\n"),
         Route(id: "kml", title: "KML", sampleName: "places.kml", sample: "<?xml version=\"1.0\"?><kml xmlns=\"http://www.opengis.net/kml/2.2\"><Placemark><Point><coordinates>25.4,37.1</coordinates></Point></Placemark></kml>\n"),
-        Route(id: "gltf", title: "glTF model", sampleName: "model.gltf", sample: "{\"asset\":{\"version\":\"2.0\"},\"scenes\":[{\"nodes\":[]}]}\n"),
-        Route(id: "stl", title: "STL model", sampleName: "part.stl", sample: "solid part\nendsolid part\n"),
-        Route(id: "obj", title: "OBJ model", sampleName: "mesh.obj", sample: "v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n"),
+        Route(id: "gltf", title: String(localized: "glTF model", comment: "Diagnostics: a kind of file"), sampleName: "model.gltf", sample: "{\"asset\":{\"version\":\"2.0\"},\"scenes\":[{\"nodes\":[]}]}\n"),
+        Route(id: "stl", title: String(localized: "STL model", comment: "Diagnostics: a kind of file"), sampleName: "part.stl", sample: "solid part\nendsolid part\n"),
+        Route(id: "obj", title: String(localized: "OBJ model", comment: "Diagnostics: a kind of file"), sampleName: "mesh.obj", sample: "v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n"),
         Route(id: "tex", title: "LaTeX", sampleName: "paper.tex", sample: "\\documentclass{article}\\begin{document}Hello\\end{document}\n"),
         Route(id: "bib", title: "BibTeX", sampleName: "refs.bib", sample: "@article{key, title={Greece}}\n"),
         Route(id: "org", title: "Org mode", sampleName: "notes.org", sample: "* Greece\n** TODO Check\n"),
         Route(id: "adoc", title: "AsciiDoc", sampleName: "guide.adoc", sample: "= Greece\n\nHello.\n"),
         Route(id: "rst", title: "reStructuredText", sampleName: "readme.rst", sample: "Greece\n======\n"),
-        Route(id: "mermaid", title: "Mermaid diagram", sampleName: "flow.mmd", sample: "graph LR\n  A --> B\n"),
-        Route(id: "srt", title: "Subtitles", sampleName: "film.srt", sample: "1\n00:00:01,000 --> 00:00:02,000\nHello\n"),
-        Route(id: "mobileprovision", title: "Provisioning profile", sampleName: "app.mobileprovision", sample: "profile\n"),
-        Route(id: "svg", title: "SVG image", sampleName: "icon.svg", sample: "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"/>\n"),
-        Route(id: "ttf", title: "Font (TrueType)", sampleName: "font.ttf", sample: "font\n"),
-        Route(id: "woff2", title: "Web font", sampleName: "font.woff2", sample: "wOF2\n"),
+        Route(id: "mermaid", title: String(localized: "Mermaid diagram", comment: "Diagnostics: a kind of file"), sampleName: "flow.mmd", sample: "graph LR\n  A --> B\n"),
+        Route(id: "srt", title: String(localized: "Subtitles", comment: "Diagnostics: a kind of file"), sampleName: "film.srt", sample: "1\n00:00:01,000 --> 00:00:02,000\nHello\n"),
+        Route(id: "mobileprovision", title: String(localized: "Provisioning profile", comment: "Diagnostics: a kind of file"), sampleName: "app.mobileprovision", sample: "profile\n"),
+        Route(id: "svg", title: String(localized: "SVG image", comment: "Diagnostics: a kind of file"), sampleName: "icon.svg", sample: "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"/>\n"),
+        Route(id: "ttf", title: String(localized: "Font (TrueType)", comment: "Diagnostics: a kind of file"), sampleName: "font.ttf", sample: "font\n"),
+        Route(id: "woff2", title: String(localized: "Web font", comment: "Diagnostics: a kind of file"), sampleName: "font.woff2", sample: "wOF2\n"),
     ]
 }
 

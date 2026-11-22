@@ -2,16 +2,24 @@ import SwiftUI
 import GreeceKit
 
 /// Every setting, so the sidebar's search can find it by name or by what it's about.
+/// Titles match in the app's language; the English title and keywords match as well.
 struct SettingsEntry: Identifiable, Hashable {
     let title: String
     let page: Page
     let keywords: String
-    var id: String { page.rawValue + title }
+    var id: String { page.rawValue + keywords }
 
+    init(title: LocalizedStringResource, page: Page, keywords: String) {
+        self.title = String(localized: title)
+        self.page = page
+        self.keywords = title.key + " " + keywords
+    }
+
+    /// Every word must appear in the title, the page or the keywords, ignoring case and accents.
     func matches(_ query: String) -> Bool {
-        query.split(separator: " ").allSatisfy { word in
-            title.localizedCaseInsensitiveContains(word) || keywords.localizedCaseInsensitiveContains(word)
-                || page.title.localizedCaseInsensitiveContains(word)
+        query.split(whereSeparator: \.isWhitespace).allSatisfy { word in
+            title.localizedStandardContains(word) || page.title.localizedStandardContains(word)
+                || keywords.localizedStandardContains(word)
         }
     }
 
@@ -69,7 +77,8 @@ struct SettingsSearchResults: View {
         let results = SettingsEntry.all.filter { $0.matches(query) }
         Section("Settings") {
             if results.isEmpty {
-                Text("No settings match “\(query)”").foregroundStyle(.secondary)
+                Text("No settings match “\(query)”", comment: "Settings search; the argument is what was typed")
+                    .foregroundStyle(.secondary)
             }
             ForEach(results) { entry in
                 VStack(alignment: .leading, spacing: 1) {

@@ -15,8 +15,11 @@ struct GreeceApp: App {
                 set: { value in if store.settings.showInMenuBar != value { store.settings.showInMenuBar = value } })
     }
 
+    /// The app's name, the same in every language.
+    private let name = "Greece"
+
     var body: some Scene {
-        Window("Greece", id: "main") {
+        Window(name, id: "main") {
             RootView()
                 .environmentObject(store)
                 .environmentObject(status)
@@ -35,7 +38,7 @@ struct GreeceApp: App {
         }
 
         // After the main window: the first scene is the one that opens at launch.
-        MenuBarExtra("Greece", systemImage: "doc.text.magnifyingglass", isInserted: menuBarInserted) {
+        MenuBarExtra(name, systemImage: "doc.text.magnifyingglass", isInserted: menuBarInserted) {
             MenuBarView(recents: recents)
         }
         .menuBarExtraStyle(.window)

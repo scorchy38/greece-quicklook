@@ -7,9 +7,15 @@ import AppKit
 final class RecentFiles: ObservableObject {
 
     enum Source: String, CaseIterable {
-        case previewed = "Recently Previewed"
-        case claude = "Edited by Claude Code"
-        case codex = "Edited by Codex"
+        case previewed, claude, codex
+
+        var title: String {
+            switch self {
+            case .previewed: return String(localized: "Recently Previewed", comment: "Menu bar: files previewed in Quick Look")
+            case .claude: return String(localized: "Edited by Claude Code", comment: "Menu bar: files the Claude Code agent changed")
+            case .codex: return String(localized: "Edited by Codex", comment: "Menu bar: files the Codex agent changed")
+            }
+        }
 
         var symbol: String {
             switch self {

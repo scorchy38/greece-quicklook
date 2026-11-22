@@ -11,7 +11,11 @@ struct CodeThemeGallery: View {
     @State private var query = ""
 
     private var groups: [(title: String, themes: [CodeTheme])] {
-        let order: [(String, CodeTheme.Variants)] = [("Light and Dark", .pair), ("Light", .light), ("Dark", .dark)]
+        let order: [(String, CodeTheme.Variants)] = [
+            (String(localized: "Light and Dark", comment: "Group of code themes that have both variants"), .pair),
+            (String(localized: "Light", comment: "Code theme variant or group"), .light),
+            (String(localized: "Dark", comment: "Code theme variant or group"), .dark),
+        ]
         return order.compactMap { title, variants in
             let themes = CodeTheme.group(variants).filter { query.isEmpty || $0.matches(query) }
             return themes.isEmpty ? nil : (title, themes)
@@ -21,15 +25,15 @@ struct CodeThemeGallery: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("\(CodeTheme.all.count) themes")
+                Text("\(CodeTheme.all.count) themes", comment: "How many code themes there are")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Spacer()
-                SearchField(text: $query, prompt: "Search Themes")
+                SearchField(text: $query, prompt: String(localized: "Search Themes", comment: "Search field placeholder"))
                     .frame(width: 190)
             }
             if groups.isEmpty {
-                Text("No themes match “\(query)”")
+                Text("No themes match “\(query)”", comment: "Theme search; the argument is what was typed")
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, minHeight: 80)
             }
@@ -61,9 +65,9 @@ private struct CodeThemeCard: View {
         switch theme.variants {
         case .pair:
             if let light = theme.lightName, let dark = theme.darkName { return "\(light) · \(dark)" }
-            return "Light · Dark"
-        case .light: return "Light"
-        case .dark: return "Dark"
+            return String(localized: "Light · Dark", comment: "A code theme with both variants")
+        case .light: return String(localized: "Light", comment: "Code theme variant or group")
+        case .dark: return String(localized: "Dark", comment: "Code theme variant or group")
         }
     }
 
@@ -108,7 +112,7 @@ private struct CodeThemeCard: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .help(theme.name)
-        .accessibilityLabel("\(theme.name), \(subtitle)")
+        .accessibilityLabel([theme.name, subtitle].joined(separator: ", "))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 
@@ -173,7 +177,7 @@ struct CodeSwatch: View {
     }
 
     private func line(_ tokens: [(String, Token)]) -> Text {
-        tokens.reduce(Text("")) { result, token in
+        tokens.reduce(Text(verbatim: "")) { result, token in
             var piece = Text(token.0).foregroundColor(color(token.1))
             if token.1 == .keyword && theme.boldKeywords { piece = piece.fontWeight(.bold) }
             if token.1 == .comment && theme.italicComments { piece = piece.italic() }
@@ -266,7 +270,8 @@ private struct ReadingThemeCard: View {
         .buttonStyle(.plain)
         .onHover { hovering = $0 }
         .help(theme.summary)
-        .accessibilityLabel("\(theme.name) reading theme. \(theme.summary)")
+        .accessibilityLabel(Text("\(theme.name) reading theme. \(theme.summary)",
+                                 comment: "VoiceOver; the arguments are a theme’s name and its one-line description"))
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
 }
@@ -289,19 +294,29 @@ private struct MiniPage: View {
     private var centered: Bool { ["newsprint", "academic", "paper", "whitey"].contains(theme.id) }
     private var accent: Color { theme.isNative ? .accentColor : Color(hex: palette.accent) }
 
+    /// Capitals follow the app's language (Greek drops its accents, Turkish dots its İ).
+    private func capitals(_ text: String) -> String {
+        text.uppercased(with: Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en"))
+    }
+
     var body: some View {
         let text = Color(hex: palette.text)
+        let title = String(localized: "The Cyclades", comment: "Theme thumbnail: title of a tiny sample document about Greek islands")
+        let heading = String(localized: "Getting there", comment: "Theme thumbnail: a section heading in the sample document")
+        let link = Text("ferry", comment: "Theme thumbnail: the linked word in the sample sentence")
+            .foregroundColor(accent).underline(["newsprint", "paper", "notes", "graphite", "story"].contains(theme.id))
         VStack(alignment: centered ? .center : .leading, spacing: 4) {
-            Text(theme.id == "terminal" ? "# CYCLADES" : "The Cyclades")
+            Text(verbatim: theme.id == "terminal" ? "# " + capitals(title) : title)
                 .font(font(theme.headingFace, 12.5, theme.id == "academic" || theme.id == "paper" ? .regular : .bold))
                 .foregroundColor(Color(hex: palette.heading))
                 .lineLimit(1)
+                .minimumScaleFactor(0.7)
             if theme.id == "newsprint" || theme.id == "academic" || theme.id == "github" {
                 Rectangle().fill(Color(hex: palette.heading).opacity(theme.id == "github" ? 0.15 : 0.6)).frame(height: 0.75)
             }
-            (Text("A ring of islands in the Aegean, reached by ").foregroundColor(text)
-             + Text("ferry").foregroundColor(accent).underline(["newsprint", "paper", "notes", "graphite", "story"].contains(theme.id))
-             + Text(" from Piraeus each morning.").foregroundColor(text))
+            Text("A ring of islands in the Aegean, reached by \(link) from Piraeus each morning.",
+                 comment: "Theme thumbnail: the sample sentence; the argument is the linked word “ferry”")
+                .foregroundColor(text)
                 .font(font(theme.bodyFace, 6.4))
                 .lineSpacing(1.2)
                 .multilineTextAlignment(centered ? .center : .leading)
@@ -309,8 +324,8 @@ private struct MiniPage: View {
             if theme.id == "docs" {
                 Rectangle().fill(text.opacity(0.15)).frame(height: 0.75).padding(.top, 2)
             }
-            Text(theme.id == "academic" ? "1  Getting there" : theme.id == "terminal" ? "## Getting there"
-                 : theme.id == "newsprint" ? "GETTING THERE" : "Getting there")
+            Text(verbatim: theme.id == "academic" ? "1  " + heading : theme.id == "terminal" ? "## " + heading
+                 : theme.id == "newsprint" ? capitals(heading) : heading)
                 .font(font(theme.headingFace, theme.id == "newsprint" ? 6.5 : 8, theme.id == "paper" ? .semibold : .bold))
                 .tracking(theme.id == "newsprint" ? 0.8 : 0)
                 .foregroundColor(Color(hex: palette.heading))
@@ -320,7 +335,7 @@ private struct MiniPage: View {
                 Rectangle()
                     .fill(theme.id == "graphite" || theme.id == "nord" ? accent : Color(hex: palette.tertiary))
                     .frame(width: 1.5)
-                Text("The slow boats have better decks.")
+                Text("The slow boats have better decks.", comment: "Theme thumbnail: a quotation in the sample document")
                     .font(font(theme.bodyFace, 6.2).italic())
                     .foregroundColor(Color(hex: palette.secondary))
                     .lineLimit(2)

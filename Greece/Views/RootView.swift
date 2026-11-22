@@ -7,14 +7,14 @@ enum Page: String, CaseIterable, Identifiable, Hashable {
 
     var title: String {
         switch self {
-        case .welcome: return "Welcome"
+        case .welcome: return String(localized: "Welcome", comment: "Sidebar page")
         case .markdown: return "Markdown"
-        case .code: return "Code"
-        case .data: return "Data"
-        case .files: return "Archives & Folders"
-        case .general: return "General"
-        case .diagnostics: return "Diagnostics"
-        case .about: return "About"
+        case .code: return String(localized: "Code", comment: "Sidebar page: settings for source code previews")
+        case .data: return String(localized: "Data", comment: "Sidebar page: settings for tables and databases")
+        case .files: return String(localized: "Archives & Folders", comment: "Sidebar page")
+        case .general: return String(localized: "General", comment: "Sidebar page")
+        case .diagnostics: return String(localized: "Diagnostics", comment: "Sidebar page")
+        case .about: return String(localized: "About", comment: "Sidebar page: about Greece")
         }
     }
 
@@ -56,15 +56,17 @@ struct RootView: View {
                         Label(item.title, systemImage: item.symbol).tag(item)
                     }
                 }
-                Section("Greece") {
+                Section {
                     ForEach([Page.general, .diagnostics, .about]) { item in
                         Label(item.title, systemImage: item.symbol).tag(item)
                     }
+                } header: {
+                    Text(verbatim: "Greece")
                 }
                 }
             }
             .searchable(text: $query, placement: .sidebar, prompt: "Search Settings")
-            .navigationSplitViewColumnWidth(min: 190, ideal: 210, max: 260)
+            .navigationSplitViewColumnWidth(min: 190, ideal: Self.sidebarWidth, max: 260)
             .safeAreaInset(edge: .bottom) {
                 StatusFooter { page = .welcome }
             }
@@ -73,6 +75,14 @@ struct RootView: View {
                 .navigationTitle(page.title)
         }
     }
+
+    /// The sidebar opens at 210 pt, or wider when a page name in the app's language needs more room
+    /// (Greek “Αρχειοθήκες και φάκελοι”), so no name is cut off. A row's icon and insets take 62 pt.
+    private static let sidebarWidth: CGFloat = {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let widest = Page.allCases.map { ($0.title as NSString).size(withAttributes: [.font: font]).width }.max() ?? 0
+        return min(260, max(210, (widest + 63).rounded(.up)))
+    }()
 
     @ViewBuilder private var detail: some View {
         switch page {
@@ -95,10 +105,12 @@ private struct StatusFooter: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 7) {
+            // When a language wraps the status onto two lines, the dot stays with the first.
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
                 Circle()
                     .fill(color)
                     .frame(width: 7, height: 7)
+                    .alignmentGuide(.firstTextBaseline) { $0[.bottom] }
                 Text(text)
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -123,9 +135,9 @@ private struct StatusFooter: View {
 
     private var text: String {
         switch status.state {
-        case .active: return "Quick Look is on"
-        case .checking: return "Checking Quick Look…"
-        default: return "Turn on Quick Look"
+        case .active: return String(localized: "Quick Look is on", comment: "Sidebar status footer")
+        case .checking: return String(localized: "Checking Quick Look…", comment: "Sidebar status footer")
+        default: return String(localized: "Turn on Quick Look", comment: "Sidebar status footer; opens the Welcome page")
         }
     }
 }

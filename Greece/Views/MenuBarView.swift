@@ -32,15 +32,17 @@ struct MenuBarView: View {
                     if sources.isEmpty {
                         VStack(spacing: 6) {
                             Image(systemName: "doc.text.magnifyingglass").font(.system(size: 26)).foregroundStyle(.tertiary)
-                            Text(query.isEmpty ? "Files you preview, and files Claude Code or Codex edit, appear here." : "No matching files.")
+                            Text(query.isEmpty ? String(localized: "Files you preview, and files Claude Code or Codex edit, appear here.")
+                                               : String(localized: "No matching files.", comment: "Menu bar search found nothing"))
                                 .font(.callout).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 28)
                     }
                     ForEach(sources, id: \.self) { source in
                         VStack(alignment: .leading, spacing: 2) {
-                            Label(source.rawValue, systemImage: source.symbol)
+                            Label(source.title, systemImage: source.symbol)
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(.secondary)
                                 .padding(.horizontal, 8)
