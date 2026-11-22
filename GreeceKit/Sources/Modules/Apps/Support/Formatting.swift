@@ -8,7 +8,8 @@ enum Format {
 
     static func bytes(_ value: Int) -> String { bytes(UInt64(max(0, value))) }
 
-    /// "1 file", "1,204 files".
+    /// "1 file", "1,204 files", in English only. Being replaced: a count people see is a whole phrase
+    /// with plural variations, `String(localized: "\(count) files", bundle: .greeceKit)`.
     static func count(_ value: Int, _ singular: String, _ plural: String? = nil) -> String {
         "\(value.formatted()) \(value == 1 ? singular : (plural ?? singular + "s"))"
     }
@@ -32,8 +33,14 @@ enum Format {
     /// "Expires in 3 months" / "Expired 2 years ago", with a tone for how soon.
     static func expiry(_ date: Date, now: Date = Date()) -> (text: String, tone: InspectorTone) {
         let remaining = date.timeIntervalSince(now)
-        if remaining < 0 { return ("Expired " + relative(date, to: now), .critical) }
-        return ("Expires " + relative(date, to: now), remaining < 30 * 86_400 ? .caution : .neutral)
+        let when = relative(date, to: now)
+        if remaining < 0 {
+            return (String(localized: "Expired \(when)", bundle: .greeceKit,
+                           comment: "A certificate or profile. The argument is a relative time, such as “2 years ago”"), .critical)
+        }
+        return (String(localized: "Expires \(when)", bundle: .greeceKit,
+                       comment: "A certificate or profile. The argument is a relative time, such as “in 3 months”"),
+                remaining < 30 * 86_400 ? .caution : .neutral)
     }
 
     /// Joins non-empty parts with a middle dot.
@@ -46,10 +53,10 @@ enum Format {
         let short = short?.trimmingCharacters(in: .whitespaces).nilIfEmpty
         let build = build?.trimmingCharacters(in: .whitespaces).nilIfEmpty
         switch (short, build) {
-        case let (s?, b?) where s == b: return "Version \(s)"
-        case let (s?, b?): return "Version \(s) (\(b))"
-        case let (s?, nil): return "Version \(s)"
-        case let (nil, b?): return "Build \(b)"
+        case let (s?, b?) where s == b: return String(localized: "Version \(s)", bundle: .greeceKit, comment: "Under an app’s name. The argument is its version")
+        case let (s?, b?): return String(localized: "Version \(s) (\(b))", bundle: .greeceKit, comment: "Under an app’s name. The arguments are its version and build")
+        case let (s?, nil): return String(localized: "Version \(s)", bundle: .greeceKit, comment: "Under an app’s name. The argument is its version")
+        case let (nil, b?): return String(localized: "Build \(b)", bundle: .greeceKit, comment: "Under an app’s name. The argument is its build number")
         default: return nil
         }
     }
