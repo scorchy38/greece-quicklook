@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%d cabins left</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@cabins@</string>
+		<key>cabins</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Last cabin</string>
+			<key>other</key>
+			<string>%d cabins left</string>
+		</dict>
+	</dict>
+	<key>%d sailings</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@sailings@</string>
+		<key>sailings</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d sailing</string>
+			<key>other</key>
+			<string>%d sailings</string>
+			<key>zero</key>
+			<string>No sailings</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

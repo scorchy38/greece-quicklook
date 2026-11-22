@@ -1,0 +1,11 @@
+# Data: dBase tables, JSON Lines, HTTP Archives, Parquet, pipe-separated text and lock files.
+# (SQLite, TSV, string catalogs and most lock files arrive through types Greece's core list claims.)
+com.scorchy.greece.dbf
+org.libreoffice.dbf-document  # .dbf when LibreOffice is installed
+com.scorchy.greece.json-lines
+com.scorchy.greece.har
+com.scorchy.greece.parquet
+com.scorchy.greece.psv
+com.scorchy.greece.package-resolved
+com.scorchy.greece.go-sum
+com.scorchy.greece.gradle-lockfile

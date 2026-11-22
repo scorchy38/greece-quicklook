@@ -110,7 +110,12 @@ public enum PreviewFactory {
             if table.truncated { details.append("Showing first \(table.rows.count.formatted())") }
             if table.totalColumns > table.columnCount { details.append("First \(table.columnCount.formatted()) columns") }
             if file.encodingName != "UTF-8" { details.append(file.encodingName) }
-            let title = ext == "tsv" || ext == "tab" ? "TSV" : "CSV"
+            let title: String
+            switch table.separator {
+            case UInt8(ascii: "\t"): title = "TSV"
+            case UInt8(ascii: "|"): title = "PSV"
+            default: title = ext == "tsv" || ext == "tab" ? "TSV" : ext == "psv" ? "PSV" : "CSV"
+            }
             return .table(table, FileSummary(symbol: "tablecells", title: title, details: details, trailing: modified))
 
         case .sqlite:
@@ -187,21 +192,22 @@ public enum PreviewFactory {
             let content = try make(settings)
             return PreviewView(content: content, summary: summary, preferredSize: size, settings: settings)
         case .table(let table, let summary):
-            let grid = GridView(source: DelimitedGridSource(table: table), showsRowNumbers: settings.rowNumbers)
-            return PreviewView(content: grid, summary: summary, preferredSize: NSSize(width: 1060, height: 680), settings: settings)
+            let content = DataTableView(store: DelimitedStore(table: table), settings: settings)
+            return PreviewView(content: content, summary: summary, preferredSize: NSSize(width: 1060, height: 680), settings: settings)
         case .sqlite(let database, let summary):
-            guard !database.objects.isEmpty else { throw PreviewError.unsupported }
             let browser = SQLiteBrowserView(database: database, settings: settings)
-            let view = PreviewView(content: browser, summary: summary, preferredSize: NSSize(width: 1100, height: 700), settings: settings)
+            let view = PreviewView(content: browser, summary: summary, preferredSize: NSSize(width: 1100, height: 720), settings: settings)
             browser.onSelectionChange = { [weak view] object in
                 guard let view else { return }
-                var details = summary.details.filter { !$0.contains("rows") && !$0.contains("·") }
-                let rows = object.rowCount.map { "\($0.formatted()) rows" } ?? "View"
-                details.insert("\(object.name) · \(rows)", at: 0)
                 var updated = summary
-                updated.details = details
+                if let object {
+                    let rows = object.rowCount.map { "\($0.formatted()) \($0 == 1 ? "row" : "rows")" }
+                        ?? object.estimatedRows.map { "about \($0.formatted()) rows" }
+                    updated.details = [rows.map { "\(object.name) · \($0)" } ?? object.name] + summary.details
+                }
                 view.setSummary(updated)
             }
+            browser.reportSelection()
             return view
         case .tree(let root, let summary, let showsKind):
             let tree = FileTreeView(root: root, settings: settings, showsKind: showsKind)

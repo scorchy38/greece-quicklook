@@ -218,6 +218,18 @@
 				<string>com.apple.dt.xctestplancontenttype</string>
 				<string>com.apple.sirikit.intentdefinition</string>
 				<string>com.sun.java-web-start</string>
+				<string>org.sqlite.sqlite3</string>
+				<string>com.scorchy.greece.dbf</string>
+				<string>org.libreoffice.dbf-document</string>
+				<string>com.scorchy.greece.json-lines</string>
+				<string>com.scorchy.greece.har</string>
+				<string>com.scorchy.greece.parquet</string>
+				<string>com.scorchy.greece.psv</string>
+				<string>com.scorchy.greece.package-resolved</string>
+				<string>com.scorchy.greece.go-sum</string>
+				<string>com.scorchy.greece.gradle-lockfile</string>
+				<string>com.apple.xcode.strings-dictionary</string>
+				<string>dyn.ah62d4rv4ge80k2u</string>
 				<string>com.scorchy.greece.tex-support</string>
 				<string>com.scorchy.greece.bibtex</string>
 				<string>org.idpf.epub-container</string>

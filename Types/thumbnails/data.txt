@@ -1,0 +1,13 @@
+# Finder thumbnails for data files: a page of their first rows, a network waterfall, translation progress.
+org.sqlite.sqlite3
+com.scorchy.greece.dbf
+org.libreoffice.dbf-document  # .dbf when LibreOffice is installed
+com.scorchy.greece.json-lines
+com.scorchy.greece.har
+com.scorchy.greece.parquet
+com.scorchy.greece.psv
+com.scorchy.greece.package-resolved
+com.scorchy.greece.go-sum
+com.scorchy.greece.gradle-lockfile
+com.apple.xcode.strings-dictionary
+dyn.ah62d4rv4ge80k2u  # .db, which macOS leaves untyped (SQLite databases mostly)

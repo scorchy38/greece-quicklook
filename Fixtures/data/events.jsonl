@@ -1,0 +1,61 @@
+{"id": 1, "event": "departure", "port": "Naxos", "at": "2025-07-01T08:00:00Z", "passengers": 1409, "on_time": true, "vessel": {"name": "Aegean 1", "imo": 9000000}, "delay_minutes": 40, "tags": ["weather", "meltemi"], "note": null}
+{"id": 2, "event": "arrival", "port": "Piraeus", "at": "2025-07-02T09:07:00Z", "passengers": 1025, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000001}}
+{"id": 3, "event": "delay", "port": "Naxos", "at": "2025-07-03T10:14:00Z", "passengers": 1572, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000002}}
+{"id": 4, "event": "cancellation", "port": "Piraeus", "at": "2025-07-04T11:21:00Z", "passengers": 1527, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000003}}
+{"id": 5, "event": "departure", "port": "Paros", "at": "2025-07-05T12:28:00Z", "passengers": 1400, "on_time": false, "vessel": {"name": "Aegean 5", "imo": 9000004}}
+{"id": 6, "event": "arrival", "port": "Syros", "at": "2025-07-06T13:35:00Z", "passengers": 1066, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000005}, "delay_minutes": 40}
+{"id": 7, "event": "delay", "port": "Piraeus", "at": "2025-07-07T14:42:00Z", "passengers": 1154, "on_time": true, "vessel": {"name": "Aegean 1", "imo": 9000006}}
+{"id": 8, "event": "cancellation", "port": "Syros", "at": "2025-07-08T15:49:00Z", "passengers": 355, "on_time": false, "vessel": {"name": "Aegean 2", "imo": 9000007}, "tags": ["weather", "meltemi"]}
+{"id": 9, "event": "departure", "port": "Piraeus", "at": "2025-07-09T16:56:00Z", "passengers": 428, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000008}}
+{"id": 10, "event": "arrival", "port": "Piraeus", "at": "2025-07-10T17:03:00Z", "passengers": 236, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000009}}
+{"id": 11, "event": "delay", "port": "Syros", "at": "2025-07-11T18:10:00Z", "passengers": 358, "on_time": false, "vessel": {"name": "Aegean 5", "imo": 9000010}, "delay_minutes": 5}
+{"id": 12, "event": "cancellation", "port": "Syros", "at": "2025-07-12T19:17:00Z", "passengers": 882, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000011}, "note": null}
+{"id": 13, "event": "departure", "port": "Syros", "at": "2025-07-13T08:24:00Z", "passengers": 206, "on_time": false, "vessel": {"name": "Aegean 1", "imo": 9000012}}
+{"id": 14, "event": "arrival", "port": "Syros", "at": "2025-07-14T09:31:00Z", "passengers": 459, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000013}}
+{"id": 15, "event": "delay", "port": "Syros", "at": "2025-07-15T10:38:00Z", "passengers": 1429, "on_time": false, "vessel": {"name": "Aegean 3", "imo": 9000014}, "tags": ["weather", "meltemi"]}
+{"id": 16, "event": "cancellation", "port": "Naxos", "at": "2025-07-16T11:45:00Z", "passengers": 1057, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000015}, "delay_minutes": 5}
+{"id": 17, "event": "departure", "port": "Paros", "at": "2025-07-17T12:52:00Z", "passengers": 748, "on_time": true, "vessel": {"name": "Aegean 5", "imo": 9000016}}
+{this line is not json
+{"id": 18, "event": "arrival", "port": "Syros", "at": "2025-07-18T13:59:00Z", "passengers": 1402, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000017}}
+{"id": 19, "event": "delay", "port": "Piraeus", "at": "2025-07-19T14:06:00Z", "passengers": 1312, "on_time": false, "vessel": {"name": "Aegean 1", "imo": 9000018}}
+{"id": 20, "event": "cancellation", "port": "Naxos", "at": "2025-07-20T15:13:00Z", "passengers": 1561, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000019}}
+{"id": 21, "event": "departure", "port": "Naxos", "at": "2025-07-21T16:20:00Z", "passengers": 731, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000020}, "delay_minutes": 40}
+{"id": 22, "event": "arrival", "port": "Paros", "at": "2025-07-22T17:27:00Z", "passengers": 923, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000021}, "tags": ["weather", "meltemi"]}
+{"id": 23, "event": "delay", "port": "Piraeus", "at": "2025-07-23T18:34:00Z", "passengers": 1712, "on_time": true, "vessel": {"name": "Aegean 5", "imo": 9000022}, "note": null}
+{"id": 24, "event": "cancellation", "port": "Paros", "at": "2025-07-24T19:41:00Z", "passengers": 762, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000023}}
+{"id": 25, "event": "departure", "port": "Paros", "at": "2025-07-25T08:48:00Z", "passengers": 1420, "on_time": true, "vessel": {"name": "Aegean 1", "imo": 9000024}}
+{"id": 26, "event": "arrival", "port": "Syros", "at": "2025-07-26T09:55:00Z", "passengers": 338, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000025}, "delay_minutes": 5}
+{"id": 27, "event": "delay", "port": "Piraeus", "at": "2025-07-27T10:02:00Z", "passengers": 864, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000026}}
+{"id": 28, "event": "cancellation", "port": "Naxos", "at": "2025-07-28T11:09:00Z", "passengers": 976, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000027}}
+{"id": 29, "event": "departure", "port": "Paros", "at": "2025-07-01T12:16:00Z", "passengers": 702, "on_time": true, "vessel": {"name": "Aegean 5", "imo": 9000028}, "tags": ["weather", "meltemi"]}
+{"id": 30, "event": "arrival", "port": "Piraeus", "at": "2025-07-02T13:23:00Z", "passengers": 504, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000029}}
+{"id": 31, "event": "delay", "port": "Naxos", "at": "2025-07-03T14:30:00Z", "passengers": 158, "on_time": false, "vessel": {"name": "Aegean 1", "imo": 9000030}, "delay_minutes": 40}
+{"id": 32, "event": "cancellation", "port": "Piraeus", "at": "2025-07-04T15:37:00Z", "passengers": 1443, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000031}}
+{"id": 33, "event": "departure", "port": "Paros", "at": "2025-07-05T16:44:00Z", "passengers": 79, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000032}}
+{"id": 34, "event": "arrival", "port": "Paros", "at": "2025-07-06T17:51:00Z", "passengers": 1133, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000033}, "note": null}
+{"id": 35, "event": "delay", "port": "Piraeus", "at": "2025-07-07T18:58:00Z", "passengers": 1694, "on_time": true, "vessel": {"name": "Aegean 5", "imo": 9000034}}
+{"id": 36, "event": "cancellation", "port": "Paros", "at": "2025-07-08T19:05:00Z", "passengers": 967, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000035}, "delay_minutes": 15, "tags": ["weather", "meltemi"]}
+{"id": 37, "event": "departure", "port": "Piraeus", "at": "2025-07-09T08:12:00Z", "passengers": 1323, "on_time": true, "vessel": {"name": "Aegean 1", "imo": 9000036}}
+{"id": 38, "event": "arrival", "port": "Paros", "at": "2025-07-10T09:19:00Z", "passengers": 1089, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000037}}
+{"id": 39, "event": "delay", "port": "Naxos", "at": "2025-07-11T10:26:00Z", "passengers": 808, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000038}}
+{"id": 40, "event": "cancellation", "port": "Piraeus", "at": "2025-07-12T11:33:00Z", "passengers": 1543, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000039}}
+{"id": 41, "event": "departure", "port": "Piraeus", "at": "2025-07-13T12:40:00Z", "passengers": 1387, "on_time": true, "vessel": {"name": "Aegean 5", "imo": 9000040}, "delay_minutes": 15}
+{"id": 42, "event": "arrival", "port": "Piraeus", "at": "2025-07-14T13:47:00Z", "passengers": 46, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000041}}
+{"id": 43, "event": "delay", "port": "Piraeus", "at": "2025-07-15T14:54:00Z", "passengers": 1517, "on_time": false, "vessel": {"name": "Aegean 1", "imo": 9000042}, "tags": ["weather", "meltemi"]}
+{"id": 44, "event": "cancellation", "port": "Paros", "at": "2025-07-16T15:01:00Z", "passengers": 136, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000043}}
+{"id": 45, "event": "departure", "port": "Naxos", "at": "2025-07-17T16:08:00Z", "passengers": 1732, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000044}, "note": null}
+{"id": 46, "event": "arrival", "port": "Syros", "at": "2025-07-18T17:15:00Z", "passengers": 1129, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000045}, "delay_minutes": 15}
+{"id": 47, "event": "delay", "port": "Syros", "at": "2025-07-19T18:22:00Z", "passengers": 1349, "on_time": true, "vessel": {"name": "Aegean 5", "imo": 9000046}}
+{"id": 48, "event": "cancellation", "port": "Naxos", "at": "2025-07-20T19:29:00Z", "passengers": 295, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000047}}
+{"id": 49, "event": "departure", "port": "Paros", "at": "2025-07-21T08:36:00Z", "passengers": 1479, "on_time": false, "vessel": {"name": "Aegean 1", "imo": 9000048}}
+{"id": 50, "event": "arrival", "port": "Piraeus", "at": "2025-07-22T09:43:00Z", "passengers": 336, "on_time": true, "vessel": {"name": "Aegean 2", "imo": 9000049}, "tags": ["weather", "meltemi"]}
+{"id": 51, "event": "delay", "port": "Paros", "at": "2025-07-23T10:50:00Z", "passengers": 1436, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000050}, "delay_minutes": 40}
+{"id": 52, "event": "cancellation", "port": "Naxos", "at": "2025-07-24T11:57:00Z", "passengers": 1305, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000051}}
+{"id": 53, "event": "departure", "port": "Paros", "at": "2025-07-25T12:04:00Z", "passengers": 241, "on_time": true, "vessel": {"name": "Aegean 5", "imo": 9000052}}
+{"id": 54, "event": "arrival", "port": "Syros", "at": "2025-07-26T13:11:00Z", "passengers": 1488, "on_time": false, "vessel": {"name": "Aegean 6", "imo": 9000053}}
+{"id": 55, "event": "delay", "port": "Piraeus", "at": "2025-07-27T14:18:00Z", "passengers": 162, "on_time": true, "vessel": {"name": "Aegean 1", "imo": 9000054}}
+{"id": 56, "event": "cancellation", "port": "Piraeus", "at": "2025-07-28T15:25:00Z", "passengers": 836, "on_time": false, "vessel": {"name": "Aegean 2", "imo": 9000055}, "delay_minutes": 5, "note": null}
+{"id": 57, "event": "departure", "port": "Piraeus", "at": "2025-07-01T16:32:00Z", "passengers": 486, "on_time": true, "vessel": {"name": "Aegean 3", "imo": 9000056}, "tags": ["weather", "meltemi"]}
+{"id": 58, "event": "arrival", "port": "Paros", "at": "2025-07-02T17:39:00Z", "passengers": 1351, "on_time": true, "vessel": {"name": "Aegean 4", "imo": 9000057}}
+{"id": 59, "event": "delay", "port": "Syros", "at": "2025-07-03T18:46:00Z", "passengers": 869, "on_time": false, "vessel": {"name": "Aegean 5", "imo": 9000058}}
+{"id": 60, "event": "cancellation", "port": "Syros", "at": "2025-07-04T19:53:00Z", "passengers": 911, "on_time": true, "vessel": {"name": "Aegean 6", "imo": 9000059}}

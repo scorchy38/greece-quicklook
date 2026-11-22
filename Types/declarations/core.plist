@@ -45,9 +45,7 @@
 			<array>
 				<string>jsonc</string>
 				<string>json5</string>
-				<string>jsonl</string>
 				<string>webmanifest</string>
-				<string>har</string>
 				<string>jsonld</string>
 			</array>
 		</dict>

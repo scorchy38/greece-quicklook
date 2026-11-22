@@ -445,9 +445,7 @@
 				<array>
 					<string>jsonc</string>
 					<string>json5</string>
-					<string>jsonl</string>
 					<string>webmanifest</string>
-					<string>har</string>
 					<string>jsonld</string>
 				</array>
 			</dict>
@@ -610,6 +608,164 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>ipynb</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>JSON Lines</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.json-lines</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>jsonl</string>
+					<string>jsonlines</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/jsonl</string>
+					<string>application/x-ndjson</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>HTTP Archive</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.har</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>har</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.database</string>
+				<string>public.data</string>
+				<string>public.content</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>dBase Table</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.dbf</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>dbf</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/dbase</string>
+					<string>application/x-dbf</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+				<string>public.content</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Parquet Data</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.parquet</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>parquet</string>
+					<string>parq</string>
+				</array>
+				<key>public.mime-type</key>
+				<array>
+					<string>application/vnd.apache.parquet</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.delimited-values-text</string>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Pipe-Separated Values</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.psv</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>psv</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+				<string>public.text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Swift Package Lock File</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.package-resolved</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>resolved</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Checksums</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.go-sum</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>sum</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Gradle Lock File</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.scorchy.greece.gradle-lockfile</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>lockfile</string>
 				</array>
 			</dict>
 		</dict>
