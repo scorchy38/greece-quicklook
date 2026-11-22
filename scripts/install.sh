@@ -39,14 +39,16 @@ for id in "${ids[@]}"; do
   done <<< "$others"
 done
 
-# The registry can lag when the Mac is busy; give it up to 15 more seconds.
-for id in "${ids[@]}"; do
-  for attempt in $(seq 1 30); do
+# The registry can lag when the Mac is busy; keep adding and enabling for up to 30 more seconds.
+for appex in "$dest"/Contents/PlugIns/*.appex; do
+  id="$(defaults read "$appex/Contents/Info" CFBundleIdentifier)"
+  for attempt in $(seq 1 60); do
     pluginkit -m -A -D -v -i "$id" | grep -q "^+.*$dest" && break
-    if [[ $attempt == 30 ]]; then
+    if [[ $attempt == 60 ]]; then
       echo "Quick Look did not register $id from $dest" >&2
       exit 1
     fi
+    pluginkit -a "$appex" 2>/dev/null
     pluginkit -e use -i "$id" 2>/dev/null
     sleep 0.5
   done

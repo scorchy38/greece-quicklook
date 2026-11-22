@@ -170,6 +170,8 @@ final class Diagnostics: ObservableObject {
             route.verdict = .macOSKeeps("This version of macOS treats .\((route.sampleName as NSString).pathExtension) files as video, so Quick Look opens its movie viewer.")
         } else if id == UTType.plainText.identifier {
             route.verdict = .macOSKeeps("Quick Look keeps plain text for its own text viewer.")
+        } else if (route.sampleName as NSString).pathExtension == "mobileprovision" {
+            route.verdict = .macOSKeeps("Quick Look shows provisioning profiles with its text viewer. Greece shows them inside apps and archives.")
         } else {
             let others = extensions.filter { !$0.isGreece && !$0.isThumbnail && $0.enabled && !$0.isApple && $0.types.contains(id) }.map(\.app)
             if greeceTypes.contains(id) {
@@ -377,6 +379,20 @@ final class Diagnostics: ObservableObject {
         Route(id: "ipynb", title: "Jupyter notebook", sampleName: "analysis.ipynb", sample: "{\"cells\": [], \"metadata\": {}, \"nbformat\": 4, \"nbformat_minor\": 5}\n"),
         Route(id: "patch", title: "Patch", sampleName: "change.patch", sample: "--- a/x\n+++ b/x\n@@ -1 +1 @@\n-a\n+b\n"),
         Route(id: "plist", title: "Property list", sampleName: "Info.plist", sample: "<?xml version=\"1.0\"?><plist version=\"1.0\"><dict/></plist>\n"),
+        Route(id: "geojson", title: "GeoJSON map", sampleName: "places.geojson", sample: "{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[25.4,37.1]}}]}\n"),
+        Route(id: "gpx", title: "GPX track", sampleName: "hike.gpx", sample: "<?xml version=\"1.0\"?><gpx version=\"1.1\" creator=\"Greece\"><trk><trkseg><trkpt lat=\"37.1\" lon=\"25.4\"/><trkpt lat=\"37.2\" lon=\"25.5\"/></trkseg></trk></gpx>\n"),
+        Route(id: "kml", title: "KML", sampleName: "places.kml", sample: "<?xml version=\"1.0\"?><kml xmlns=\"http://www.opengis.net/kml/2.2\"><Placemark><Point><coordinates>25.4,37.1</coordinates></Point></Placemark></kml>\n"),
+        Route(id: "gltf", title: "glTF model", sampleName: "model.gltf", sample: "{\"asset\":{\"version\":\"2.0\"},\"scenes\":[{\"nodes\":[]}]}\n"),
+        Route(id: "stl", title: "STL model", sampleName: "part.stl", sample: "solid part\nendsolid part\n"),
+        Route(id: "obj", title: "OBJ model", sampleName: "mesh.obj", sample: "v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n"),
+        Route(id: "tex", title: "LaTeX", sampleName: "paper.tex", sample: "\\documentclass{article}\\begin{document}Hello\\end{document}\n"),
+        Route(id: "bib", title: "BibTeX", sampleName: "refs.bib", sample: "@article{key, title={Greece}}\n"),
+        Route(id: "org", title: "Org mode", sampleName: "notes.org", sample: "* Greece\n** TODO Check\n"),
+        Route(id: "adoc", title: "AsciiDoc", sampleName: "guide.adoc", sample: "= Greece\n\nHello.\n"),
+        Route(id: "rst", title: "reStructuredText", sampleName: "readme.rst", sample: "Greece\n======\n"),
+        Route(id: "mermaid", title: "Mermaid diagram", sampleName: "flow.mmd", sample: "graph LR\n  A --> B\n"),
+        Route(id: "srt", title: "Subtitles", sampleName: "film.srt", sample: "1\n00:00:01,000 --> 00:00:02,000\nHello\n"),
+        Route(id: "mobileprovision", title: "Provisioning profile", sampleName: "app.mobileprovision", sample: "profile\n"),
     ]
 }
 
