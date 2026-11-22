@@ -89,6 +89,7 @@ public final class PreviewSession {
             fresh.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             fresh.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
+        if let old { fresh.carryOver(from: old) }
         preview = fresh
         old?.removeFromSuperview()
         fresh.onScroll = { [weak self] point in

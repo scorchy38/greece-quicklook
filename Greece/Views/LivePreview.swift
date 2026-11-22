@@ -86,6 +86,7 @@ final class PreviewHost: NSView {
     private func install(_ preview: PreviewView) {
         spinner.stopAnimation(nil)
         let old = current
+        if let old { preview.carryOver(from: old) }
         preview.frame = bounds
         preview.autoresizingMask = [.width, .height]
         preview.alphaValue = old == nil ? 1 : 0

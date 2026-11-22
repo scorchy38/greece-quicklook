@@ -83,6 +83,15 @@ public final class PreviewView: NSView {
         bottomConstraint?.isActive = true
     }
 
+    /// Takes over where the reader was in the preview this one replaces (a rebuild after the file
+    /// changed on disk or a setting changed): the folder opened inside a browser, the selection.
+    public func carryOver(from old: PreviewView) {
+        guard let previous = old.content.firstSubview(of: MemberBrowserView.self),
+              let browser = content.firstSubview(of: MemberBrowserView.self),
+              previous.root.url != nil, previous.root.url == browser.root.url else { return }
+        browser.restore(previous.location)
+    }
+
     /// Resolves once web content has painted; native content is ready immediately.
     public func waitUntilReady() async {
         if let web = content as? WebPreviewView { await web.waitUntilReady() }
@@ -145,5 +154,16 @@ public final class PreviewView: NSView {
 
     deinit {
         scrollObserver.map(NotificationCenter.default.removeObserver)
+    }
+}
+
+extension NSView {
+    /// The first view of a type in this view's subtree, itself included, depth first.
+    func firstSubview<T: NSView>(of type: T.Type) -> T? {
+        if let match = self as? T { return match }
+        for view in subviews {
+            if let found = view.firstSubview(of: type) { return found }
+        }
+        return nil
     }
 }
