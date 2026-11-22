@@ -201,8 +201,10 @@ html.has-smart {
 .smart-table.services td { white-space: nowrap; }
 .smart-table.services .svc-name code { color: var(--t-function); font-weight: 500; margin-right: 6px; }
 .smart-table.services .svc-image code { display: inline-block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; }
-.smart-table.services .svc-ports code, .smart-table.services .svc-volumes code { margin-right: 8px; }
-.smart-table.services .svc-volumes code { display: inline-block; max-width: 220px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; color: var(--sm-text-2); }
+.smart-table.services .svc-ports code { margin-right: 8px; }
+/* One volume per line: side by side, a second mount pushes the table past the card. */
+.smart-table.services .svc-volumes code { display: block; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--sm-text-2); }
+.smart-table.services .svc-volumes code + code { margin-top: 2px; }
 
 /* GitHub Actions */
 .smart details { box-shadow: none; padding: 0; border-radius: 0; margin: 0; }
