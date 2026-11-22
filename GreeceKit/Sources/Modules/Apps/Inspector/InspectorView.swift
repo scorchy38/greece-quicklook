@@ -571,7 +571,7 @@ private struct MemberBrowserRepresentable: NSViewRepresentable {
     let settings: PreviewSettings
 
     func makeNSView(context: Context) -> MemberBrowserView {
-        MemberBrowserView(root: root, source: members, scratch: scratch, settings: settings)
+        MemberBrowserView(root: root, source: members, scratch: scratch, settings: settings, title: members.displayName)
     }
 
     func updateNSView(_ view: MemberBrowserView, context: Context) { view.apply(settings) }

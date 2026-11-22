@@ -10,6 +10,8 @@ final class DiskImageMembers: MemberSource, @unchecked Sendable {
 
     init(url: URL) { self.url = url }
 
+    var displayName: String? { url.lastPathComponent }
+
     func extract(_ node: FileNode, to scratch: ArchiveScratch, cancel: CancelToken) throws -> URL {
         guard !node.isDirectory, !node.isSymlink else { throw PreviewError.unsupported }
         lock.lock()

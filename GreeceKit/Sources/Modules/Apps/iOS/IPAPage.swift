@@ -44,7 +44,7 @@ enum IPAPage {
             page.sections[index].rows.insert(.item(.field("Download Size", Format.bytes(archiveSize))), at: 1)
         }
         page.summary.details = [facts.shortVersion, Format.bytes(archiveSize)].compactMap { $0 }
-        let entries = zip.members.map { ArchiveEntry(path: $0.path, isDirectory: $0.isDirectory, size: $0.size, compressedSize: $0.compressedSize) }
+        let entries = zip.members.map { ArchiveEntry(path: $0.path, isDirectory: $0.isDirectory, size: $0.size, compressedSize: $0.compressedSize, modified: $0.modified) }
         let listing = ArchiveListing(format: .zip, container: .zip, entries: entries, archiveSize: archiveSize, truncated: zip.truncated)
         page.contents = .tree(FileNode.tree(from: listing, showHidden: false), title: "Files", count: listing.fileCount, members: ZIPMembers(url: url))
         return page

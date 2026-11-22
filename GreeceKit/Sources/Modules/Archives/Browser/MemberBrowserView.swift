@@ -5,6 +5,12 @@ import AppKit
 protocol MemberSource: AnyObject, Sendable {
     /// Copies the member into `scratch` and returns the copy.
     func extract(_ node: FileNode, to scratch: ArchiveScratch, cancel: CancelToken) throws -> URL
+    /// What the browser's path bar calls the top level (the package's file name), when known.
+    var displayName: String? { get }
+}
+
+extension MemberSource {
+    var displayName: String? { nil }
 }
 
 extension ArchiveSession: MemberSource {
@@ -526,6 +532,8 @@ final class ZIPMembers: MemberSource, @unchecked Sendable {
     private var archive: ZIPArchive?
 
     init(url: URL) { self.url = url }
+
+    var displayName: String? { url.lastPathComponent }
 
     func extract(_ node: FileNode, to scratch: ArchiveScratch, cancel: CancelToken) throws -> URL {
         guard !node.isDirectory else { throw PreviewError.unsupported }

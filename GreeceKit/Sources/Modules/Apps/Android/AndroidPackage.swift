@@ -129,7 +129,7 @@ enum AndroidPackageReader {
 
         if includeListing {
             let entries = zip.members.prefix(ArchiveReader.entryLimit).map { member in
-                ArchiveEntry(path: member.path, isDirectory: member.isDirectory, size: member.size, compressedSize: member.compressedSize)
+                ArchiveEntry(path: member.path, isDirectory: member.isDirectory, size: member.size, compressedSize: member.compressedSize, modified: member.modified)
             }
             package.listing = ArchiveListing(format: .zip, container: .zip, entries: Array(entries), archiveSize: package.fileSize,
                                              truncated: zip.truncated)
