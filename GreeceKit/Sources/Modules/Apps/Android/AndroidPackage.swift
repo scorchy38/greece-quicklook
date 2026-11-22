@@ -339,11 +339,17 @@ enum AndroidPackageReader {
 
         let total = code.saturatingAdd(native).saturatingAdd(resources).saturatingAdd(assets).saturatingAdd(other)
         var segments: [InspectorSizes.Segment] = []
-        if code > 0 { segments.append(.init(title: "Code", bytes: code, tint: .blue, detail: Format.count(package.dexCount, "DEX file"))) }
-        if native > 0 { segments.append(.init(title: "Native Libraries", bytes: native, tint: .purple, detail: Format.count(package.abis.count, "architecture"))) }
-        if resources > 0 { segments.append(.init(title: "Resources", bytes: resources, tint: .orange, detail: nil)) }
-        if assets > 0 { segments.append(.init(title: "Assets", bytes: assets, tint: .teal, detail: nil)) }
-        if other > 0 { segments.append(.init(title: "Other", bytes: other, tint: .gray, detail: nil)) }
+        if code > 0 {
+            segments.append(.init(title: String(localized: "Code", bundle: .greeceKit, comment: "Part of an app’s size: its compiled code"), bytes: code, tint: .blue,
+                                  detail: String(localized: "\(package.dexCount) DEX files", bundle: .greeceKit, comment: "Android app size detail. The argument is a count")))
+        }
+        if native > 0 {
+            segments.append(.init(title: String(localized: "Native Libraries", bundle: .greeceKit, comment: "Part of an app’s size"), bytes: native, tint: .purple,
+                                  detail: String(localized: "\(package.abis.count) architectures", bundle: .greeceKit, comment: "Android app size detail: processor architectures. The argument is a count")))
+        }
+        if resources > 0 { segments.append(.init(title: String(localized: "Resources", bundle: .greeceKit, comment: "Part of an app’s size"), bytes: resources, tint: .orange, detail: nil)) }
+        if assets > 0 { segments.append(.init(title: String(localized: "Assets", bundle: .greeceKit, comment: "Part of an app’s size"), bytes: assets, tint: .teal, detail: nil)) }
+        if other > 0 { segments.append(.init(title: String(localized: "Other", bundle: .greeceKit, comment: "Part of an app’s size: everything else"), bytes: other, tint: .gray, detail: nil)) }
         package.sizes = InspectorSizes(total: total, segments: segments)
     }
 }
