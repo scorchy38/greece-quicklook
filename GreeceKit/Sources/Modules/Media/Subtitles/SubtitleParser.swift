@@ -200,7 +200,7 @@ enum SubtitleParser {
                 body.append(next)
                 index += 1
             }
-            var cue = Markup.cue(body.joined(separator: "\n"), start: start, end: end)
+            var cue = SubtitleMarkup.cue(body.joined(separator: "\n"), start: start, end: end)
             cue.id = identifier
             document.cues.append(cue)
             previousBlank = false
@@ -248,7 +248,7 @@ enum SubtitleParser {
                         return fields[at]
                     }
                     guard let start = field("start").flatMap({ clock(Substring($0)) }), let end = field("end").flatMap({ clock(Substring($0)) }) else { continue }
-                    var cue = Markup.subStationCue(field("text") ?? "", start: start, end: end)
+                    var cue = SubtitleMarkup.subStationCue(field("text") ?? "", start: start, end: end)
                     let style = field("style")?.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: "*", with: "")
                     cue.style = style?.isEmpty == false && style != "Default" ? style : nil
                     let name = field("name")?.trimmingCharacters(in: .whitespaces) ?? ""
@@ -294,7 +294,7 @@ enum SubtitleParser {
         }
         guard let sync = try? NSRegularExpression(pattern: #"<sync\b[^>]*?start\s*=\s*["']?(\d+)[^>]*>"#, options: [.caseInsensitive]) else { return }
         if let title = text.range(of: #"(?i)<title>([^<]{1,200})</title>"#, options: .regularExpression) {
-            let value = Markup.cue(String(text[title]).replacingOccurrences(of: #"(?i)</?title>"#, with: "", options: .regularExpression), start: 0, end: 0).text
+            let value = SubtitleMarkup.cue(String(text[title]).replacingOccurrences(of: #"(?i)</?title>"#, with: "", options: .regularExpression), start: 0, end: 0).text
             if !value.isEmpty { document.title = value }
         }
         let matches = sync.matches(in: text, range: NSRange(location: 0, length: source.length))
@@ -302,7 +302,7 @@ enum SubtitleParser {
         func close(at end: Int) {
             guard let open = pending else { return }
             pending = nil
-            var cue = Markup.cue(open.body, start: open.start, end: max(end, open.start))
+            var cue = SubtitleMarkup.cue(open.body, start: open.start, end: max(end, open.start))
             cue.text = cue.text.trimmingCharacters(in: .whitespacesAndNewlines)
             if !cue.text.isEmpty, document.cues.count < cueLimit { document.cues.append(cue) }
         }
@@ -422,7 +422,7 @@ enum SubtitleParser {
 
 /// Turns cue markup into plain text plus formatting runs. Everything else (classes, voices' tags,
 /// fonts, karaoke timings) is dropped; the text itself is always kept as text, never as HTML.
-enum Markup {
+enum SubtitleMarkup {
     static func cue(_ raw: String, start: Int, end: Int) -> SubtitleCue {
         var spans: [SubtitleCue.Span] = []
         var flags = 0

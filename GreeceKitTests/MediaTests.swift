@@ -307,8 +307,8 @@ final class MediaTests: XCTestCase {
     }
 
     func testHostileSubtitles() throws {
-        // Markup is never kept as markup: tags are dropped or become formatting runs.
-        let cue = Markup.cue("<script>alert(1)</script><img src=x onerror=alert(2)><i>ok</i> &lt;b&gt;", start: 0, end: 1000)
+        // SubtitleMarkup is never kept as markup: tags are dropped or become formatting runs.
+        let cue = SubtitleMarkup.cue("<script>alert(1)</script><img src=x onerror=alert(2)><i>ok</i> &lt;b&gt;", start: 0, end: 1000)
         XCTAssertEqual(cue.text, "alert(1)ok <b>")
         XCTAssertFalse(cue.text.contains("<script"))
         // Entity bombs in TTML are refused before parsing.

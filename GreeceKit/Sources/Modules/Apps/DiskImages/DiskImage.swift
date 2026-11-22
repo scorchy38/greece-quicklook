@@ -29,7 +29,11 @@ final class DiskImage {
         if SparseImageDevice.isSparseImage(probe) { return ext == "sparseimage" || ext == "dmg" || (probe.count >= 8 && probe[4..<8].elementsEqual([0, 0, 0, 3])) }
         if ASIFDevice.isASIF(probe) { return ext == "asif" || (probe.count >= 12 && probe[8..<12].elementsEqual([0, 0, 2, 0])) }
         switch ext {
-        case "dmg", "udif", "smi", "asif", "sparseimage": return true
+        case "dmg", "udif", "asif", "sparseimage": return true
+        case "smi":
+            // Old self-mounting images share the extension with SAMI subtitles, which are text.
+            let head = String(decoding: probe.prefix(512), as: UTF8.self).lowercased()
+            return !head.contains("<sami") && !head.contains("<html") && !head.trimmingCharacters(in: .whitespacesAndNewlines).hasPrefix("<")
         case "iso", "toast", "dvdmedia": return !starts("RIFF")
         case "cdr": return !starts("RIFF")   // CorelDRAW drawings share the extension
         case "img":
