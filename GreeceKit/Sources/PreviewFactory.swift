@@ -3,7 +3,7 @@ import AVKit
 
 public enum PreviewError: LocalizedError {
     case unsupported
-    public var errorDescription: String? { "Greece can’t preview this file." }
+    public var errorDescription: String? { String(localized: "Greece can’t preview this file.", bundle: .greeceKit) }
 }
 
 /// Turns a file into a finished `PreviewView`. Heavy work runs off the main thread.
@@ -47,8 +47,9 @@ public enum PreviewFactory {
             let file = try TextFile(url: fileURL)
             let words = wordCount(file.text)
             let minutes = max(1, Int((Double(words) / 230).rounded()))
-            let summary = FileSummary(symbol: "doc.richtext", title: markdownFlavour(url.pathExtension),
-                                      details: ["\(words.formatted()) words", "\(minutes) min read"], trailing: modified)
+            let details = [String(localized: "\(words) words", bundle: .greeceKit, comment: "Info bar detail: a document’s length"),
+                           String(localized: "\(minutes) min read", bundle: .greeceKit, comment: "Info bar detail: how long a document takes to read, in minutes")]
+            let summary = FileSummary(symbol: "doc.richtext", title: markdownFlavour(url.pathExtension), details: details, trailing: modified)
             return .web(WebDocument(kind: .markdown, text: file.text, baseDirectory: base, truncated: file.truncated), summary, NSSize(width: 980, height: 780))
 
         case .code(let language):
@@ -62,9 +63,12 @@ public enum PreviewFactory {
             }
             // A .env file is highlighted as shell, but it's a list of settings, often secret.
             let isEnvironment = EnvMask.applies(to: url.lastPathComponent)
-            var summary = codeSummary(isEnvironment ? "Environment" : language.name, symbol: isEnvironment ? "key" : language.symbol,
+            let name = isEnvironment
+                ? String(localized: "Environment", bundle: .greeceKit, comment: "Info bar title for a .env file: environment variables")
+                : language.name
+            var summary = codeSummary(name, symbol: isEnvironment ? "key" : language.symbol,
                                       file: file, size: size, modified: modified, lineCount: formatted ? TextFile(text: text).lineCount : nil)
-            if formatted { summary.details.append("Formatted") }
+            if formatted { summary.details.append(formattedText) }
             return .web(WebDocument(kind: .code, text: text, grammar: language.grammar, baseDirectory: url.deletingLastPathComponent(), truncated: file.truncated),
                         summary, NSSize(width: 920, height: 720))
 
@@ -77,7 +81,7 @@ public enum PreviewFactory {
             if settings.prettyPrint, !["jsonl", "ndjson"].contains(ext), JSONFormatter.looksMinified(text),
                let pretty = JSONFormatter.prettyPrinted(text, indent: 2, lenient: file.truncated) {
                 text = pretty
-                details.append("Formatted")
+                details.append(formattedText)
             }
             let formatted = TextFile(text: text)
             var summary = codeSummary("JSON", symbol: "curlybraces.square", file: file, size: size, modified: modified, lineCount: formatted.lineCount)
@@ -110,9 +114,13 @@ public enum PreviewFactory {
                 text = pretty
                 formatted = true
             }
-            var summary = codeSummary("Property List", symbol: "list.bullet.indent", file: TextFile(text: text), size: size, modified: modified)
-            if format == .binary { summary.details.insert("Binary", at: 0) }
-            if formatted { summary.details.append("Formatted") }
+            let title = String(localized: "Property List", bundle: .greeceKit, comment: "Info bar title and language name: an Apple property list (.plist)")
+            var summary = codeSummary(title, symbol: "list.bullet.indent", file: TextFile(text: text), size: size, modified: modified)
+            if format == .binary {
+                summary.details.insert(String(localized: "Binary [property list format]", defaultValue: "Binary", bundle: .greeceKit,
+                                              comment: "Info bar detail: the property list is stored in the binary format, not as XML"), at: 0)
+            }
+            if formatted { summary.details.append(formattedText) }
             var document = WebDocument(kind: .code, text: text, grammar: "xml")
             // The same values as a tree (Code / Tree in the preview).
             document.data = object.flatMap(PropertyListTree.json(from:))
@@ -123,12 +131,12 @@ public enum PreviewFactory {
             var details: [String] = []
             if let json = try? JSONSerialization.jsonObject(with: Data(file.text.utf8)) as? [String: Any] {
                 let cells = (json["cells"] as? [Any])?.count ?? 0
-                details.append("\(cells) \(cells == 1 ? "cell" : "cells")")
+                details.append(String(localized: "\(cells) cells", bundle: .greeceKit, comment: "Info bar detail: how many cells a Jupyter notebook has"))
                 if let kernel = (json["metadata"] as? [String: Any])?["kernelspec"] as? [String: Any],
                    let name = kernel["display_name"] as? String { details.append(name) }
             }
             if let size { details.append(size) }
-            let summary = FileSummary(symbol: "book.pages", title: "Jupyter Notebook", details: details, trailing: modified)
+            let summary = FileSummary(symbol: "book.pages", title: String(localized: "Jupyter Notebook", bundle: .greeceKit), details: details, trailing: modified)
             return .web(WebDocument(kind: .notebook, text: file.text, baseDirectory: url.deletingLastPathComponent(), truncated: file.truncated),
                         summary, NSSize(width: 1000, height: 780))
 
@@ -136,11 +144,17 @@ public enum PreviewFactory {
             let file = try TextFile(url: url, limit: 64 * 1024 * 1024)
             let table = DelimitedTable.parse(file.text, separator: separator, maxRows: settings.maxRows)
             let ext = url.pathExtension.lowercased()
-            var details = ["\(table.totalRows.formatted()) \(table.totalRows == 1 ? "row" : "rows")",
-                           "\(table.columnCount) \(table.columnCount == 1 ? "column" : "columns")",
+            var details = [String(localized: "\(table.totalRows) rows", bundle: .greeceKit, comment: "Info bar detail: how many rows a table has"),
+                           String(localized: "\(table.columnCount) columns", bundle: .greeceKit, comment: "Info bar detail: how many columns a table has"),
                            table.separatorName]
-            if table.truncated { details.append("Showing first \(table.rows.count.formatted())") }
-            if table.totalColumns > table.columnCount { details.append("First \(table.columnCount.formatted()) columns") }
+            if table.truncated {
+                details.append(String(localized: "Showing first %lld [rows]", defaultValue: "Showing first \(table.rows.count)", bundle: .greeceKit,
+                                      comment: "Info bar detail: only the first rows of a large table are shown. The argument is how many rows"))
+            }
+            if table.totalColumns > table.columnCount {
+                details.append(String(localized: "First \(table.columnCount) columns", bundle: .greeceKit,
+                                      comment: "Info bar detail: only the first columns of a wide table are shown"))
+            }
             if file.encodingName != "UTF-8" { details.append(file.encodingName) }
             let title: String
             switch table.separator {
@@ -154,19 +168,26 @@ public enum PreviewFactory {
             let database = try SQLiteDatabase(url: url)
             let tables = database.objects.filter { !$0.isView }.count
             let views = database.objects.count - tables
-            var details = ["\(tables) \(tables == 1 ? "table" : "tables")"]
-            if views > 0 { details.append("\(views) \(views == 1 ? "view" : "views")") }
+            var details = [String(localized: "\(tables) tables", bundle: .greeceKit, comment: "Info bar detail: how many tables a database has")]
+            if views > 0 {
+                details.append(String(localized: "\(views) views", bundle: .greeceKit, comment: "Info bar detail: how many views (saved queries) a database has"))
+            }
             if let size { details.append(size) }
-            return .sqlite(database, FileSummary(symbol: "cylinder.split.1x2", title: "SQLite Database", details: details, trailing: modified))
+            return .sqlite(database, FileSummary(symbol: "cylinder.split.1x2", title: String(localized: "SQLite Database", bundle: .greeceKit),
+                                                 details: details, trailing: modified))
 
         case .diff:
             let file = try TextFile(url: url)
             let stats = diffStats(file.text)
             let ext = url.pathExtension.lowercased()
-            var details = ["\(stats.files) \(stats.files == 1 ? "file" : "files")", "+\(stats.added.formatted())", "−\(stats.removed.formatted())"]
+            var details = [String(localized: "\(stats.files) files", bundle: .greeceKit, comment: "Info bar detail: how many files a patch changes"),
+                           "+\(stats.added.formatted())", "−\(stats.removed.formatted())"]
             let commits = file.text.components(separatedBy: "\n").filter { $0.range(of: #"^(commit [0-9a-f]{7,64}\b|From [0-9a-f]{40} )"#, options: .regularExpression) != nil }.count
-            if commits > 1 { details.insert("\(commits) commits", at: 0) }
-            let summary = FileSummary(symbol: "plus.forwardslash.minus", title: ext == "patch" ? "Patch" : "Diff", details: details, trailing: modified)
+            if commits > 1 { details.insert(String(localized: "\(commits) commits", bundle: .greeceKit, comment: "Info bar detail: how many Git commits a patch holds"), at: 0) }
+            let title = ext == "patch"
+                ? String(localized: "Patch", bundle: .greeceKit, comment: "Info bar title for a .patch file")
+                : String(localized: "Diff", bundle: .greeceKit, comment: "Info bar title and language name for a .diff file")
+            let summary = FileSummary(symbol: "plus.forwardslash.minus", title: title, details: details, trailing: modified)
             return .web(WebDocument(kind: .diff, text: file.text, truncated: file.truncated), summary, NSSize(width: 1000, height: 760))
 
         case .archive(let format):
@@ -177,18 +198,29 @@ public enum PreviewFactory {
                 let text = TextFile.decode(inner).0
                 let language = LanguageCatalog.language(forFileName: entry.path) ?? LanguageCatalog.language(forExtension: (entry.path as NSString).pathExtension) ?? .plainText
                 let kind: WebDocument.Kind = (entry.path as NSString).pathExtension.lowercased() == "md" ? .markdown : .code
-                let details = [entry.path, ByteCountFormatter.string(fromByteCount: Int64(clamping: entry.size), countStyle: .file) + " uncompressed"]
+                let uncompressed = ByteCountFormatter.string(fromByteCount: Int64(clamping: entry.size), countStyle: .file)
+                let details = [entry.path, String(localized: "\(uncompressed) uncompressed", bundle: .greeceKit,
+                                                  comment: "Info bar detail for a compressed text file. The argument is a size, such as “4 MB”")]
                 let summary = FileSummary(symbol: "doc.zipper", title: listing.title, details: details, trailing: modified)
                 return .web(WebDocument(kind: kind, text: text, grammar: language.grammar, truncated: UInt64(inner.count) < entry.size), summary, NSSize(width: 920, height: 720))
             }
-            var details = ["\(listing.fileCount.formatted()) \(listing.fileCount == 1 ? "file" : "files")",
+            var details = [String(localized: "\(listing.fileCount) files", bundle: .greeceKit, comment: "Info bar detail: how many files an archive holds"),
                            ByteCountFormatter.string(fromByteCount: Int64(clamping: listing.totalSize), countStyle: .file)]
             if listing.totalSize > 0, listing.archiveSize > 0, listing.archiveSize < listing.totalSize {
                 let saved = 100 - Int((Double(listing.archiveSize) / Double(listing.totalSize) * 100).rounded())
-                if saved > 0 { details.append("\(saved)% smaller") }
+                if saved > 0 {
+                    let percent = (Double(saved) / 100).formatted(.percent)
+                    details.append(String(localized: "\(percent) smaller", bundle: .greeceKit,
+                                          comment: "Info bar detail: how much smaller an archive is than the files in it. The argument is a percentage, such as “42%”"))
+                }
             }
-            if listing.isEncrypted { details.append("Encrypted") }
-            if listing.truncated { details.append("Showing first \(listing.entries.count.formatted())") }
+            if listing.isEncrypted {
+                details.append(String(localized: "Encrypted", bundle: .greeceKit, comment: "Info bar detail: the archive needs a password"))
+            }
+            if listing.truncated {
+                details.append(String(localized: "Showing first %lld [archive entries]", defaultValue: "Showing first \(listing.entries.count)", bundle: .greeceKit,
+                                      comment: "Info bar detail: only the first files and folders of a large archive are listed. The argument is how many"))
+            }
             let summary = FileSummary(symbol: listing.isEncrypted ? "lock.doc" : "archivebox", title: listing.title, details: details, trailing: modified)
             return .tree(FileNode.tree(from: listing, showHidden: settings.showHiddenFiles), summary, showsKind: false)
 
@@ -197,7 +229,8 @@ public enum PreviewFactory {
             return .tree(node, folderSummary(node, modified: modified), showsKind: true)
 
         case .video:
-            return .video(FileSummary(symbol: "film", title: "MPEG Transport Stream", details: [size].compactMap { $0 }, trailing: modified))
+            let title = String(localized: "MPEG Transport Stream", bundle: .greeceKit, comment: "Info bar title for a .ts or .m2ts video")
+            return .video(FileSummary(symbol: "film", title: title, details: [size].compactMap { $0 }, trailing: modified))
 
         case .module(let id):
             guard let module = PreviewModules.module(id: id) else { throw PreviewError.unsupported }
@@ -229,8 +262,11 @@ public enum PreviewFactory {
                 guard let view else { return }
                 var updated = summary
                 if let object {
-                    let rows = object.rowCount.map { "\($0.formatted()) \($0 == 1 ? "row" : "rows")" }
-                        ?? object.estimatedRows.map { "about \($0.formatted()) rows" }
+                    let rows = object.rowCount.map { String(localized: "\($0) rows", bundle: .greeceKit, comment: "Info bar detail: how many rows a table has") }
+                        ?? object.estimatedRows.map {
+                            String(localized: "about \($0) rows", bundle: .greeceKit,
+                                   comment: "Info bar detail after a table’s name, as in “Ferries · about 12,000 rows”: an estimate for a large table")
+                        }
                     updated.details = [rows.map { "\(object.name) · \($0)" } ?? object.name] + summary.details
                 }
                 view.setSummary(updated)
@@ -266,9 +302,11 @@ public enum PreviewFactory {
     static func folderSummary(_ node: FileNode, modified: String?) -> FileSummary {
         let count = node.children?.count ?? 0
         let folders = node.children?.filter { $0.isDirectory && !$0.isPackage }.count ?? 0
-        var details = ["\(count.formatted()) \(count == 1 ? "item" : "items")"]
-        if folders > 0 { details.append("\(folders) \(folders == 1 ? "folder" : "folders")") }
-        return FileSummary(symbol: "folder", title: "Folder", details: details, trailing: modified)
+        var details = [String(localized: "\(count) items", bundle: .greeceKit, comment: "Info bar detail: how many items a folder holds")]
+        if folders > 0 {
+            details.append(String(localized: "\(folders) folders", bundle: .greeceKit, comment: "Info bar detail: how many of a folder’s items are folders"))
+        }
+        return FileSummary(symbol: "folder", title: String(localized: "Folder", bundle: .greeceKit, comment: "Info bar title"), details: details, trailing: modified)
     }
 
     /// What the info bar calls a Markdown file: its flavour when the extension says which.
@@ -284,22 +322,35 @@ public enum PreviewFactory {
 
     private static func codeSummary(_ name: String, symbol: String, file: TextFile, size: String?, modified: String?, lineCount: Int? = nil) -> FileSummary {
         let lines = lineCount ?? file.lineCount
-        var details = ["\(lines.formatted()) \(lines == 1 ? "line" : "lines")"]
+        var details = [String(localized: "\(lines) lines", bundle: .greeceKit, comment: "Info bar detail: how many lines a text file has")]
         if let size { details.append(size) }
         if file.encodingName != "UTF-8" { details.append(file.encodingName) }
-        if file.truncated { details.append("Showing first \(ByteCountFormatter.string(fromByteCount: Int64(TextFile.defaultLimit), countStyle: .file))") }
+        if file.truncated {
+            let shown = ByteCountFormatter.string(fromByteCount: Int64(TextFile.defaultLimit), countStyle: .file)
+            details.append(String(localized: "Showing first \(shown)", bundle: .greeceKit,
+                                  comment: "Info bar detail: only the start of a large file is shown. The argument is a size, such as “8 MB”"))
+        }
         return FileSummary(symbol: symbol, title: name, details: details, trailing: modified)
+    }
+
+    /// Minified text that was laid out to read.
+    private static var formattedText: String {
+        String(localized: "Formatted", bundle: .greeceKit, comment: "Info bar detail: minified text was laid out to read")
     }
 
     static func modifiedText(_ date: Date) -> String {
         let age = Date().timeIntervalSince(date)
-        if age >= 0 && age < 60 { return "Modified just now" }
+        if age >= 0 && age < 60 { return String(localized: "Modified just now", bundle: .greeceKit, comment: "Info bar: when the file last changed") }
         if age >= 0 && age < 7 * 86_400 {
             let formatter = RelativeDateTimeFormatter()
             formatter.unitsStyle = .full
-            return "Modified " + formatter.localizedString(for: date, relativeTo: Date())
+            let relative = formatter.localizedString(for: date, relativeTo: Date())
+            return String(localized: "Modified \(relative)", bundle: .greeceKit,
+                          comment: "Info bar: when the file last changed. The argument is a relative time, such as “3 hours ago”")
         }
-        return "Modified " + date.formatted(date: .abbreviated, time: .omitted)
+        let day = date.formatted(date: .abbreviated, time: .omitted)
+        return String(localized: "Modified \(day)", bundle: .greeceKit,
+                      comment: "Info bar: when the file last changed. The argument is a date, such as “Mar 12, 2024”")
     }
 
     static func wordCount(_ text: String) -> Int {
