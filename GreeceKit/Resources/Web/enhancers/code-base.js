@@ -106,6 +106,11 @@
 
       /** Keyboard shortcuts: `fn(event)` returns true when it handled the key. */
       addKeys(fn) { keys.push(fn); },
+      /** True while a text field has the keyboard (plain keys belong to it). */
+      typing() {
+        const a = document.activeElement;
+        return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.isContentEditable);
+      },
 
       /** Copying a selection: the source text of the selected lines, never line numbers or
           fold placeholders, and every line inside a fold. */

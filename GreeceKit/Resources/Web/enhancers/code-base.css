@@ -4,7 +4,7 @@
   --code-inset: 0px;
   --guide: color-mix(in srgb, var(--fg) 10%, transparent);
   --guide-active: color-mix(in srgb, var(--fg) 30%, transparent);
-  --bar-bg: color-mix(in srgb, var(--bg) 82%, transparent);
+  --bar-bg: color-mix(in srgb, var(--bg) 92%, transparent);
   --bar-line: color-mix(in srgb, var(--fg) 13%, transparent);
   --control: color-mix(in srgb, var(--fg) 7%, transparent);
   --control-hover: color-mix(in srgb, var(--fg) 12%, transparent);
@@ -12,7 +12,7 @@
   --target: color-mix(in srgb, var(--accent) 13%, transparent);
 }
 @media (prefers-color-scheme: dark) {
-  :root { --guide: color-mix(in srgb, var(--fg) 12%, transparent); --bar-bg: color-mix(in srgb, var(--bg) 78%, transparent); }
+  :root { --guide: color-mix(in srgb, var(--fg) 12%, transparent); --bar-bg: color-mix(in srgb, var(--bg) 90%, transparent); }
 }
 
 .code-view { --code-x: calc(var(--gutter) + 22px); }

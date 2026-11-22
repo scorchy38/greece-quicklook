@@ -1,0 +1,108 @@
+/* Greece — the find bar: a translucent strip along the top with a rounded search field, step
+   buttons, option toggles and Done, sized and spaced like AppKit's own. */
+
+.code-findbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 10px 0 12px;
+  font: 13px/1 var(--ui);
+  color: var(--fg);
+  background: var(--bar-bg);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 -.5px 0 var(--bar-line);
+}
+.code-findbar[hidden] { display: none; }
+
+.find-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 360px;
+  min-width: 150px;
+  height: 24px;
+  padding: 0 8px 0 6px;
+  border-radius: 6px;
+  background: var(--control);
+  box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fg) 12%, transparent);
+  cursor: text;
+  transition: box-shadow .15s ease;
+}
+.find-field:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 38%, transparent), inset 0 0 0 .5px var(--accent); }
+.find-field .glyph { display: grid; place-items: center; width: 16px; color: color-mix(in srgb, var(--fg) 50%, transparent); }
+.find-field .glyph svg { width: 12px; height: 12px; }
+.find-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0 0 0 4px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fg);
+  font: 13px var(--ui);
+}
+.find-field input::placeholder { color: color-mix(in srgb, var(--fg) 40%, transparent); }
+.find-count {
+  flex: none;
+  margin-left: 8px;
+  font: 11.5px var(--ui);
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--fg) 52%, transparent);
+  white-space: nowrap;
+}
+.code-findbar.invalid .find-count { color: var(--red); }
+.code-findbar.goto.invalid .find-field { box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 30%, transparent), inset 0 0 0 .5px var(--red); }
+
+.find-steps { display: flex; border-radius: 6px; background: var(--control); box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fg) 12%, transparent); }
+.find-steps button, .find-option, .find-done {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  border: 0;
+  background: none;
+  color: var(--control-text);
+  font: 500 12px/1 var(--ui);
+  cursor: default;
+}
+.find-steps button { width: 26px; }
+.find-steps button + button { box-shadow: -.5px 0 0 color-mix(in srgb, var(--fg) 12%, transparent); }
+.find-steps button svg { width: 13px; height: 13px; }
+.find-steps button:hover, .find-option:hover, .find-done:hover { color: var(--fg); background-color: var(--control-hover); }
+.find-steps button:first-child { border-radius: 6px 0 0 6px; }
+.find-steps button:last-child { border-radius: 0 6px 6px 0; }
+.find-option { min-width: 28px; padding: 0 6px; border-radius: 6px; font-family: var(--code-font); font-size: 11.5px; }
+.find-option.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.find-word span { padding: 0 2px; border-left: 1.2px solid currentColor; border-right: 1.2px solid currentColor; line-height: 1.05; }
+.find-spacer { flex: 1; }
+.bar-title { display: none; font: 600 12.5px/1 var(--ui); color: color-mix(in srgb, var(--fg) 80%, transparent); white-space: nowrap; }
+.code-findbar.goto .bar-title { display: block; }
+.code-findbar.goto .find-field { flex-basis: 220px; }
+.code-findbar.goto .glyph { display: none; }
+.code-findbar.goto .find-field input { margin-left: 2px; }
+.find-done { padding: 0 12px; border-radius: 6px; background: var(--control); box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fg) 12%, transparent); }
+.code-findbar.goto .find-steps, .code-findbar.goto .find-option { display: none; }
+
+/* Matches: the system's find yellow; the current one solid, as in Safari. */
+:root { --find: rgba(255, 214, 10, .38); --find-current: #ffd60a; --mark: rgba(214, 160, 0, .8); --mark-current: #ff9f0a; }
+@media (prefers-color-scheme: dark) { :root { --find: rgba(255, 214, 10, .28); --mark: rgba(255, 214, 10, .7); } }
+::highlight(greece-find) { background-color: var(--find); }
+::highlight(greece-find-current) { background-color: var(--find-current); color: #1d1d1f; }
+
+.code-find-marks {
+  position: fixed;
+  top: var(--code-inset);
+  right: 0;
+  z-index: 19;
+  width: 8px;
+  pointer-events: none;
+}
+.code-find-marks[hidden] { display: none; }
