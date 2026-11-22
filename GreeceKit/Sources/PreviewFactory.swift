@@ -52,39 +52,68 @@ public enum PreviewFactory {
 
         case .code(let language):
             let file = try TextFile(url: url)
-            return .web(WebDocument(kind: .code, text: file.text, grammar: language.grammar, baseDirectory: url.deletingLastPathComponent(), truncated: file.truncated),
-                        codeSummary(language.name, symbol: language.symbol, file: file, size: size, modified: modified),
-                        NSSize(width: 920, height: 720))
+            var text = file.text
+            var formatted = false
+            if settings.prettyPrint, !file.truncated,
+               let pretty = CodeFormatter.formatIfMinified(text, language: language, fileExtension: url.pathExtension) {
+                text = pretty
+                formatted = true
+            }
+            var summary = codeSummary(language.name, symbol: language.symbol, file: file, size: size, modified: modified,
+                                      lineCount: formatted ? TextFile(text: text).lineCount : nil)
+            if formatted { summary.details.append("Formatted") }
+            return .web(WebDocument(kind: .code, text: text, grammar: language.grammar, baseDirectory: url.deletingLastPathComponent(), truncated: file.truncated),
+                        summary, NSSize(width: 920, height: 720))
 
         case .json:
             let file = try TextFile(url: url)
             var text = file.text
             var details: [String] = []
             let ext = url.pathExtension.lowercased()
-            if settings.prettyPrint, !["jsonl", "ndjson"].contains(ext), !file.truncated, JSONFormatter.looksMinified(text),
-               let pretty = JSONFormatter.prettyPrinted(text, indent: 2) {
+            // A truncated file is formatted leniently: it ends mid-document by design.
+            if settings.prettyPrint, !["jsonl", "ndjson"].contains(ext), JSONFormatter.looksMinified(text),
+               let pretty = JSONFormatter.prettyPrinted(text, indent: 2, lenient: file.truncated) {
                 text = pretty
                 details.append("Formatted")
             }
             let formatted = TextFile(text: text)
-            var summary = codeSummary("JSON", symbol: "curlybraces.square", file: formatted, size: size, modified: modified)
+            var summary = codeSummary("JSON", symbol: "curlybraces.square", file: file, size: size, modified: modified, lineCount: formatted.lineCount)
             summary.details += details
-            return .web(WebDocument(kind: .code, text: text, grammar: "json", truncated: file.truncated), summary, NSSize(width: 920, height: 720))
+            var document = WebDocument(kind: .code, text: text, grammar: "json", truncated: file.truncated)
+            if file.truncated {
+                // The tree view reads the whole file, which the code view only shows the start of.
+                document.resources = { path in
+                    guard path == "source", let data = try? Data(contentsOf: url, options: .mappedIfSafe),
+                          data.count <= 256 * 1024 * 1024 else { return nil }
+                    return (data, "application/json")
+                }
+            }
+            return .web(document, summary, NSSize(width: 920, height: 720))
 
         case .propertyList:
             let data = try Data(contentsOf: url, options: .mappedIfSafe)
             var text: String
             var format = PropertyListSerialization.PropertyListFormat.xml
-            if let object = try? PropertyListSerialization.propertyList(from: data, options: [], format: &format),
-               format == .binary,
+            let object = try? PropertyListSerialization.propertyList(from: data, options: [], format: &format)
+            if let object, format == .binary,
                let xml = try? PropertyListSerialization.data(fromPropertyList: object, format: .xml, options: 0) {
                 text = String(decoding: xml, as: UTF8.self)
             } else {
                 text = TextFile.decode(data.prefix(TextFile.defaultLimit)).0
             }
+            var formatted = false
+            if settings.prettyPrint, format != .binary, Minified.looksMinified(text, separators: .tags),
+               let pretty = XMLFormatter.prettyPrinted(text) {
+                text = pretty
+                formatted = true
+            }
             var summary = codeSummary("Property List", symbol: "list.bullet.indent", file: TextFile(text: text), size: size, modified: modified)
             if format == .binary { summary.details.insert("Binary", at: 0) }
-            return .web(WebDocument(kind: .code, text: text, grammar: "xml"), summary, NSSize(width: 920, height: 720))
+            if formatted { summary.details.append("Formatted") }
+            var document = WebDocument(kind: .code, text: text, grammar: "xml")
+            // The same values as a tree (Code / Tree in the preview).
+            document.data = object.flatMap(PropertyListTree.json(from:))
+            return .web(document, summary, NSSize(width: 920, height: 720))
 
         case .notebook:
             let file = try TextFile(url: url)
@@ -222,8 +251,8 @@ public enum PreviewFactory {
 
     // MARK: - Facts
 
-    private static func codeSummary(_ name: String, symbol: String, file: TextFile, size: String?, modified: String?) -> FileSummary {
-        let lines = file.lineCount
+    private static func codeSummary(_ name: String, symbol: String, file: TextFile, size: String?, modified: String?, lineCount: Int? = nil) -> FileSummary {
+        let lines = lineCount ?? file.lineCount
         var details = ["\(lines.formatted()) \(lines == 1 ? "line" : "lines")"]
         if let size { details.append(size) }
         if file.encodingName != "UTF-8" { details.append(file.encodingName) }
