@@ -11,7 +11,8 @@ enum SnapshotRunner {
 
     static func run() {
         let app = NSApplication.shared
-        app.setActivationPolicy(.prohibited)
+        // A window to capture by ID needs an app the window server will share it for.
+        app.setActivationPolicy(CommandLine.arguments.contains("--print-window") ? .accessory : .prohibited)
         Task { @MainActor in
             do {
                 try await render()
@@ -58,7 +59,9 @@ enum SnapshotRunner {
 
         let preview = try await PreviewFactory.makePreview(for: input, settings: settings)
         let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -20_000, y: -20_000), size: size),
-                              styleMask: [.borderless], backing: .buffered, defer: false)
+                              styleMask: args.contains("--print-window") ? [.titled, .closable, .resizable] : [.borderless],
+                              backing: .buffered, defer: false)
+        window.title = input.lastPathComponent
         window.appearance = NSAppearance(named: settings.appearance == .dark ? .darkAqua : .aqua)
         window.backgroundColor = .windowBackgroundColor
         preview.frame = NSRect(origin: .zero, size: size)
@@ -68,6 +71,14 @@ enum SnapshotRunner {
         await preview.waitUntilReady()
         let wait = value(after: "--wait").flatMap(Double.init) ?? 0.7
         try await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+
+        if args.contains("--print-window") {
+            // Let an external `screencapture -l <id>` grab exactly this window as the window server
+            // composites it (layers and all), then carry on.
+            print(window.windowNumber)
+            fflush(stdout)
+            try await Task.sleep(nanoseconds: 3_000_000_000)
+        }
 
         guard let rep = preview.bitmapImageRepForCachingDisplay(in: preview.bounds) else { return }
         preview.cacheDisplay(in: preview.bounds, to: rep)
