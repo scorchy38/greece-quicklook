@@ -84,14 +84,15 @@ enum PackageInspector {
     private static func python(_ headers: [(String, String)], kind: PackageKind) -> PackageInfo {
         let first = { PackageFormats.first(headers, $0) }
         var info = PackageInfo(kind: kind, name: first("Name"), version: first("Version"), summary: first("Summary"))
-        info.fact("Requires Python", first("Requires-Python").map(prettyRequirement))
+        info.fact(String(localized: "Requires Python", bundle: .greeceKit, comment: "Package fact label: the Python versions a package needs, such as “≥ 3.9”"),
+                  first("Requires-Python").map(prettyRequirement))
         var license = first("License-Expression") ?? first("License").flatMap { $0.count <= 40 && !$0.contains("\n") ? $0 : nil }
         if license == nil {
             license = PackageFormats.all(headers, "Classifier").first { $0.hasPrefix("License ::") }?.components(separatedBy: " :: ").last
         }
-        info.fact("License", license)
+        info.fact(String(localized: "License", bundle: .greeceKit, comment: "Package fact label"), license)
         let author = first("Author") ?? first("Author-email").map { $0.components(separatedBy: "<").first?.trimmingCharacters(in: .whitespaces).trimmingCharacters(in: CharacterSet(charactersIn: "\"")) ?? $0 }
-        info.fact("Author", author)
+        info.fact(String(localized: "Author", bundle: .greeceKit, comment: "Package fact label"), author)
         let urls = PackageFormats.all(headers, "Project-URL")
         info.homepage = first("Home-page") ?? urls.first { $0.lowercased().hasPrefix("homepage") || $0.lowercased().hasPrefix("source") }?.components(separatedBy: ",").last?.trimmingCharacters(in: .whitespaces)
         let requirements = PackageFormats.all(headers, "Requires-Dist")
@@ -99,7 +100,10 @@ enum PackageInspector {
         info.dependencies = requirements.filter { !$0.contains("extra ==") && !$0.contains("extra==") }
             .map { $0.components(separatedBy: ";")[0].replacingOccurrences(of: " ", with: "") }
         let extras = PackageFormats.all(headers, "Provides-Extra")
-        if !extras.isEmpty { info.fact("Extras", extras.prefix(8).joined(separator: ", ")) }
+        if !extras.isEmpty {
+            info.fact(String(localized: "Extras", bundle: .greeceKit, comment: "Package fact label: a Python package’s optional feature sets"),
+                      extras.prefix(8).joined(separator: ", "))
+        }
         return info
     }
 
@@ -114,7 +118,11 @@ enum PackageInspector {
         var info = python(PackageFormats.headers(text), kind: .wheel)
         if let wheel = reader.text(path.replacingOccurrences(of: "/METADATA", with: "/WHEEL")) {
             let tags = PackageFormats.all(PackageFormats.headers(wheel), "Tag")
-            info.fact("Built for", tags.count == 1 ? tags[0] : tags.isEmpty ? nil : "\(tags[0]) and \(tags.count - 1) more")
+            let more = tags.count - 1
+            info.fact(String(localized: "Built for", bundle: .greeceKit, comment: "Package fact label: the platforms a Python wheel is built for, such as “py3-none-any”"),
+                      tags.count == 1 ? tags[0] : tags.isEmpty ? nil
+                        : String(localized: "\(tags[0]) and \(more) more", bundle: .greeceKit,
+                                 comment: "The first argument is a name, the second how many more there are, such as “py3-none-any and 2 more”"))
         }
         return info.name == nil ? nil : info
     }
@@ -137,18 +145,21 @@ enum PackageInspector {
         var info = PackageInfo(kind: kind, name: name, version: manifest["Implementation-Version"] ?? manifest["Bundle-Version"] ?? pom["version"],
                                summary: manifest["Bundle-Description"])
         if let group = pom["groupId"], let artifact = pom["artifactId"] { info.fact("Maven", "\(group):\(artifact)") }
-        info.fact("Main class", manifest["Main-Class"])
-        info.fact("Vendor", manifest["Implementation-Vendor"] ?? manifest["Bundle-Vendor"])
-        info.fact("Module", manifest["Automatic-Module-Name"] ?? manifest["Bundle-SymbolicName"]?.components(separatedBy: ";").first)
+        info.fact(String(localized: "Main class", bundle: .greeceKit, comment: "Package fact label: the Java class a .jar starts from"), manifest["Main-Class"])
+        info.fact(String(localized: "Vendor", bundle: .greeceKit, comment: "Package fact label"), manifest["Implementation-Vendor"] ?? manifest["Bundle-Vendor"])
+        info.fact(String(localized: "Module", bundle: .greeceKit, comment: "Package fact label: a Java module’s name"),
+                  manifest["Automatic-Module-Name"] ?? manifest["Bundle-SymbolicName"]?.components(separatedBy: ";").first)
         if let jdk = manifest["Build-Jdk-Spec"] ?? manifest["Build-Jdk"] { info.fact("Java", jdk) }
-        else { info.fact("Built by", manifest["Created-By"]) }
+        else { info.fact(String(localized: "Built by", bundle: .greeceKit, comment: "Package fact label: the tool that built a .jar"), manifest["Created-By"]) }
         let classes = files.lazy.filter { $0.path.hasSuffix(".class") }.count
-        if classes > 0 { info.fact("Classes", classes.formatted()) }
+        if classes > 0 { info.fact(String(localized: "Classes", bundle: .greeceKit, comment: "Package fact label: how many Java classes a .jar holds"), classes.formatted()) }
         if kind == .war {
             let libraries = files.lazy.filter { $0.path.hasPrefix("WEB-INF/lib/") && $0.path.hasSuffix(".jar") }.count
-            if libraries > 0 { info.fact("Libraries", libraries.formatted()) }
+            if libraries > 0 {
+                info.fact(String(localized: "Libraries", bundle: .greeceKit, comment: "Package fact label: how many libraries a web application bundles"), libraries.formatted())
+            }
             if let web = reader.data("WEB-INF/web.xml").flatMap(PackageFormats.XMLDigest.init), let display = web.text("web-app/display-name") {
-                if info.name == nil { info.name = display } else { info.fact("Display name", display) }
+                if info.name == nil { info.name = display } else { info.fact(String(localized: "Display name", bundle: .greeceKit, comment: "Package fact label"), display) }
             }
         }
         return info
@@ -162,11 +173,14 @@ enum PackageInspector {
         let id = xml.text("metadata/id")
         var info = PackageInfo(kind: .nuget, name: xml.text("metadata/title") ?? id, version: xml.text("metadata/version"),
                                summary: (xml.text("metadata/summary") ?? xml.text("metadata/description")).map(firstSentence))
-        if let id, id != info.name { info.fact("ID", id) }
-        info.fact("Authors", xml.text("metadata/authors"))
-        info.fact("License", xml.text("metadata/license") ?? xml.text("metadata/licenseurl"))
+        if let id, id != info.name { info.fact(String(localized: "ID", bundle: .greeceKit, comment: "Package fact label: the package’s identifier"), id) }
+        info.fact(String(localized: "Authors", bundle: .greeceKit, comment: "Package fact label"), xml.text("metadata/authors"))
+        info.fact(String(localized: "License", bundle: .greeceKit, comment: "Package fact label"), xml.text("metadata/license") ?? xml.text("metadata/licenseurl"))
         let frameworks = xml.all("dependencies/group").compactMap { $0.attributes["targetFramework"] }
-        if !frameworks.isEmpty { info.fact("Frameworks", frameworks.prefix(6).joined(separator: ", ")) }
+        if !frameworks.isEmpty {
+            info.fact(String(localized: "Frameworks", bundle: .greeceKit, comment: "Package fact label: the .NET versions a NuGet package targets, such as “net8.0”"),
+                      frameworks.prefix(6).joined(separator: ", "))
+        }
         var seen = Set<String>()
         info.dependencies = xml.all("dependency").compactMap { element in
             guard let id = element.attributes["id"], seen.insert(id.lowercased()).inserted else { return nil }
@@ -182,10 +196,11 @@ enum PackageInspector {
             let publisher = json["publisher"] as? String
             var info = PackageInfo(kind: .vsix, name: (json["displayName"] as? String) ?? name, version: json["version"] as? String,
                                    summary: json["description"] as? String)
-            info.fact("Identifier", publisher.map { "\($0).\(name)" } ?? name)
+            info.fact(String(localized: "Identifier", bundle: .greeceKit, comment: "Package fact label"), publisher.map { "\($0).\(name)" } ?? name)
             info.fact("VS Code", ((json["engines"] as? [String: Any])?["vscode"] as? String).map(prettyRequirement))
-            info.fact("Categories", (json["categories"] as? [String])?.prefix(4).joined(separator: ", "))
-            info.fact("License", json["license"] as? String)
+            info.fact(String(localized: "Categories", bundle: .greeceKit, comment: "Package fact label"),
+                      (json["categories"] as? [String])?.prefix(4).joined(separator: ", "))
+            info.fact(String(localized: "License", bundle: .greeceKit, comment: "Package fact label"), json["license"] as? String)
             info.dependencies = (json["extensionDependencies"] as? [String]) ?? []
             info.icon = reader.image((json["icon"] as? String).map { "extension/" + $0 })
             return info
@@ -194,9 +209,12 @@ enum PackageInspector {
         let identity = xml.all("metadata/identity").first?.attributes ?? [:]
         var info = PackageInfo(kind: .vsix, name: xml.text("metadata/displayname") ?? identity["Id"], version: identity["Version"],
                                summary: xml.text("metadata/description"))
-        info.fact("Publisher", identity["Publisher"])
+        info.fact(String(localized: "Publisher", bundle: .greeceKit, comment: "Package fact label"), identity["Publisher"])
         let targets = xml.all("installationtarget").compactMap { $0.attributes["Id"]?.components(separatedBy: ".").last }
-        if !targets.isEmpty { info.fact("Installs into", Array(Set(targets)).sorted().joined(separator: ", ")) }
+        if !targets.isEmpty {
+            info.fact(String(localized: "Installs into", bundle: .greeceKit, comment: "Package fact label: the editors a Visual Studio extension installs into"),
+                      Array(Set(targets)).sorted().joined(separator: ", "))
+        }
         info.icon = reader.image(xml.text("metadata/icon"))
         return info.name == nil ? nil : info
     }
@@ -221,11 +239,18 @@ enum PackageInspector {
         let actualKind: PackageKind = gecko != nil ? .xpi : kind
         var info = PackageInfo(kind: actualKind, name: localized(json["name"]), version: json["version"] as? String,
                                summary: localized(json["description"]))
-        info.fact("Manifest", (json["manifest_version"] as? Int).map { "Version \($0)" })
+        info.fact(String(localized: "Manifest", bundle: .greeceKit, comment: "Package fact label: which version of the browser extension manifest format it uses"),
+                  (json["manifest_version"] as? Int).map {
+                      String(localized: "Version \(String($0))", bundle: .greeceKit, comment: "A browser extension’s manifest format version; the argument is a number, such as “3”")
+                  })
         let permissions = ((json["permissions"] as? [Any]) ?? []) + ((json["host_permissions"] as? [Any]) ?? [])
-        if !permissions.isEmpty { info.fact("Permissions", permissions.compactMap { $0 as? String }.prefix(6).joined(separator: ", ") + (permissions.count > 6 ? "…" : "")) }
-        info.fact("ID", gecko?["id"] as? String)
-        info.fact("Author", (json["author"] as? String) ?? ((json["author"] as? [String: Any])?["email"] as? String))
+        if !permissions.isEmpty {
+            info.fact(String(localized: "Permissions", bundle: .greeceKit, comment: "Package fact label: what an app or extension is allowed to do"),
+                      permissions.compactMap { $0 as? String }.prefix(6).joined(separator: ", ") + (permissions.count > 6 ? "…" : ""))
+        }
+        info.fact(String(localized: "ID", bundle: .greeceKit, comment: "Package fact label: the package’s identifier"), gecko?["id"] as? String)
+        info.fact(String(localized: "Author", bundle: .greeceKit, comment: "Package fact label"),
+                  (json["author"] as? String) ?? ((json["author"] as? [String: Any])?["email"] as? String))
         info.homepage = json["homepage_url"] as? String
         if let icons = json["icons"] as? [String: Any] {
             let best = icons.compactMap { key, value -> (Int, String)? in
@@ -243,12 +268,15 @@ enum PackageInspector {
         guard let data = reader.data("AndroidManifest.xml", limit: 8 * 1024 * 1024), let manifest = AndroidManifest(binaryXML: data) else { return nil }
         var info = android(manifest, kind: .apk)
         let dex = files.lazy.filter { !$0.path.contains("/") && $0.path.hasPrefix("classes") && $0.path.hasSuffix(".dex") }.count
-        if dex > 1 { info.fact("Dex files", dex.formatted()) }
+        if dex > 1 { info.fact(String(localized: "Dex files", bundle: .greeceKit, comment: "Package fact label: how many Dalvik executables an Android package holds"), dex.formatted()) }
         let abis = Set(files.compactMap { entry -> String? in
             let parts = entry.path.split(separator: "/")
             return parts.count >= 3 && parts[0] == "lib" ? String(parts[1]) : nil
         })
-        if !abis.isEmpty { info.fact("Native code", abis.sorted().joined(separator: ", ")) }
+        if !abis.isEmpty {
+            info.fact(String(localized: "Native code", bundle: .greeceKit, comment: "Package fact label: the processor architectures an Android package has code for, such as “arm64-v8a”"),
+                      abis.sorted().joined(separator: ", "))
+        }
         // The launcher icon, when it's a plain bitmap with a conventional name.
         let icon = files.filter { entry in
             let path = entry.path.lowercased()
@@ -267,11 +295,14 @@ enum PackageInspector {
     private static func android(_ manifest: AndroidManifest, kind: PackageKind) -> PackageInfo {
         var info = PackageInfo(kind: kind, name: manifest.label ?? manifest.package, version: manifest.versionName)
         if manifest.label != nil { info.summary = manifest.package }
-        info.fact("Version code", manifest.versionCode)
-        info.fact("Minimum Android", manifest.minSDK.map(androidVersion))
-        info.fact("Target", manifest.targetSDK.map(androidVersion))
+        info.fact(String(localized: "Version code", bundle: .greeceKit, comment: "Package fact label: an Android app’s internal version number"), manifest.versionCode)
+        info.fact(String(localized: "Minimum Android", bundle: .greeceKit, comment: "Package fact label: the oldest Android version an app runs on"),
+                  manifest.minSDK.map(androidVersion))
+        info.fact(String(localized: "Target", bundle: .greeceKit, comment: "Package fact label: the Android version an app is built for"),
+                  manifest.targetSDK.map(androidVersion))
         if !manifest.permissions.isEmpty {
-            info.fact("Permissions", "\(manifest.permissions.count)")
+            info.fact(String(localized: "Permissions", bundle: .greeceKit, comment: "Package fact label: what an app or extension is allowed to do"),
+                      "\(manifest.permissions.count)")
             info.dependencies = manifest.permissions.map { $0.replacingOccurrences(of: "android.permission.", with: "") }
         }
         return info
@@ -292,9 +323,11 @@ enum PackageInspector {
         guard let name = spec.fields["name"] else { return nil }
         var info = PackageInfo(kind: .gem, name: name, version: spec.fields["version"], summary: spec.fields["summary"])
         info.fact("Ruby", spec.fields["required_ruby_version"].map(prettyRequirement))
-        info.fact("Platform", spec.fields["platform"].flatMap { $0 == "ruby" ? nil : $0 })
-        info.fact("License", spec.licenses.joined(separator: ", "))
-        info.fact("Authors", spec.authors.prefix(3).joined(separator: ", ") + (spec.authors.count > 3 ? "…" : ""))
+        info.fact(String(localized: "Platform", bundle: .greeceKit, comment: "Package fact label: the platform a Ruby gem is built for"),
+                  spec.fields["platform"].flatMap { $0 == "ruby" ? nil : $0 })
+        info.fact(String(localized: "License", bundle: .greeceKit, comment: "Package fact label"), spec.licenses.joined(separator: ", "))
+        info.fact(String(localized: "Authors", bundle: .greeceKit, comment: "Package fact label"),
+                  spec.authors.prefix(3).joined(separator: ", ") + (spec.authors.count > 3 ? "…" : ""))
         info.homepage = spec.fields["homepage"]
         info.dependencies = spec.dependencies
         return info
@@ -308,11 +341,14 @@ enum PackageInspector {
         let description = first("Description")
         var info = PackageInfo(kind: .deb, name: name, version: first("Version"),
                                summary: description?.components(separatedBy: "\n").first)
-        info.fact("Architecture", first("Architecture"))
-        info.fact("Section", first("Section"))
-        info.fact("Maintainer", first("Maintainer").map { $0.components(separatedBy: "<").first?.trimmingCharacters(in: .whitespaces) ?? $0 })
+        info.fact(String(localized: "Architecture", bundle: .greeceKit, comment: "Package fact label: the processor a Linux package is built for, such as “arm64”"),
+                  first("Architecture"))
+        info.fact(String(localized: "Section", bundle: .greeceKit, comment: "Package fact label: a Debian package’s category, such as “utils”"), first("Section"))
+        info.fact(String(localized: "Maintainer", bundle: .greeceKit, comment: "Package fact label"),
+                  first("Maintainer").map { $0.components(separatedBy: "<").first?.trimmingCharacters(in: .whitespaces) ?? $0 })
         if let installed = first("Installed-Size").flatMap(Int64.init) {
-            info.fact("Installed size", ByteCountFormatter.string(fromByteCount: installed * 1024, countStyle: .file))
+            info.fact(String(localized: "Installed size", bundle: .greeceKit, comment: "Package fact label: how much space a package takes once installed"),
+                      ByteCountFormatter.string(fromByteCount: installed * 1024, countStyle: .file))
         }
         info.homepage = first("Homepage")
         info.dependencies = (first("Depends") ?? "").components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
@@ -323,15 +359,21 @@ enum PackageInspector {
         guard case .rpm(let header, _) = session.layout, let name = header.name else { return nil }
         var info = PackageInfo(kind: .rpm, name: name, version: [header.version, header.release].compactMap { $0 }.joined(separator: "-").nilIfEmpty,
                                summary: header.string(1004))
-        info.fact("Architecture", header.isSource ? "Source" : header.string(1022))
-        info.fact("License", header.string(1014))
-        info.fact("Group", header.string(1016).flatMap { $0 == "Unspecified" ? nil : $0 })
-        info.fact("Vendor", header.string(1011) ?? header.string(1015))
+        let source = String(localized: "Source [package architecture]", defaultValue: "Source", bundle: .greeceKit,
+                            comment: "Package fact value: the package holds source code rather than a build for one processor")
+        info.fact(String(localized: "Architecture", bundle: .greeceKit, comment: "Package fact label: the processor a Linux package is built for, such as “arm64”"),
+                  header.isSource ? source : header.string(1022))
+        info.fact(String(localized: "License", bundle: .greeceKit, comment: "Package fact label"), header.string(1014))
+        info.fact(String(localized: "Group", bundle: .greeceKit, comment: "Package fact label: an RPM package’s category, such as “System Environment/Base”"),
+                  header.string(1016).flatMap { $0 == "Unspecified" ? nil : $0 })
+        info.fact(String(localized: "Vendor", bundle: .greeceKit, comment: "Package fact label"), header.string(1011) ?? header.string(1015))
         if let size = header.ints(5009).first ?? header.ints(1009).first {
-            info.fact("Installed size", ByteCountFormatter.string(fromByteCount: size, countStyle: .file))
+            info.fact(String(localized: "Installed size", bundle: .greeceKit, comment: "Package fact label: how much space a package takes once installed"),
+                      ByteCountFormatter.string(fromByteCount: size, countStyle: .file))
         }
         if let built = header.ints(1006).first {
-            info.fact("Built", Date(timeIntervalSince1970: TimeInterval(built)).formatted(date: .abbreviated, time: .omitted))
+            info.fact(String(localized: "Built", bundle: .greeceKit, comment: "Package fact label: the date a package was built"),
+                      Date(timeIntervalSince1970: TimeInterval(built)).formatted(date: .abbreviated, time: .omitted))
         }
         info.homepage = header.string(1020)
         var seen = Set<String>()
@@ -344,11 +386,15 @@ enum PackageInspector {
     private static func npm(_ reader: Reader) -> PackageInfo? {
         guard let json = reader.data("package/package.json").flatMap(PackageFormats.json), let name = json["name"] as? String else { return nil }
         var info = PackageInfo(kind: .npm, name: name, version: json["version"] as? String, summary: json["description"] as? String)
-        info.fact("License", json["license"] as? String)
+        info.fact(String(localized: "License", bundle: .greeceKit, comment: "Package fact label"), json["license"] as? String)
         info.fact("Node", ((json["engines"] as? [String: Any])?["node"] as? String).map(prettyRequirement))
-        info.fact("Author", (json["author"] as? String)?.components(separatedBy: "<").first?.trimmingCharacters(in: .whitespaces)
-                  ?? ((json["author"] as? [String: Any])?["name"] as? String))
-        if let module = json["type"] as? String, module == "module" { info.fact("Modules", "ES modules") }
+        info.fact(String(localized: "Author", bundle: .greeceKit, comment: "Package fact label"),
+                  (json["author"] as? String)?.components(separatedBy: "<").first?.trimmingCharacters(in: .whitespaces)
+                    ?? ((json["author"] as? [String: Any])?["name"] as? String))
+        if let module = json["type"] as? String, module == "module" {
+            info.fact(String(localized: "Modules", bundle: .greeceKit, comment: "Package fact label: the JavaScript module system an npm package uses"),
+                      String(localized: "ES modules", bundle: .greeceKit, comment: "Package fact value: the package uses JavaScript’s standard (ECMAScript) modules"))
+        }
         info.homepage = json["homepage"] as? String
         if let dependencies = json["dependencies"] as? [String: Any] {
             info.dependencies = dependencies.keys.sorted().map { key in (dependencies[key] as? String).map { "\(key) \($0)" } ?? key }
@@ -372,15 +418,21 @@ enum PackageInspector {
         let folder = path.contains("/") ? String(path.split(separator: "/")[0]) : nil
         var info = PackageInfo(kind: .skill, name: front["name"] ?? folder, version: front["version"] ?? front["metadata.version"],
                                summary: front["description"].map(firstSentence))
-        info.fact("License", front["license"])
-        info.fact("Allowed Tools", front["allowed-tools"])
-        info.fact("Compatibility", front["compatibility"])
+        info.fact(String(localized: "License", bundle: .greeceKit, comment: "Package fact label"), front["license"])
+        info.fact(String(localized: "Allowed Tools", bundle: .greeceKit, comment: "Package fact label: the tools an agent skill may use without asking"),
+                  front["allowed-tools"])
+        info.fact(String(localized: "Compatibility", bundle: .greeceKit, comment: "Package fact label: what an agent skill needs to work"), front["compatibility"])
         let inside = files.map { ArchiveSession.normalized($0.path) }.map { path in
             folder.map { path.hasPrefix($0 + "/") ? String(path.dropFirst($0.count + 1)) : path } ?? path
         }
-        for (label, prefix) in [("Scripts", "scripts/"), ("References", "references/"), ("Assets", "assets/")] {
+        let folders = [
+            (String(localized: "Scripts", bundle: .greeceKit, comment: "Package fact label: how many scripts an agent skill bundles"), "scripts/"),
+            (String(localized: "References", bundle: .greeceKit, comment: "Package fact label: how many reference documents an agent skill bundles"), "references/"),
+            (String(localized: "Assets", bundle: .greeceKit, comment: "Package fact label: how many other files (templates, images) an agent skill bundles"), "assets/"),
+        ]
+        for (label, prefix) in folders {
             let count = inside.filter { $0.hasPrefix(prefix) }.count
-            if count > 0 { info.fact(label, "\(count.formatted()) \(count == 1 ? "file" : "files")") }
+            if count > 0 { info.fact(label, String(localized: "\(count) files", bundle: .greeceKit, comment: "A count of files")) }
         }
         return info
     }
