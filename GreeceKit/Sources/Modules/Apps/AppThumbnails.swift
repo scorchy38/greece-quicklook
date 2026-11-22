@@ -68,11 +68,26 @@ enum AppThumbnails {
             let expiry = Format.expiry(expires)
             lines.append((expiry.text, expiry.tone == .critical ? .systemRed : expiry.tone == .caution ? .systemOrange : nil))
         }
-        if !profile.devices.isEmpty { lines.append((Format.count(profile.devices.count, "device"), nil)) }
+        if !profile.devices.isEmpty {
+            lines.append((String(localized: "\(profile.devices.count) devices", bundle: .greeceKit, comment: "Thumbnail caption: how many devices a provisioning profile covers"), nil))
+        }
         let expired = profile.expires.map { $0 < Date() } ?? false
         let card = Card(symbol: "person.text.rectangle.fill", tint: expired ? .systemGray : .systemBlue,
-                        eyebrow: profile.kind.rawValue.uppercased(), title: profile.name, lines: lines)
+                        eyebrow: eyebrow(profile.kind), title: profile.name, lines: lines)
         return page(card, size: size, badge: url.pathExtension.lowercased() == "provisionprofile" ? "PROFILE" : "MOBILEPROVISION")
+    }
+
+    /// A provisioning profile's kind in small capitals. Apple's program names stay as they are.
+    static func eyebrow(_ kind: ProvisioningProfile.Kind) -> String {
+        switch kind {
+        case .development: return String(localized: "DEVELOPMENT", bundle: .greeceKit, comment: "Thumbnail caption in capitals: a development provisioning profile")
+        case .adHoc: return String(localized: "AD HOC", bundle: .greeceKit, comment: "Thumbnail caption in capitals: an ad hoc provisioning profile")
+        case .appStore: return "APP STORE"
+        case .enterprise: return String(localized: "ENTERPRISE", bundle: .greeceKit, comment: "Thumbnail caption in capitals: an enterprise provisioning profile")
+        case .developerID: return "DEVELOPER ID"
+        case .macDevelopment: return String(localized: "MAC DEVELOPMENT", bundle: .greeceKit, comment: "Thumbnail caption in capitals: a Mac development provisioning profile")
+        case .macAppStore: return "MAC APP STORE"
+        }
     }
 
     static func configurationCard(for url: URL, size: CGSize) -> ThumbnailPage? {
@@ -88,17 +103,24 @@ enum AppThumbnails {
         if let organization = profile.organization { lines.append((organization, nil)) }
         let kinds = profile.payloads.map { $0.displayName ?? PayloadCatalog.describe($0.type).title }
         for kind in kinds.prefix(3) { lines.append(("• " + kind, nil)) }
-        if kinds.count > 3 { lines.append(("and \(kinds.count - 3) more", nil)) }
-        let card = Card(symbol: "gearshape.2.fill", tint: .systemGray, eyebrow: "CONFIGURATION PROFILE", title: profile.name, lines: lines)
+        if kinds.count > 3 {
+            lines.append((String(localized: "and \(kinds.count - 3) more", bundle: .greeceKit, comment: "Thumbnail caption under a bulleted list of a profile’s first three payloads"), nil))
+        }
+        let card = Card(symbol: "gearshape.2.fill", tint: .systemGray,
+                        eyebrow: String(localized: "CONFIGURATION PROFILE", bundle: .greeceKit, comment: "Thumbnail caption in capitals: a kind of file"), title: profile.name, lines: lines)
         return page(card, size: size, badge: "MOBILECONFIG")
     }
 
     static func torrentCard(for url: URL, size: CGSize) -> ThumbnailPage? {
         guard let data = try? ProfilePage.readLimited(url, limit: Torrent.maxSize), let torrent = try? Torrent(data: data) else { return nil }
-        var lines: [(String, NSColor?)] = [(Format.bytes(torrent.totalSize), nil), (Format.count(torrent.realFiles.count, "file"), nil)]
+        var lines: [(String, NSColor?)] = [
+            (Format.bytes(torrent.totalSize), nil),
+            (String(localized: "\(torrent.realFiles.count) files", bundle: .greeceKit, comment: "How many files a torrent downloads"), nil),
+        ]
         if let host = torrent.trackers.first?.first.flatMap({ URL(string: $0)?.host }) { lines.append((host, nil)) }
-        if torrent.isPrivate { lines.append(("Private", nil)) }
-        let card = Card(symbol: "arrow.down.circle.fill", tint: .systemTeal, eyebrow: "TORRENT", title: torrent.name, lines: lines)
+        if torrent.isPrivate { lines.append((TorrentPage.privateTitle, nil)) }
+        let card = Card(symbol: "arrow.down.circle.fill", tint: .systemTeal,
+                        eyebrow: String(localized: "TORRENT", bundle: .greeceKit, comment: "Thumbnail caption in capitals: a kind of file (a .torrent file)"), title: torrent.name, lines: lines)
         return page(card, size: size, badge: "TORRENT")
     }
 
