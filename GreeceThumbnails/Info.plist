@@ -162,6 +162,16 @@
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xcode.app-privacy-property-list</string>
 				<string>com.scorchy.greece.code</string>
+				<string>com.scorchy.greece.geojson-lines</string>
+				<string>com.scorchy.greece.topojson</string>
+				<string>com.google.earth.kml</string>
+				<string>com.google.earth.kmz</string>
+				<string>com.topografix.gpx</string>
+				<string>com.scorchy.greece.shapefile</string>
+				<string>com.scorchy.greece.geopackage</string>
+				<string>com.scorchy.greece.mbtiles</string>
+				<string>com.scorchy.greece.osm</string>
+				<string>com.scorchy.greece.wkt</string>
 			</array>
 			<key>QLThumbnailMinimumDimension</key>
 			<integer>0</integer>

@@ -1,0 +1,45 @@
+{
+  "description": "First vertex of the first record of each projected shapefile, as stored in the .shp (projected CRS units) and converted to WGS84 longitude/latitude with pyproj (PROJ) using the EPSG definition. Use it to unit-test the app's own reprojection. RGF93 and NAD83 are treated as coincident with WGS84 (PROJ's default, no grid shift), so lon/lat equal the datum's own geographic coordinates.",
+  "generator": "Fixtures/maps/scripts/make_fixtures.py",
+  "layers": {
+    "parcels_utm33n": {
+      "file": "parcels_utm33n.shp",
+      "epsg": 32633,
+      "units": "metre",
+      "projected": {
+        "x": 601633.08,
+        "y": 5340404.03
+      },
+      "wgs84": {
+        "lon": 16.367997363,
+        "lat": 48.208722981
+      }
+    },
+    "roads_lambert93": {
+      "file": "roads_lambert93.shp",
+      "epsg": 2154,
+      "units": "metre",
+      "projected": {
+        "x": 841494.52,
+        "y": 6519508.44
+      },
+      "wgs84": {
+        "lon": 4.820500021,
+        "lat": 45.760499972
+      }
+    },
+    "stations_nad83_ft": {
+      "file": "stations_nad83_ft.shp",
+      "epsg": 2227,
+      "units": "US survey foot",
+      "projected": {
+        "x": 6153534.67,
+        "y": 2146556.43
+      },
+      "wgs84": {
+        "lon": -121.914199992,
+        "lat": 37.881600009
+      }
+    }
+  }
+}

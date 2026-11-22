@@ -28,7 +28,7 @@ final class CoverageTests: XCTestCase {
         "out": "usually an executable", "nc": "usually NetCDF data", "sig": "usually a binary signature",
         // Claimed by modules in progress (documents, maps); remove once they land.
         "tex": "pending", "sty": "pending", "cls": "pending", "ltx": "pending", "dtx": "pending", "ins": "pending",
-        "bbx": "pending", "cbx": "pending", "bib": "pending", "kml": "pending", "gpx": "pending",
+        "bbx": "pending", "cbx": "pending", "bib": "pending",
     ]
 
     private func claimed() throws -> Set<String> {
