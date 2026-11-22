@@ -1,0 +1,42 @@
+1
+00:00:01,200 --> 00:00:03,800
+The morning ferry leaves Piraeus at seven.
+
+2
+00:00:04,100 --> 00:00:06,900
+<i>Kalimera.</i> Two tickets to Naxos, please.
+
+3
+00:00:07,300 --> 00:00:09,500
+Deck or cabin?
+- Deck. We want the sea air.
+
+4
+00:00:09,800 --> 00:00:10,600
+Twenty-four euros each, cash or card, and the boat is running about twenty minutes late today.
+
+5
+00:00:11,000 --> 00:00:14,200
+{\an8}PIRAEUS PORT · GATE E7
+
+6
+00:00:14,000 --> 00:00:17,400
+Look, the dolphins are following the wake behind the stern again this morning.
+
+7
+00:00:18,000 --> 00:00:21,500
+By noon the islands rise out of the haze,
+one blue ridge after another.
+
+8
+00:00:22,000 --> 00:00:24,300
+<b>Paros</b> first, then Naxos.
+
+9
+00:00:24,800 --> 00:00:31,000
+We'll find a room near the Portara
+and watch the sun go down from the temple door.
+
+10
+00:00:31,600 --> 00:00:34,000
+<i>The ferry horn sounds.</i>

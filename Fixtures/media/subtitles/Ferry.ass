@@ -1,0 +1,25 @@
+[Script Info]
+; Written for Greece's test fixtures.
+Title: The Morning Ferry
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+Original Script: Greece
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Helvetica Neue,64,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,3,1,2,60,60,50,1
+Style: Sign,Helvetica Neue,48,&H0000D7FF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,2,0,8,60,60,50,1
+Style: Thoughts,Helvetica Neue,60,&H00F0C080,&H000000FF,&H00000000,&H80000000,0,1,0,0,100,100,0,0,1,3,1,2,60,60,50,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:01.20,0:00:03.80,Default,,0,0,0,,The morning ferry leaves Piraeus at seven.
+Dialogue: 1,0:00:01.20,0:00:06.00,Sign,,0,0,0,,{\pos(960,120)}PIRAEUS · GATE E7
+Dialogue: 0,0:00:04.10,0:00:06.90,Default,Eleni,0,0,0,,{\i1}Kalimera.{\i0} Two tickets to Naxos, please.
+Dialogue: 0,0:00:07.30,0:00:09.50,Default,Clerk,0,0,0,,Deck or cabin?\NDeck. We want the sea air.
+Comment: 0,0:00:08.00,0:00:09.00,Default,,0,0,0,,This line is a comment and isn't shown.
+Dialogue: 0,0:00:09.80,0:00:10.60,Default,Clerk,0,0,0,,Twenty-four euros each, and the boat is running late.
+Dialogue: 0,0:00:12.00,0:00:15.40,Thoughts,Nikos,0,0,0,,Dolphins, right behind the stern, again.
+Dialogue: 0,0:00:16.00,0:00:19.50,Default,Eleni,0,0,0,,By noon the islands rise out of the haze,\None {\b1}blue{\b0} ridge after another.
+Dialogue: 0,0:00:20.00,0:00:22.00,Default,,0,0,0,,{\p1}m 0 0 l 100 0 100 100 0 100{\p0}
