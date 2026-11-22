@@ -244,7 +244,10 @@ struct DataPage: View {
             Section("Tables") {
                 Toggle("Row numbers", isOn: $store.settings.rowNumbers)
                 Picker("Show up to", selection: $store.settings.maxRows) {
-                    ForEach([1_000, 10_000, 100_000, 1_000_000], id: \.self) { count in Text(rows(count)).tag(count) }
+                    // Counts are grouped the reader's way (1.000.000, 10,00,000) and take their plural form.
+                    ForEach([1_000, 10_000, 100_000, 1_000_000], id: \.self) { count in
+                        Text("\(count) rows", comment: "Most rows a table preview shows").tag(count)
+                    }
                 }
             }
             Section {
@@ -256,13 +259,6 @@ struct DataPage: View {
             }
             .foregroundStyle(.secondary)
         }
-    }
-
-    /// "10,000 rows": the catalog picks the grammatical form for the count, then its digits are
-    /// grouped the way the reader's language writes large numbers (format specifiers can't group).
-    private func rows(_ count: Int) -> String {
-        String(localized: "\(count) rows", comment: "Most rows a table preview shows")
-            .replacingOccurrences(of: String(count), with: count.formatted(.number))
     }
 }
 
