@@ -29,9 +29,7 @@ html.diagram-open, html.diagram-open body { overflow: hidden; }
   position: fixed;
   inset: 0;
   z-index: 100;
-  background: color-mix(in srgb, var(--page) 94%, transparent);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
+  background: var(--page);
   animation: diagram-in .16s ease-out;
 }
 @keyframes diagram-in { from { opacity: 0; } to { opacity: 1; } }
