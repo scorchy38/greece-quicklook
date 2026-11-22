@@ -183,6 +183,9 @@ final class ProfilePopoverView: NSView {
 /// One of a column's most common values: the value, its share and its count. When it can be
 /// picked, it lights up under the pointer like a menu item and a click picks it.
 final class CommonValueRow: NSView {
+    /// Quick Look's panel is never the key window, so without this the reader's first click
+    /// on the preview would only activate it and do nothing.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     private let onPick: (() -> Void)?
     private var hovered = false { didSet { if hovered != oldValue { needsDisplay = true } } }
     private var pressed = false { didSet { if pressed != oldValue { needsDisplay = true } } }

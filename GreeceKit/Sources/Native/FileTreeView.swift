@@ -706,6 +706,10 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
 final class TreeOutlineView: NSOutlineView {
     weak var owner: FileTreeView?
 
+    /// Quick Look's panel is never the key window, so without this the reader's first click
+    /// on the preview would only activate it and do nothing.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     override func keyDown(with event: NSEvent) {
         if owner?.handleKey(event) == true { return }
         super.keyDown(with: event)

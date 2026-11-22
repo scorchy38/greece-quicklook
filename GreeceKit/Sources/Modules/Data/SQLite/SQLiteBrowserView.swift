@@ -13,7 +13,7 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
     private let worker: SQLiteWorker
     private var settings: PreviewSettings
     private let split = NSSplitView()
-    private let sidebar = NSTableView()
+    private let sidebar = FirstClickTableView()
     private let content = NSView()
     private let toolbar = DataToolbar()
     private let modes = NSSegmentedControl(labels: ["Data", "Schema"], trackingMode: .selectOne, target: nil, action: nil)

@@ -523,6 +523,10 @@ final class GridTableView: NSTableView {
     var copyHandler: (() -> Void)?
     weak var grid: GridView?
 
+    /// Quick Look's panel is never the key window, so without this the reader's first click
+    /// on the preview would only activate it and do nothing.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     @objc func copy(_ sender: Any?) { copyHandler?() }
 
     override func menu(for event: NSEvent) -> NSMenu? {
@@ -541,6 +545,9 @@ final class GridTableView: NSTableView {
 /// Click a title to sort, drag an edge to resize, click a strip for details. Follows the
 /// table's horizontal scrolling.
 final class GridHeaderBar: NSView, NSViewToolTipOwner {
+    /// Quick Look's panel is never the key window, so without this the reader's first click
+    /// on the preview would only activate it and do nothing.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     static let titleHeight: CGFloat = 28
     weak var grid: GridView?
     /// The table's horizontal scroll offset.
@@ -809,3 +816,10 @@ extension NSImage {
     }
 }
 
+
+/// A plain table that answers the first click, like Greece's other lists (see `GridTableView`).
+final class FirstClickTableView: NSTableView {
+    /// Quick Look's panel is never the key window, so without this the reader's first click
+    /// on the preview would only activate it and do nothing.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+}

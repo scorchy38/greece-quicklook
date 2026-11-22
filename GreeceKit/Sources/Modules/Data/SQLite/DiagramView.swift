@@ -186,6 +186,9 @@ final class RelationshipDiagram {
 /// Draws a `RelationshipDiagram`. Hover a table to light up its relationships; double-click it, or
 /// use its context menu, to open it (Quick Look takes double-clicks for itself).
 final class DiagramCanvas: NSView {
+    /// Quick Look's panel is never the key window, so without this the reader's first click
+    /// on the preview would only activate it and do nothing.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
     let diagram: RelationshipDiagram
     /// Shows a table's rows.
     var onOpen: ((String) -> Void)?
