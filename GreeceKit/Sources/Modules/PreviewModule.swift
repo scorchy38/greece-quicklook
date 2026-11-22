@@ -73,7 +73,8 @@ protocol PreviewSettingsAware: AnyObject {
 enum PreviewModules {
     /// Every module, in the order they're asked. Add new modules here.
     static let all: [PreviewModule.Type] = [
-        AppsModule.self,
+        AppsModule.self,       // before archives: installers, disk images and Android apps are inspected
+        ArchivesModule.self,
         MapsModule.self,
     ]
 

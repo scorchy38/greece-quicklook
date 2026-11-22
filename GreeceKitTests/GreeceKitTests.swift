@@ -211,7 +211,7 @@ final class ArchiveTests: XCTestCase {
     func testZip() throws {
         try run("/usr/bin/zip", ["-qr", "p.zip", "Project"])
         let url = directory.appendingPathComponent("p.zip")
-        XCTAssertEqual(FileKind.detect(url), .archive(.zip))
+        XCTAssertEqual(FileKind.detect(url), .module(ArchivesModule.id))
         let listing = try ArchiveReader.read(url, format: .zip)
         assertProjectListing(listing)
         XCTAssertLessThan(listing.entries.first { $0.path.hasSuffix("/main.swift") }?.compressedSize ?? .max, 5000)
@@ -221,7 +221,7 @@ final class ArchiveTests: XCTestCase {
         for (name, flags, format) in [("p.tar", "-cf", ArchiveFormat.tar), ("p.tgz", "-czf", .gzip), ("p.tbz2", "-cjf", .bzip2), ("p.txz", "-cJf", .xz)] {
             try run("/usr/bin/tar", [flags, name, "Project"])
             let url = directory.appendingPathComponent(name)
-            XCTAssertEqual(FileKind.detect(url), .archive(format), name)
+            XCTAssertEqual(FileKind.detect(url), .module(ArchivesModule.id), name)
             let listing = try ArchiveReader.read(url, format: format)
             XCTAssertEqual(listing.container, .tar, name)
             assertProjectListing(listing)

@@ -16,6 +16,11 @@ final class FileNode {
     let isPackage: Bool
     var children: [FileNode]?
     var itemCount: Int?
+    /// For archive members: the entry itself (for extraction) and its full path inside the archive.
+    var entry: ArchiveEntry?
+    var path = ""
+    /// Files below this folder, counted when an archive's totals are computed.
+    var fileCount = 0
 
     init(name: String, isDirectory: Bool, isSymlink: Bool = false, isHidden: Bool = false, size: UInt64? = nil,
          compressedSize: UInt64? = nil, modified: Date? = nil, kind: String? = nil, labelColor: NSColor? = nil,
@@ -35,74 +40,40 @@ final class FileNode {
     }
 
     var isExpandable: Bool { isDirectory && !isPackage && (children.map { !$0.isEmpty } ?? true) }
+    var isEncrypted: Bool { entry?.isEncrypted ?? false }
 
     // MARK: Archives
 
     /// Builds a tree from flat archive paths, inventing any folders the archive left implicit.
     static func tree(from listing: ArchiveListing, showHidden: Bool) -> FileNode {
-        let root = FileNode(name: "", isDirectory: true, children: [])
-        var directories: [String: FileNode] = ["": root]
-
-        /// Finds or creates the folder chain for a path, iteratively (paths can be thousands deep).
-        func directory(for path: String) -> FileNode {
-            if let existing = directories[path] { return existing }
-            var node = root
-            var current = ""
-            for component in path.split(separator: "/") {
-                current = current.isEmpty ? String(component) : current + "/" + component
-                if let existing = directories[current] { node = existing; continue }
-                let name = String(component)
-                let child = FileNode(name: name, isDirectory: true, isHidden: name.hasPrefix("."), children: [])
-                node.children?.append(child)
-                directories[current] = child
-                node = child
-            }
-            return node
-        }
-
-        for entry in listing.entries {
-            var path = entry.path.replacingOccurrences(of: "\\", with: "/")
-            while path.hasSuffix("/") { path.removeLast() }
-            while path.hasPrefix("/") { path.removeFirst() }
-            guard !path.isEmpty else { continue }
-            let components = path.split(separator: "/")
-            // Real projects are never this deep; crafted archives are.
-            guard components.count <= 128 else { continue }
-            let hidden = components.contains { $0.hasPrefix(".") } || path.hasPrefix("__MACOSX")
-            if hidden && !showHidden { continue }
-
-            if entry.isDirectory {
-                let node = directory(for: path)
-                if node.modified == nil { node.modified = entry.modified }
-                continue
-            }
-            let parent = directory(for: (path as NSString).deletingLastPathComponent)
-            parent.children?.append(FileNode(
-                name: (path as NSString).lastPathComponent,
-                isDirectory: false,
-                isSymlink: entry.isSymlink,
-                isHidden: hidden,
-                size: entry.size,
-                compressedSize: entry.compressedSize,
-                modified: entry.modified))
-        }
-        root.computeArchiveTotals()
-        return root
+        let builder = ArchiveTreeBuilder(showHidden: showHidden)
+        builder.add(listing.entries)
+        builder.finish()
+        return builder.root
     }
 
+    /// Sums sizes, compressed sizes and file counts up the tree.
     @discardableResult
-    private func computeArchiveTotals() -> (UInt64, Int) {
-        guard isDirectory else { return (size ?? 0, 1) }
+    func computeArchiveTotals() -> (size: UInt64, compressed: UInt64?, files: Int) {
+        guard isDirectory else { return (size ?? 0, compressedSize, 1) }
         var total: UInt64 = 0
-        var count = 0
+        var compressed: UInt64? = 0
+        var files = 0
+        var latest: Date?
         for child in children ?? [] {
-            let (size, items) = child.computeArchiveTotals()
+            let (size, packed, count) = child.computeArchiveTotals()
             total = total.saturatingAdd(size)
-            count += items
+            compressed = packed.flatMap { value in compressed.map { $0.saturatingAdd(value) } }
+            files += count
+            if let date = child.modified, latest.map({ date > $0 }) ?? true { latest = date }
         }
+        // Folders an archive leaves implicit take the date of their newest item, as Finder shows them.
+        if modified == nil && entry == nil { modified = latest }
         size = total
+        compressedSize = (children ?? []).isEmpty ? nil : compressed
         itemCount = children?.count ?? 0
-        return (total, count)
+        fileCount = files
+        return (total, compressedSize, files)
     }
 
     // MARK: Folders
@@ -155,17 +126,101 @@ final class FileNode {
     }
 }
 
-/// Finder-style list: icons, sizes, dates, disclosure triangles and sortable columns.
-final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate {
+/// Grows an archive's folder tree as entries arrive, so big archives can be shown while still loading.
+final class ArchiveTreeBuilder {
+    let root = FileNode(name: "", isDirectory: true, children: [])
+    let showHidden: Bool
+    let foldersFirst: Bool
+    private var directories: [String: FileNode] = [:]
+    private(set) var hiddenCount = 0
+
+    init(showHidden: Bool, foldersFirst: Bool = true) {
+        self.showHidden = showHidden
+        self.foldersFirst = foldersFirst
+        directories[""] = root
+    }
+
+    /// Finds or creates the folder chain for a path, iteratively (paths can be thousands deep).
+    private func directory(for path: String) -> FileNode {
+        if let existing = directories[path] { return existing }
+        var node = root
+        var current = ""
+        for component in path.split(separator: "/") {
+            current = current.isEmpty ? String(component) : current + "/" + component
+            if let existing = directories[current] { node = existing; continue }
+            let name = String(component)
+            let child = FileNode(name: name, isDirectory: true, isHidden: name.hasPrefix("."), children: [])
+            child.path = current
+            node.children?.append(child)
+            directories[current] = child
+            node = child
+        }
+        return node
+    }
+
+    func add(_ entries: [ArchiveEntry]) {
+        for entry in entries {
+            var path = entry.path
+            if path.contains("\\") { path = path.replacingOccurrences(of: "\\", with: "/") }
+            while path.hasSuffix("/") { path.removeLast() }
+            while path.hasPrefix("/") { path.removeFirst() }
+            while path.hasPrefix("./") { path.removeFirst(2) }
+            guard !path.isEmpty, path != "." else { continue }
+            let components = path.split(separator: "/", omittingEmptySubsequences: true)
+            // Real projects are never this deep; crafted archives are.
+            guard components.count <= 128, let last = components.last else { continue }
+            let hidden = components.contains { $0.first == "." } || path.hasPrefix("__MACOSX")
+            if hidden && !showHidden { hiddenCount += 1; continue }
+
+            if entry.isDirectory {
+                let node = directory(for: path)
+                if node.modified == nil { node.modified = entry.modified }
+                if node.entry == nil { node.entry = entry }
+                continue
+            }
+            let parentPath = components.count > 1 ? components.dropLast().joined(separator: "/") : ""
+            let parent = directory(for: parentPath)
+            let node = FileNode(
+                name: String(last),
+                isDirectory: false,
+                isSymlink: entry.isSymlink,
+                isHidden: hidden,
+                size: entry.size,
+                compressedSize: entry.compressedSize,
+                modified: entry.modified)
+            node.entry = entry
+            node.path = path
+            parent.children?.append(node)
+        }
+    }
+
+    /// Totals and Finder's default order. Sorting here, off the main thread, leaves the list view
+    /// only an already-sorted tree to check, which is linear.
+    func finish() {
+        root.computeArchiveTotals()
+        FileTreeView.sort(root, foldersFirst: foldersFirst)
+    }
+}
+
+/// Finder-style list: icons, sizes, dates, disclosure triangles, sortable and optional columns.
+final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate, NSMenuDelegate {
     let scrollView = NSScrollView()
-    let outline = NSOutlineView()
-    private let root: FileNode
+    let outline = TreeOutlineView()
+    private(set) var root: FileNode
     private var foldersFirst: Bool
     private let showHidden: Bool
     private let showsKind: Bool
+    private let isArchive: Bool
     private var sortKey = "name"
     private var ascending = true
     private static let iconCache = NSCache<NSString, NSImage>()
+    private static var kindCache: [String: String] = [:]
+    private static let kindLock = NSLock()
+
+    /// Called with the selected nodes whenever the selection changes.
+    var onSelectionChange: (([FileNode]) -> Void)?
+    /// Get Info (⌘I or the context menu) on a node.
+    var onGetInfo: ((FileNode) -> Void)?
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -175,11 +230,15 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         return formatter
     }()
 
-    init(root: FileNode, settings: PreviewSettings, showsKind: Bool) {
+    /// - Parameters:
+    ///   - showsKind: a real folder, whose Kind column comes from the file system and is shown.
+    ///   - compressedSizes: the archive records compressed sizes, so the Compressed column is offered.
+    init(root: FileNode, settings: PreviewSettings, showsKind: Bool, compressedSizes: Bool = false) {
         self.root = root
         foldersFirst = settings.foldersFirst
         showHidden = settings.showHiddenFiles
         self.showsKind = showsKind
+        isArchive = root.url == nil
         super.init(frame: .zero)
 
         outline.style = .fullWidth
@@ -194,13 +253,27 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         outline.delegate = self
         outline.target = self
         outline.doubleAction = #selector(toggle(_:))
+        outline.owner = self
 
         addColumn("name", title: "Name", width: 300, min: 160)
         addColumn("modified", title: "Date Modified", width: 170, min: 90)
         addColumn("size", title: "Size", width: 82, min: 60, alignment: .right)
-        if showsKind { addColumn("kind", title: "Kind", width: 130, min: 70) }
+        if isArchive && compressedSizes {
+            addColumn("compressed", title: "Compressed", width: 92, min: 60, alignment: .right)
+        }
+        addColumn("kind", title: "Kind", width: 130, min: 70)
         outline.outlineTableColumn = outline.tableColumns.first
         outline.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        columnsKey = isArchive ? "GreeceArchiveColumns" : "GreeceFolderColumns"
+        chosenColumns = Set(UserDefaults.standard.stringArray(forKey: columnsKey) ?? (showsKind ? ["modified", "size", "kind"] : ["modified", "size"]))
+        applyColumns()
+
+        let headerMenu = NSMenu()
+        headerMenu.delegate = self
+        outline.headerView?.menu = headerMenu
+        let rowMenu = NSMenu()
+        rowMenu.delegate = self
+        outline.menu = rowMenu
 
         scrollView.documentView = outline
         scrollView.hasVerticalScroller = true
@@ -215,25 +288,90 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
+        // Sort descriptors set above (and any autosave restored) only took note of the order;
+        // apply it once, now that the outline sits in its scroll view.
+        configuring = false
         sortTree(root)
         outline.reloadData()
+        expandLoneFolder()
+    }
 
-        // A lone top-level folder (typical for archives) opens itself.
-        if let only = root.children, only.count == 1, only[0].isExpandable {
-            outline.expandItem(only[0])
+    /// While true, sort changes are recorded but not applied (setting up columns reports several).
+    private var configuring = true
+
+    // MARK: - Columns
+
+    /// The optional columns the person chose (from the header's menu), remembered like Finder's.
+    private var chosenColumns: Set<String> = []
+    private var columnsKey = ""
+    /// Narrow (a preview pane open beside the list, Finder's preview column): only Name and Size.
+    private var compact = false
+
+    private static let naturalWidths: [String: CGFloat] = ["modified": 170, "size": 82, "compressed": 92, "kind": 130]
+
+    private func applyColumns() {
+        for column in outline.tableColumns.dropFirst() {
+            let id = column.identifier.rawValue
+            column.isHidden = !chosenColumns.contains(id) || (compact && id != "size")
+            if let natural = FileTreeView.naturalWidths[id], column.width < natural { column.width = natural }
+        }
+        fitNameColumn()
+    }
+
+    override func layout() {
+        super.layout()
+        let narrow = bounds.width > 0 && bounds.width < 600
+        if narrow != compact {
+            compact = narrow
+            applyColumns()
+        }
+        fitNameColumn()
+    }
+
+    /// Name takes whatever the other visible columns leave, so nothing hides off to the right.
+    private func fitNameColumn() {
+        guard let name = outline.tableColumns.first else { return }
+        let available = scrollView.contentView.bounds.width
+        guard available > 0 else { return }
+        let others = outline.tableColumns.dropFirst().filter { !$0.isHidden }
+        let used = others.reduce(CGFloat(0)) { $0 + $1.width } + outline.intercellSpacing.width * CGFloat(others.count + 1)
+        let width = max(name.minWidth, (available - used).rounded(.down))
+        if abs(name.width - width) > 0.5, outline.frame.width > available + 0.5 || name.width < width - 0.5 {
+            name.width = width
         }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
-    private func addColumn(_ id: String, title: String, width: CGFloat, min: CGFloat, alignment: NSTextAlignment = .left) {
+    /// A lone top-level folder (typical for archives) opens itself.
+    private func expandLoneFolder() {
+        if let only = root.children, only.count == 1, only[0].isExpandable, !outline.isItemExpanded(only[0]) {
+            outline.expandItem(only[0])
+        }
+    }
+
+    /// Shows new or changed content (more entries of an archive that's still loading), keeping
+    /// what's expanded and selected.
+    func reload(root newRoot: FileNode? = nil) {
+        let selected = selectedNodes
+        if let newRoot { root = newRoot }
+        sortTree(root)
+        outline.reloadData()
+        expandLoneFolder()
+        let rows = IndexSet(selected.map { outline.row(forItem: $0) }.filter { $0 >= 0 })
+        if !rows.isEmpty { outline.selectRowIndexes(rows, byExtendingSelection: false) }
+    }
+
+    @discardableResult
+    private func addColumn(_ id: String, title: String, width: CGFloat, min: CGFloat, alignment: NSTextAlignment = .left) -> NSTableColumn {
         let column = NSTableColumn(identifier: .init(id))
         column.title = title
         column.width = width
         column.minWidth = min
         column.headerCell.alignment = alignment
-        column.sortDescriptorPrototype = NSSortDescriptor(key: id, ascending: true)
+        column.sortDescriptorPrototype = NSSortDescriptor(key: id, ascending: id == "name" || id == "kind")
         outline.addTableColumn(column)
+        return column
     }
 
     @objc private func toggle(_ sender: Any?) {
@@ -242,38 +380,173 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         if outline.isItemExpanded(item) { outline.collapseItem(item) } else { outline.expandItem(item) }
     }
 
+    var selectedNodes: [FileNode] { outline.selectedRowIndexes.compactMap { outline.item(atRow: $0) as? FileNode } }
+
+    // MARK: - Menus
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        menu.removeAllItems()
+        if menu === outline.headerView?.menu {
+            for column in outline.tableColumns.dropFirst() {
+                let item = NSMenuItem(title: column.title, action: #selector(toggleColumn(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = column.identifier.rawValue
+                item.state = chosenColumns.contains(column.identifier.rawValue) ? .on : .off
+                menu.addItem(item)
+            }
+            return
+        }
+        let row = outline.clickedRow
+        guard row >= 0, let node = outline.item(atRow: row) as? FileNode else { return }
+        if !outline.selectedRowIndexes.contains(row) { outline.selectRowIndexes([row], byExtendingSelection: false) }
+        if onGetInfo != nil {
+            let info = NSMenuItem(title: "Get Info", action: #selector(getInfo(_:)), keyEquivalent: "i")
+            info.target = self
+            info.representedObject = node
+            menu.addItem(info)
+            menu.addItem(.separator())
+        }
+        let copyName = NSMenuItem(title: "Copy Name", action: #selector(copyText(_:)), keyEquivalent: "")
+        copyName.target = self
+        copyName.representedObject = node.name
+        menu.addItem(copyName)
+        let path = node.url?.path ?? node.path
+        if !path.isEmpty, path != node.name {
+            let copyPath = NSMenuItem(title: "Copy Path", action: #selector(copyText(_:)), keyEquivalent: "")
+            copyPath.target = self
+            copyPath.representedObject = path
+            menu.addItem(copyPath)
+        }
+    }
+
+    @objc private func toggleColumn(_ sender: NSMenuItem) {
+        guard let id = sender.representedObject as? String else { return }
+        if chosenColumns.contains(id) { chosenColumns.remove(id) } else { chosenColumns.insert(id) }
+        UserDefaults.standard.set(chosenColumns.sorted(), forKey: columnsKey)
+        // In a narrow list the column may stay hidden for now; widening shows it.
+        applyColumns()
+    }
+
+    @objc private func getInfo(_ sender: NSMenuItem) {
+        if let node = sender.representedObject as? FileNode { onGetInfo?(node) }
+    }
+
+    @objc private func copyText(_ sender: NSMenuItem) {
+        guard let text = sender.representedObject as? String else { return }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+    }
+
+    fileprivate func handleKey(_ event: NSEvent) -> Bool {
+        if event.keyCode == 53, !outline.selectedRowIndexes.isEmpty {        // Escape clears the selection
+            outline.deselectAll(nil)
+            return true
+        }
+        if event.modifierFlags.contains(.command), event.charactersIgnoringModifiers == "i", let node = selectedNodes.first, let onGetInfo {
+            onGetInfo(node)
+            return true
+        }
+        return false
+    }
+
     // MARK: - Sorting
 
     private func sortTree(_ node: FileNode) {
+        FileTreeView.sort(node, key: sortKey, ascending: ascending, foldersFirst: foldersFirst)
+    }
+
+    /// Sorts a tree in place. Also used off the main thread to hand the view an already-sorted tree.
+    static func sort(_ node: FileNode, key: String = "name", ascending up: Bool = true, foldersFirst folders: Bool) {
         guard var children = node.children else { return }
-        let key = sortKey, up = ascending, folders = foldersFirst
         children.sort { a, b in
             if folders && a.isDirectory != b.isDirectory && !(a.isPackage || b.isPackage) { return a.isDirectory }
             switch key {
             case "size":
                 let x = a.size ?? 0, y = b.size ?? 0
                 if x != y { return up ? x < y : x > y }
+            case "compressed":
+                let x = a.compressedSize ?? 0, y = b.compressedSize ?? 0
+                if x != y { return up ? x < y : x > y }
             case "modified":
                 let x = a.modified ?? .distantPast, y = b.modified ?? .distantPast
                 if x != y { return up ? x < y : x > y }
             case "kind":
-                let x = a.kind ?? "", y = b.kind ?? ""
+                let x = FileTreeView.kindName(of: a), y = FileTreeView.kindName(of: b)
                 if x != y { return up ? x.localizedStandardCompare(y) == .orderedAscending : x.localizedStandardCompare(y) == .orderedDescending }
             default: break
             }
-            let order = a.name.localizedStandardCompare(b.name)
+            let order = FileTreeView.finderOrder(a.name, b.name)
             return (key == "name" && !up) ? order == .orderedDescending : order == .orderedAscending
         }
         node.children = children
-        children.forEach { if $0.children != nil { sortTree($0) } }
+        children.forEach { if $0.children != nil { sort($0, key: key, ascending: up, foldersFirst: folders) } }
+    }
+
+    /// Finder's name order: case-insensitive, numbers by value ("file 9" before "file 10"),
+    /// punctuation before digits before letters. ASCII names are compared directly, which is
+    /// what keeps a 100,000-entry archive quick to sort; anything else goes to the system collation.
+    static func finderOrder(_ a: String, _ b: String) -> ComparisonResult {
+        var a = a, b = b
+        a.makeContiguousUTF8()
+        b.makeContiguousUTF8()
+        let fast = a.utf8.withContiguousStorageIfAvailable { x in
+            b.utf8.withContiguousStorageIfAvailable { y in asciiOrder(x, y) } ?? nil
+        } ?? nil
+        if let fast { return fast }
+        return a.localizedStandardCompare(b)
+    }
+
+    /// Nil when either name has non-ASCII bytes (the system collation decides those).
+    private static func asciiOrder(_ x: UnsafeBufferPointer<UInt8>, _ y: UnsafeBufferPointer<UInt8>) -> ComparisonResult? {
+        @inline(__always) func isDigit(_ byte: UInt8) -> Bool { byte >= 0x30 && byte <= 0x39 }
+        /// Punctuation and spaces first, then digits, then letters (case folded).
+        @inline(__always) func rank(_ byte: UInt8) -> Int {
+            switch byte {
+            case 0x30...0x39: return 500
+            case 0x41...0x5A: return 1000 + Int(byte) + 0x20
+            case 0x61...0x7A: return 1000 + Int(byte)
+            default: return Int(byte)
+            }
+        }
+        var i = 0, j = 0
+        while i < x.count && j < y.count {
+            let p = x[i], q = y[j]
+            if p >= 0x80 || q >= 0x80 { return nil }
+            if isDigit(p) && isDigit(q) {
+                // Whole numbers by value: skip leading zeros, then the longer run is larger.
+                var si = i, sj = j
+                while si < x.count && x[si] == 0x30 { si += 1 }
+                while sj < y.count && y[sj] == 0x30 { sj += 1 }
+                var ei = si, ej = sj
+                while ei < x.count && isDigit(x[ei]) { ei += 1 }
+                while ej < y.count && isDigit(y[ej]) { ej += 1 }
+                if ei - si != ej - sj { return ei - si < ej - sj ? .orderedAscending : .orderedDescending }
+                var k = 0
+                while k < ei - si {
+                    if x[si + k] != y[sj + k] { return x[si + k] < y[sj + k] ? .orderedAscending : .orderedDescending }
+                    k += 1
+                }
+                i = ei
+                j = ej
+                continue
+            }
+            let (rp, rq) = (rank(p), rank(q))
+            if rp != rq { return rp < rq ? .orderedAscending : .orderedDescending }
+            i += 1
+            j += 1
+        }
+        if x[i...].contains(where: { $0 >= 0x80 }) || y[j...].contains(where: { $0 >= 0x80 }) { return nil }
+        if i < x.count { return .orderedDescending }
+        if j < y.count { return .orderedAscending }
+        // Equal ignoring case and zero padding: fall back to byte order, so the sort is stable.
+        return x.lexicographicallyPrecedes(y) ? .orderedAscending : (y.lexicographicallyPrecedes(x) ? .orderedDescending : .orderedSame)
     }
 
     func outlineView(_ outlineView: NSOutlineView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
         guard let descriptor = outlineView.sortDescriptors.first, let key = descriptor.key else { return }
         sortKey = key
         ascending = descriptor.ascending
-        sortTree(root)
-        outlineView.reloadData()
+        if !configuring { reload() }
     }
 
     // MARK: - Data source
@@ -297,53 +570,109 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         node(item).isExpandable
     }
 
+    func outlineViewSelectionDidChange(_ notification: Notification) {
+        onSelectionChange?(selectedNodes)
+    }
+
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         let file = node(item)
         let id = tableColumn?.identifier.rawValue ?? "name"
         if id == "name" {
             let cell = (outlineView.makeView(withIdentifier: NameCell.reuseID, owner: nil) as? NameCell) ?? NameCell()
-            cell.configure(name: file.name, icon: icon(for: file), dimmed: file.isHidden, label: file.labelColor, symlink: file.isSymlink)
+            cell.configure(name: file.name, icon: icon(for: file), dimmed: file.isHidden, label: file.labelColor,
+                           symlink: file.isSymlink, locked: file.isEncrypted)
             return cell
         }
         let cell = (outlineView.makeView(withIdentifier: TextCell.reuseID, owner: nil) as? TextCell) ?? TextCell()
         switch id {
         case "size":
             if file.isDirectory && !file.isPackage {
-                if let size = file.size, root.url == nil { cell.configure(ByteCountFormatter.string(fromByteCount: Int64(clamping: size), countStyle: .file), alignment: .right) }
+                if let size = file.size, isArchive { cell.configure(Self.bytes(size), alignment: .right) }
                 else { cell.configure("--", alignment: .right, color: .tertiaryLabelColor) }
             } else {
-                cell.configure(file.size.map { ByteCountFormatter.string(fromByteCount: Int64(clamping: $0), countStyle: .file) } ?? "--", alignment: .right)
+                cell.configure(file.size.map(Self.bytes) ?? "--", alignment: .right)
+            }
+            cell.toolTip = nil
+        case "compressed":
+            if let packed = file.compressedSize, !(file.isDirectory && file.children?.isEmpty != false) {
+                cell.configure(Self.bytes(packed), alignment: .right)
+                if let size = file.size, size > 0 {
+                    cell.toolTip = "\(Int((Double(packed) / Double(size) * 100).rounded()))% of the original size"
+                }
+            } else {
+                cell.configure("--", alignment: .right, color: .tertiaryLabelColor)
+                cell.toolTip = nil
             }
         case "modified":
             cell.configure(file.modified.map(dateFormatter.string(from:)) ?? "--", alignment: .left)
+            cell.toolTip = nil
         default:
-            cell.configure(file.kind ?? "", alignment: .left)
+            cell.configure(FileTreeView.kindName(of: file), alignment: .left)
+            cell.toolTip = nil
         }
         return cell
+    }
+
+    static func bytes(_ count: UInt64) -> String {
+        ByteCountFormatter.string(fromByteCount: Int64(clamping: count), countStyle: .file)
+    }
+
+    /// The Kind column: the file system's own description for real files, the type's for archive members.
+    static func kindName(of file: FileNode) -> String {
+        if let kind = file.kind { return kind }
+        if file.isSymlink { return "Alias" }
+        if file.isDirectory { return "Folder" }
+        let ext = (file.name as NSString).pathExtension.lowercased()
+        FileTreeView.kindLock.lock()
+        defer { FileTreeView.kindLock.unlock() }
+        if let cached = FileTreeView.kindCache[ext] { return cached }
+        let name = ext.isEmpty ? "Document" : (UTType(filenameExtension: ext).flatMap { $0.isDynamic ? nil : $0.localizedDescription } ?? "\(ext.uppercased()) File")
+        FileTreeView.kindCache[ext] = name
+        return name
     }
 
     private func icon(for file: FileNode) -> NSImage {
         if let url = file.url, file.isPackage || (file.isDirectory && FileTreeView.hasCustomIcon(url)) {
             return NSWorkspace.shared.icon(forFile: url.path)
         }
+        return FileTreeView.icon(forName: file.name, isDirectory: file.isDirectory)
+    }
+
+    /// The system icon for a name's type, cached by extension.
+    static func icon(forName name: String, isDirectory: Bool) -> NSImage {
         let key: String
         let type: UTType
-        if file.isDirectory {
+        if isDirectory {
             key = "/folder"
             type = .folder
         } else {
-            let ext = (file.name as NSString).pathExtension.lowercased()
+            let ext = (name as NSString).pathExtension.lowercased()
             key = ext
             type = UTType(filenameExtension: ext) ?? .data
         }
-        if let cached = FileTreeView.iconCache.object(forKey: key as NSString) { return cached }
+        if let cached = iconCache.object(forKey: key as NSString) { return cached }
         let image = NSWorkspace.shared.icon(for: type)
-        FileTreeView.iconCache.setObject(image, forKey: key as NSString)
+        iconCache.setObject(image, forKey: key as NSString)
         return image
     }
 
     private static func hasCustomIcon(_ url: URL) -> Bool {
         FileManager.default.fileExists(atPath: url.appendingPathComponent("Icon\r").path)
+    }
+}
+
+/// The outline itself, so Escape and ⌘I work while it has focus.
+final class TreeOutlineView: NSOutlineView {
+    weak var owner: FileTreeView?
+
+    override func keyDown(with event: NSEvent) {
+        if owner?.handleKey(event) == true { return }
+        super.keyDown(with: event)
+    }
+
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        if window?.firstResponder === self, owner?.handleKey(event) == true { return true }
+        return super.performKeyEquivalent(with: event)
     }
 }
 
@@ -353,6 +682,7 @@ private final class NameCell: NSTableCellView {
     private let label = NSTextField(labelWithString: "")
     private let labelDot = NSView()
     private let alias = NSImageView()
+    private let lock = NSImageView()
 
     init() {
         super.init(frame: .zero)
@@ -360,15 +690,19 @@ private final class NameCell: NSTableCellView {
         label.font = .systemFont(ofSize: 13)
         label.lineBreakMode = .byTruncatingMiddle
         label.maximumNumberOfLines = 1
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         icon.imageScaling = .scaleProportionallyUpOrDown
         labelDot.wantsLayer = true
         labelDot.layer?.cornerRadius = 4
         alias.image = NSImage(systemSymbolName: "arrow.turn.up.right", accessibilityDescription: "Alias")
         alias.symbolConfiguration = .init(pointSize: 9, weight: .semibold)
         alias.contentTintColor = .tertiaryLabelColor
+        lock.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "Encrypted")
+        lock.symbolConfiguration = .init(pointSize: 9, weight: .regular)
+        lock.contentTintColor = .tertiaryLabelColor
         textField = label
         imageView = icon
-        let stack = NSStackView(views: [icon, label, alias, labelDot])
+        let stack = NSStackView(views: [icon, label, alias, lock, labelDot])
         stack.spacing = 5
         stack.alignment = .centerY
         stack.translatesAutoresizingMaskIntoConstraints = false
@@ -386,7 +720,7 @@ private final class NameCell: NSTableCellView {
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
-    func configure(name: String, icon image: NSImage, dimmed: Bool, label color: NSColor?, symlink: Bool) {
+    func configure(name: String, icon image: NSImage, dimmed: Bool, label color: NSColor?, symlink: Bool, locked: Bool = false) {
         icon.image = image
         label.stringValue = name
         label.textColor = dimmed ? .secondaryLabelColor : .labelColor
@@ -394,6 +728,7 @@ private final class NameCell: NSTableCellView {
         labelDot.isHidden = color == nil
         labelDot.layer?.backgroundColor = color?.cgColor
         alias.isHidden = !symlink
+        lock.isHidden = !locked
     }
 }
 

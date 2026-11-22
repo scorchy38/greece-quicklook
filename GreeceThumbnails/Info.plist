@@ -36,6 +36,50 @@
 				<string>com.apple.provisionprofile</string>
 				<string>com.apple.mobileconfig</string>
 				<string>org.bittorrent.torrent</string>
+				<string>public.zip-archive</string>
+				<string>com.pkware.zip-archive</string>
+				<string>public.zip-archive.first-part</string>
+				<string>com.winzip.zipx-archive</string>
+				<string>com.sun.java-archive</string>
+				<string>com.sun.web-application-archive</string>
+				<string>org.7-zip.7-zip-archive</string>
+				<string>com.rarlab.rar-archive</string>
+				<string>public.tar-archive</string>
+				<string>org.gnu.gnu-tar-archive</string>
+				<string>org.gnu.gnu-zip-archive</string>
+				<string>org.gnu.gnu-zip-tar-archive</string>
+				<string>public.bzip2-archive</string>
+				<string>public.tar-bzip2-archive</string>
+				<string>org.tukaani.xz-archive</string>
+				<string>org.tukaani.tar-xz-archive</string>
+				<string>org.tukaani.lzma-archive</string>
+				<string>public.z-archive</string>
+				<string>com.microsoft.cab</string>
+				<string>cx.c3.lha-archive</string>
+				<string>com.apple.xar-archive</string>
+				<string>public.cpio-archive</string>
+				<string>public.iso-image</string>
+				<string>com.redhat.rpm-archive</string>
+				<string>org.debian.deb-archive</string>
+				<string>org.chromium.extension</string>
+				<string>com.android.package-archive</string>
+				<string>com.scorchy.greece.zstd-archive</string>
+				<string>com.scorchy.greece.tar-zstd-archive</string>
+				<string>com.scorchy.greece.lzip-archive</string>
+				<string>com.scorchy.greece.tar-lzma-archive</string>
+				<string>com.scorchy.greece.tar-compress-archive</string>
+				<string>com.scorchy.greece.tar-bzip2-archive</string>
+				<string>com.scorchy.greece.split-archive</string>
+				<string>com.scorchy.greece.comic-zip</string>
+				<string>com.scorchy.greece.comic-rar</string>
+				<string>com.scorchy.greece.comic-7z</string>
+				<string>com.scorchy.greece.comic-tar</string>
+				<string>com.scorchy.greece.python-wheel</string>
+				<string>com.scorchy.greece.ruby-gem</string>
+				<string>com.scorchy.greece.nuget-package</string>
+				<string>com.scorchy.greece.vsix</string>
+				<string>com.scorchy.greece.firefox-extension</string>
+				<string>com.scorchy.greece.enterprise-archive</string>
 				<string>net.daringfireball.markdown</string>
 				<string>com.scorchy.greece.markdown</string>
 				<string>public.swift-source</string>

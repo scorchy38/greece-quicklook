@@ -58,7 +58,8 @@ public final class PreviewView: NSView {
     }
 
     private func setInfoBarVisible(_ visible: Bool) {
-        if visible == (infoBar != nil) { return }
+        // A preview created with the bar hidden still needs its content pinned to the bottom.
+        if visible == (infoBar != nil), bottomConstraint != nil { return }
         bottomConstraint?.isActive = false
         if visible {
             let bar = InfoBarView(summary: summary)
