@@ -20,6 +20,7 @@ public enum Samples {
     public static let book = url("Aesop's Fables.epub")
     public static let animation = url("Lighthouse.json")
     public static let comic = url("Aegean Tales.cbz")
+    public static let skill = url("Harbour Forms.skill")
 
     /// Third-party licenses for the bundled web libraries.
     public static var licenses: [(name: String, text: String)] {

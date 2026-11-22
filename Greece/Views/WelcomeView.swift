@@ -18,6 +18,7 @@ struct WelcomeView: View {
         (Samples.animation, String(localized: "Animation", comment: "Sample file: a Lottie animation"), "sparkles"),
         (Samples.comic, String(localized: "Comic", comment: "Sample file: a comic book archive"), "photo.on.rectangle.angled"),
         (Samples.zip, String(localized: "ZIP Archive", comment: "Sample file"), "archivebox"),
+        (Samples.skill, String(localized: "Skill", comment: "Sample file: an agent skill package (instructions and scripts for an AI agent)"), "wand.and.stars"),
         (Bundle.main.bundleURL, String(localized: "This App", comment: "Sample file: Greece.app itself"), "checkmark.seal"),
         (Samples.folder, String(localized: "Folder", comment: "Sample file"), "folder"),
     ]
