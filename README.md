@@ -67,7 +67,7 @@ Open Greece once and it walks you through turning previews on. Every setting com
 - **Diagnostics** checks that Quick Look really uses this copy of Greece, finds other apps' extensions that compete for the same files, and fixes problems with one button.
 - **The menu bar** lists the files you previewed recently and the files Claude Code and Codex just edited, one click from Quick Look.
 - **`greece`** in Terminal previews any file, or whatever you pipe into it.
-- The app speaks 17 languages: English, German, French, Spanish, Italian, Portuguese, Dutch, Swedish, Polish, Turkish, Greek, Russian, Ukrainian, Japanese, Korean and Chinese (Simplified and Traditional), in Apple's own words for macOS.
+- Greece speaks 17 languages, in the app and in every preview, down to Finder's Kind column: English, German, French, Spanish, Italian, Portuguese, Dutch, Swedish, Polish, Turkish, Greek, Russian, Ukrainian, Japanese, Korean and Chinese (Simplified and Traditional), in Apple's own words for macOS.
 
 ## Privacy
 
@@ -100,7 +100,7 @@ The file types each extension claims live in `Types/` (one list per family, grou
 xcodebuild -project Greece.xcodeproj -scheme Greece -derivedDataPath build/dd-test test
 ```
 
-More than 500 tests cover detection, every module's parsers, the preview pages (driven in a real web view), pointer-only behaviour, localization, the archive and disk image readers, and speed budgets for huge files. Test builds register their extensions, so run `scripts/install.sh` afterwards if you use Quick Look on the same Mac.
+More than 550 tests cover detection, every module's parsers, the preview pages (driven in a real web view), pointer-only behaviour, localization, the archive and disk image readers, and speed budgets for huge files. Test builds register their extensions, so run `scripts/install.sh` afterwards if you use Quick Look on the same Mac.
 
 ### Rendering previews without Quick Look
 
