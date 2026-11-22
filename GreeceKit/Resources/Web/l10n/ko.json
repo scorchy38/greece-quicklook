@@ -1,0 +1,1067 @@
+{
+  "@same": [
+    "{0}+",
+    "Null",
+    "Fetch",
+    "{0} ed."
+  ],
+  "{0} bytes": {
+    "other": "{0}바이트"
+  },
+  "{0} B": "{0}B",
+  "{0} KB": "{0}KB",
+  "{0} MB": "{0}MB",
+  "{0} GB": "{0}GB",
+  "{0} TB": "{0}TB",
+  "Copied": "복사됨",
+  "Empty file": "빈 파일",
+  "Copy": "복사하기",
+  "Showing the beginning of a very large file.": "매우 큰 파일의 앞부분을 표시하고 있습니다.",
+  "Note": "참고",
+  "Tip": "팁",
+  "Important": "중요",
+  "Warning": "경고",
+  "Caution": "주의",
+  "Remote image not loaded": "원격 이미지가 로드되지 않음",
+  "On This Page": "이 페이지의 내용",
+  "Empty document": "빈 문서",
+  "Showing the beginning of a very large document.": "매우 큰 문서의 앞부분을 표시하고 있습니다.",
+  "Added": "추가됨",
+  "Deleted": "삭제됨",
+  "Renamed": "이름 변경됨",
+  "Binary file not shown": "바이너리 파일은 표시되지 않음",
+  "No content changes": "내용 변경 없음",
+  "{0} commits": {
+    "other": "커밋 {0}개"
+  },
+  "{0} files changed": {
+    "other": "파일 {0}개 변경됨"
+  },
+  "Empty notebook": "빈 노트북",
+  "“{0}”": "‘{0}’",
+  "Find": "찾기",
+  "Previous": "이전",
+  "Next": "다음",
+  "Match Case": "대소문자 구분",
+  "Whole Words": "단어 전체",
+  "Done": "완료",
+  "Select text to find it": "찾을 텍스트 선택",
+  "{0}+": "{0}+",
+  "No matches": "일치 항목 없음",
+  "{0} of {1}": "{0}/{1}",
+  "Find {0}": "{0} 찾기",
+  "Go to Line": "줄로 이동",
+  "Line": "줄 번호",
+  "{0}+ matches": "일치 항목 {0}+개",
+  "{0} matches": {
+    "other": "일치 항목 {0}개"
+  },
+  "{0} lines": {
+    "other": "{0}줄"
+  },
+  "Show {0} lines": {
+    "other": "{0}줄 보기"
+  },
+  "Copy Line {0}": "줄 {0} 복사하기",
+  "Unfold": "펼치기",
+  "Fold": "접기",
+  "Wrap Lines": "줄바꿈",
+  "Fold All": "모두 접기",
+  "Unfold All": "모두 펼치기",
+  "Copy All": "모두 복사하기",
+  "Reveal value": "값 보기",
+  "Also set on line {0}; this value wins": "줄 {0}에서도 설정되어 있으며 이 값이 적용됩니다",
+  "Duplicate": "중복",
+  "Empty": "비어 있음",
+  "Hide value": "값 가리기",
+  "line {0}, first set on line {1}": "줄 {0}, 처음 설정된 줄 {1}",
+  "line {0}": "줄 {0}",
+  "{0} keys": {
+    "other": "키 {0}개"
+  },
+  "{0} duplicates": {
+    "other": "중복 {0}개"
+  },
+  "{0} empty": {
+    "other": "빈 값 {0}개"
+  },
+  "Values hidden": "값 가려짐",
+  "Environment Template": "환경 변수 템플릿",
+  "Environment Variables": "환경 변수",
+  "Reveal All": "모든 값 보기",
+  "Hide All": "모든 값 가리기",
+  "Values shown": "값 표시됨",
+  "stage {0}": "스테이지 {0}",
+  "Base": "베이스 이미지",
+  "Ports": "포트",
+  "Entrypoint": "진입점",
+  "Command": "명령",
+  "Workdir": "작업 디렉토리",
+  "User": "사용자",
+  "Healthcheck": "상태 확인",
+  "Yes": "예",
+  "from {0}": "{0}에서",
+  "Build stages": "빌드 스테이지",
+  "Stages": "스테이지",
+  "{0} stages": {
+    "other": "스테이지 {0}개"
+  },
+  "Final: {0}": "최종: {0}",
+  "Service": "서비스",
+  "Image [container]": "이미지",
+  "Volumes": "볼륨",
+  "Start Order": "시작 순서",
+  "{0} services": {
+    "other": "서비스 {0}개"
+  },
+  "{0} volumes": {
+    "other": "볼륨 {0}개"
+  },
+  "{0} networks": {
+    "other": "네트워크 {0}개"
+  },
+  "tag {0}": "태그 {0}",
+  "1 input": "입력 1개",
+  "{0} inputs": {
+    "other": "입력 {0}개"
+  },
+  "Push": "푸시",
+  "to {0}": "{0}(으)로",
+  "Pull request": "풀 리퀘스트",
+  "Pull request target": "풀 리퀘스트 대상",
+  "into {0}": "{0}(으)로",
+  "Schedule": "일정",
+  "Manual": "수동",
+  "Called by workflows": "워크플로에서 호출",
+  "Release": "릴리스",
+  "After workflow": "워크플로 실행 후",
+  "push": "푸시",
+  "pull request": "풀 리퀘스트",
+  "pull request target": "풀 리퀘스트 대상",
+  "schedule": "일정",
+  "manual": "수동",
+  "called by workflows": "워크플로에서 호출",
+  "release": "릴리스",
+  "after workflow": "워크플로 실행 후",
+  "Triggers": "트리거",
+  "reusable workflow": "재사용 가능한 워크플로",
+  "{0} steps": {
+    "other": "{0}단계"
+  },
+  "Jobs": "작업",
+  "Step": "단계",
+  "reusable": "재사용 가능",
+  "Uses": "사용",
+  "Steps": "단계",
+  "{0} jobs": {
+    "other": "작업 {0}개"
+  },
+  "On {0}": "트리거: {0}",
+  "replicas": "레플리카",
+  "type": "유형",
+  "ports": "포트",
+  "hosts": "호스트",
+  "keys": "키",
+  "(unnamed)": "(이름 없음)",
+  "{0} resources": {
+    "other": "리소스 {0}개"
+  },
+  "{0} {1}s": {
+    "other": "{1} {0}개"
+  },
+  "namespace {0}": "네임스페이스 {0}",
+  "Other": "기타",
+  "Trace": "추적",
+  "Debug": "디버그",
+  "Info": "정보",
+  "Warnings": "경고",
+  "Errors": "오류",
+  "Access Log": "액세스 로그",
+  "macOS Unified Log": "macOS 통합 로그",
+  "{0} more characters": {
+    "other": "{0}자 더"
+  },
+  "Repeated {0} times": {
+    "other": "{0}회 반복됨"
+  },
+  "Repeats folded": "접힌 반복 줄",
+  "Log": "로그",
+  "Most Frequent Error": "가장 빈번한 오류",
+  "Most Frequent Errors": "가장 빈번한 오류",
+  "Previous Error": "이전 오류",
+  "Previous Warning": "이전 경고",
+  "Next Error": "다음 오류",
+  "Next Warning": "다음 경고",
+  "Errors and warnings": "오류 및 경고",
+  "See {0}": "{0} 참조",
+  "License": "라이선스",
+  "Module": "모듈",
+  "ES modules": "ES 모듈",
+  "Package Manager": "패키지 관리자",
+  "Workspaces": "워크스페이스",
+  "Visibility": "공개 여부",
+  "Private": "비공개",
+  "Home": "홈",
+  "npm package": "npm 패키지",
+  "Composer package": "Composer 패키지",
+  "Type": "유형",
+  "Cargo workspace": "Cargo 워크스페이스",
+  "Rust crate": "Rust 크레이트",
+  "Workspace": "워크스페이스",
+  "Edition": "에디션",
+  "Members": "구성원",
+  "Features": "기능",
+  "Poetry project": "Poetry 프로젝트",
+  "Python project": "Python 프로젝트",
+  "Build": "빌드",
+  "Go module": "Go 모듈",
+  "Toolchain": "툴체인",
+  "Replaced": "대체",
+  "Source": "소스",
+  "Platform": "플랫폼",
+  "Frameworks": "프레임워크",
+  "Targets": "타깃",
+  "Library": "라이브러리",
+  "Executable": "실행 파일",
+  "Plugin": "플러그인",
+  "Swift package": "Swift 패키지",
+  "Swift Tools": "Swift 도구",
+  "Platforms": "플랫폼",
+  "Products": "제품",
+  "Flutter package": "Flutter 패키지",
+  "Dart package": "Dart 패키지",
+  "Publish": "게시 대상",
+  "Executables": "실행 파일",
+  "Elixir project": "Elixir 프로젝트",
+  "Aliases": "별칭",
+  "Android build": "Android 빌드",
+  "Gradle build": "Gradle 빌드",
+  "Compile SDK": "컴파일 SDK",
+  "Plugins": "플러그인",
+  "dev": "개발",
+  "test": "테스트",
+  "peer": "피어",
+  "optional": "선택",
+  "build": "빌드",
+  "indirect": "간접",
+  "platform": "플랫폼",
+  "override": "재정의",
+  "group": "그룹",
+  "workspace": "워크스페이스",
+  "debug": "디버그",
+  "compile only": "컴파일 전용",
+  "runtime": "런타임",
+  "{0} direct": {
+    "other": "직접 {0}개"
+  },
+  "{0} dev": {
+    "other": "개발 {0}개"
+  },
+  "{0} test": {
+    "other": "테스트 {0}개"
+  },
+  "{0} peer": {
+    "other": "피어 {0}개"
+  },
+  "{0} optional": {
+    "other": "선택 {0}개"
+  },
+  "{0} build": {
+    "other": "빌드 {0}개"
+  },
+  "{0} indirect": {
+    "other": "간접 {0}개"
+  },
+  "{0} platform": {
+    "other": "플랫폼 {0}개"
+  },
+  "{0} override": {
+    "other": "재정의 {0}개"
+  },
+  "{0} group": {
+    "other": "그룹 {0}개"
+  },
+  "{0} workspace": {
+    "other": "워크스페이스 {0}개"
+  },
+  "{0} debug": {
+    "other": "디버그 {0}개"
+  },
+  "{0} compile only": {
+    "other": "컴파일 전용 {0}개"
+  },
+  "{0} runtime": {
+    "other": "런타임 {0}개"
+  },
+  "Scripts": "스크립트",
+  "Dependencies": "종속성",
+  "every weekday in {0}": "{0}의 평일",
+  "on weekdays in {0}": "{0}의 평일",
+  "every weekday": "평일",
+  "on weekdays": "평일",
+  "every Saturday and Sunday in {0}": "{0}의 토요일과 일요일",
+  "at weekends in {0}": "{0}의 주말",
+  "every Saturday and Sunday": "매주 토요일과 일요일",
+  "at weekends": "주말",
+  "every {0} to {1} in {2}": "{2}의 매주 {0}부터 {1}까지",
+  "{0} to {1} in {2}": "{2}의 {0}부터 {1}까지",
+  "every {0} to {1}": "매주 {0}부터 {1}까지",
+  "{0} to {1}": "{0}부터 {1}까지",
+  "every {0} in {1}": "{1}의 매주 {0}",
+  "on {0} in {1}": "{1}의 매주 {0}",
+  "every {0}": "매주 {0}",
+  "on {0}": "매주 {0}",
+  "on every {0} days of {1}": {
+    "other": "{1}의 {0}일마다"
+  },
+  "on every {0} days of every month": {
+    "other": "매월 {0}일마다"
+  },
+  "on days {0}–{1} of {2}": "{2}의 {0}일~{1}일",
+  "on days {0}–{1} of every month": "매월 {0}일~{1}일",
+  "{0}th": {
+    "other": "{0}일"
+  },
+  "on the {0} of {1}": "{1}의 {0}",
+  "on the {0} of every month": "매월 {0}",
+  "every day": "매일",
+  "every day in {0}": "{0}의 매일",
+  "in {0}": "{0}에",
+  "every year on {0}": "매년 {0}",
+  "on {0} every year": "매년 {0}",
+  "At startup": "시동 시",
+  ":{0}": "{0}분",
+  "{0} at {1}": "{0} {1}",
+  "Every minute": "1분마다",
+  "Every minute {0}": "{0} 1분마다",
+  "Every {0} minutes": {
+    "other": "{0}분마다"
+  },
+  "Every {0} minutes {1}": {
+    "other": "{1} {0}분마다"
+  },
+  "Every hour": "1시간마다",
+  "Every hour {0}": "{0} 1시간마다",
+  "Every hour at {0}": "매시 {0}",
+  "Every hour at {0} {1}": "{1} 매시 {0}",
+  "Every {0} hours": {
+    "other": "{0}시간마다"
+  },
+  "Every {0} hours {1}": {
+    "other": "{1} {0}시간마다"
+  },
+  "Every {0} hours at {1}": {
+    "other": "{0}시간마다 {1}에"
+  },
+  "Every {0} hours at {1} {2}": {
+    "other": "{2} {0}시간마다 {1}에"
+  },
+  "Every {0} hours from {1} to {2}": {
+    "other": "{1}부터 {2}까지 {0}시간마다"
+  },
+  "Every {0} hours from {1} to {2} {3}": {
+    "other": "{3} {1}부터 {2}까지 {0}시간마다"
+  },
+  "Every hour from {0} to {1}": "{0}부터 {1}까지 1시간마다",
+  "Every hour from {0} to {1} {2}": "{2} {0}부터 {1}까지 1시간마다",
+  "Every {0} minutes from {1} to {2}": {
+    "other": "{1}부터 {2}까지 {0}분마다"
+  },
+  "Every {0} minutes from {1} to {2} {3}": {
+    "other": "{3} {1}부터 {2}까지 {0}분마다"
+  },
+  "Every minute from {0} to {1}": "{0}부터 {1}까지 1분마다",
+  "Every minute from {0} to {1} {2}": "{2} {0}부터 {1}까지 1분마다",
+  "Every {0} minutes during {1}": {
+    "other": "{1} 시간대에 {0}분마다"
+  },
+  "Every {0} minutes during {1} {2}": {
+    "other": "{2} {1} 시간대에 {0}분마다"
+  },
+  "{0} at {1} and more": "{0} {1} 등",
+  "{0} at {1} past {2}": "{0}, {2}의 {1} 지난 시각",
+  "{0} minutes": {
+    "other": "{0}분"
+  },
+  "{0} hours": {
+    "other": "{0}시간"
+  },
+  "Today {0}": "오늘 {0}",
+  "Tomorrow {0}": "내일 {0}",
+  "Next run": "다음 실행",
+  "as {0}": "{0} 권한",
+  "System": "시스템",
+  "Times in {0}": "시간대: {0}",
+  "Times in local time": "로컬 시간대",
+  "Environment": "환경 변수",
+  "default": "기본값",
+  "{0} recipes": {
+    "other": "레시피 {0}개"
+  },
+  "{0} targets": {
+    "other": "타깃 {0}개"
+  },
+  "Default: {0}": "기본값: {0}",
+  "All hosts": "모든 호스트",
+  "command": "명령",
+  "{0} defaults": {
+    "other": "기본값 {0}개"
+  },
+  "key": "키",
+  "via": "경유",
+  "{0} options": {
+    "other": "옵션 {0}개"
+  },
+  "SSH Config": "SSH 설정",
+  "{0} hosts": {
+    "other": "호스트 {0}개"
+  },
+  "{0} includes": {
+    "other": "포함 파일 {0}개"
+  },
+  "Required": "필수",
+  "Body": "본문",
+  "{0} params": {
+    "other": "매개변수 {0}개"
+  },
+  "{0} endpoints": {
+    "other": "엔드포인트 {0}개"
+  },
+  "{0} tags": {
+    "other": "태그 {0}개"
+  },
+  "{0} schemas": {
+    "other": "스키마 {0}개"
+  },
+  "{0} s": "{0}초",
+  "{0} min": "{0}분",
+  "{0} h {1} min": "{0}시간 {1}분",
+  "{0} h": "{0}시간",
+  "{0} days": {
+    "other": "{0}일"
+  },
+  "Graph": "그래프",
+  "Show Less": "간략히 보기",
+  "Show {0} More": {
+    "other": "{0}개 더 보기"
+  },
+  "Show Details": "세부사항 보기",
+  "Hide Details": "세부사항 가리기",
+  "Symbols": "기호",
+  "Filter": "필터",
+  "Filter Symbols": "기호 필터링",
+  "{0} — line {1}": "{0} — 줄 {1}",
+  "No matching symbols": "일치하는 기호 없음",
+  "No symbols": "기호 없음",
+  "Key": "키",
+  "Value": "값",
+  "Copy Path": "경로 복사하기",
+  "Copy Value": "값 복사하기",
+  "Code": "코드",
+  "Tree": "트리",
+  "Show the Whole File as a Tree": "전체 파일을 트리로 보기",
+  "Reading the whole file…": "전체 파일을 읽는 중…",
+  "Indexing {0}…": "{0} 색인 생성 중…",
+  "Showing the first {0} values.": {
+    "other": "처음 {0}개의 값을 표시하고 있습니다."
+  },
+  "This isn’t valid JSON: a key needs a colon after it, on line {0}.": "유효한 JSON이 아닙니다. 줄 {0}에서 키 뒤에 콜론이 필요합니다.",
+  "This isn’t valid JSON: the file ends too soon, on line {0}.": "유효한 JSON이 아닙니다. 파일이 줄 {0}에서 너무 일찍 끝납니다.",
+  "This isn’t valid JSON: unexpected {0} on line {1}.": "유효한 JSON이 아닙니다. 줄 {1}에 예상치 못한 {0}이(가) 있습니다.",
+  "Showing what could be read. A key needs a colon after it, on line {0}.": "읽을 수 있는 부분을 표시하고 있습니다. 줄 {0}에서 키 뒤에 콜론이 필요합니다.",
+  "Showing what could be read. The file ends too soon, on line {0}.": "읽을 수 있는 부분을 표시하고 있습니다. 파일이 줄 {0}에서 너무 일찍 끝납니다.",
+  "Showing what could be read. Unexpected {0} on line {1}.": "읽을 수 있는 부분을 표시하고 있습니다. 줄 {1}에 예상치 못한 {0}이(가) 있습니다.",
+  "Dictionary": "딕셔너리",
+  "Object": "객체",
+  "Array": "배열",
+  "Date": "날짜",
+  "Data": "데이터",
+  "String": "문자열",
+  "Number": "숫자",
+  "Boolean": "불리언",
+  "Null": "Null",
+  "Root": "루트",
+  "Item {0}": "항목 {0}",
+  "{0} items": {
+    "other": "항목 {0}개"
+  },
+  "Select a row to see its path": "행을 선택하면 경로가 표시됩니다",
+  "Copy Link to Section": "섹션 링크 복사하기",
+  "Link Copied": "링크 복사됨",
+  "Image": "이미지",
+  "Close": "닫기",
+  "Open Diagram": "다이어그램 열기",
+  "Diagram": "다이어그램",
+  "Zoom Out": "축소",
+  "Actual Size": "실제 크기",
+  "Zoom In": "확대",
+  "Zoom to Fit": "크기에 맞게 확대/축소",
+  "Copy as SVG": "SVG로 복사하기",
+  "Copy SVG": "SVG 복사하기",
+  "All {0} done": {
+    "other": "{0}개 모두 완료"
+  },
+  "{1} of {0} done": {
+    "other": "{0}개 중 {1}개 완료"
+  },
+  "Task lists in this document": "이 문서의 작업 목록",
+  "Hide Outline": "개요 가리기",
+  "Drag to resize. Double-click to reset.": "드래그하여 크기를 조절합니다. 이중 클릭하면 재설정됩니다.",
+  "Drag to resize": "드래그하여 크기 조절",
+  "Show Outline": "개요 보기",
+  "Outline": "개요",
+  "To Do": "할 일",
+  "Hint": "힌트",
+  "Warn": "경고",
+  "Attention": "주목",
+  "Danger": "위험",
+  "Error": "오류",
+  "Abstract": "초록",
+  "Summary": "요약",
+  "TL;DR": "핵심 요약",
+  "Success": "성공",
+  "Check": "확인됨",
+  "Done [callout]": "완료",
+  "Question": "질문",
+  "Help": "도움말",
+  "FAQ": "자주 묻는 질문",
+  "Failure": "실패",
+  "Fail": "실패",
+  "Missing": "누락",
+  "Bug": "버그",
+  "Example": "예시",
+  "Quote": "인용",
+  "Cite": "인용",
+  "Details": "세부사항",
+  "See Also": "관련 항목",
+  "Tab": "탭",
+  "Tab {0}": "탭 {0}",
+  "Read from the cover": "표지부터 읽기",
+  "Read": "읽기",
+  "Pages": "페이지",
+  "Previous Page": "이전 페이지",
+  "Next Page": "다음 페이지",
+  "All": "모두",
+  "Doc": "문서",
+  "Img": "이미지",
+  "Font": "서체",
+  "Media": "미디어",
+  "Document": "문서",
+  "Fetch": "Fetch",
+  "Script": "스크립트",
+  "Stylesheet": "스타일 시트",
+  "Queued": "대기",
+  "DNS Lookup": "DNS 조회",
+  "Connection": "연결",
+  "Request Sent": "요청 보냄",
+  "Waiting (TTFB)": "응답 대기(TTFB)",
+  "Download": "다운로드",
+  "Filter requests": "요청 필터링",
+  "Status": "상태",
+  "Method": "방식",
+  "Name": "이름",
+  "Size": "크기",
+  "Time": "시간",
+  "Waterfall": "폭포",
+  "Load {0}": "로드: {0}",
+  "Failed": "실패",
+  "No matching requests": "일치하는 요청 없음",
+  "{0} requests": {
+    "other": "요청 {0}개"
+  },
+  "{1} of {0} requests": {
+    "other": "요청 {0}개 중 {1}개"
+  },
+  "first {0} shown": "처음 {0}개 표시됨",
+  "Requests": "요청",
+  "Transferred": "전송됨",
+  "Finished": "완료",
+  "Load": "로드",
+  "HTTP Archive": "HTTP 아카이브",
+  "{0} · recorded with {1}": "{0} · {1}(으)로 기록됨",
+  "Recorded with {0}": "{0}(으)로 기록됨",
+  "Network capture": "네트워크 캡처",
+  "Select a request to see its headers, payload, response and timing.": "요청을 선택하면 헤더, 페이로드, 응답 및 타이밍이 표시됩니다.",
+  "This request’s details couldn’t be read.": "이 요청의 세부사항을 읽을 수 없습니다.",
+  "Headers": "헤더",
+  "Payload": "페이로드",
+  "Response": "응답",
+  "Timing": "타이밍",
+  "Request URL": "요청 URL",
+  "Remote Address": "원격 주소",
+  "{0} · connection {1}": "{0} · 연결 {1}",
+  "Protocol": "프로토콜",
+  "Redirects To": "리다이렉트 대상",
+  "General": "일반",
+  "Response Headers": "응답 헤더",
+  "No response headers": "응답 헤더 없음",
+  "Request Headers": "요청 헤더",
+  "No request headers": "요청 헤더 없음",
+  "Cookies Sent": "보낸 쿠키",
+  "Cookies Set": "설정된 쿠키",
+  "Showing the beginning of a long body.": "긴 본문의 앞부분을 표시하고 있습니다.",
+  "Query String": "쿼리 문자열",
+  "Form Data": "폼 데이터",
+  "Request Body": "요청 본문",
+  "No response body was recorded.": "응답 본문이 기록되지 않았습니다.",
+  "Binary content.": "바이너리 콘텐츠입니다.",
+  "Showing the first {0}.": "처음 {0}만 표시하고 있습니다.",
+  "Started at {0} · total {1}": "시작: {0} · 총 {1}",
+  "No timing recorded.": "기록된 타이밍이 없습니다.",
+  "This formula uses commands Greece can’t typeset": "이 수식에는 Greece에서 조판할 수 없는 명령이 사용됨",
+  "The rest of this document took too long to typeset.": "이 문서의 나머지 부분은 조판하는 데 시간이 너무 오래 걸렸습니다.",
+  "The rest of this document couldn’t be typeset.": "이 문서의 나머지 부분을 조판할 수 없습니다.",
+  "The rest of this document is too large or too deeply nested to typeset.": "이 문서의 나머지 부분은 너무 크거나 너무 깊이 중첩되어 있어 조판할 수 없습니다.",
+  "Showing the beginning of a very large project.": "매우 큰 프로젝트의 앞부분을 표시하고 있습니다.",
+  "Contents": "목차",
+  "Showing the beginning of a very large presentation.": "매우 큰 프레젠테이션의 앞부분을 표시하고 있습니다.",
+  "Slide {0}": "슬라이드 {0}",
+  "Illustrated by {0}": "그림: {0}",
+  "Edited by {0}": "편집: {0}",
+  "Translated by {0}": "번역: {0}",
+  "Narrated by {0}": "내레이션: {0}",
+  "Introduction by {0}": "서문: {0}",
+  "Afterword by {0}": "후기: {0}",
+  "With contributions by {0}": "기고: {0}",
+  "Annotated by {0}": "주석: {0}",
+  "Compiled by {0}": "엮음: {0}",
+  "Cover by {0}": "표지: {0}",
+  "Adapted by {0}": "각색: {0}",
+  "Art by {0}": "아트: {0}",
+  "Photographs by {0}": "사진: {0}",
+  "No references": "참고 문헌 없음",
+  "vol. {0}": "{0}권",
+  "pp. {0}": "{0}쪽",
+  "{0} ed.": "{0} ed.",
+  "ed. {0}": "{0} 편",
+  "Copy citation key": "인용 키 복사하기",
+  "Untitled": "제목 없음",
+  "{0} references": {
+    "other": "참고 문헌 {0}개"
+  },
+  "{0} string macros": {
+    "other": "문자열 매크로 {0}개"
+  },
+  "{0} preambles": {
+    "other": "프리앰블 {0}개"
+  },
+  "Showing the first references of a very large library.": "매우 큰 라이브러리의 처음 참고 문헌을 표시하고 있습니다.",
+  "No matching references": "일치하는 참고 문헌 없음",
+  "Bibliography": "참고 문헌 목록",
+  "Filter references": "참고 문헌 필터링",
+  "Article": "논문",
+  "{0} Articles": {
+    "other": "논문 {0}개"
+  },
+  "Book": "책",
+  "{0} Books": {
+    "other": "책 {0}개"
+  },
+  "Booklet": "소책자",
+  "{0} Booklets": {
+    "other": "소책자 {0}개"
+  },
+  "Chapter": "챕터",
+  "{0} Chapters": {
+    "other": "챕터 {0}개"
+  },
+  "In Collection": "모음집 수록",
+  "{0} In Collection": {
+    "other": "모음집 수록 {0}개"
+  },
+  "Conference Paper": "학회 논문",
+  "{0} Conference Papers": {
+    "other": "학회 논문 {0}개"
+  },
+  "Manual [document]": "매뉴얼",
+  "{0} Manuals": {
+    "other": "매뉴얼 {0}개"
+  },
+  "Master’s Thesis": "석사 논문",
+  "{0} Master’s Theses": {
+    "other": "석사 논문 {0}개"
+  },
+  "Misc": "기타",
+  "{0} Misc": {
+    "other": "기타 {0}개"
+  },
+  "PhD Thesis": "박사 논문",
+  "{0} PhD Theses": {
+    "other": "박사 논문 {0}개"
+  },
+  "Proceedings": "학회 논문집",
+  "{0} Proceedings": {
+    "other": "학회 논문집 {0}개"
+  },
+  "Report": "보고서",
+  "{0} Reports": {
+    "other": "보고서 {0}개"
+  },
+  "Unpublished": "미발표",
+  "{0} Unpublished": {
+    "other": "미발표 {0}개"
+  },
+  "Online": "온라인",
+  "{0} Online": {
+    "other": "온라인 {0}개"
+  },
+  "Thesis": "학위 논문",
+  "{0} Theses": {
+    "other": "학위 논문 {0}개"
+  },
+  "Software": "소프트웨어",
+  "{0} Software": {
+    "other": "소프트웨어 {0}개"
+  },
+  "Dataset": "데이터 세트",
+  "{0} Datasets": {
+    "other": "데이터 세트 {0}개"
+  },
+  "Patent": "특허",
+  "{0} Patents": {
+    "other": "특허 {0}개"
+  },
+  "Collection": "모음집",
+  "{0} Collections": {
+    "other": "모음집 {0}개"
+  },
+  "Periodical": "정기 간행물",
+  "{0} Periodicals": {
+    "other": "정기 간행물 {0}개"
+  },
+  "Standard": "표준",
+  "{0} Standards": {
+    "other": "표준 {0}개"
+  },
+  "Video": "비디오",
+  "{0} Videos": {
+    "other": "비디오 {0}개"
+  },
+  "Audio": "오디오",
+  "{0} Audio": {
+    "other": "오디오 {0}개"
+  },
+  "Artwork": "예술 작품",
+  "{0} Artworks": {
+    "other": "예술 작품 {0}개"
+  },
+  "Preprint": "프리프린트",
+  "{0} Preprints": {
+    "other": "프리프린트 {0}개"
+  },
+  "Entry": "항목",
+  "{0} ({1})": "{0}({1})",
+  "Publisher": "출판사",
+  "Published": "출판일",
+  "Language": "언어",
+  "Identifier": "식별자",
+  "{0} words · {1} min read": {
+    "other": "{0}단어 · 읽는 시간 {1}분"
+  },
+  "{0} words · {1} h {2} min read": {
+    "other": "{0}단어 · 읽는 시간 {1}시간 {2}분"
+  },
+  "Length": "길이",
+  "Format": "포맷",
+  "Book {0}": "{0}권",
+  "Cover": "표지",
+  "This book is protected, so its chapters can’t be shown.": "이 책은 보호되어 있으므로 챕터를 표시할 수 없습니다.",
+  "Previous [chapter]": "이전",
+  "Next [chapter]": "다음",
+  "Show All": "모두 보기",
+  "Section {0}": "섹션 {0}",
+  "Empty diagram": "빈 다이어그램",
+  "Zoom out": "축소",
+  "Zoom to fit": "크기에 맞게 확대/축소",
+  "Fit": "맞추기",
+  "Zoom in": "확대",
+  "Copy the diagram’s source": "다이어그램 소스 복사하기",
+  "Mermaid isn’t available.": "Mermaid를 사용할 수 없습니다.",
+  "No diagram": "다이어그램 없음",
+  "This diagram couldn’t be drawn": "이 다이어그램을 그릴 수 없음",
+  "TikZ drawing": "TikZ 그림",
+  "PGF drawing": "PGF 그림",
+  "Picture": "픽처",
+  "Circuit diagram": "회로도",
+  "Tree diagram": "트리 다이어그램",
+  "Commutative diagram": "가환 도표",
+  "Plot": "플롯",
+  "PSTricks drawing": "PSTricks 그림",
+  "Drawing": "그림",
+  "Missing figure": "누락된 그림",
+  "Figure": "그림",
+  "Not in the bibliography": "참고 문헌에 없음",
+  "Included PDF": "포함된 PDF",
+  "Missing file": "누락된 파일",
+  "Not included": "포함되지 않음",
+  "Map": "지도",
+  "Layers": "레이어",
+  "The map couldn’t start.": "지도를 시작할 수 없습니다.",
+  "{0}°N": "북위 {0}°",
+  "{0}°S": "남위 {0}°",
+  "{0}°E": "동경 {0}°",
+  "{0}°W": "서경 {0}°",
+  "Tile": "타일",
+  "Point": "포인트",
+  "Points": "포인트",
+  "Line [shape]": "선",
+  "Lines": "여러 선",
+  "Polygon": "다각형",
+  "Polygons": "여러 다각형",
+  "Feature": "피처",
+  "No": "아니요",
+  "No attributes": "속성 없음",
+  "{0} areas": {
+    "other": "영역 {0}개"
+  },
+  "{0} lines [shape]": {
+    "other": "선 {0}개"
+  },
+  "{0} points": {
+    "other": "포인트 {0}개"
+  },
+  "Tables": "표",
+  "Objects": "객체",
+  "Tile Layers": "타일 레이어",
+  "Basemap": "기본 지도",
+  "Grid": "격자",
+  "Labels": "레이블",
+  "Reprojected to WGS 84 for display": "표시를 위해 WGS 84로 재투영됨",
+  "Basemap: {0}": "기본 지도: {0}",
+  "Vector tiles (PBF)": "벡터 타일(PBF)",
+  "Zoom": "줌",
+  "Showing": "표시 중",
+  "Tile size": "타일 크기",
+  "Bounds": "범위",
+  "Center": "중심",
+  "Version": "버전",
+  "Scheme": "스킴",
+  "Generator": "생성 도구",
+  "Vector": "벡터",
+  "Raster": "래스터",
+  "Collapse": "접기",
+  "Zoom {0} (overzoomed)": "줌 {0}(과도 확대)",
+  "Zoom {0}": "줌 {0}",
+  "Distance": "거리",
+  "Duration": "소요 시간",
+  "Moving": "이동 시간",
+  "Elevation Gain": "상승 고도",
+  "Highest": "최고 고도",
+  "Max Speed": "최고 속도",
+  "Avg Speed": "평균 속도",
+  "Avg Heart Rate": "평균 심박수",
+  "{0} bpm": "{0}BPM",
+  "Track": "트랙",
+  "No features to draw": "그릴 피처가 없음",
+  "Copied {0}": "{0} 복사됨",
+  "Sample": "샘플",
+  "Pangram": "팬그램",
+  "Alphabet": "알파벳",
+  "Figures": "숫자",
+  "Sample text": "샘플 텍스트",
+  "No faces in this font": "이 서체에는 사용할 수 있는 스타일이 없음",
+  "WebKit couldn’t load this font for display. Its details are below.": "WebKit에서 표시용으로 이 서체를 로드할 수 없습니다. 세부사항은 아래와 같습니다.",
+  "Specimen": "예문",
+  "Click the sample to type your own": "샘플을 클릭하여 직접 입력",
+  "Variable Axes": "가변 축",
+  "{0} axes": {
+    "other": "축 {0}개"
+  },
+  "Axes": "축",
+  "OpenType Features": "OpenType 기능",
+  "Features [font]": "기능",
+  "Apply {0} to the specimen": "예문에 {0} 적용",
+  "{0} · on by default": "{0} · 기본적으로 켬",
+  "Sizes": "크기",
+  "Icons": "아이콘",
+  "Characters": "문자",
+  "Information": "정보",
+  "Ascender": "어센더",
+  "Cap height": "캡 높이",
+  "x-height": "x-높이",
+  "Baseline": "기준선",
+  "Descender": "디센더",
+  "Glyphs": "글리프",
+  "Variable": "가변",
+  "Designer": "디자이너",
+  "Scripts [writing]": "문자 체계",
+  "Show more": "더 보기",
+  "Show less": "간략히 보기",
+  "Family": "패밀리",
+  "Style": "스타일",
+  "Full name": "전체 이름",
+  "PostScript name": "PostScript 이름",
+  "Designer URL": "디자이너 URL",
+  "Manufacturer": "제조업체",
+  "Vendor URL": "공급업체 URL",
+  "Vendor ID": "공급업체 ID",
+  "Description": "설명",
+  "{0} · {1} outlines": "{0} · {1} 윤곽선",
+  "Color ({0})": "색상({0})",
+  "Units per em": "em당 단위",
+  "Metrics": "메트릭",
+  "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}": "어센더 {0} · 디센더 {1} · 캡 높이 {2} · x-높이 {3}",
+  "Weight class": "굵기 클래스",
+  "Width class": "너비 클래스",
+  "Italic": "이탤릭체",
+  "Monospaced": "고정폭",
+  "Traits": "특징",
+  "Languages": "언어",
+  "Embedding": "내장",
+  "Created": "생성일",
+  "Modified": "수정일",
+  "Copyright": "저작권",
+  "Trademark": "등록 상표",
+  "License URL": "라이선스 URL",
+  "Characters can’t be drawn without the font.": "서체 없이는 문자를 그릴 수 없습니다.",
+  "Showing the first {1} of {0} characters.": {
+    "other": "{0}자 중 처음 {1}자를 표시하고 있습니다."
+  },
+  "Code point": "코드 포인트",
+  "Character": "문자",
+  "Copy the character": "문자 복사하기",
+  "Copy the code point": "코드 포인트 복사하기",
+  "Unnamed": "이름 없음",
+  "Glyph": "글리프",
+  "Glyph ID": "글리프 ID",
+  "Advance": "어드밴스 폭",
+  "{0} units": {
+    "other": "{0}단위"
+  },
+  "The Lottie player is missing": "Lottie 플레이어가 없음",
+  "Click to play or pause": "클릭하여 재생 또는 일시 정지",
+  "Play": "재생",
+  "Loop": "루프",
+  "Background: Checkerboard": "배경: 체커보드",
+  "Background: White": "배경: 흰색",
+  "Background: Black": "배경: 검은색",
+  "Speed {0}": "속도 {0}",
+  "Pause": "일시 정지",
+  "This animation couldn’t be read.": "이 애니메이션을 읽을 수 없습니다.",
+  "This animation couldn’t be played.": "이 애니메이션을 재생할 수 없습니다.",
+  "Play from frame {0}": "프레임 {0}부터 재생",
+  "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.": "Lottie 표현식은 코드이므로 Greece에서 실행하지 않습니다. 따라서 일부 움직임이 다를 수 있습니다.",
+  "Expressions not evaluated": "표현식 평가 안 됨",
+  "Original": "원본",
+  "{0} colors": {
+    "other": "색상 {0}개"
+  },
+  "Ungrouped": "그룹 없음",
+  "Spot": "별색",
+  "{0} — click to copy": "{0} — 클릭하여 복사",
+  "Outside sRGB: shown as the nearest sRGB color": "sRGB 범위 밖: 가장 가까운 sRGB 색상으로 표시됨",
+  "{0} too fast": {
+    "other": "너무 빠름 {0}개"
+  },
+  "Reading speed {0} cps (over {1})": "읽기 속도 초당 {0}자({1}자 초과)",
+  "{0} long lines": {
+    "other": "긴 줄 {0}개"
+  },
+  "A line over {0} characters": {
+    "other": "{0}자를 초과하는 줄"
+  },
+  "{0} over 2 lines": {
+    "other": "2줄 초과 {0}개"
+  },
+  "More than {0} lines": {
+    "other": "{0}줄 초과"
+  },
+  "{0} brief": {
+    "other": "너무 짧음 {0}개"
+  },
+  "On screen under {0} s": "표시 시간 {0}초 미만",
+  "{0} lingering": {
+    "other": "너무 김 {0}개"
+  },
+  "On screen over {0} s": "표시 시간 {0}초 초과",
+  "{0} overlaps": {
+    "other": "겹침 {0}개"
+  },
+  "Starts before the previous cue ends": "이전 자막이 끝나기 전에 시작됨",
+  "{0} with bad timing": {
+    "other": "타이밍 오류 {0}개"
+  },
+  "Ends before it starts": "시작 전에 끝남",
+  "These subtitles couldn’t be read": "이 자막을 읽을 수 없음",
+  "Filter lines": "줄 필터링",
+  "Filter cues": "자막 필터링",
+  "{0} cues": {
+    "other": "자막 {0}개"
+  },
+  "Average reading speed, in characters per second": "평균 읽기 속도(초당 글자 수)",
+  "{0} cps average": "평균 초당 {0}자",
+  "{0} speakers": {
+    "other": "화자 {0}명"
+  },
+  "Timed at {0} fps": "{0}fps 기준 타이밍",
+  "Show only these": "이 항목만 보기",
+  "Jump to a moment": "특정 시점으로 이동",
+  "Showing the first {0} cues.": {
+    "other": "처음 {0}개의 자막을 표시하고 있습니다."
+  },
+  "{0} cps": "초당 {0}자",
+  "No matching cues": "일치하는 자막 없음",
+  "No cues found": "자막을 찾을 수 없음",
+  "SVG image": "SVG 이미지",
+  "This SVG couldn’t be drawn.": "이 SVG를 그릴 수 없습니다.",
+  "Actual size": "실제 크기",
+  "Fit to window": "윈도우에 맞추기",
+  "Transparency checkerboard": "투명도 체커보드",
+  "Source [code]": "소스",
+  "This file contains scripts. Greece shows SVG as an image, so they never run.": "이 파일에는 스크립트가 포함되어 있습니다. Greece는 SVG를 이미지로 표시하므로 스크립트는 실행되지 않습니다.",
+  "It refers to files or web addresses, which previews don’t load.": "이 파일은 다른 파일 또는 웹 주소를 참조하지만 미리보기에서는 로드되지 않습니다.",
+  "The source couldn’t be read.": "소스를 읽을 수 없습니다.",
+  "Model controls": "모델 컨트롤",
+  "This model is too large to preview": "이 모델은 너무 커서 미리 볼 수 없음",
+  "Greece previews models up to {0}.": "Greece는 최대 {0} 크기의 모델까지 미리 볼 수 있습니다.",
+  "3D previews need WebGL": "3D 미리보기에는 WebGL이 필요함",
+  "Reading the model took too long.": "모델을 읽는 데 시간이 너무 오래 걸렸습니다.",
+  "Greece couldn’t open this model": "Greece에서 이 모델을 열 수 없음",
+  "Loading": "로드 중",
+  "Preparing": "준비 중",
+  "Not a MagicaVoxel file": "MagicaVoxel 파일이 아님",
+  "Unsupported format": "지원되지 않는 포맷",
+  "The file has no scene": "파일에 장면이 없음",
+  "Couldn’t read the points": "포인트를 읽을 수 없음",
+  "Not a LAS/LAZ file": "LAS/LAZ 파일이 아님",
+  "Decompressing": "압축 해제 중",
+  "The decoder failed": "디코더 오류",
+  "The file has no points": "파일에 포인트가 없음",
+  "The model is empty": "모델이 비어 있음",
+  "Shaded": "셰이딩",
+  "Wireframe": "와이어프레임",
+  "Display": "표시",
+  "Colour": "색상",
+  "Animation {0}": "애니메이션 {0}",
+  "Animation": "애니메이션",
+  "Reset View": "보기 재설정",
+  "Statistics": "통계",
+  "Classes": "클래스",
+  "Point format": "포인트 포맷",
+  "LAS version": "LAS 버전",
+  "Vertices": "꼭짓점",
+  "Triangles": "삼각형",
+  "Meshes": "메시",
+  "Materials": "재질",
+  "Textures": "텍스처",
+  "Texture memory": "텍스처 메모리",
+  "Animations": "애니메이션",
+  "Bones": "뼈대",
+  "Morph targets": "모프 타깃",
+  "Compression": "압축",
+  "Created with": "생성 도구",
+  "{0} voxels": {
+    "other": "{0}복셀"
+  },
+  "Width": "너비",
+  "Depth": "깊이",
+  "Height": "높이",
+  "Elevation": "고도",
+  "Intensity": "강도",
+  "Classification": "분류",
+  "A file it needs couldn’t be read.": "필요한 파일을 읽을 수 없습니다.",
+  "Unreadable point sample": "포인트 샘플을 읽을 수 없음",
+  "Truncated point sample": "포인트 샘플이 잘림",
+  "Not an OFF file": "OFF 파일이 아님",
+  "Invalid OFF header": "유효하지 않은 OFF 헤더"
+}

@@ -1,0 +1,1206 @@
+{
+  "@same": [
+    "{0} B",
+    "{0} KB",
+    "{0} MB",
+    "{0} GB",
+    "{0} TB",
+    "“{0}”",
+    "{0}+",
+    "Push",
+    "Pull request",
+    "push",
+    "pull request",
+    "Platform",
+    "test",
+    "platform",
+    "{0} test",
+    "{0} platform",
+    ":{0}",
+    "Null",
+    "Font",
+    "Fetch",
+    "Patent",
+    "Video",
+    "{0} ({1})",
+    "Raster",
+    "Pangram"
+  ],
+  "{0} bytes": {
+    "one": "{0} bayt",
+    "other": "{0} bayt"
+  },
+  "{0} B": "{0} B",
+  "{0} KB": "{0} KB",
+  "{0} MB": "{0} MB",
+  "{0} GB": "{0} GB",
+  "{0} TB": "{0} TB",
+  "Copied": "Kopyalandı",
+  "Empty file": "Boş dosya",
+  "Copy": "Kopyala",
+  "Showing the beginning of a very large file.": "Çok büyük bir dosyanın başı gösteriliyor.",
+  "Note": "Not",
+  "Tip": "İpucu",
+  "Important": "Önemli",
+  "Warning": "Uyarı",
+  "Caution": "Dikkat",
+  "Remote image not loaded": "Uzak görüntü yüklenmedi",
+  "On This Page": "Bu Sayfada",
+  "Empty document": "Boş belge",
+  "Showing the beginning of a very large document.": "Çok büyük bir belgenin başı gösteriliyor.",
+  "Added": "Eklendi",
+  "Deleted": "Silindi",
+  "Renamed": "Adı değişti",
+  "Binary file not shown": "İkili dosya gösterilmiyor",
+  "No content changes": "İçerik değişikliği yok",
+  "{0} commits": {
+    "one": "{0} commit",
+    "other": "{0} commit"
+  },
+  "{0} files changed": {
+    "one": "{0} dosya değişti",
+    "other": "{0} dosya değişti"
+  },
+  "Empty notebook": "Boş not defteri",
+  "“{0}”": "“{0}”",
+  "Find": "Bul",
+  "Previous": "Önceki",
+  "Next": "Sonraki",
+  "Match Case": "Büyük-Küçük Harfe Duyarlı",
+  "Whole Words": "Tam Sözcükler",
+  "Done": "Bitti",
+  "Select text to find it": "Bulmak için metin seçin",
+  "{0}+": "{0}+",
+  "No matches": "Eşleşen yok",
+  "{0} of {1}": "{0}/{1}",
+  "Find {0}": "Bul: {0}",
+  "Go to Line": "Satıra Git",
+  "Line": "Satır",
+  "{0}+ matches": "{0}+ eşleşme",
+  "{0} matches": {
+    "one": "{0} eşleşme",
+    "other": "{0} eşleşme"
+  },
+  "{0} lines": {
+    "one": "{0} satır",
+    "other": "{0} satır"
+  },
+  "Show {0} lines": {
+    "one": "{0} satırı göster",
+    "other": "{0} satırı göster"
+  },
+  "Copy Line {0}": "{0}. Satırı Kopyala",
+  "Unfold": "Katlamayı Aç",
+  "Fold": "Katla",
+  "Wrap Lines": "Satırları Kaydır",
+  "Fold All": "Tümünü Katla",
+  "Unfold All": "Tüm Katlamaları Aç",
+  "Copy All": "Tümünü Kopyala",
+  "Reveal value": "Değeri göster",
+  "Also set on line {0}; this value wins": "{0}. satırda da tanımlı; geçerli olan bu değer",
+  "Duplicate": "Yinelenen",
+  "Empty": "Boş",
+  "Hide value": "Değeri gizle",
+  "line {0}, first set on line {1}": "satır {0}, ilk tanım: satır {1}",
+  "line {0}": "satır {0}",
+  "{0} keys": {
+    "one": "{0} anahtar",
+    "other": "{0} anahtar"
+  },
+  "{0} duplicates": {
+    "one": "{0} yinelenen",
+    "other": "{0} yinelenen"
+  },
+  "{0} empty": {
+    "one": "{0} boş",
+    "other": "{0} boş"
+  },
+  "Values hidden": "Değerler gizli",
+  "Environment Template": "Ortam Şablonu",
+  "Environment Variables": "Ortam Değişkenleri",
+  "Reveal All": "Tümünü Göster",
+  "Hide All": "Tümünü Gizle",
+  "Values shown": "Değerler görünür",
+  "stage {0}": "aşama {0}",
+  "Base": "Temel görüntü",
+  "Ports": "Kapılar",
+  "Entrypoint": "Giriş noktası",
+  "Command": "Komut",
+  "Workdir": "Çalışma dizini",
+  "User": "Kullanıcı",
+  "Healthcheck": "Sağlık denetimi",
+  "Yes": "Evet",
+  "from {0}": "temel: {0}",
+  "Build stages": "Derleme aşamaları",
+  "Stages": "Aşamalar",
+  "{0} stages": {
+    "one": "{0} aşama",
+    "other": "{0} aşama"
+  },
+  "Final: {0}": "Son: {0}",
+  "Service": "Servis",
+  "Image [container]": "Görüntü",
+  "Volumes": "Birimler",
+  "Start Order": "Başlatma Sırası",
+  "{0} services": {
+    "one": "{0} servis",
+    "other": "{0} servis"
+  },
+  "{0} volumes": {
+    "one": "{0} birim",
+    "other": "{0} birim"
+  },
+  "{0} networks": {
+    "one": "{0} ağ",
+    "other": "{0} ağ"
+  },
+  "tag {0}": "etiket {0}",
+  "1 input": "1 girdi",
+  "{0} inputs": {
+    "one": "{0} girdi",
+    "other": "{0} girdi"
+  },
+  "Push": "Push",
+  "to {0}": "{0} dalına",
+  "Pull request": "Pull request",
+  "Pull request target": "Pull request hedefi",
+  "into {0}": "{0} dalına",
+  "Schedule": "Zamanlama",
+  "Manual": "Elle",
+  "Called by workflows": "İş akışı çağrısı",
+  "Release": "Sürüm yayımı",
+  "After workflow": "İş akışı sonrası",
+  "push": "push",
+  "pull request": "pull request",
+  "pull request target": "pull request hedefi",
+  "schedule": "zamanlama",
+  "manual": "elle çalıştırma",
+  "called by workflows": "iş akışı çağrısı",
+  "release": "sürüm yayımı",
+  "after workflow": "iş akışı sonrası",
+  "Triggers": "Tetikleyiciler",
+  "reusable workflow": "yeniden kullanılabilir iş akışı",
+  "{0} steps": {
+    "one": "{0} adım",
+    "other": "{0} adım"
+  },
+  "Jobs": "İşler",
+  "Step": "Adım",
+  "reusable": "yeniden kullanılabilir",
+  "Uses": "Kullanılan",
+  "Steps": "Adımlar",
+  "{0} jobs": {
+    "one": "{0} iş",
+    "other": "{0} iş"
+  },
+  "On {0}": "Tetikleyici: {0}",
+  "replicas": "replika",
+  "type": "tür",
+  "ports": "kapılar",
+  "hosts": "ana makineler",
+  "keys": "anahtarlar",
+  "(unnamed)": "(adsız)",
+  "{0} resources": {
+    "one": "{0} kaynak",
+    "other": "{0} kaynak"
+  },
+  "{0} {1}s": {
+    "one": "{0} {1}",
+    "other": "{0} {1}"
+  },
+  "namespace {0}": "ad alanı {0}",
+  "Other": "Diğer",
+  "Trace": "İzleme",
+  "Debug": "Hata Ayıklama",
+  "Info": "Bilgi",
+  "Warnings": "Uyarılar",
+  "Errors": "Hatalar",
+  "Access Log": "Erişim Günlüğü",
+  "macOS Unified Log": "macOS Birleşik Günlüğü",
+  "{0} more characters": {
+    "one": "{0} karakter daha",
+    "other": "{0} karakter daha"
+  },
+  "Repeated {0} times": {
+    "one": "{0} kez yinelendi",
+    "other": "{0} kez yinelendi"
+  },
+  "Repeats folded": "Katlanan yinelemeler",
+  "Log": "Günlük dosyası",
+  "Most Frequent Error": "En Sık Görülen Hata",
+  "Most Frequent Errors": "En Sık Görülen Hatalar",
+  "Previous Error": "Önceki Hata",
+  "Previous Warning": "Önceki Uyarı",
+  "Next Error": "Sonraki Hata",
+  "Next Warning": "Sonraki Uyarı",
+  "Errors and warnings": "Hatalar ve uyarılar",
+  "See {0}": "Bkz. {0}",
+  "License": "Lisans",
+  "Module": "Modül",
+  "ES modules": "ES modülleri",
+  "Package Manager": "Paket Yöneticisi",
+  "Workspaces": "Çalışma Alanları",
+  "Visibility": "Görünürlük",
+  "Private": "Özel",
+  "Home": "Ana Sayfa",
+  "npm package": "npm paketi",
+  "Composer package": "Composer paketi",
+  "Type": "Tür",
+  "Cargo workspace": "Cargo çalışma alanı",
+  "Rust crate": "Rust paketi",
+  "Workspace": "Çalışma alanı",
+  "Edition": "Edisyon",
+  "Members": "Üyeler",
+  "Features": "Özellikler",
+  "Poetry project": "Poetry projesi",
+  "Python project": "Python projesi",
+  "Build": "Derleme",
+  "Go module": "Go modülü",
+  "Toolchain": "Araç zinciri",
+  "Replaced": "Değiştirilen",
+  "Source": "Kaynak",
+  "Platform": "Platform",
+  "Frameworks": "Çerçeveler",
+  "Targets": "Hedefler",
+  "Library": "Kitaplık",
+  "Executable": "Çalıştırılabilir",
+  "Plugin": "Yazılım eki",
+  "Swift package": "Swift paketi",
+  "Swift Tools": "Swift Araçları",
+  "Platforms": "Platformlar",
+  "Products": "Ürünler",
+  "Flutter package": "Flutter paketi",
+  "Dart package": "Dart paketi",
+  "Publish": "Yayım",
+  "Executables": "Çalıştırılabilir dosyalar",
+  "Elixir project": "Elixir projesi",
+  "Aliases": "Takma adlar",
+  "Android build": "Android derlemesi",
+  "Gradle build": "Gradle derlemesi",
+  "Compile SDK": "Derleme SDK’sı",
+  "Plugins": "Yazılım ekleri",
+  "dev": "geliştirme",
+  "test": "test",
+  "peer": "eş",
+  "optional": "isteğe bağlı",
+  "build": "derleme",
+  "indirect": "dolaylı",
+  "platform": "platform",
+  "override": "geçersiz kılma",
+  "group": "grup",
+  "workspace": "çalışma alanı",
+  "debug": "hata ayıklama",
+  "compile only": "yalnızca derleme",
+  "runtime": "çalışma zamanı",
+  "{0} direct": {
+    "one": "{0} doğrudan",
+    "other": "{0} doğrudan"
+  },
+  "{0} dev": {
+    "one": "{0} geliştirme",
+    "other": "{0} geliştirme"
+  },
+  "{0} test": {
+    "one": "{0} test",
+    "other": "{0} test"
+  },
+  "{0} peer": {
+    "one": "{0} eş",
+    "other": "{0} eş"
+  },
+  "{0} optional": {
+    "one": "{0} isteğe bağlı",
+    "other": "{0} isteğe bağlı"
+  },
+  "{0} build": {
+    "one": "{0} derleme",
+    "other": "{0} derleme"
+  },
+  "{0} indirect": {
+    "one": "{0} dolaylı",
+    "other": "{0} dolaylı"
+  },
+  "{0} platform": {
+    "one": "{0} platform",
+    "other": "{0} platform"
+  },
+  "{0} override": {
+    "one": "{0} geçersiz kılma",
+    "other": "{0} geçersiz kılma"
+  },
+  "{0} group": {
+    "one": "{0} grup",
+    "other": "{0} grup"
+  },
+  "{0} workspace": {
+    "one": "{0} çalışma alanı",
+    "other": "{0} çalışma alanı"
+  },
+  "{0} debug": {
+    "one": "{0} hata ayıklama",
+    "other": "{0} hata ayıklama"
+  },
+  "{0} compile only": {
+    "one": "{0} yalnızca derleme",
+    "other": "{0} yalnızca derleme"
+  },
+  "{0} runtime": {
+    "one": "{0} çalışma zamanı",
+    "other": "{0} çalışma zamanı"
+  },
+  "Scripts": "Betikler",
+  "Dependencies": "Bağımlılıklar",
+  "every weekday in {0}": "{0} aylarında hafta içi her gün",
+  "on weekdays in {0}": "{0} aylarında hafta içi",
+  "every weekday": "hafta içi her gün",
+  "on weekdays": "hafta içi",
+  "every Saturday and Sunday in {0}": "{0} aylarında her Cumartesi ve Pazar",
+  "at weekends in {0}": "{0} aylarında hafta sonları",
+  "every Saturday and Sunday": "her Cumartesi ve Pazar",
+  "at weekends": "hafta sonları",
+  "every {0} to {1} in {2}": "{2} aylarında {0}–{1} arası her gün",
+  "{0} to {1} in {2}": "{2} aylarında {0}–{1} arası",
+  "every {0} to {1}": "{0}–{1} arası her gün",
+  "{0} to {1}": "{0}–{1} arası",
+  "every {0} in {1}": "{1} aylarında her {0}",
+  "on {0} in {1}": "{1} aylarında {0} günleri",
+  "every {0}": "her {0}",
+  "on {0}": "{0} günleri",
+  "on every {0} days of {1}": {
+    "one": "{1} aylarında {0} günde bir",
+    "other": "{1} aylarında {0} günde bir"
+  },
+  "on every {0} days of every month": {
+    "one": "her ay {0} günde bir",
+    "other": "her ay {0} günde bir"
+  },
+  "on days {0}–{1} of {2}": "{2} aylarının {0}–{1}. günlerinde",
+  "on days {0}–{1} of every month": "her ayın {0}–{1}. günlerinde",
+  "{0}th": {
+    "other": "{0}."
+  },
+  "on the {0} of {1}": "{1} aylarının {0} günü",
+  "on the {0} of every month": "her ayın {0} günü",
+  "every day": "her gün",
+  "every day in {0}": "{0} aylarında her gün",
+  "in {0}": "{0} aylarında",
+  "every year on {0}": "her yıl {0} tarihinde",
+  "on {0} every year": "her yıl {0} tarihinde",
+  "At startup": "Başlangıçta",
+  ":{0}": ":{0}",
+  "{0} at {1}": "{0}, saat {1}",
+  "Every minute": "Her dakika",
+  "Every minute {0}": "{0} her dakika",
+  "Every {0} minutes": {
+    "one": "{0} dakikada bir",
+    "other": "{0} dakikada bir"
+  },
+  "Every {0} minutes {1}": {
+    "one": "{1} {0} dakikada bir",
+    "other": "{1} {0} dakikada bir"
+  },
+  "Every hour": "Her saat",
+  "Every hour {0}": "{0} her saat",
+  "Every hour at {0}": "Her saat {0} geçe",
+  "Every hour at {0} {1}": "{1} her saat {0} geçe",
+  "Every {0} hours": {
+    "one": "{0} saatte bir",
+    "other": "{0} saatte bir"
+  },
+  "Every {0} hours {1}": {
+    "one": "{1} {0} saatte bir",
+    "other": "{1} {0} saatte bir"
+  },
+  "Every {0} hours at {1}": {
+    "one": "{0} saatte bir, {1} geçe",
+    "other": "{0} saatte bir, {1} geçe"
+  },
+  "Every {0} hours at {1} {2}": {
+    "one": "{2} {0} saatte bir, {1} geçe",
+    "other": "{2} {0} saatte bir, {1} geçe"
+  },
+  "Every {0} hours from {1} to {2}": {
+    "one": "{1} ile {2} arasında {0} saatte bir",
+    "other": "{1} ile {2} arasında {0} saatte bir"
+  },
+  "Every {0} hours from {1} to {2} {3}": {
+    "one": "{3} {1} ile {2} arasında {0} saatte bir",
+    "other": "{3} {1} ile {2} arasında {0} saatte bir"
+  },
+  "Every hour from {0} to {1}": "{0} ile {1} arasında her saat",
+  "Every hour from {0} to {1} {2}": "{2} {0} ile {1} arasında her saat",
+  "Every {0} minutes from {1} to {2}": {
+    "one": "{1} ile {2} arasında {0} dakikada bir",
+    "other": "{1} ile {2} arasında {0} dakikada bir"
+  },
+  "Every {0} minutes from {1} to {2} {3}": {
+    "one": "{3} {1} ile {2} arasında {0} dakikada bir",
+    "other": "{3} {1} ile {2} arasında {0} dakikada bir"
+  },
+  "Every minute from {0} to {1}": "{0} ile {1} arasında her dakika",
+  "Every minute from {0} to {1} {2}": "{2} {0} ile {1} arasında her dakika",
+  "Every {0} minutes during {1}": {
+    "one": "{1} saatlerinde {0} dakikada bir",
+    "other": "{1} saatlerinde {0} dakikada bir"
+  },
+  "Every {0} minutes during {1} {2}": {
+    "one": "{2} {1} saatlerinde {0} dakikada bir",
+    "other": "{2} {1} saatlerinde {0} dakikada bir"
+  },
+  "{0} at {1} and more": "{0}, saat {1} ve diğer saatlerde",
+  "{0} at {1} past {2}": "{0}, {2} boyunca saat başını {1} geçe",
+  "{0} minutes": {
+    "one": "{0} dakika",
+    "other": "{0} dakika"
+  },
+  "{0} hours": {
+    "one": "{0} saat",
+    "other": "{0} saat"
+  },
+  "Today {0}": "Bugün {0}",
+  "Tomorrow {0}": "Yarın {0}",
+  "Next run": "Sonraki çalışma",
+  "as {0}": "{0} olarak",
+  "System": "Sistem",
+  "Times in {0}": "{0} saatine göre",
+  "Times in local time": "Yerel saate göre",
+  "Environment": "Ortam",
+  "default": "saptanmış",
+  "{0} recipes": {
+    "one": "{0} tarif",
+    "other": "{0} tarif"
+  },
+  "{0} targets": {
+    "one": "{0} hedef",
+    "other": "{0} hedef"
+  },
+  "Default: {0}": "Saptanmış: {0}",
+  "All hosts": "Tüm ana makineler",
+  "command": "komut",
+  "{0} defaults": {
+    "one": "{0} saptanmış ayar",
+    "other": "{0} saptanmış ayar"
+  },
+  "key": "anahtar",
+  "via": "geçit",
+  "{0} options": {
+    "one": "{0} seçenek",
+    "other": "{0} seçenek"
+  },
+  "SSH Config": "SSH Yapılandırması",
+  "{0} hosts": {
+    "one": "{0} ana makine",
+    "other": "{0} ana makine"
+  },
+  "{0} includes": {
+    "one": "{0} dahil etme",
+    "other": "{0} dahil etme"
+  },
+  "Required": "Gerekli",
+  "Body": "Gövde",
+  "{0} params": {
+    "one": "{0} parametre",
+    "other": "{0} parametre"
+  },
+  "{0} endpoints": {
+    "one": "{0} uç nokta",
+    "other": "{0} uç nokta"
+  },
+  "{0} tags": {
+    "one": "{0} etiket",
+    "other": "{0} etiket"
+  },
+  "{0} schemas": {
+    "one": "{0} şema",
+    "other": "{0} şema"
+  },
+  "{0} s": "{0} sn.",
+  "{0} min": "{0} dk.",
+  "{0} h {1} min": "{0} sa. {1} dk.",
+  "{0} h": "{0} sa.",
+  "{0} days": {
+    "one": "{0} gün",
+    "other": "{0} gün"
+  },
+  "Graph": "Grafik",
+  "Show Less": "Daha Az Göster",
+  "Show {0} More": {
+    "one": "{0} Tane Daha Göster",
+    "other": "{0} Tane Daha Göster"
+  },
+  "Show Details": "Ayrıntıları Göster",
+  "Hide Details": "Ayrıntıları Gizle",
+  "Symbols": "Semboller",
+  "Filter": "Filtrele",
+  "Filter Symbols": "Sembolleri Filtrele",
+  "{0} — line {1}": "{0} — satır {1}",
+  "No matching symbols": "Eşleşen sembol yok",
+  "No symbols": "Sembol yok",
+  "Key": "Anahtar",
+  "Value": "Değer",
+  "Copy Path": "Yolu Kopyala",
+  "Copy Value": "Değeri Kopyala",
+  "Code": "Kod",
+  "Tree": "Ağaç",
+  "Show the Whole File as a Tree": "Tüm Dosyayı Ağaç Olarak Göster",
+  "Reading the whole file…": "Dosyanın tamamı okunuyor…",
+  "Indexing {0}…": "{0} dizinleniyor…",
+  "Showing the first {0} values.": {
+    "one": "İlk {0} değer gösteriliyor.",
+    "other": "İlk {0} değer gösteriliyor."
+  },
+  "This isn’t valid JSON: a key needs a colon after it, on line {0}.": "Bu geçerli bir JSON değil: {0}. satırda bir anahtarın ardından iki nokta üst üste gerekiyor.",
+  "This isn’t valid JSON: the file ends too soon, on line {0}.": "Bu geçerli bir JSON değil: dosya {0}. satırda erken bitiyor.",
+  "This isn’t valid JSON: unexpected {0} on line {1}.": "Bu geçerli bir JSON değil: {1}. satırda beklenmeyen {0}.",
+  "Showing what could be read. A key needs a colon after it, on line {0}.": "Okunabilen kısım gösteriliyor. {0}. satırda bir anahtarın ardından iki nokta üst üste gerekiyor.",
+  "Showing what could be read. The file ends too soon, on line {0}.": "Okunabilen kısım gösteriliyor. Dosya {0}. satırda erken bitiyor.",
+  "Showing what could be read. Unexpected {0} on line {1}.": "Okunabilen kısım gösteriliyor. {1}. satırda beklenmeyen {0}.",
+  "Dictionary": "Sözlük",
+  "Object": "Nesne",
+  "Array": "Dizi",
+  "Date": "Tarih",
+  "Data": "Veri",
+  "String": "Dizgi",
+  "Number": "Sayı",
+  "Boolean": "Boole değeri",
+  "Null": "Null",
+  "Root": "Kök",
+  "Item {0}": "Öğe {0}",
+  "{0} items": {
+    "one": "{0} öğe",
+    "other": "{0} öğe"
+  },
+  "Select a row to see its path": "Yolunu görmek için bir satır seçin",
+  "Copy Link to Section": "Bölümün Bağlantısını Kopyala",
+  "Link Copied": "Bağlantı Kopyalandı",
+  "Image": "Görüntü",
+  "Close": "Kapat",
+  "Open Diagram": "Diyagramı Aç",
+  "Diagram": "Diyagram",
+  "Zoom Out": "Küçült",
+  "Actual Size": "Gerçek Boyut",
+  "Zoom In": "Büyüt",
+  "Zoom to Fit": "Sığdır",
+  "Copy as SVG": "SVG Olarak Kopyala",
+  "Copy SVG": "SVG’yi Kopyala",
+  "All {0} done": {
+    "one": "{0} görev tamamlandı",
+    "other": "{0} görevin tümü tamamlandı"
+  },
+  "{1} of {0} done": {
+    "one": "{1}/{0} tamamlandı",
+    "other": "{1}/{0} tamamlandı"
+  },
+  "Task lists in this document": "Bu belgedeki görev listeleri",
+  "Hide Outline": "Anahattı Gizle",
+  "Drag to resize. Double-click to reset.": "Yeniden boyutlandırmak için sürükleyin. Sıfırlamak için çift tıklayın.",
+  "Drag to resize": "Yeniden boyutlandırmak için sürükleyin",
+  "Show Outline": "Anahattı Göster",
+  "Outline": "Anahat",
+  "To Do": "Yapılacaklar",
+  "Hint": "İpucu",
+  "Warn": "Uyarı",
+  "Attention": "Dikkat",
+  "Danger": "Tehlike",
+  "Error": "Hata",
+  "Abstract": "Özet",
+  "Summary": "Özet",
+  "TL;DR": "Kısaca",
+  "Success": "Başarılı",
+  "Check": "Doğrulandı",
+  "Done [callout]": "Tamamlandı",
+  "Question": "Soru",
+  "Help": "Yardım",
+  "FAQ": "SSS",
+  "Failure": "Başarısızlık",
+  "Fail": "Başarısız",
+  "Missing": "Eksik",
+  "Bug": "Yazılım hatası",
+  "Example": "Örnek",
+  "Quote": "Alıntı",
+  "Cite": "Alıntı",
+  "Details": "Ayrıntılar",
+  "See Also": "Ayrıca Bakınız",
+  "Tab": "Sekme",
+  "Tab {0}": "Sekme {0}",
+  "Read from the cover": "Kapaktan itibaren oku",
+  "Read": "Oku",
+  "Pages": "Sayfalar",
+  "Previous Page": "Önceki Sayfa",
+  "Next Page": "Sonraki Sayfa",
+  "All": "Tümü",
+  "Doc": "Belge",
+  "Img": "Görsel",
+  "Font": "Font",
+  "Media": "Ortam",
+  "Document": "Belge",
+  "Fetch": "Fetch",
+  "Script": "Betik",
+  "Stylesheet": "Stil sayfası",
+  "Queued": "Kuyrukta",
+  "DNS Lookup": "DNS Araması",
+  "Connection": "Bağlantı",
+  "Request Sent": "İstek Gönderildi",
+  "Waiting (TTFB)": "Bekleme (TTFB)",
+  "Download": "İndirme",
+  "Filter requests": "İstekleri filtrele",
+  "Status": "Durum",
+  "Method": "Yöntem",
+  "Name": "Ad",
+  "Size": "Büyüklük",
+  "Time": "Süre",
+  "Waterfall": "Şelale",
+  "Load {0}": "Yükleme {0}",
+  "Failed": "Başarısız",
+  "No matching requests": "Eşleşen istek yok",
+  "{0} requests": {
+    "one": "{0} istek",
+    "other": "{0} istek"
+  },
+  "{1} of {0} requests": {
+    "one": "{1}/{0} istek",
+    "other": "{1}/{0} istek"
+  },
+  "first {0} shown": "ilk {0} gösteriliyor",
+  "Requests": "İstekler",
+  "Transferred": "Aktarılan",
+  "Finished": "Bitiş",
+  "Load": "Yükleme",
+  "HTTP Archive": "HTTP Arşivi",
+  "{0} · recorded with {1}": "{0} · {1} ile kaydedildi",
+  "Recorded with {0}": "{0} ile kaydedildi",
+  "Network capture": "Ağ kaydı",
+  "Select a request to see its headers, payload, response and timing.": "Başlıklarını, yükünü, yanıtını ve zamanlamasını görmek için bir istek seçin.",
+  "This request’s details couldn’t be read.": "Bu isteğin ayrıntıları okunamadı.",
+  "Headers": "Başlıklar",
+  "Payload": "Yük",
+  "Response": "Yanıt",
+  "Timing": "Zamanlama",
+  "Request URL": "İstek URL’si",
+  "Remote Address": "Uzak Adres",
+  "{0} · connection {1}": "{0} · bağlantı {1}",
+  "Protocol": "Protokol",
+  "Redirects To": "Yönlendirme Hedefi",
+  "General": "Genel",
+  "Response Headers": "Yanıt Başlıkları",
+  "No response headers": "Yanıt başlığı yok",
+  "Request Headers": "İstek Başlıkları",
+  "No request headers": "İstek başlığı yok",
+  "Cookies Sent": "Gönderilen Çerezler",
+  "Cookies Set": "Ayarlanan Çerezler",
+  "Showing the beginning of a long body.": "Uzun bir gövdenin başı gösteriliyor.",
+  "Query String": "Sorgu Dizgisi",
+  "Form Data": "Form Verileri",
+  "Request Body": "İstek Gövdesi",
+  "No response body was recorded.": "Yanıt gövdesi kaydedilmemiş.",
+  "Binary content.": "İkili içerik.",
+  "Showing the first {0}.": "İlk {0} gösteriliyor.",
+  "Started at {0} · total {1}": "Başlangıç: {0} · toplam: {1}",
+  "No timing recorded.": "Zamanlama kaydedilmemiş.",
+  "This formula uses commands Greece can’t typeset": "Bu formül, Greece’in dizemediği komutlar kullanıyor",
+  "The rest of this document took too long to typeset.": "Bu belgenin geri kalanının dizilmesi çok uzun sürdü.",
+  "The rest of this document couldn’t be typeset.": "Bu belgenin geri kalanı dizilemedi.",
+  "The rest of this document is too large or too deeply nested to typeset.": "Bu belgenin geri kalanı, dizilemeyecek kadar büyük veya çok derin iç içe geçmiş.",
+  "Showing the beginning of a very large project.": "Çok büyük bir projenin başı gösteriliyor.",
+  "Contents": "İçindekiler",
+  "Showing the beginning of a very large presentation.": "Çok büyük bir sunumun başı gösteriliyor.",
+  "Slide {0}": "Slayt {0}",
+  "Illustrated by {0}": "Resimleyen: {0}",
+  "Edited by {0}": "Editör: {0}",
+  "Translated by {0}": "Çeviren: {0}",
+  "Narrated by {0}": "Seslendiren: {0}",
+  "Introduction by {0}": "Giriş: {0}",
+  "Afterword by {0}": "Sonsöz: {0}",
+  "With contributions by {0}": "Katkıda bulunanlar: {0}",
+  "Annotated by {0}": "Açıklamalar: {0}",
+  "Compiled by {0}": "Derleyen: {0}",
+  "Cover by {0}": "Kapak: {0}",
+  "Adapted by {0}": "Uyarlayan: {0}",
+  "Art by {0}": "Çizimler: {0}",
+  "Photographs by {0}": "Fotoğraflar: {0}",
+  "No references": "Kaynak yok",
+  "vol. {0}": "c. {0}",
+  "pp. {0}": "s. {0}",
+  "{0} ed.": "{0} bs.",
+  "ed. {0}": "haz. {0}",
+  "Copy citation key": "Atıf anahtarını kopyala",
+  "Untitled": "Adsız",
+  "{0} references": {
+    "one": "{0} kaynak",
+    "other": "{0} kaynak"
+  },
+  "{0} string macros": {
+    "one": "{0} dizgi makrosu",
+    "other": "{0} dizgi makrosu"
+  },
+  "{0} preambles": {
+    "one": "{0} giriş bloğu",
+    "other": "{0} giriş bloğu"
+  },
+  "Showing the first references of a very large library.": "Çok büyük bir kaynakçanın ilk kaynakları gösteriliyor.",
+  "No matching references": "Eşleşen kaynak yok",
+  "Bibliography": "Kaynakça",
+  "Filter references": "Kaynakları filtrele",
+  "Article": "Makale",
+  "{0} Articles": {
+    "one": "{0} Makale",
+    "other": "{0} Makale"
+  },
+  "Book": "Kitap",
+  "{0} Books": {
+    "one": "{0} Kitap",
+    "other": "{0} Kitap"
+  },
+  "Booklet": "Kitapçık",
+  "{0} Booklets": {
+    "one": "{0} Kitapçık",
+    "other": "{0} Kitapçık"
+  },
+  "Chapter": "Bölüm",
+  "{0} Chapters": {
+    "one": "{0} Bölüm",
+    "other": "{0} Bölüm"
+  },
+  "In Collection": "Derlemede",
+  "{0} In Collection": {
+    "one": "{0} Derlemede",
+    "other": "{0} Derlemede"
+  },
+  "Conference Paper": "Konferans Bildirisi",
+  "{0} Conference Papers": {
+    "one": "{0} Konferans Bildirisi",
+    "other": "{0} Konferans Bildirisi"
+  },
+  "Manual [document]": "Kılavuz",
+  "{0} Manuals": {
+    "one": "{0} Kılavuz",
+    "other": "{0} Kılavuz"
+  },
+  "Master’s Thesis": "Yüksek Lisans Tezi",
+  "{0} Master’s Theses": {
+    "one": "{0} Yüksek Lisans Tezi",
+    "other": "{0} Yüksek Lisans Tezi"
+  },
+  "Misc": "Çeşitli",
+  "{0} Misc": {
+    "one": "{0} Çeşitli",
+    "other": "{0} Çeşitli"
+  },
+  "PhD Thesis": "Doktora Tezi",
+  "{0} PhD Theses": {
+    "one": "{0} Doktora Tezi",
+    "other": "{0} Doktora Tezi"
+  },
+  "Proceedings": "Bildiri Kitabı",
+  "{0} Proceedings": {
+    "one": "{0} Bildiri Kitabı",
+    "other": "{0} Bildiri Kitabı"
+  },
+  "Report": "Rapor",
+  "{0} Reports": {
+    "one": "{0} Rapor",
+    "other": "{0} Rapor"
+  },
+  "Unpublished": "Yayımlanmamış",
+  "{0} Unpublished": {
+    "one": "{0} Yayımlanmamış",
+    "other": "{0} Yayımlanmamış"
+  },
+  "Online": "Çevrimiçi",
+  "{0} Online": {
+    "one": "{0} Çevrimiçi",
+    "other": "{0} Çevrimiçi"
+  },
+  "Thesis": "Tez",
+  "{0} Theses": {
+    "one": "{0} Tez",
+    "other": "{0} Tez"
+  },
+  "Software": "Yazılım",
+  "{0} Software": {
+    "one": "{0} Yazılım",
+    "other": "{0} Yazılım"
+  },
+  "Dataset": "Veri Kümesi",
+  "{0} Datasets": {
+    "one": "{0} Veri Kümesi",
+    "other": "{0} Veri Kümesi"
+  },
+  "Patent": "Patent",
+  "{0} Patents": {
+    "one": "{0} Patent",
+    "other": "{0} Patent"
+  },
+  "Collection": "Derleme",
+  "{0} Collections": {
+    "one": "{0} Derleme",
+    "other": "{0} Derleme"
+  },
+  "Periodical": "Süreli Yayın",
+  "{0} Periodicals": {
+    "one": "{0} Süreli Yayın",
+    "other": "{0} Süreli Yayın"
+  },
+  "Standard": "Standart",
+  "{0} Standards": {
+    "one": "{0} Standart",
+    "other": "{0} Standart"
+  },
+  "Video": "Video",
+  "{0} Videos": {
+    "one": "{0} Video",
+    "other": "{0} Video"
+  },
+  "Audio": "Ses Kaydı",
+  "{0} Audio": {
+    "one": "{0} Ses Kaydı",
+    "other": "{0} Ses Kaydı"
+  },
+  "Artwork": "Sanat Eseri",
+  "{0} Artworks": {
+    "one": "{0} Sanat Eseri",
+    "other": "{0} Sanat Eseri"
+  },
+  "Preprint": "Ön Baskı",
+  "{0} Preprints": {
+    "one": "{0} Ön Baskı",
+    "other": "{0} Ön Baskı"
+  },
+  "Entry": "Girdi",
+  "{0} ({1})": "{0} ({1})",
+  "Publisher": "Yayıncı",
+  "Published": "Yayım tarihi",
+  "Language": "Dil",
+  "Identifier": "Tanıtıcı",
+  "{0} words · {1} min read": {
+    "one": "{0} sözcük · {1} dk. okuma",
+    "other": "{0} sözcük · {1} dk. okuma"
+  },
+  "{0} words · {1} h {2} min read": {
+    "one": "{0} sözcük · {1} sa. {2} dk. okuma",
+    "other": "{0} sözcük · {1} sa. {2} dk. okuma"
+  },
+  "Length": "Uzunluk",
+  "Format": "Biçim",
+  "Book {0}": "{0}. Kitap",
+  "Cover": "Kapak",
+  "This book is protected, so its chapters can’t be shown.": "Bu kitap korumalı olduğundan bölümleri gösterilemiyor.",
+  "Previous [chapter]": "Önceki",
+  "Next [chapter]": "Sonraki",
+  "Show All": "Tümünü Göster",
+  "Section {0}": "Bölüm {0}",
+  "Empty diagram": "Boş diyagram",
+  "Zoom out": "Küçült",
+  "Zoom to fit": "Sığdır",
+  "Fit": "Sığdır",
+  "Zoom in": "Büyüt",
+  "Copy the diagram’s source": "Diyagramın kaynağını kopyala",
+  "Mermaid isn’t available.": "Mermaid kullanılamıyor.",
+  "No diagram": "Diyagram yok",
+  "This diagram couldn’t be drawn": "Bu diyagram çizilemedi",
+  "TikZ drawing": "TikZ çizimi",
+  "PGF drawing": "PGF çizimi",
+  "Picture": "Resim",
+  "Circuit diagram": "Devre şeması",
+  "Tree diagram": "Ağaç diyagramı",
+  "Commutative diagram": "Değişmeli diyagram",
+  "Plot": "Grafik",
+  "PSTricks drawing": "PSTricks çizimi",
+  "Drawing": "Çizim",
+  "Missing figure": "Eksik şekil",
+  "Figure": "Şekil",
+  "Not in the bibliography": "Kaynakçada yok",
+  "Included PDF": "Eklenen PDF",
+  "Missing file": "Eksik dosya",
+  "Not included": "Dahil edilmedi",
+  "Map": "Harita",
+  "Layers": "Katmanlar",
+  "The map couldn’t start.": "Harita başlatılamadı.",
+  "{0}°N": "{0}°K",
+  "{0}°S": "{0}°G",
+  "{0}°E": "{0}°D",
+  "{0}°W": "{0}°B",
+  "Tile": "Döşeme",
+  "Point": "Nokta",
+  "Points": "Noktalar",
+  "Line [shape]": "Çizgi",
+  "Lines": "Çizgiler",
+  "Polygon": "Çokgen",
+  "Polygons": "Çokgenler",
+  "Feature": "Öğe",
+  "No": "Hayır",
+  "No attributes": "Öznitelik yok",
+  "{0} areas": {
+    "one": "{0} alan",
+    "other": "{0} alan"
+  },
+  "{0} lines [shape]": {
+    "one": "{0} çizgi",
+    "other": "{0} çizgi"
+  },
+  "{0} points": {
+    "one": "{0} nokta",
+    "other": "{0} nokta"
+  },
+  "Tables": "Tablolar",
+  "Objects": "Nesneler",
+  "Tile Layers": "Döşeme Katmanları",
+  "Basemap": "Temel harita",
+  "Grid": "Izgara",
+  "Labels": "Etiketler",
+  "Reprojected to WGS 84 for display": "Görüntüleme için WGS 84’e dönüştürüldü",
+  "Basemap: {0}": "Temel harita: {0}",
+  "Vector tiles (PBF)": "Vektör döşemeler (PBF)",
+  "Zoom": "Büyütme",
+  "Showing": "Gösterilen",
+  "Tile size": "Döşeme büyüklüğü",
+  "Bounds": "Sınırlar",
+  "Center": "Merkez",
+  "Version": "Sürüm",
+  "Scheme": "Şema",
+  "Generator": "Oluşturucu",
+  "Vector": "Vektör",
+  "Raster": "Raster",
+  "Collapse": "Daralt",
+  "Zoom {0} (overzoomed)": "Büyütme {0} (aşırı büyütülmüş)",
+  "Zoom {0}": "Büyütme {0}",
+  "Distance": "Mesafe",
+  "Duration": "Süre",
+  "Moving": "Hareket süresi",
+  "Elevation Gain": "Tırmanış",
+  "Highest": "En Yüksek",
+  "Max Speed": "Maks. Hız",
+  "Avg Speed": "Ort. Hız",
+  "Avg Heart Rate": "Ort. Nabız",
+  "{0} bpm": "{0} atım/dk",
+  "Track": "İz",
+  "No features to draw": "Çizilecek öğe yok",
+  "Copied {0}": "{0} kopyalandı",
+  "Sample": "Örnek",
+  "Pangram": "Pangram",
+  "Alphabet": "Alfabe",
+  "Figures": "Rakamlar",
+  "Sample text": "Örnek metin",
+  "No faces in this font": "Bu fontta stil yok",
+  "WebKit couldn’t load this font for display. Its details are below.": "WebKit bu fontu görüntüleme için yükleyemedi. Ayrıntıları aşağıda.",
+  "Specimen": "Font Örneği",
+  "Click the sample to type your own": "Kendi metninizi yazmak için örneği tıklayın",
+  "Variable Axes": "Değişken Eksenler",
+  "{0} axes": {
+    "one": "{0} eksen",
+    "other": "{0} eksen"
+  },
+  "Axes": "Eksenler",
+  "OpenType Features": "OpenType Özellikleri",
+  "Features [font]": "Özellikler",
+  "Apply {0} to the specimen": "{0} özelliğini örneğe uygula",
+  "{0} · on by default": "{0} · saptanmış olarak açık",
+  "Sizes": "Büyüklükler",
+  "Icons": "Simgeler",
+  "Characters": "Karakterler",
+  "Information": "Bilgi",
+  "Ascender": "Üst uzantı",
+  "Cap height": "Büyük harf yüksekliği",
+  "x-height": "x yüksekliği",
+  "Baseline": "Taban çizgisi",
+  "Descender": "Alt uzantı",
+  "Glyphs": "Karakter şekilleri",
+  "Variable": "Değişken",
+  "Designer": "Tasarımcı",
+  "Scripts [writing]": "Alfabeler",
+  "Show more": "Daha fazla göster",
+  "Show less": "Daha az göster",
+  "Family": "Aile",
+  "Style": "Stil",
+  "Full name": "Tam ad",
+  "PostScript name": "PostScript adı",
+  "Designer URL": "Tasarımcı URL’si",
+  "Manufacturer": "Üretici",
+  "Vendor URL": "Satıcı URL’si",
+  "Vendor ID": "Satıcı kimliği",
+  "Description": "Açıklama",
+  "{0} · {1} outlines": "{0} · {1} konturları",
+  "Color ({0})": "Renkli ({0})",
+  "Units per em": "Em başına birim",
+  "Metrics": "Ölçüler",
+  "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}": "Üst uzantı {0} · Alt uzantı {1} · Büyük harf yüksekliği {2} · x yüksekliği {3}",
+  "Weight class": "Kalınlık sınıfı",
+  "Width class": "Genişlik sınıfı",
+  "Italic": "İtalik",
+  "Monospaced": "Eş aralıklı",
+  "Traits": "Nitelikler",
+  "Languages": "Diller",
+  "Embedding": "Gömme",
+  "Created": "Yaratılış tarihi",
+  "Modified": "Değişiklik tarihi",
+  "Copyright": "Telif hakkı",
+  "Trademark": "Ticari marka",
+  "License URL": "Lisans URL’si",
+  "Characters can’t be drawn without the font.": "Font olmadan karakterler çizilemez.",
+  "Showing the first {1} of {0} characters.": {
+    "one": "{0} karakterin ilk {1} tanesi gösteriliyor.",
+    "other": "{0} karakterin ilk {1} tanesi gösteriliyor."
+  },
+  "Code point": "Kod noktası",
+  "Character": "Karakter",
+  "Copy the character": "Karakteri kopyala",
+  "Copy the code point": "Kod noktasını kopyala",
+  "Unnamed": "Adsız",
+  "Glyph": "Karakter şekli",
+  "Glyph ID": "Karakter şekli kimliği",
+  "Advance": "İlerleme genişliği",
+  "{0} units": {
+    "one": "{0} birim",
+    "other": "{0} birim"
+  },
+  "The Lottie player is missing": "Lottie oynatıcısı eksik",
+  "Click to play or pause": "Oynatmak veya duraklatmak için tıklayın",
+  "Play": "Oynat",
+  "Loop": "Döngü",
+  "Background: Checkerboard": "Arka plan: Dama tahtası",
+  "Background: White": "Arka plan: Beyaz",
+  "Background: Black": "Arka plan: Siyah",
+  "Speed {0}": "Hız {0}",
+  "Pause": "Duraklat",
+  "This animation couldn’t be read.": "Bu canlandırma okunamadı.",
+  "This animation couldn’t be played.": "Bu canlandırma oynatılamadı.",
+  "Play from frame {0}": "{0}. kareden oynat",
+  "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.": "Lottie ifadeleri koddur; Greece bunları çalıştırmadığından bazı hareketler farklı olabilir.",
+  "Expressions not evaluated": "İfadeler çalıştırılmadı",
+  "Original": "Özgün",
+  "{0} colors": {
+    "one": "{0} renk",
+    "other": "{0} renk"
+  },
+  "Ungrouped": "Gruplanmamış",
+  "Spot": "Spot renk",
+  "{0} — click to copy": "{0} — kopyalamak için tıklayın",
+  "Outside sRGB: shown as the nearest sRGB color": "sRGB dışında: en yakın sRGB rengi olarak gösteriliyor",
+  "{0} too fast": {
+    "one": "{0} çok hızlı",
+    "other": "{0} çok hızlı"
+  },
+  "Reading speed {0} cps (over {1})": "Okuma hızı {0} krk/sn ({1} üstünde)",
+  "{0} long lines": {
+    "one": "{0} uzun satır",
+    "other": "{0} uzun satır"
+  },
+  "A line over {0} characters": {
+    "one": "{0} karakteri aşan bir satır",
+    "other": "{0} karakteri aşan bir satır"
+  },
+  "{0} over 2 lines": {
+    "one": "{0} tanesi 2 satırı aşıyor",
+    "other": "{0} tanesi 2 satırı aşıyor"
+  },
+  "More than {0} lines": {
+    "one": "{0} satırdan fazla",
+    "other": "{0} satırdan fazla"
+  },
+  "{0} brief": {
+    "one": "{0} çok kısa",
+    "other": "{0} çok kısa"
+  },
+  "On screen under {0} s": "Ekranda {0} sn.’den kısa",
+  "{0} lingering": {
+    "one": "{0} çok uzun süreli",
+    "other": "{0} çok uzun süreli"
+  },
+  "On screen over {0} s": "Ekranda {0} sn.’den uzun",
+  "{0} overlaps": {
+    "one": "{0} çakışma",
+    "other": "{0} çakışma"
+  },
+  "Starts before the previous cue ends": "Önceki altyazı bitmeden başlıyor",
+  "{0} with bad timing": {
+    "one": "{0} hatalı zamanlama",
+    "other": "{0} hatalı zamanlama"
+  },
+  "Ends before it starts": "Başlamadan bitiyor",
+  "These subtitles couldn’t be read": "Bu altyazılar okunamadı",
+  "Filter lines": "Satırları filtrele",
+  "Filter cues": "Altyazıları filtrele",
+  "{0} cues": {
+    "one": "{0} altyazı",
+    "other": "{0} altyazı"
+  },
+  "Average reading speed, in characters per second": "Ortalama okuma hızı, saniye başına karakter olarak",
+  "{0} cps average": "Ort. {0} krk/sn",
+  "{0} speakers": {
+    "one": "{0} konuşmacı",
+    "other": "{0} konuşmacı"
+  },
+  "Timed at {0} fps": "Zamanlama: {0} fps",
+  "Show only these": "Yalnızca bunları göster",
+  "Jump to a moment": "Belirli bir zamana git",
+  "Showing the first {0} cues.": {
+    "one": "İlk {0} altyazı gösteriliyor.",
+    "other": "İlk {0} altyazı gösteriliyor."
+  },
+  "{0} cps": "{0} krk/sn",
+  "No matching cues": "Eşleşen altyazı yok",
+  "No cues found": "Altyazı bulunamadı",
+  "SVG image": "SVG görüntüsü",
+  "This SVG couldn’t be drawn.": "Bu SVG çizilemedi.",
+  "Actual size": "Gerçek boyut",
+  "Fit to window": "Pencereye sığdır",
+  "Transparency checkerboard": "Saydamlık dama tahtası",
+  "Source [code]": "Kaynak",
+  "This file contains scripts. Greece shows SVG as an image, so they never run.": "Bu dosya betikler içeriyor. Greece SVG’yi görüntü olarak gösterdiğinden bunlar hiçbir zaman çalışmaz.",
+  "It refers to files or web addresses, which previews don’t load.": "Önizlemelerin yüklemediği dosyalara veya web adreslerine başvuruyor.",
+  "The source couldn’t be read.": "Kaynak okunamadı.",
+  "Model controls": "Model denetimleri",
+  "This model is too large to preview": "Bu model önizlenemeyecek kadar büyük",
+  "Greece previews models up to {0}.": "Greece en fazla {0} büyüklüğündeki modelleri önizler.",
+  "3D previews need WebGL": "3B önizlemeler için WebGL gerekir",
+  "Reading the model took too long.": "Modelin okunması çok uzun sürdü.",
+  "Greece couldn’t open this model": "Greece bu modeli açamadı",
+  "Loading": "Yükleniyor",
+  "Preparing": "Hazırlanıyor",
+  "Not a MagicaVoxel file": "MagicaVoxel dosyası değil",
+  "Unsupported format": "Desteklenmeyen biçim",
+  "The file has no scene": "Dosyada sahne yok",
+  "Couldn’t read the points": "Noktalar okunamadı",
+  "Not a LAS/LAZ file": "LAS/LAZ dosyası değil",
+  "Decompressing": "Sıkıştırma açılıyor",
+  "The decoder failed": "Kod çözücü başarısız oldu",
+  "The file has no points": "Dosyada nokta yok",
+  "The model is empty": "Model boş",
+  "Shaded": "Gölgeli",
+  "Wireframe": "Tel kafes",
+  "Display": "Görüntüleme",
+  "Colour": "Renk",
+  "Animation {0}": "Canlandırma {0}",
+  "Animation": "Canlandırma",
+  "Reset View": "Görünümü Sıfırla",
+  "Statistics": "İstatistikler",
+  "Classes": "Sınıflar",
+  "Point format": "Nokta biçimi",
+  "LAS version": "LAS sürümü",
+  "Vertices": "Tepe noktaları",
+  "Triangles": "Üçgenler",
+  "Meshes": "Örgüler",
+  "Materials": "Malzemeler",
+  "Textures": "Dokular",
+  "Texture memory": "Doku belleği",
+  "Animations": "Canlandırmalar",
+  "Bones": "Kemikler",
+  "Morph targets": "Biçim hedefleri",
+  "Compression": "Sıkıştırma",
+  "Created with": "Oluşturan uygulama",
+  "{0} voxels": {
+    "one": "{0} voksel",
+    "other": "{0} voksel"
+  },
+  "Width": "Genişlik",
+  "Depth": "Derinlik",
+  "Height": "Yükseklik",
+  "Elevation": "Yükselti",
+  "Intensity": "Yoğunluk",
+  "Classification": "Sınıflandırma",
+  "A file it needs couldn’t be read.": "Gereken bir dosya okunamadı.",
+  "Unreadable point sample": "Okunamayan nokta örneği",
+  "Truncated point sample": "Kesik nokta örneği",
+  "Not an OFF file": "OFF dosyası değil",
+  "Invalid OFF header": "Geçersiz OFF başlığı"
+}
