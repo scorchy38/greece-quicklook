@@ -217,6 +217,7 @@ public struct WebDocument {
 
         var classes = WebDocument.classes(settings: settings, kind: kind).filter(\.value).map(\.key).sorted().joined(separator: " ")
         if usesMarkdown { classes += " reading" }
+        if !PreviewHost.acceptsTyping { classes += " no-typing" }
         return """
         <!DOCTYPE html>
         <html lang="en" class="\(classes)">
