@@ -334,6 +334,19 @@ final class FolderBrowserTests: XCTestCase {
         XCTAssertEqual(view.trail.count, 1)
     }
 
+    func testTheInfoBarFollowsTheOpenFolder() async throws {
+        BrowserMemory.remember(BrowserViewState(layout: .icons), for: .folders)
+        let preview = try await PreviewFactory.makePreview(for: directory, settings: PreviewSettings())
+        let browser = try XCTUnwrap(preview.content.firstSubview(of: MemberBrowserView.self))
+        XCTAssertEqual(preview.summary.details, ["4 items", "2 folders"])
+        browser.open(node("Docs", in: browser))
+        XCTAssertEqual(preview.summary.details, ["2 items", "1 folder"])
+        XCTAssertEqual(preview.fileURL?.lastPathComponent, "Docs")
+        browser.goBack()
+        XCTAssertEqual(preview.summary.details, ["4 items", "2 folders"])
+        XCTAssertEqual(preview.fileURL?.lastPathComponent, directory.lastPathComponent)
+    }
+
     func testFoldersOpenFromTheirInfoToo() throws {
         let docs = FileNode.folder(at: directory.appendingPathComponent("Docs"), showHidden: false)
         var opened = false
