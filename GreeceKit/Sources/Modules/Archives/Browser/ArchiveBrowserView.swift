@@ -134,23 +134,6 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
 
     // MARK: - Selection
 
-    /// Selects an entry by its path inside the archive, opening the folders above it.
-    @discardableResult
-    func select(path: String, info: Bool = false) -> Bool {
-        var node = document.builder.root
-        for component in path.split(separator: "/") {
-            guard let next = node.children?.first(where: { $0.name == component }) else { return false }
-            if next.isDirectory { tree.outline.expandItem(next) }
-            node = next
-        }
-        let row = tree.outline.row(forItem: node)
-        guard row >= 0 else { return false }
-        if info { pane.setMode(.info) }
-        tree.outline.selectRowIndexes([row], byExtendingSelection: false)
-        tree.outline.scrollRowToVisible(row)
-        return true
-    }
-
     private func selectionChanged(_ nodes: [FileNode]) {
         guard !nodes.isEmpty else { hidePane(); return }
         showPane()

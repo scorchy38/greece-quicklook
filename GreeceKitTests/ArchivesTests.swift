@@ -1,5 +1,4 @@
 import XCTest
-import WebKit
 @testable import GreeceKit
 
 /// Archives: detection, listing every format, split sets, encryption, legacy names, extraction and limits.
@@ -271,6 +270,29 @@ final class ArchivesTests: XCTestCase {
         XCTAssertNil(listing.damage)
         let last = try XCTUnwrap(listing.entries.last { !$0.isDirectory })
         XCTAssertEqual(session.data(last, limit: 1 << 24)?.count, Int(last.size))
+    }
+
+    func testOldStyleRarVolumes() throws {
+        // The same six volumes named the old way: name.rar, name.r00, name.r01…
+        let source = fixture("libarchive/rar-volumes")
+        for part in 1...6 {
+            let name = part == 1 ? "old.rar" : String(format: "old.r%02d", part - 2)
+            try FileManager.default.copyItem(at: source.appendingPathComponent("volumes.part\(part).rar"), to: directory.appendingPathComponent(name))
+        }
+        let volumes = ArchiveVolumes.discover(directory.appendingPathComponent("old.r02"))
+        XCTAssertEqual(volumes.kind, .rarVolumes)
+        XCTAssertEqual(volumes.urls.map(\.lastPathComponent), ["old.rar", "old.r00", "old.r01", "old.r02", "old.r03", "old.r04"])
+        let listing = try list(directory.appendingPathComponent("old.rar"))
+        XCTAssertEqual(listing.volumes, 6)
+        XCTAssertNil(listing.damage)
+    }
+
+    func testSplitDiscoveryIgnoresLookalikes() throws {
+        for name in ["notes.2024", "report.001"] {
+            try "plain".write(to: directory.appendingPathComponent(name), atomically: true, encoding: .utf8)
+        }
+        XCTAssertEqual(ArchiveVolumes.discover(directory.appendingPathComponent("notes.2024")).kind, .single)
+        XCTAssertFalse(ArchivesModule.claims(FileInfo(url: directory.appendingPathComponent("report.001"))), "a .001 that isn't an archive")
     }
 
     // MARK: - Encryption
@@ -638,82 +660,5 @@ final class ArchivePerformance: XCTestCase {
         lap("view")
         tree.reload()
         lap("reload")
-    }
-}
-
-/// Renders archive previews with something selected, for design review. Skipped unless asked for:
-///
-///     TEST_RUNNER_GREECE_SNAPSHOTS=<out dir> TEST_RUNNER_GREECE_SNAPSHOT_CASES=<cases file> \
-///       xcodebuild test … -only-testing:GreeceKitTests/ArchiveSnapshots
-///
-/// Each line of the cases file: `file<TAB>path to select (or -)<TAB>preview|info<TAB>light|dark<TAB>output name`.
-final class ArchiveSnapshots: XCTestCase {
-    @MainActor
-    func testRenderCases() async throws {
-        let environment = ProcessInfo.processInfo.environment
-        guard let output = environment["GREECE_SNAPSHOTS"], let casesPath = environment["GREECE_SNAPSHOT_CASES"] else {
-            throw XCTSkip("Set GREECE_SNAPSHOTS and GREECE_SNAPSHOT_CASES to render")
-        }
-        let cases = try String(contentsOfFile: casesPath, encoding: .utf8).split(separator: "\n").map { $0.split(separator: "\t").map(String.init) }
-        for fields in cases where fields.count >= 5 {
-            try await render(URL(fileURLWithPath: fields[0]), select: fields[1] == "-" ? nil : fields[1], info: fields[2] == "info",
-                             dark: fields[3] == "dark", to: URL(fileURLWithPath: output).appendingPathComponent(fields[4] + ".png"))
-        }
-    }
-
-    @MainActor
-    private func render(_ file: URL, select: String?, info: Bool, dark: Bool, to output: URL) async throws {
-        let size = NSSize(width: 1000, height: 680)
-        var settings = PreviewSettings()
-        settings.appearance = dark ? .dark : .light
-        let preview = try await PreviewFactory.makePreview(for: file, settings: settings)
-        let window = NSWindow(contentRect: NSRect(origin: NSPoint(x: -20_000, y: -20_000), size: size), styleMask: [.borderless], backing: .buffered, defer: false)
-        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
-        window.backgroundColor = .windowBackgroundColor
-        preview.frame = NSRect(origin: .zero, size: size)
-        window.contentView = preview
-        window.orderFrontRegardless()
-        preview.layoutSubtreeIfNeeded()
-        if let select, let browser = Self.find(ArchiveBrowserView.self, in: preview) {
-            XCTAssertTrue(browser.select(path: select, info: info), select)
-        }
-        try await Task.sleep(nanoseconds: 4_000_000_000)
-        preview.layoutSubtreeIfNeeded()
-        preview.display()
-
-        guard let rep = preview.bitmapImageRepForCachingDisplay(in: preview.bounds) else { return }
-        preview.cacheDisplay(in: preview.bounds, to: rep)
-        let base = NSImage(size: size)
-        base.addRepresentation(rep)
-        var shots: [(NSImage, NSRect)] = []
-        for web in Self.all(WKWebView.self, in: preview) where !web.isHiddenOrHasHiddenAncestor && web.window != nil {
-            let configuration = WKSnapshotConfiguration()
-            configuration.rect = CGRect(origin: .zero, size: web.bounds.size)
-            if let shot = try? await web.takeSnapshot(configuration: configuration) {
-                shots.append((shot, web.convert(web.bounds, to: preview)))
-            }
-        }
-        let appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
-        let final = NSImage(size: size, flipped: false) { _ in
-            appearance?.performAsCurrentDrawingAppearance {
-                NSColor.windowBackgroundColor.setFill()
-                NSRect(origin: .zero, size: size).fill()
-            }
-            base.draw(in: NSRect(origin: .zero, size: size))
-            for (shot, frame) in shots { shot.draw(in: frame) }
-            return true
-        }
-        guard let tiff = final.tiffRepresentation, let bitmap = NSBitmapImageRep(data: tiff) else { return }
-        try bitmap.representation(using: .png, properties: [:])?.write(to: output)
-        window.orderOut(nil)
-    }
-
-    private static func find<T: NSView>(_ type: T.Type, in view: NSView) -> T? { all(type, in: view).first }
-
-    private static func all<T: NSView>(_ type: T.Type, in view: NSView) -> [T] {
-        var result: [T] = []
-        if let match = view as? T { result.append(match) }
-        for subview in view.subviews { result += all(type, in: subview) }
-        return result
     }
 }

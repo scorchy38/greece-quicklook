@@ -178,7 +178,7 @@ final class EntryPreviewPane: NSView {
     nonisolated private static func prepare(_ file: URL, settings: PreviewSettings) throws -> Built {
         let type = UTType(filenameExtension: file.pathExtension)
         if let type, type.conforms(to: .pdf) { return .pdf(file) }
-        if let type, type.conforms(to: .audiovisualContent), AVURLAsset(url: file).isPlayable {
+        if let type, type.conforms(to: .audiovisualContent), AVURLAsset.audiovisualTypes().contains(AVFileType(type.identifier)) {
             return .media(file, audio: type.conforms(to: .audio))
         }
         if let type, type.conforms(to: .image), !type.conforms(to: .svg), let image = downsampled(file, maxPixels: 2400) {

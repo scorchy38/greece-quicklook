@@ -4,6 +4,20 @@ Small samples for `GreeceKitTests/ArchivesTests.swift` and visual checks. Format
 (ZIP, 7z, tar and its compressors, cpio, xar, ISO, split and spanned ZIPs, encrypted ZIPs) are made by the
 tests themselves with `/usr/bin/tar`, `/usr/bin/zip` and friends, so they aren't stored here.
 
+## packages/ and comics/
+
+Made from scratch for these tests: the packages are fictional ("harbourmaster", "Lighthouse Keeper",
+"Tide Clock"…), and the icons and comic pages are drawn with SF Symbols and Core Graphics. Rebuild them with:
+
+```sh
+swift Fixtures/archives/make-images.swift /tmp/greece-images
+python3 -I Fixtures/archives/make-packages.py /tmp/greece-images Fixtures/archives
+```
+
+`make-packages.py` writes every format by hand (wheel, sdist, JAR, nupkg, VSIX, XPI, CRX3, an APK with binary
+XML, an AAB with protobuf XML, gem, a .deb with a zstd data member, an RPM with a zstd payload, an npm
+tarball, CBZ/CBT, and CB7 through `/usr/bin/tar`). It needs `zstd` on the PATH.
+
 ## libarchive/
 
 Copied from libarchive's own test suite, tag `v3.7.4`, `libarchive/test/*.uu` (uudecoded, renamed).
