@@ -56,7 +56,8 @@ enum FontPreview {
     }
 
     static func prepare(_ file: FileInfo) throws -> PreparedPreview {
-        let data = try file.mediaData()
+        // Fonts are memory-mapped and read in place, so big CJK and emoji collections are fine.
+        let data = try file.mediaData(limit: 320 * 1024 * 1024)
         let info = try FontFileInfo(data: data)
         let faces = info.faces.map { face -> (Face, [Int]) in
             let codepoints = face.codepoints()
@@ -187,25 +188,39 @@ enum FontPreview {
             let ordered = pangrams.filter { $0.script == primary } + pangrams.filter { $0.script != primary }
             if let match = ordered.first(where: { coverage($0.text, covered) >= 0.98 }) { return match.text }
         }
-        // Symbols, icons and scripts without a pangram: a run of the font's own characters.
-        let letters = codepoints.filter { value in
-            guard let scalar = Unicode.Scalar(UInt32(value)) else { return false }
-            return !scalar.properties.isWhitespace && scalar.properties.generalCategory != .control && scalar.properties.generalCategory != .nonspacingMark
-        }
-        let pool = icon ? letters.filter { $0 >= 0xE000 } : letters
-        return String(String.UnicodeScalarView((pool.isEmpty ? letters : pool).prefix(icon ? 18 : 40).compactMap { Unicode.Scalar(UInt32($0)) }))
-            .map { icon ? String($0) + " " : String($0) }.joined().trimmingCharacters(in: .whitespaces)
+        // Symbols, icons, emoji and scripts without a pangram: a run of the font's own characters.
+        let pool = characterPool(codepoints, icon: icon)
+        let separator = icon || pool.first.map(isPictograph) == true ? " " : ""
+        return pool.prefix(icon ? 18 : 40).compactMap { Unicode.Scalar(UInt32($0)).map { String(Character($0)) } }.joined(separator: separator)
     }
 
     static func chooseHero(covered: Set<Int>, codepoints: [Int], primary: String, icon: Bool) -> String {
         if !icon, let hero = heroes[primary], coverage(hero, covered) == 1 { return hero }
         if !icon, coverage("Aa", covered) == 1 { return "Aa" }
-        let pool = codepoints.filter { value in
+        let pool = characterPool(codepoints, icon: icon)
+        return String(String.UnicodeScalarView(pool.prefix(icon || pool.first.map(isPictograph) == true ? 3 : 2).compactMap { Unicode.Scalar(UInt32($0)) }))
+    }
+
+    private static func isPictograph(_ value: Int) -> Bool {
+        (0x1F300...0x1FAFF).contains(value) || (0x2600...0x27BF).contains(value)
+    }
+
+    /// The characters that best show a font with no pangram: its icons, else its letters, else its
+    /// pictographs (emoji fonts), else whatever it has.
+    private static func characterPool(_ codepoints: [Int], icon: Bool) -> [Int] {
+        let visible = codepoints.filter { value in
             guard let scalar = Unicode.Scalar(UInt32(value)) else { return false }
-            return !scalar.properties.isWhitespace && scalar.properties.generalCategory != .nonspacingMark && (icon ? value >= 0xE000 : value > 0x20)
+            return !scalar.properties.isWhitespace && scalar.properties.generalCategory != .control && scalar.properties.generalCategory != .nonspacingMark
         }
-        let picks = (pool.isEmpty ? codepoints : pool).prefix(icon ? 3 : 2).compactMap { Unicode.Scalar(UInt32($0)) }
-        return String(String.UnicodeScalarView(picks))
+        if icon {
+            let privateUse = visible.filter { $0 >= 0xE000 }
+            return privateUse.isEmpty ? visible : privateUse
+        }
+        let letters = visible.filter { Unicode.Scalar(UInt32($0))?.properties.isAlphabetic == true }
+        if letters.count >= 10 { return letters }
+        let pictographs = visible.filter(isPictograph)
+        if pictographs.count >= 10 { return pictographs }
+        return visible.isEmpty ? codepoints : visible
     }
 
     // MARK: - Features
@@ -353,7 +368,7 @@ final class FontResources: @unchecked Sendable {
             case .woff2: type = "font/woff2"
             default: type = "font/otf"
             }
-            return (face.webData, type)
+            return face.webData.map { ($0, type) }
         case "glyphs":
             let all = codepoints[index]
             let shown = Array(all.prefix(Self.gridLimit))

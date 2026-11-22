@@ -69,8 +69,12 @@
       el('div', { class: 'title' }, [el('span', { class: 'family', text: face.family }), el('span', { class: 'style', text: face.style })]),
     ]);
     if (data.faces.length > 1) {
-      nav.appendChild(M.select(data.faces.map((f, i) => ({ value: i, label: f.style === 'Regular' && f.family !== data.faces[0].family ? f.fullName : (f.family === face.family ? f.style : f.fullName) })),
-        index, (value) => show(value)));
+      // Faces are named as briefly as tells them apart: style, then full name, then PostScript name.
+      const sameFamily = data.faces.every((f) => f.family === data.faces[0].family);
+      const distinct = (key) => new Set(data.faces.map(key)).size === data.faces.length;
+      const label = sameFamily && distinct((f) => f.style) ? (f) => f.style
+        : distinct((f) => f.fullName) ? (f) => f.fullName : (f) => f.postScriptName;
+      nav.appendChild(M.select(data.faces.map((f, i) => ({ value: i, label: label(f) })), index, (value) => show(value)));
     }
     const links = el('div', { class: 'm-segmented' });
     nav.appendChild(links);

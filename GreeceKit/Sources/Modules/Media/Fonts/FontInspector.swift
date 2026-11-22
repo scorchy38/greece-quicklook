@@ -5,24 +5,32 @@ import CoreText
 /// OpenType tables CoreText doesn't summarise.
 final class FontFaceInfo: @unchecked Sendable {
     let font: CTFont
-    /// Bytes WebKit can load for this face: the file itself, or a face cut out of a collection.
-    let webData: Data
     let names: FontTables.Name
     let os2: FontTables.OS2
     let head: FontTables.Head
     let variation: FontTables.Variation
     let substitutions: FontTables.Layout?
     let positioning: FontTables.Layout?
+    /// Every table the face has, by tag.
     let tables: Set<String>
+    private let makeWebData: () -> Data?
+    private var cachedWebData: Data?
+    private let lock = NSLock()
 
-    init?(data: Data, webData: Data) {
+    /// A face from its own bytes (a plain font, WOFF or WOFF2).
+    convenience init?(data: Data) {
         guard let descriptor = CTFontManagerCreateFontDescriptorFromData(data as CFData) else { return nil }
+        self.init(descriptor: descriptor, webData: { data })
+    }
+
+    /// `webData` makes the bytes WebKit loads for this face, only when the page asks for them.
+    init(descriptor: CTFontDescriptor, webData: @escaping () -> Data?) {
         let probe = CTFontCreateWithFontDescriptor(descriptor, 12, nil)
         let unitsPerEm = CGFloat(max(16, min(16384, CTFontGetUnitsPerEm(probe))))
         // Measured at one point per font unit, so CoreText's metrics come back in font units.
         let font = CTFontCreateWithFontDescriptor(descriptor, unitsPerEm, nil)
         self.font = font
-        self.webData = webData
+        makeWebData = webData
         func table(_ tag: String) -> Data? {
             let code = tag.utf8.reduce(UInt32(0)) { $0 << 8 | UInt32($1) }
             return CTFontCopyTable(font, code, []) as Data?
@@ -34,11 +42,28 @@ final class FontFaceInfo: @unchecked Sendable {
         variation = FontTables.Variation(table("fvar"), names: names)
         substitutions = FontTables.Layout(table("GSUB"))
         positioning = FontTables.Layout(table("GPOS"))
-        var present = Set<String>()
-        for tag in ["glyf", "CFF ", "CFF2", "COLR", "CPAL", "SVG ", "sbix", "CBDT", "EBDT", "kern", "morx", "MATH", "vhea"] where table(tag) != nil {
-            present.insert(tag)
+        tables = Self.tableTags(font)
+    }
+
+    /// Tags from the table directory, without copying any table (an emoji font's bitmaps run to 180 MB).
+    private static func tableTags(_ font: CTFont) -> Set<String> {
+        guard let array = CTFontCopyAvailableTables(font, []) else { return [] }
+        var result = Set<String>()
+        for index in 0..<min(CFArrayGetCount(array), 512) {
+            // The array holds raw four-byte tags, not objects.
+            let tag = UInt32(truncatingIfNeeded: UInt(bitPattern: CFArrayGetValueAtIndex(array, index)))
+            let bytes = [UInt8(tag >> 24 & 0xFF), UInt8(tag >> 16 & 0xFF), UInt8(tag >> 8 & 0xFF), UInt8(tag & 0xFF)]
+            if bytes.allSatisfy({ $0 >= 0x20 && $0 < 0x7F }) { result.insert(String(decoding: bytes, as: UTF8.self)) }
         }
-        tables = present
+        return result
+    }
+
+    /// Bytes WebKit can load for this face: the file itself, or this face cut out of a collection.
+    var webData: Data? {
+        lock.lock()
+        defer { lock.unlock() }
+        if cachedWebData == nil { cachedWebData = makeWebData() }
+        return cachedWebData
     }
 
     var unitsPerEm: Int { Int(CTFontGetUnitsPerEm(font)) }
@@ -167,10 +192,22 @@ struct FontFileInfo {
         var faces: [FontFaceInfo] = []
         if container == .collection {
             let reader = MediaReader(data)
-            for offset in FontFile.faceOffsets(reader) {
-                if let face = FontFile.extractFace(reader, at: offset), let info = FontFaceInfo(data: face, webData: face) { faces.append(info) }
+            let offsets = FontFile.faceOffsets(reader)
+            // CoreText reads every face straight from the mapped file when its faces line up with the
+            // collection's directory (they do, unless faces are variable); only the face the page shows
+            // is ever cut out and copied.
+            let descriptors = (CTFontManagerCreateFontDescriptorsFromData(data as CFData) as? [CTFontDescriptor]) ?? []
+            let names = descriptors.map { CTFontDescriptorCopyAttribute($0, kCTFontNameAttribute) as? String }
+            if descriptors.count == offsets.count, zip(names, offsets).allSatisfy({ $0 != nil && $0 == FontFile.postScriptName(reader, at: $1) }) {
+                for (descriptor, offset) in zip(descriptors, offsets) {
+                    faces.append(FontFaceInfo(descriptor: descriptor, webData: { FontFile.extractFace(reader, at: offset) }))
+                }
+            } else {
+                for offset in offsets {
+                    if let face = FontFile.extractFace(reader, at: offset), let info = FontFaceInfo(data: face) { faces.append(info) }
+                }
             }
-        } else if let info = FontFaceInfo(data: data, webData: data) {
+        } else if let info = FontFaceInfo(data: data) {
             faces.append(info)
         }
         guard !faces.isEmpty else { throw MediaError.unreadable("This font is damaged or uses a format macOS can’t read.") }

@@ -1,21 +1,25 @@
 import Foundation
 
 /// Bounds-checked big-endian reads over untrusted bytes. Every read returns nil past the end.
+/// Backed by `Data`, so a memory-mapped file is read in place, never copied.
 struct MediaReader {
-    let bytes: [UInt8]
+    private let data: Data
+    private let base: Int
 
-    init(_ data: Data) { bytes = [UInt8](data) }
-    init(bytes: [UInt8]) { self.bytes = bytes }
+    init(_ data: Data) { self.data = data; base = data.startIndex }
+    init(bytes: [UInt8]) { self.init(Data(bytes)) }
 
-    var count: Int { bytes.count }
+    var count: Int { data.count }
+
+    private subscript(_ offset: Int) -> UInt8 { data[base + offset] }
 
     func u8(_ offset: Int) -> Int? {
-        offset >= 0 && offset < bytes.count ? Int(bytes[offset]) : nil
+        offset >= 0 && offset < count ? Int(self[offset]) : nil
     }
 
     func u16(_ offset: Int) -> Int? {
-        guard offset >= 0, offset <= bytes.count - 2 else { return nil }
-        return Int(bytes[offset]) << 8 | Int(bytes[offset + 1])
+        guard offset >= 0, offset <= count - 2 else { return nil }
+        return Int(self[offset]) << 8 | Int(self[offset + 1])
     }
 
     func i16(_ offset: Int) -> Int? {
@@ -23,8 +27,8 @@ struct MediaReader {
     }
 
     func u32(_ offset: Int) -> Int? {
-        guard offset >= 0, offset <= bytes.count - 4 else { return nil }
-        return Int(bytes[offset]) << 24 | Int(bytes[offset + 1]) << 16 | Int(bytes[offset + 2]) << 8 | Int(bytes[offset + 3])
+        guard offset >= 0, offset <= count - 4 else { return nil }
+        return Int(self[offset]) << 24 | Int(self[offset + 1]) << 16 | Int(self[offset + 2]) << 8 | Int(self[offset + 3])
     }
 
     func i32(_ offset: Int) -> Int? {
@@ -43,15 +47,13 @@ struct MediaReader {
 
     /// A four-character tag, if it's printable ASCII.
     func tag(_ offset: Int) -> String? {
-        guard offset >= 0, offset <= bytes.count - 4 else { return nil }
-        let slice = bytes[offset..<(offset + 4)]
-        guard slice.allSatisfy({ $0 >= 0x20 && $0 < 0x7F }) else { return nil }
+        guard let slice = slice(offset, 4), slice.allSatisfy({ $0 >= 0x20 && $0 < 0x7F }) else { return nil }
         return String(decoding: slice, as: UTF8.self)
     }
 
-    func slice(_ offset: Int, _ length: Int) -> ArraySlice<UInt8>? {
-        guard offset >= 0, length >= 0, offset <= bytes.count - length else { return nil }
-        return bytes[offset..<(offset + length)]
+    func slice(_ offset: Int, _ length: Int) -> Data? {
+        guard offset >= 0, length >= 0, offset <= count - length else { return nil }
+        return data[(base + offset)..<(base + offset + length)]
     }
 }
 
@@ -96,6 +98,17 @@ enum FontFile {
         return (0..<min(count, maximumFaces)).compactMap { reader.u32(12 + $0 * 4) }.filter { $0 < reader.count }
     }
 
+    /// A face's PostScript name, read from its own `name` table inside the collection.
+    static func postScriptName(_ reader: MediaReader, at offset: Int) -> String? {
+        guard let tableCount = reader.u16(offset + 4), tableCount <= 512 else { return nil }
+        for index in 0..<tableCount {
+            let record = offset + 12 + index * 16
+            guard reader.tag(record) == "name", let start = reader.u32(record + 8), let length = reader.u32(record + 12) else { continue }
+            return FontTables.Name(reader.slice(start, length))[6]
+        }
+        return nil
+    }
+
     /// One face of a collection as a standalone font file, so WebKit can load any face by itself.
     static func extractFace(_ reader: MediaReader, at offset: Int) -> Data? {
         guard let version = reader.u32(offset), let tableCount = reader.u16(offset + 4), (1...512).contains(tableCount) else { return nil }
@@ -108,21 +121,22 @@ enum FontFile {
                   reader.slice(start, length) != nil else { return nil }
             tables.append(Table(tag: UInt32(tag), checksum: UInt32(checksum), offset: start, length: length))
         }
-        var output = [UInt8]()
+        var output = Data()
         func put16(_ value: Int) { output += [UInt8(value >> 8 & 0xFF), UInt8(value & 0xFF)] }
         func put32(_ value: Int) { output += [UInt8(value >> 24 & 0xFF), UInt8(value >> 16 & 0xFF), UInt8(value >> 8 & 0xFF), UInt8(value & 0xFF)] }
         var power = 1, log2 = 0
         while power * 2 <= tableCount { power *= 2; log2 += 1 }
         put32(version); put16(tableCount); put16(power * 16); put16(log2); put16(tableCount * 16 - power * 16)
         var cursor = 12 + tableCount * 16
-        var body = [UInt8]()
+        var body = Data()
+        // Collections share tables between faces: copy only this face's, never the whole file.
         for table in tables {
             put32(Int(table.tag)); put32(Int(table.checksum)); put32(cursor); put32(table.length)
             body += reader.slice(table.offset, table.length)!
             while body.count % 4 != 0 { body.append(0) }
             cursor = 12 + tableCount * 16 + body.count
         }
-        return Data(output + body)
+        return output + body
     }
 }
 

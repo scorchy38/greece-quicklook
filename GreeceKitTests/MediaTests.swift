@@ -114,10 +114,15 @@ final class MediaTests: XCTestCase {
         XCTAssertEqual(info.faces.map(\.style), ["Regular", "ExtraBold"])
         // Each face's web bytes are a standalone font CoreText can read on its own.
         for face in info.faces {
-            XCTAssertEqual(FontContainer.sniff([UInt8](face.webData.prefix(16))), .sfnt)
-            XCTAssertNotNil(CTFontManagerCreateFontDescriptorFromData(face.webData as CFData))
+            let bytes = try XCTUnwrap(face.webData)
+            XCTAssertEqual(FontContainer.sniff([UInt8](bytes.prefix(16))), .sfnt)
+            XCTAssertNotNil(CTFontManagerCreateFontDescriptorFromData(bytes as CFData))
+            XCTAssertLessThan(bytes.count, data.count, "a face, not the whole collection")
         }
         XCTAssertEqual(info.title, "Font Collection")
+        // Faces line up with the directory: each one's PostScript name matches its own name table.
+        let reader = MediaReader(data)
+        XCTAssertEqual(FontFile.faceOffsets(reader).map { FontFile.postScriptName(reader, at: $0) }, info.faces.map(\.postScriptName))
     }
 
     func testWOFFAndIconFonts() throws {
