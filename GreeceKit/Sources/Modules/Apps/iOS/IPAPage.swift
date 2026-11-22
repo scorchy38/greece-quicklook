@@ -24,31 +24,40 @@ enum IPAPage {
         let icon: InspectorIcon = image.map { .image($0, shape: .iOS) } ?? .symbol("app.fill", .blue)
         var page = BundlePage.page(for: facts, icon: icon, subject: .archived, modified: modified)
         page.summary.symbol = "iphone"
-        page.summary.title = facts.isIOS ? "iOS App" : "App Archive"
+        page.summary.title = facts.isIOS ? BundleFacts.iOSAppTitle : String(localized: "App Archive", bundle: .greeceKit, comment: "Info bar title: an .ipa file that holds an app")
 
         // App Store downloads carry their store listing.
         if let metadata = zip.contents(of: "iTunesMetadata.plist", limit: 1 << 20),
            let store = try? PropertyListSerialization.propertyList(from: metadata, options: [], format: nil) as? [String: Any] {
             var rows: [InspectorItem] = []
-            if let artist = store["artistName"] as? String { rows.append(.field("Seller", Format.clean(artist, limit: 120))) }
-            if let genre = store["genre"] as? String { rows.append(.field("Category", Format.clean(genre, limit: 80))) }
-            if let date = store["releaseDate"] as? String { rows.append(.field("Released", Format.clean(date, limit: 40))) }
+            if let artist = store["artistName"] as? String {
+                rows.append(.field(String(localized: "Seller", bundle: .greeceKit, comment: "Inspector row title: who sells an app on the App Store"), Format.clean(artist, limit: 120)))
+            }
+            if let genre = store["genre"] as? String { rows.append(.field(BundlePage.categoryLabel, Format.clean(genre, limit: 80))) }
+            if let date = store["releaseDate"] as? String {
+                rows.append(.field(String(localized: "Released", bundle: .greeceKit, comment: "Inspector row title: an app’s release date"), Format.clean(date, limit: 40)))
+            }
             if let account = (store["com.apple.iTunesStore.downloadInfo"] as? [String: Any])?["accountInfo"] as? [String: Any],
-               let id = account["AppleID"] as? String { rows.append(.field("Purchased By", Format.clean(id, limit: 120))) }
-            if let item = store["itemId"] as? Int { rows.append(.field("App Store ID", String(item), mono: true)) }
+               let id = account["AppleID"] as? String {
+                rows.append(.field(String(localized: "Purchased By", bundle: .greeceKit, comment: "Inspector row title: the Apple Account that bought an app"), Format.clean(id, limit: 120)))
+            }
+            if let item = store["itemId"] as? Int { rows.append(.field(String(localized: "App Store ID", bundle: .greeceKit), String(item), mono: true)) }
             if !rows.isEmpty { page.sections.insert(InspectorSection("store", title: "App Store", rows: rows.map(InspectorRow.item)), at: 0) }
         }
 
         let archiveSize = UInt64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
         if let index = page.sections.firstIndex(where: { $0.id == "size" }) {
-            page.sections[index].rows.insert(.item(.field("Download Size", Format.bytes(archiveSize))), at: 1)
+            page.sections[index].rows.insert(.item(.field(String(localized: "Download Size", bundle: .greeceKit), Format.bytes(archiveSize))), at: 1)
         }
         page.summary.details = [facts.shortVersion, Format.bytes(archiveSize)].compactMap { $0 }
         let entries = zip.members.map { ArchiveEntry(path: $0.path, isDirectory: $0.isDirectory, size: $0.size, compressedSize: $0.compressedSize, modified: $0.modified) }
         let listing = ArchiveListing(format: .zip, container: .zip, entries: entries, archiveSize: archiveSize, truncated: zip.truncated)
-        page.contents = .tree(FileNode.tree(from: listing, showHidden: false), title: "Files", count: listing.fileCount, members: ZIPMembers(url: url))
+        page.contents = .tree(FileNode.tree(from: listing, showHidden: false), title: IPAPage.filesTitle, count: listing.fileCount, members: ZIPMembers(url: url))
         return page
     }
+
+    /// The tab listing an archive's files.
+    static var filesTitle: String { String(localized: "Files", bundle: .greeceKit, comment: "Tab title: the files inside an archive or torrent") }
 
     /// The app icon: the largest file the Info.plist names, else any AppIcon PNG at the top level.
     static func icon(in source: BundleSource, info: [String: Any]) -> NSImage? {
