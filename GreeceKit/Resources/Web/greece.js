@@ -518,25 +518,39 @@
     const nodes = $$('pre.mermaid', container);
     if (!nodes.length) return;
     nodes.forEach((n) => { n.dataset.source = n.dataset.source || n.textContent; });
-    const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     mermaid.initialize({
       startOnLoad: false,
       securityLevel: 'strict',
-      theme: dark ? 'dark' : 'neutral',
       fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif',
-      themeVariables: { fontSize: '13px' },
+      ...mermaidTheme(),
     });
     try { await mermaid.run({ nodes, suppressErrors: true }); } catch (e) { post('log', 'mermaid: ' + e); }
   }
 
+  /** The diagram theme from the page's --mm-* variables (DiagramTheme.swift), for the current appearance. */
+  function mermaidTheme() {
+    const style = getComputedStyle(html);
+    const read = (name) => style.getPropertyValue('--mm-' + name).trim();
+    const themeVariables = { fontSize: '13px', darkMode: read('dark') === '1' };
+    read('keys').split(/\s+/).forEach((key) => { const value = /^\w+$/.test(key) && read(key); if (value) themeVariables[key] = value; });
+    return { theme: read('theme') || 'neutral', themeVariables };
+  }
+
+  /** Redraws diagrams when the appearance or the diagram theme changes. */
   function rerenderMermaidOnAppearanceChange(container) {
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    let current = JSON.stringify(mermaidTheme());
+    const rerender = () => {
+      const next = JSON.stringify(mermaidTheme());
+      if (next === current) return;
+      current = next;
       $$('pre.mermaid', container).forEach((n) => {
         n.removeAttribute('data-processed');
         n.textContent = n.dataset.source || '';
       });
       renderMermaid(container);
-    });
+    };
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rerender);
+    applyCallbacks.push(rerender);
   }
 
   async function renderMarkdown() {

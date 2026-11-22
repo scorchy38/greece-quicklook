@@ -150,6 +150,7 @@ html.kind-code .empty { color: var(--gutter-fg); }
 
 /* ------------------------------------------------------------ Highlight */
 
+.code-view, .codeblock pre, table.lines { font-weight: var(--code-weight, 400); }
 .hljs-comment, .hljs-quote { color: var(--t-comment); }
 .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-doctag { color: var(--t-keyword); font-weight: var(--t-keyword-weight); }
 .hljs-string, .hljs-char, .hljs-template-string { color: var(--t-string); }
@@ -334,7 +335,7 @@ summary::marker { color: var(--text-3); }
 /* Math, diagrams, footnotes */
 .math-block { overflow-x: auto; overflow-y: hidden; margin: 0 0 1.1em; padding: .2em 0; }
 .katex { font-size: 1.08em; }
-.mermaid-block { display: flex; justify-content: center; margin: 0 0 1.3em; padding: 18px; border-radius: 12px; background: var(--fill); overflow-x: auto; }
+.mermaid-block { display: flex; justify-content: center; margin: 0 0 1.3em; padding: 18px; border-radius: 12px; background: var(--mm-block, var(--fill)); overflow-x: auto; }
 .mermaid-block pre.mermaid { margin: 0; font: 12px var(--code-font); color: var(--text-2); white-space: pre-wrap; }
 .mermaid-block svg { max-width: 100%; height: auto; }
 .footnotes { margin-top: 3em; padding-top: 1.2em; border-top: .5px solid var(--hairline-strong); font-size: .88em; color: var(--text-2); }

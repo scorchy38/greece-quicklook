@@ -18,10 +18,13 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
     }
 
     public enum ReadingFont: String, Codable, CaseIterable, Identifiable, Sendable {
+        /// The reading theme's own typefaces.
+        case theme
         case system, serif, rounded, mono
         public var id: String { rawValue }
         public var title: String {
             switch self {
+            case .theme: return "Theme Default"
             case .system: return "San Francisco"
             case .serif: return "New York"
             case .rounded: return "SF Rounded"
@@ -30,7 +33,7 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         }
         var cssStack: String {
             switch self {
-            case .system: return "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"
+            case .theme, .system: return "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"
             case .serif: return "ui-serif, 'New York', Georgia, serif"
             case .rounded: return "ui-rounded, 'SF Pro Rounded', -apple-system, sans-serif"
             case .mono: return "ui-monospace, 'SF Mono', Menlo, monospace"
@@ -55,6 +58,41 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
             case .comfortable: return "760px"
             case .wide: return "960px"
             case .full: return "none"
+            }
+        }
+    }
+
+    /// Which palette of a light-and-dark code theme to use.
+    public enum ThemeVariant: String, Codable, CaseIterable, Identifiable, Sendable {
+        case automatic, light, dark
+        public var id: String { rawValue }
+        public var title: String {
+            switch self {
+            case .automatic: return "Automatic"
+            case .light: return "Light"
+            case .dark: return "Dark"
+            }
+        }
+    }
+
+    public enum CodeFontWeight: String, Codable, CaseIterable, Identifiable, Sendable {
+        case light, regular, medium, semibold
+        public var id: String { rawValue }
+        public var title: String {
+            switch self {
+            case .light: return "Light"
+            case .regular: return "Regular"
+            case .medium: return "Medium"
+            case .semibold: return "Semibold"
+            }
+        }
+        /// The CSS `font-weight`.
+        public var value: Int {
+            switch self {
+            case .light: return 300
+            case .regular: return 400
+            case .medium: return 500
+            case .semibold: return 600
             }
         }
     }
@@ -99,15 +137,21 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
 
     // Code
     public var theme = CodeTheme.default.id
+    /// Pins one palette of a light-and-dark theme; automatic follows the appearance.
+    public var themeVariant: ThemeVariant = .automatic
     public var codeFont = "SF Mono"
     public var codeFontSize: Double = 12
+    public var codeFontWeight: CodeFontWeight = .regular
     public var lineNumbers = true
     public var wrapLines = false
     public var tabWidth = 4
     public var prettyPrint = true
 
     // Markdown
-    public var readingFont: ReadingFont = .system
+    public var readingTheme = ReadingTheme.default.id
+    public var diagramTheme = DiagramTheme.default.id
+    /// `.theme` uses the reading theme's own typefaces.
+    public var readingFont: ReadingFont = .theme
     public var readingSize: Double = 15
     public var readingWidth: ReadingWidth = .comfortable
     public var showOutline = true
@@ -145,6 +189,10 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         read(.recordRecents, &recordRecents)
         read(.showInMenuBar, &showInMenuBar)
         read(.theme, &theme)
+        read(.themeVariant, &themeVariant)
+        read(.codeFontWeight, &codeFontWeight)
+        read(.readingTheme, &readingTheme)
+        read(.diagramTheme, &diagramTheme)
         read(.codeFont, &codeFont)
         read(.codeFontSize, &codeFontSize)
         read(.lineNumbers, &lineNumbers)
@@ -172,9 +220,32 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         tabWidth = min(max(tabWidth, 1), 8)
         maxRows = min(max(maxRows, 100), 1_000_000)
         if CodeTheme.named(theme) == nil { theme = CodeTheme.default.id }
+        if ReadingTheme.named(readingTheme) == nil { readingTheme = ReadingTheme.default.id }
+        if DiagramTheme.named(diagramTheme) == nil { diagramTheme = DiagramTheme.default.id }
     }
 
-    public var codeTheme: CodeTheme { CodeTheme.named(theme) ?? .default }
+    /// The code theme as previews draw it, with any pinned variant applied.
+    public var codeTheme: CodeTheme { (CodeTheme.named(theme) ?? .default).pinned(themeVariant) }
+
+    /// The Markdown reading theme.
+    public var markdownTheme: ReadingTheme { ReadingTheme.named(readingTheme) ?? .default }
+
+    /// The Mermaid diagram theme.
+    public var mermaidTheme: DiagramTheme { DiagramTheme.named(diagramTheme) ?? .default }
+
+    /// The body typeface for reading, from the font setting or the reading theme.
+    var readingFontStack: String {
+        readingFont == .theme ? markdownTheme.bodyFont : readingFont.cssStack
+    }
+
+    /// The heading typeface for reading: the theme's own, or New York with the serif setting.
+    var headingFontStack: String {
+        switch readingFont {
+        case .theme: return markdownTheme.headingFont
+        case .serif: return ReadingFont.serif.cssStack
+        default: return readingFont.cssStack
+        }
+    }
 }
 
 /// Reads and writes `PreviewSettings` in the shared App Group container.
