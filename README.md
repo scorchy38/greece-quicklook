@@ -25,7 +25,7 @@ Greece makes Quick Look beautiful for the files developers and writers live in. 
 | **Tables** | `.tsv` `.tab` `.psv` | Native table with row numbers, numeric alignment, sorting, multi-row copy |
 | **Databases** | `.sqlite` `.sqlite3` `.db` | Tables and views in a sidebar with row counts, column types on hover, lazy paging, sorting. Opened read-only and immutable |
 | **Archives** | `.zip` `.jar` `.apk` `.tar` `.tgz` `.tar.gz` `.tbz2` `.txz` `.gz` `.bz2` `.xz` | Finder-style tree with sizes, dates and compression savings, without extracting anything. A compressed text file such as `server.log.gz` opens straight to its contents |
-| **Folders** | Any folder | Finder-style list with icons, kinds, Finder tags and lazy expansion |
+| **Folders** | Any folder | Finder-style list or icons with real thumbnails, Sort By and Group By (kind, date, size), subfolders you open and leave by pointer, Finder tags, and the selected file's preview beside them |
 
 The info bar at the bottom of every preview shows what the file is at a glance: language and line count, words and reading time, rows and columns, or files and compression ratio.
 
@@ -84,6 +84,7 @@ The app doubles as a headless renderer, which is handy for design work and regre
 ```sh
 scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots path/to/files…
 scripts/render.sh build/dd/Build/Products/Release/Greece.app /tmp/shots --appearance dark --theme one file.swift
+GREECE_STATE='layout:icons;group:kind' build/dd/Build/Products/Debug/Greece.app/Contents/MacOS/Greece --render folder /tmp/folder.png --print-window   # Debug: a browser state; prints the window's ID for screencapture -l
 scripts/shoot-app.sh build/dd/Build/Products/Release/Greece.app code /tmp/code.png --appearance dark
 scripts/shoot-quicklook.sh /Applications/Greece.app file.md /tmp/panel.png   # the real Quick Look panel, nothing else on screen
 build/dd/Build/Products/Release/Greece.app/Contents/MacOS/Greece --thumbnail file.swift /tmp/thumb.png --size 512

@@ -194,11 +194,7 @@ public enum PreviewFactory {
 
         case .folder:
             let node = FileNode.folder(at: url, showHidden: settings.showHiddenFiles)
-            let count = node.children?.count ?? 0
-            let folders = node.children?.filter { $0.isDirectory && !$0.isPackage }.count ?? 0
-            var details = ["\(count.formatted()) \(count == 1 ? "item" : "items")"]
-            if folders > 0 { details.append("\(folders) \(folders == 1 ? "folder" : "folders")") }
-            return .tree(node, FileSummary(symbol: "folder", title: "Folder", details: details, trailing: modified), showsKind: true)
+            return .tree(node, folderSummary(node, modified: modified), showsKind: true)
 
         case .video:
             return .video(FileSummary(symbol: "film", title: "MPEG Transport Stream", details: [size].compactMap { $0 }, trailing: modified))
@@ -245,7 +241,12 @@ public enum PreviewFactory {
             // A folder on disk previews whatever is selected in it, as an archive does.
             if root.url != nil {
                 let browser = MemberBrowserView(root: root, source: LocalMembers(), scratch: ArchiveScratch(), settings: settings, showsKind: showsKind)
-                return PreviewView(content: browser, summary: summary, preferredSize: NSSize(width: 980, height: 640), settings: settings)
+                let view = PreviewView(content: browser, summary: summary, preferredSize: NSSize(width: 980, height: 640), settings: settings)
+                // The info bar describes the folder showing, after one has been opened inside.
+                browser.onFolderChange = { [weak view] folder, isRoot in
+                    view?.setSummary(isRoot ? summary : folderSummary(folder, modified: folder.modified.map(modifiedText)))
+                }
+                return view
             }
             let tree = FileTreeView(root: root, settings: settings, showsKind: showsKind)
             return PreviewView(content: tree, summary: summary, preferredSize: NSSize(width: 820, height: 600), settings: settings)
@@ -258,6 +259,15 @@ public enum PreviewFactory {
     }
 
     // MARK: - Facts
+
+    /// A folder in the info bar: how many items, how many of them folders.
+    static func folderSummary(_ node: FileNode, modified: String?) -> FileSummary {
+        let count = node.children?.count ?? 0
+        let folders = node.children?.filter { $0.isDirectory && !$0.isPackage }.count ?? 0
+        var details = ["\(count.formatted()) \(count == 1 ? "item" : "items")"]
+        if folders > 0 { details.append("\(folders) \(folders == 1 ? "folder" : "folders")") }
+        return FileSummary(symbol: "folder", title: "Folder", details: details, trailing: modified)
+    }
 
     /// What the info bar calls a Markdown file: its flavour when the extension says which.
     static func markdownFlavour(_ ext: String) -> String {

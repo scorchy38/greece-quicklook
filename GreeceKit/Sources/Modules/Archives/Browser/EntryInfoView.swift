@@ -6,7 +6,8 @@ import UniformTypeIdentifiers
 final class EntryInfoView: NSView {
     private let scroll = NSScrollView()
 
-    init(node: FileNode, kind: String, note: String? = nil) {
+    /// - Parameter open: for a folder, shows an Open button that browses into it.
+    init(node: FileNode, kind: String, note: String? = nil, open: (() -> Void)? = nil) {
         super.init(frame: .zero)
 
         let icon = NSImageView()
@@ -28,6 +29,13 @@ final class EntryInfoView: NSView {
         subtitle.alignment = .center
 
         var views: [NSView] = [icon, name, subtitle]
+        if let open {
+            let button = ActionButton(title: "Open", action: open)
+            button.controlSize = .regular
+            button.bezelStyle = .push
+            button.toolTip = "Show what’s inside"
+            views.append(button)
+        }
         if let note {
             let message = NSTextField(wrappingLabelWithString: note)
             message.font = .systemFont(ofSize: 12)
@@ -63,7 +71,7 @@ final class EntryInfoView: NSView {
         stack.spacing = 6
         stack.setCustomSpacing(14, after: icon)
         stack.setCustomSpacing(views.count > 4 ? 10 : 22, after: subtitle)
-        if views.count > 4 { stack.setCustomSpacing(22, after: views[3]) }
+        if views.count > 4 { stack.setCustomSpacing(22, after: views[views.count - 2]) }
         stack.edgeInsets = NSEdgeInsets(top: 36, left: 24, bottom: 36, right: 24)
         stack.translatesAutoresizingMaskIntoConstraints = false
 
@@ -99,8 +107,9 @@ final class EntryInfoView: NSView {
     /// Copying without ⌘C (Quick Look sends keys to Finder): the name, the path, or every fact.
     static func menuItems(_ node: FileNode, kind: String) -> [NSMenuItem] {
         var items: [NSMenuItem] = [ActionMenuItem("Copy Name") { Clipboard.copy(node.name) }]
-        if !node.path.isEmpty, node.path != node.name {
-            items.append(ActionMenuItem("Copy Path") { Clipboard.copy(node.path) })
+        let path = node.url?.path ?? node.path
+        if !path.isEmpty, path != node.name {
+            items.append(ActionMenuItem("Copy Path") { Clipboard.copy(path) })
         }
         let info = [node.name, subtitle(node, kind: kind)] + rows(node, kind: kind).map { "\($0.0): \($0.1)" }
         items.append(ActionMenuItem("Copy Info") { Clipboard.copy(info.joined(separator: "\n")) })
@@ -110,6 +119,9 @@ final class EntryInfoView: NSView {
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     static func subtitle(_ node: FileNode, kind: String) -> String {
+        if node.isDirectory, node.url != nil, !node.isPackage {
+            return [kind, node.itemCount.map { "\($0.formatted()) \($0 == 1 ? "item" : "items")" }].compactMap { $0 }.joined(separator: " · ")
+        }
         if node.isDirectory {
             return [kind, node.fileCount > 0 ? "\(node.fileCount.formatted()) \(node.fileCount == 1 ? "file" : "files")" : nil,
                     node.size.map(FileTreeView.bytes)].compactMap { $0 }.joined(separator: " · ")
@@ -144,9 +156,21 @@ final class EntryInfoView: NSView {
         if let target = entry?.linkTarget { rows.append(("Alias to", target)) }
         if node.isEncrypted { rows.append(("Encrypted", "Yes, it needs the archive’s password")) }
         if let crc = entry?.crc, !node.isDirectory, crc != 0 { rows.append(("CRC-32", String(format: "%08X", crc))) }
-        let folder = (node.path as NSString).deletingLastPathComponent
-        rows.append(("Where", folder.isEmpty ? "Top level of the archive" : folder))
+        if let url = node.url {
+            rows.append(("Where", EntryInfoView.displayPath(url.deletingLastPathComponent())))
+        } else {
+            let folder = (node.path as NSString).deletingLastPathComponent
+            rows.append(("Where", folder.isEmpty ? "Top level of the archive" : folder))
+        }
         return rows
+    }
+
+    /// A folder's path as Finder writes it, with the real home folder (not a sandbox's) as ~.
+    static func displayPath(_ url: URL) -> String {
+        let home = NSHomeDirectory().components(separatedBy: "/Library/Containers/").first ?? NSHomeDirectory()
+        let path = url.path
+        if path == home { return "~" }
+        return path.hasPrefix(home + "/") ? "~" + path.dropFirst(home.count) : path
     }
 
     static func permissionString(_ mode: UInt16, directory: Bool, link: Bool) -> String {

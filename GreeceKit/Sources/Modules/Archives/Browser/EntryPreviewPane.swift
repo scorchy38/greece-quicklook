@@ -26,6 +26,8 @@ final class EntryPreviewPane: NSView {
     private var inner: PreviewView?
     /// Called when the person switches between Preview and Info.
     var onModeChange: ((Mode) -> Void)?
+    /// Opens a folder in the browser (the Open button on a folder's info).
+    var onOpenFolder: ((FileNode) -> Void)?
 
     init(source: MemberSource, scratch: ArchiveScratch, settings: PreviewSettings, headerHeight: CGFloat) {
         self.source = source
@@ -114,7 +116,9 @@ final class EntryPreviewPane: NSView {
         if mode == .info || !canPreview {
             var note: String?
             if node.isEncrypted { note = "Encrypted. Greece can’t open it without the password." }
-            display(EntryInfoView(node: node, kind: kind, note: mode == .preview ? note : nil))
+            var open: (() -> Void)?
+            if node.isDirectory, !node.isPackage, let onOpenFolder { open = { onOpenFolder(node) } }
+            display(EntryInfoView(node: node, kind: kind, note: mode == .preview ? note : nil, open: open))
             return
         }
         if let cached, cached.node === node {

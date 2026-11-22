@@ -19,7 +19,8 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware {
         self.settings = settings
         self.modified = modified
         browser = MemberBrowserView(root: document.builder.root, source: document.session, scratch: document.scratch,
-                                    settings: settings, compressedSizes: document.listing.hasCompressedSizes)
+                                    settings: settings, compressedSizes: document.listing.hasCompressedSizes,
+                                    title: document.session.url.lastPathComponent)
         super.init(frame: NSRect(x: 0, y: 0, width: 980, height: 660))
 
         headerSlot.translatesAutoresizingMaskIntoConstraints = false
@@ -89,7 +90,7 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware {
             guard let self else { return }
             self.document.builder.add(added)
             self.document.builder.finish()
-            self.tree.reload()
+            self.browser.reload()
             if let package { self.showPackage(package) }
             self.updateState()
             self.setSummary(self.document.summary(modified: self.modified, loading: !finished))

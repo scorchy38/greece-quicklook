@@ -21,6 +21,27 @@ final class ActionMenuItem: NSMenuItem {
     func perform() { handler() }
 }
 
+/// A button that runs a closure, for one-off buttons built with what they act on.
+final class ActionButton: NSButton {
+    private var handler: () -> Void = {}
+
+    convenience init(title: String, action: @escaping () -> Void) {
+        self.init(frame: .zero)
+        self.title = title
+        handler = action
+        target = self
+        self.action = #selector(run)
+    }
+
+    @objc private func run() { handler() }
+
+    /// Quick Look's panel is never the key window, so without this the reader's first click on the preview would only activate it and do nothing.
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    /// Runs the button's action, as clicking it would.
+    func perform() { handler() }
+}
+
 /// Writes text for "Copy" menu items. Tests point it at a private pasteboard.
 enum Clipboard {
     nonisolated(unsafe) static var pasteboard: NSPasteboard = .general
