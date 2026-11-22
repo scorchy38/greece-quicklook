@@ -68,7 +68,7 @@ extension ArchiveSession {
         let destination = scratch.location(for: (entry.path as NSString).lastPathComponent)
         guard FileManager.default.createFile(atPath: destination.path, contents: nil),
               let handle = try? FileHandle(forWritingTo: destination) else {
-            throw ArchiveError.unsupported("Greece couldn’t make room to preview this file.")
+            throw ArchiveError.unsupported(String(localized: "Greece couldn’t make room to preview this file.", bundle: .greeceKit))
         }
         do {
             let (_, complete) = try extract(entry, limit: limit, cancel: cancel) { chunk in

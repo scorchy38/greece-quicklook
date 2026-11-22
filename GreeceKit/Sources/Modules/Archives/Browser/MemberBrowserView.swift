@@ -68,7 +68,7 @@ final class MemberBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegate
         if !supportsIcons { state.layout = .list }
         if state.sort == .compressed && !compressedSizes { state.sort = .name; state.ascending = true }
         self.state = state
-        rootTitle = title ?? (root.name.isEmpty ? "Archive" : root.name)
+        rootTitle = title ?? (root.name.isEmpty ? String(localized: "Archive", bundle: .greeceKit, comment: "Noun: names an archive with no file name in the path bar") : root.name)
         if let url = root.url {
             rootIcon = NSWorkspace.shared.icon(forFile: url.path)
         } else {
@@ -341,13 +341,14 @@ final class MemberBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegate
     private func backgroundMenu() -> [NSMenuItem] {
         var items = ViewOptionMenus.layoutItems(state) { [weak self] in self?.setLayout($0) }
         items.append(.separator())
-        items.append(ViewOptionMenus.submenu("Group By", ViewOptionMenus.groupItems(state) { [weak self] in self?.setGroup($0) }))
-        items.append(ViewOptionMenus.submenu("Sort By", ViewOptionMenus.sortItems(state, keys: sortKeys) { [weak self] in
+        items.append(ViewOptionMenus.submenu(ViewOptionMenus.groupByTitle, ViewOptionMenus.groupItems(state) { [weak self] in self?.setGroup($0) }))
+        items.append(ViewOptionMenus.submenu(ViewOptionMenus.sortByTitle, ViewOptionMenus.sortItems(state, keys: sortKeys) { [weak self] in
             self?.setSort($0, ascending: $1)
         }))
         if trail.count > 1 {
             items.append(.separator())
-            items.append(ActionMenuItem("Back to “\(trail.count == 2 ? rootTitle : trail[trail.count - 2].name)”") { [weak self] in self?.goBack() })
+            let parent = trail.count == 2 ? rootTitle : trail[trail.count - 2].name
+            items.append(ActionMenuItem(ViewOptionMenus.backTitle(parent)) { [weak self] in self?.goBack() })
         }
         return items
     }

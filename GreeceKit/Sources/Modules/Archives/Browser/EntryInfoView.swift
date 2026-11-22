@@ -30,10 +30,10 @@ final class EntryInfoView: NSView {
 
         var views: [NSView] = [icon, name, subtitle]
         if let open {
-            let button = ActionButton(title: "Open", action: open)
+            let button = ActionButton(title: String(localized: "Open", bundle: .greeceKit, comment: "Menu item and button: opens a folder in the browser"), action: open)
             button.controlSize = .regular
             button.bezelStyle = .push
-            button.toolTip = "Show what’s inside"
+            button.toolTip = String(localized: "Show what’s inside", bundle: .greeceKit, comment: "Tooltip of the Open button on a folder")
             views.append(button)
         }
         if let note {
@@ -106,13 +106,15 @@ final class EntryInfoView: NSView {
 
     /// Copying without ⌘C (Quick Look sends keys to Finder): the name, the path, or every fact.
     static func menuItems(_ node: FileNode, kind: String) -> [NSMenuItem] {
-        var items: [NSMenuItem] = [ActionMenuItem("Copy Name") { Clipboard.copy(node.name) }]
+        var items: [NSMenuItem] = [ActionMenuItem(String(localized: "Copy Name", bundle: .greeceKit)) { Clipboard.copy(node.name) }]
         let path = node.url?.path ?? node.path
         if !path.isEmpty, path != node.name {
-            items.append(ActionMenuItem("Copy Path") { Clipboard.copy(path) })
+            items.append(ActionMenuItem(String(localized: "Copy Path", bundle: .greeceKit)) { Clipboard.copy(path) })
         }
         let info = [node.name, subtitle(node, kind: kind)] + rows(node, kind: kind).map { "\($0.0): \($0.1)" }
-        items.append(ActionMenuItem("Copy Info") { Clipboard.copy(info.joined(separator: "\n")) })
+        items.append(ActionMenuItem(String(localized: "Copy Info", bundle: .greeceKit, comment: "Menu item: copies everything Get Info shows about a file")) {
+            Clipboard.copy(info.joined(separator: "\n"))
+        })
         return items
     }
 
@@ -120,10 +122,12 @@ final class EntryInfoView: NSView {
 
     static func subtitle(_ node: FileNode, kind: String) -> String {
         if node.isDirectory, node.url != nil, !node.isPackage {
-            return [kind, node.itemCount.map { "\($0.formatted()) \($0 == 1 ? "item" : "items")" }].compactMap { $0 }.joined(separator: " · ")
+            let items = node.itemCount.map { count in String(localized: "\(count) items", bundle: .greeceKit, comment: "A count of files and folders") }
+            return [kind, items].compactMap { $0 }.joined(separator: " · ")
         }
         if node.isDirectory {
-            return [kind, node.fileCount > 0 ? "\(node.fileCount.formatted()) \(node.fileCount == 1 ? "file" : "files")" : nil,
+            let files = node.fileCount
+            return [kind, files > 0 ? String(localized: "\(files) files", bundle: .greeceKit, comment: "A count of files") : nil,
                     node.size.map(FileTreeView.bytes)].compactMap { $0 }.joined(separator: " · ")
         }
         return [kind, node.size.map(FileTreeView.bytes)].compactMap { $0 }.joined(separator: " · ")
@@ -133,34 +137,63 @@ final class EntryInfoView: NSView {
         var rows: [(String, String)] = []
         let entry = node.entry
         if let size = node.size, !node.isDirectory || size > 0 {
-            rows.append(("Size", size >= 1000 ? "\(size.formatted()) bytes (\(FileTreeView.bytes(size)))" : "\(size.formatted()) bytes"))
+            let count = Int(clamping: size)
+            rows.append((FileColumnTitles.size,
+                         size >= 1000
+                            ? String(localized: "\(count) bytes (\(FileTreeView.bytes(size)))", bundle: .greeceKit,
+                                     comment: "Get Info value: an exact size, then the same rounded, such as “1,234 bytes (1 KB)”")
+                            : String(localized: "\(count) bytes", bundle: .greeceKit, comment: "Get Info value: an exact size")))
         }
         if let packed = node.compressedSize, let size = node.size, size > 0, !(node.isDirectory && packed == 0) {
-            var text = FileTreeView.bytes(packed)
-            let ratio = Double(packed) / Double(size) * 100
-            text += ratio < 0.5 ? ", under 1% of the original" : ", \(Int(ratio.rounded()))% of the original"
-            if let method = entry?.method { text += " (\(method))" }
-            rows.append(("Compressed", text))
+            let bytes = FileTreeView.bytes(packed)
+            let ratio = Double(packed) / Double(size)
+            let percent = (ratio < 0.005 ? 0.01 : (ratio * 100).rounded() / 100).formatted(.percent)
+            let text: String
+            switch (ratio < 0.005, entry?.method) {
+            case (true, let method?):
+                text = String(localized: "\(bytes), under \(percent) of the original (\(method))", bundle: .greeceKit,
+                              comment: "Get Info value: a compressed size, its share of the original size (“1%”) and the compression method, such as “Deflate”")
+            case (true, nil):
+                text = String(localized: "\(bytes), under \(percent) of the original", bundle: .greeceKit,
+                              comment: "Get Info value: a compressed size and its share of the original size (“1%”)")
+            case (false, let method?):
+                text = String(localized: "\(bytes), \(percent) of the original (\(method))", bundle: .greeceKit,
+                              comment: "Get Info value: a compressed size, its share of the original size (such as “40%”) and the compression method, such as “Deflate”")
+            case (false, nil):
+                text = String(localized: "\(bytes), \(percent) of the original", bundle: .greeceKit,
+                              comment: "Get Info value: a compressed size and its share of the original size, such as “40%”")
+            }
+            rows.append((FileColumnTitles.compressed, text))
         } else if let method = entry?.method, !node.isDirectory {
-            rows.append(("Method", method))
+            rows.append((String(localized: "Method", bundle: .greeceKit, comment: "Get Info row: how a file in an archive is compressed, such as “Deflate”"), method))
         }
         if node.isDirectory, let items = node.itemCount {
-            rows.append(("Contains", "\(items.formatted()) \(items == 1 ? "item" : "items")"))
+            rows.append((String(localized: "Contains", bundle: .greeceKit, comment: "Get Info row: how many items a folder holds"),
+                         String(localized: "\(items) items", bundle: .greeceKit, comment: "A count of files and folders")))
         }
         if let modified = node.modified {
-            rows.append(("Modified", modified.formatted(date: .long, time: .shortened)))
+            rows.append((String(localized: "Modified [date]", defaultValue: "Modified", bundle: .greeceKit, comment: "Get Info row: when the item was last changed (as in Finder)"),
+                         modified.formatted(date: .long, time: .shortened)))
         }
         if let permissions = entry?.permissions, permissions != 0 {
-            rows.append(("Permissions", permissionString(permissions, directory: node.isDirectory, link: node.isSymlink)))
+            rows.append((String(localized: "Permissions [file mode]", defaultValue: "Permissions", bundle: .greeceKit,
+                                comment: "Get Info row: who may read, write and run a file, shown as Unix permissions such as “-rw-r--r--”"),
+                         permissionString(permissions, directory: node.isDirectory, link: node.isSymlink)))
         }
-        if let target = entry?.linkTarget { rows.append(("Alias to", target)) }
-        if node.isEncrypted { rows.append(("Encrypted", "Yes, it needs the archive’s password")) }
+        if let target = entry?.linkTarget {
+            rows.append((String(localized: "Alias to", bundle: .greeceKit, comment: "Get Info row: the path a symbolic link points to"), target))
+        }
+        if node.isEncrypted {
+            rows.append((String(localized: "Encrypted", bundle: .greeceKit, comment: "State of an archive or a file in it"),
+                         String(localized: "Yes, it needs the archive’s password", bundle: .greeceKit, comment: "Get Info value of the Encrypted row")))
+        }
         if let crc = entry?.crc, !node.isDirectory, crc != 0 { rows.append(("CRC-32", String(format: "%08X", crc))) }
+        let whereTitle = String(localized: "Where", bundle: .greeceKit, comment: "Get Info row: the folder an item is in (as in Finder)")
         if let url = node.url {
-            rows.append(("Where", EntryInfoView.displayPath(url.deletingLastPathComponent())))
+            rows.append((whereTitle, EntryInfoView.displayPath(url.deletingLastPathComponent())))
         } else {
             let folder = (node.path as NSString).deletingLastPathComponent
-            rows.append(("Where", folder.isEmpty ? "Top level of the archive" : folder))
+            rows.append((whereTitle, folder.isEmpty ? String(localized: "Top level of the archive", bundle: .greeceKit, comment: "Get Info value of the Where row") : folder))
         }
         return rows
     }

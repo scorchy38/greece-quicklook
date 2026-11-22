@@ -34,11 +34,14 @@ enum ArchivesModule: PreviewModule {
         var web = WebDocument(module: .init("comic"), data: book.payload(fileName: document.session.volumes.displayName, format: format),
                               scripts: ["modules/archives.js"], styles: ["modules/archives.css"])
         web.resources = { path in book.resource(path) }
-        var details = ["\(book.pages.count.formatted()) \(book.pages.count == 1 ? "page" : "pages")"]
+        let pages = book.pages.count, volumes = document.listing.volumes
+        var details = [String(localized: "\(pages) pages", bundle: .greeceKit, comment: "A count of pages")]
         if let series = book.info.series { details.append(book.info.number.map { "\(series) #\($0)" } ?? series) }
         details.append(FileTreeView.bytes(document.listing.archiveSize))
-        if document.listing.volumes > 1 { details.append("\(document.listing.volumes) parts") }
-        let summary = FileSummary(symbol: "book.closed", title: "Comic Book", details: details, trailing: modified)
+        if volumes > 1 {
+            details.append(String(localized: "\(volumes) parts", bundle: .greeceKit, comment: "Info bar detail: how many files a multi-part archive is split into"))
+        }
+        let summary = FileSummary(symbol: "book.closed", title: String(localized: "Comic Book", bundle: .greeceKit), details: details, trailing: modified)
         return .web(web, summary, NSSize(width: 1000, height: 760))
     }
 
@@ -49,10 +52,15 @@ enum ArchivesModule: PreviewModule {
         let file = try document.session.extract(entry, to: document.scratch, limit: 64 * 1024 * 1024)
         ScratchKeeper.keep(document.scratch)
         let inner = try PreviewFactory.prepare(file, settings: settings)
+        // The extracted copy's date belongs to the archive's file: drop it wherever the inner
+        // preview put it (compared as the same function writes it, so in any language).
+        let copyModified = (try? file.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate.map(PreviewFactory.modifiedText)
         func wrap(_ summary: FileSummary) -> FileSummary {
             var details = [entry.path]
-            details += summary.details.filter { !$0.hasPrefix("Modified") }
-            if document.listing.truncated { details.append("Showing the beginning") }
+            details += summary.details.filter { $0 != copyModified && $0 != summary.trailing }
+            if document.listing.truncated {
+                details.append(String(localized: "Showing the beginning", bundle: .greeceKit, comment: "Info bar detail: only the start of a large compressed file is shown"))
+            }
             return FileSummary(symbol: "doc.zipper", title: document.listing.title, details: details, trailing: modified)
         }
         switch inner {
