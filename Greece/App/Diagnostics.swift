@@ -170,6 +170,8 @@ final class Diagnostics: ObservableObject {
             route.verdict = .macOSKeeps("This version of macOS treats .\((route.sampleName as NSString).pathExtension) files as video, so Quick Look opens its movie viewer.")
         } else if id == UTType.plainText.identifier {
             route.verdict = .macOSKeeps("Quick Look keeps plain text for its own text viewer.")
+        } else if id == "public.svg-image" {
+            route.verdict = .macOSKeeps("Quick Look opens SVG in Apple’s web viewer, before any extension. Greece shows SVGs inside archives.")
         } else if (route.sampleName as NSString).pathExtension == "mobileprovision" {
             route.verdict = .macOSKeeps("Quick Look shows provisioning profiles with its text viewer. Greece shows them inside apps and archives.")
         } else {
@@ -393,6 +395,9 @@ final class Diagnostics: ObservableObject {
         Route(id: "mermaid", title: "Mermaid diagram", sampleName: "flow.mmd", sample: "graph LR\n  A --> B\n"),
         Route(id: "srt", title: "Subtitles", sampleName: "film.srt", sample: "1\n00:00:01,000 --> 00:00:02,000\nHello\n"),
         Route(id: "mobileprovision", title: "Provisioning profile", sampleName: "app.mobileprovision", sample: "profile\n"),
+        Route(id: "svg", title: "SVG image", sampleName: "icon.svg", sample: "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"10\" height=\"10\"/>\n"),
+        Route(id: "ttf", title: "Font (TrueType)", sampleName: "font.ttf", sample: "font\n"),
+        Route(id: "woff2", title: "Web font", sampleName: "font.woff2", sample: "wOF2\n"),
     ]
 }
 
