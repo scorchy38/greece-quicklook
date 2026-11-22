@@ -8,7 +8,8 @@ Each module lists its types in its own files, so modules never edit the same lis
 
 Localization (the String Catalogs hold the translations; this script keeps their keys in step):
   - Every extension's Info.plist declares Greece's languages (CFBundleLocalizations) and allows mixed
-    localizations, so GreeceKit.framework inside it speaks the user's language.
+    localizations, so the extension runs in the user's language (Locale.current, Launch Services'
+    kinds, system strings) like the GreeceKit.framework strings it shows.
   - Each extension's display name ("Code & Text", "Greece Thumbnails") is translated in its own
     InfoPlist.xcstrings: GreeceQuickLook/Families/<Target>/InfoPlist.xcstrings, GreeceThumbnails/InfoPlist.xcstrings.
   - Finder's Kind for each declared type (UTTypeDescription) is translated in Greece/App/InfoPlist.xcstrings,

@@ -9,11 +9,12 @@ extension Bundle {
     ///     String(localized: "Sandboxed", bundle: .greeceKit)
     ///     String(localized: "\(count) files", bundle: .greeceKit)   // plural variations in the catalog
     ///
-    /// A framework speaks its host's language unless the host allows mixed localizations. Quick Look
-    /// extensions have no strings of their own, so each declares Greece's languages and allows mixed
-    /// localizations (`CFBundleLocalizations`, `CFBundleAllowMixedLocalizations`, written by
-    /// scripts/sync-types.py). The framework then resolves to the user's language there too, and
-    /// falls back to English for any other.
+    /// The host decides the rest of the language: `Locale.current` (dates, relative times, numbers and
+    /// sizes in the same sentences), Launch Services' kinds and the system's own strings follow the
+    /// host's main bundle. A Quick Look extension has no strings of its own, so each declares Greece's
+    /// languages and allows mixed localizations (`CFBundleLocalizations`,
+    /// `CFBundleAllowMixedLocalizations`, written by scripts/sync-types.py); without them a German
+    /// preview would read "Geändert 1 hour ago". Languages Greece doesn't speak fall back to English.
     static let greeceKit = Bundle(for: GreeceKitBundleMarker.self)
 }
 

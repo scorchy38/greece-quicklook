@@ -81,8 +81,8 @@ final class RepositoryTests: XCTestCase {
     }
 
     func testExtensionsSpeakGreecesLanguages() throws {
-        // GreeceKit.framework speaks its host's language unless the host allows mixed localizations, and
-        // an extension has no strings of its own: without these, every preview would stay in English.
+        // An extension has no strings of its own: without these, its Locale.current, Launch Services' kinds
+        // and the system's strings stay English around GreeceKit's translations ("Geändert 1 hour ago").
         for (path, _) in try extensions() {
             let root = try plist(path)
             XCTAssertEqual(root["CFBundleLocalizations"] as? [String], ["en"] + LocalizationTests.languages, "\(path): run scripts/sync-types.py")
