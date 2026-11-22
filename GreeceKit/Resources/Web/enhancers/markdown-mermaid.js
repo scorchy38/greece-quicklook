@@ -110,7 +110,7 @@
       stage.addEventListener('pointerdown', (event) => {
         if (event.button !== 0) return;
         drag = { id: event.pointerId, sx: event.clientX, sy: event.clientY, x, y };
-        stage.setPointerCapture(event.pointerId);
+        try { stage.setPointerCapture(event.pointerId); } catch (_) { }
         stage.classList.add('dragging');
       });
       stage.addEventListener('pointermove', (event) => {

@@ -236,6 +236,76 @@ final class MarkdownExtrasTests: XCTestCase {
     }
 
     @MainActor
+    func testOutlineResizesHidesAndProgressFollowsScrolling() async throws {
+        let preview = try await PreviewFactory.makePreview(for: fixtures.appendingPathComponent("extras.md"), settings: PreviewSettings())
+        await preview.waitUntilReady()
+        // Wide enough for the outline to be a sidebar.
+        preview.frame = NSRect(x: 0, y: 0, width: 1400, height: 800)
+        preview.layoutSubtreeIfNeeded()
+        let web = try XCTUnwrap(preview.webView as? WKWebView)
+        for _ in 0..<40 {
+            let wide = try await web.callAsyncJavaScript("return window.innerWidth > 1300 && !matchMedia('(max-width: 1080px)').matches",
+                                                         contentWorld: .page) as? Bool ?? false
+            if wide { break }
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
+        let result = try await web.callAsyncJavaScript("""
+            const nav = document.querySelector('nav.outline');
+            const handle = document.querySelector('.outline-resizer');
+            const before = nav.getBoundingClientRect().width;
+            const r = handle.getBoundingClientRect();
+            const x = r.left + r.width / 2;
+            const y = r.top + 20;
+            const pointer = (type, cx) => handle.dispatchEvent(new PointerEvent(type, { bubbles: true, pointerId: 1, button: 0, clientX: cx, clientY: y }));
+            pointer('pointerdown', x);
+            for (let i = 1; i <= 10; i++) pointer('pointermove', x - i * 10);
+            pointer('pointerup', x - 100);
+            const after = nav.getBoundingClientRect().width;
+            document.querySelector('.outline-hide').click();
+            const hidden = getComputedStyle(nav).display === 'none';
+            const show = document.querySelector('.outline-show');
+            const showVisible = getComputedStyle(show).display !== 'none';
+            show.click();
+            const back = getComputedStyle(nav).display !== 'none';
+            window.scrollTo(0, 500);
+            window.dispatchEvent(new Event('scroll'));
+            const bar = document.querySelector('.read-progress');
+            return { width: window.innerWidth, before, after, hidden, showVisible, back, progress: bar.classList.contains('on'), transform: bar.style.transform };
+            """, contentWorld: .page) as? [String: Any] ?? [:]
+        XCTAssertGreaterThan(result["width"] as? Double ?? Double(result["width"] as? Int ?? 0), 1300)
+        let before = result["before"] as? Double ?? 0
+        let after = result["after"] as? Double ?? 0
+        XCTAssertGreaterThan(after, before + 60, "dragging the edge 100 px left widens the outline")
+        XCTAssertEqual(result["hidden"] as? Bool, true)
+        XCTAssertEqual(result["showVisible"] as? Bool, true)
+        XCTAssertEqual(result["back"] as? Bool, true)
+        XCTAssertEqual(result["progress"] as? Bool, true)
+        XCTAssertTrue((result["transform"] as? String ?? "").hasPrefix("scaleX(0."), result["transform"] as? String ?? "")
+    }
+
+    @MainActor
+    func testDiagramOpensInAZoomViewAndCloses() async throws {
+        let web = try await page(fixtures.appendingPathComponent("extras.md"))
+        let result = try await web.callAsyncJavaScript("""
+            const block = document.querySelector('.mermaid-block');
+            if (!block.querySelector('svg')) return { rendered: false };
+            block.querySelector('.mermaid-expand').click();
+            const view = document.querySelector('.diagram-view');
+            const inView = !!(view && view.querySelector('svg'));
+            const level = view.querySelector('.zoom-level').textContent;
+            view.querySelector('[data-act="in"]').click();
+            const zoomed = view.querySelector('.zoom-level').textContent;
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            return { rendered: true, inView, level, zoomed, closed: !document.querySelector('.diagram-view'), back: !!block.querySelector('svg') };
+            """, contentWorld: .page) as? [String: Any] ?? [:]
+        guard result["rendered"] as? Bool == true else { throw XCTSkip("Mermaid hadn't finished drawing") }
+        XCTAssertEqual(result["inView"] as? Bool, true)
+        XCTAssertNotEqual(result["level"] as? String, result["zoomed"] as? String)
+        XCTAssertEqual(result["closed"] as? Bool, true)
+        XCTAssertEqual(result["back"] as? Bool, true, "the diagram returns to the page")
+    }
+
+    @MainActor
     func testLightboxSteppingAndFootnotePopover() async throws {
         let web = try await page(fixtures.appendingPathComponent("extras.md"))
         let result = try await web.callAsyncJavaScript("""

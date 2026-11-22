@@ -73,7 +73,7 @@
     handle.addEventListener('pointerdown', (event) => {
       if (event.button !== 0) return;
       event.preventDefault();
-      handle.setPointerCapture(event.pointerId);
+      try { handle.setPointerCapture(event.pointerId); } catch (_) { }
       // How far the edge moves per pixel of width depends on whether the page is centred.
       drag = { ratio: -0.5 };
       doc.classList.add('outline-resizing');
@@ -100,7 +100,9 @@
     handle.addEventListener('dblclick', () => { applyWidth(DEFAULT); store.set('greece.outline.width', null); });
 
     // Hidden (sidebar) and floating (narrow windows) states.
-    const narrow = window.matchMedia('(max-width: 1080px)');
+    // Asked afresh each time: a stored MediaQueryList only updates when the page renders.
+    const MEDIA = '(max-width: 1080px)';
+    const isNarrow = () => window.matchMedia(MEDIA).matches;
     const setHidden = (hidden) => {
       doc.classList.toggle('outline-collapsed', hidden);
       store.set(pageKey, hidden ? '1' : null);
@@ -116,14 +118,14 @@
     if (store.get(pageKey) === '1') setHidden(true);
 
     head.querySelector('.outline-hide').addEventListener('click', () => {
-      if (narrow.matches) setFloating(false); else setHidden(true);
+      if (isNarrow()) setFloating(false); else setHidden(true);
     });
     show.addEventListener('click', () => {
-      if (narrow.matches) setFloating(!doc.classList.contains('outline-floating'));
+      if (isNarrow()) setFloating(!doc.classList.contains('outline-floating'));
       else setHidden(false);
     });
-    narrow.addEventListener('change', () => setFloating(false));
-    list.addEventListener('click', (event) => { if (event.target.closest('a') && narrow.matches) setFloating(false); });
+    window.matchMedia(MEDIA).addEventListener('change', () => setFloating(false));
+    list.addEventListener('click', (event) => { if (event.target.closest('a') && isNarrow()) setFloating(false); });
     document.addEventListener('pointerdown', (event) => {
       if (doc.classList.contains('outline-floating') && !nav.contains(event.target) && !show.contains(event.target)) setFloating(false);
     });
