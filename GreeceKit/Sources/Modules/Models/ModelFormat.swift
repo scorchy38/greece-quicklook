@@ -12,23 +12,29 @@ enum ModelFormat: String, CaseIterable, Sendable {
 
     /// What the info bar calls the file.
     var title: String {
+        func model(_ format: String) -> String {
+            String(localized: "\(format) Model", bundle: .greeceKit, comment: "Info bar title: a 3D model file. The argument is its format, such as “STL”")
+        }
+        func pointCloud(_ format: String) -> String {
+            String(localized: "\(format) Point Cloud", bundle: .greeceKit, comment: "Info bar title: a 3D point cloud file. The argument is its format, such as “LAS”")
+        }
         switch self {
-        case .gltf: return "glTF Model"
-        case .glb: return "glTF Binary Model"
-        case .fbx: return "FBX Model"
-        case .threeMF: return "3MF Model"
-        case .collada: return "COLLADA Model"
-        case .obj: return "OBJ Model"
-        case .stl: return "STL Model"
-        case .ply: return "PLY Model"
-        case .off: return "OFF Model"
-        case .threeDS: return "3DS Model"
-        case .vrml: return "VRML World"
-        case .amf: return "AMF Model"
-        case .vox: return "MagicaVoxel Model"
-        case .las: return "LAS Point Cloud"
-        case .laz: return "LAZ Point Cloud"
-        case .pcd: return "PCD Point Cloud"
+        case .gltf: return model("glTF")
+        case .glb: return String(localized: "glTF Binary Model", bundle: .greeceKit, comment: "Info bar title: a binary glTF (.glb) 3D model file")
+        case .fbx: return model("FBX")
+        case .threeMF: return model("3MF")
+        case .collada: return model("COLLADA")
+        case .obj: return model("OBJ")
+        case .stl: return model("STL")
+        case .ply: return model("PLY")
+        case .off: return model("OFF")
+        case .threeDS: return model("3DS")
+        case .vrml: return String(localized: "VRML World", bundle: .greeceKit, comment: "Info bar title: a VRML 3D scene file (VRML calls its files worlds)")
+        case .amf: return model("AMF")
+        case .vox: return model("MagicaVoxel")
+        case .las: return pointCloud("LAS")
+        case .laz: return pointCloud("LAZ")
+        case .pcd: return pointCloud("PCD")
         }
     }
 
