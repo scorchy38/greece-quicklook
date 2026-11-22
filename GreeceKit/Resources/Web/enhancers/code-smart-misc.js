@@ -394,7 +394,7 @@
     const rows = tab.jobs.map((job) => {
       const next = /^@reboot$/i.test(job.schedule) ? '' : relative(nextRun(job.schedule, now), now);
       return `<tr><td class="cron-when"><span class="cron-text">${esc(job.description)}</span><code class="cron-expr">${esc(job.schedule)}</code></td>` +
-        `<td class="cron-next">${next ? `<span class="smart-dim">${esc(kit.t('Next run'))}</span> ${esc(next)}` : ''}</td>` +
+        `<td class="cron-next">${next ? `<span class="smart-dim">${esc(kit.t('Next run'))}</span> <span class="cron-when-next">${esc(next)}</span>` : ''}</td>` +
         `<td class="cron-command"><code title="${esc(job.command)}">${esc(job.command)}</code>${job.user ? `<span class="smart-dim">${esc(kit.t('as {0}', job.user))}</span>` : ''}</td></tr>`;
     });
     const env = tab.env.filter((e) => e.name !== 'CRON_TZ' && e.name !== 'TZ').map((e) => `<li><code class="smart-name">${esc(e.name)}</code><span class="smart-command" title="${esc(e.value)}">${esc(e.value)}</span><span></span></li>`);

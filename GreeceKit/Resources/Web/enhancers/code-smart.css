@@ -188,9 +188,11 @@ html.has-smart {
 
 /* Makefile, crontab, SSH, Compose */
 .smart-table.cron td { vertical-align: top; padding-top: 6px; padding-bottom: 6px; }
-.cron-text { display: block; font-weight: 550; }
-.cron-expr { color: var(--sm-text-3); }
-.cron-next { white-space: nowrap; color: var(--sm-text-2); }
+.cron-text { display: block; min-width: 9em; font-weight: 550; }
+.cron-expr { color: var(--sm-text-3); white-space: nowrap; }
+/* "Next run" and its time each stay whole; in a narrow window or a long language they stack. */
+.cron-next { color: var(--sm-text-2); }
+.cron-next > span { white-space: nowrap; }
 .cron-command { width: 45%; }
 .cron-command code { display: block; max-width: 520px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cron-command .smart-dim { font-size: 11.5px; }

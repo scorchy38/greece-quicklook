@@ -133,7 +133,13 @@ html.has-log body { padding-bottom: 42px; }
   cursor: default;
 }
 .log-step svg { width: 13px; height: 13px; }
-.log-step.next { padding-right: 10px; }
+.log-step.next { padding-right: 10px; white-space: nowrap; }
+/* In a narrow window the level chips need the room, in every language: Next Error becomes its arrow
+   (its name stays in the tooltip). */
+@media (max-width: 760px) {
+  .log-step.next { padding-right: 7px; }
+  .log-step.next .label { display: none; }
+}
 .log-step:hover { background: color-mix(in srgb, var(--fg) 11%, transparent); }
 
 /* Overview strip beside the scrollbar */

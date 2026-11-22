@@ -320,7 +320,7 @@
       .map((lv) => `<button type="button" class="log-chip lg-${LETTER[lv]}" data-level="${lv}" aria-pressed="true"><i></i>${esc(NAMES[lv]())}<b>${kit.number(counts[lv])}</b></button>`).join('');
     bar.innerHTML = `<div class="log-chips">${chips}</div>` + (target ? `<div class="log-nav"><span class="log-pos"></span>` +
       `<button type="button" class="log-step" data-step="-1" title="${esc(target === ERROR ? kit.t('Previous Error') : kit.t('Previous Warning'))} (⇧N)" aria-label="${esc(kit.t('Previous'))}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10 4.5-4.5 4.5 4.5"/></svg></button>` +
-      `<button type="button" class="log-step next" data-step="1" title="${esc(target === ERROR ? kit.t('Next Error') : kit.t('Next Warning'))} (N)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 6 4.5 4.5L12.5 6"/></svg>${esc(target === ERROR ? kit.t('Next Error') : kit.t('Next Warning'))}</button></div>` : '');
+      `<button type="button" class="log-step next" data-step="1" title="${esc(target === ERROR ? kit.t('Next Error') : kit.t('Next Warning'))} (N)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 6 4.5 4.5L12.5 6"/></svg><span class="label">${esc(target === ERROR ? kit.t('Next Error') : kit.t('Next Warning'))}</span></button></div>` : '');
     if (levelsPresent.length) document.body.appendChild(bar);
 
     const strip = document.createElement('canvas');
