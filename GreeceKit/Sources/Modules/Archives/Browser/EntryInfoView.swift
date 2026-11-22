@@ -93,6 +93,18 @@ final class EntryInfoView: NSView {
         let centre = stack.centerYAnchor.constraint(equalTo: document.centerYAnchor, constant: -16)
         centre.priority = .defaultHigh
         centre.isActive = true
+        menu = .context(EntryInfoView.menuItems(node, kind: kind))
+    }
+
+    /// Copying without ⌘C (Quick Look sends keys to Finder): the name, the path, or every fact.
+    static func menuItems(_ node: FileNode, kind: String) -> [NSMenuItem] {
+        var items: [NSMenuItem] = [ActionMenuItem("Copy Name") { Clipboard.copy(node.name) }]
+        if !node.path.isEmpty, node.path != node.name {
+            items.append(ActionMenuItem("Copy Path") { Clipboard.copy(node.path) })
+        }
+        let info = [node.name, subtitle(node, kind: kind)] + rows(node, kind: kind).map { "\($0.0): \($0.1)" }
+        items.append(ActionMenuItem("Copy Info") { Clipboard.copy(info.joined(separator: "\n")) })
+        return items
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
