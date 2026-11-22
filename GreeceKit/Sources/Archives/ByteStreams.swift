@@ -68,22 +68,21 @@ final class RandomAccessFile: RandomAccessSource, @unchecked Sendable {
     func read(at offset: UInt64, count: Int) -> Data {
         guard count > 0, offset < size else { return Data() }
         let wanted = Int(min(UInt64(count), size - offset))
-        var output = Data(count: wanted)
+        // Read straight into fresh memory: zero-filling it first would touch every byte twice.
+        let buffer = UnsafeMutableRawPointer.allocate(byteCount: wanted, alignment: 16)
         var filled = 0
-        output.withUnsafeMutableBytes { buffer in
-            var position = offset
-            while filled < wanted {
-                guard let part = parts.last(where: { $0.start <= position }), position < part.start + part.size else { break }
-                let local = position - part.start
-                let chunk = Int(min(UInt64(wanted - filled), part.size - local))
-                let got = pread(part.descriptor, buffer.baseAddress! + filled, chunk, off_t(local))
-                if got <= 0 { break }
-                filled += got
-                position += UInt64(got)
-            }
+        var position = offset
+        while filled < wanted {
+            guard let part = parts.last(where: { $0.start <= position }), position < part.start + part.size else { break }
+            let local = position - part.start
+            let chunk = Int(min(UInt64(wanted - filled), part.size - local))
+            let got = pread(part.descriptor, buffer + filled, chunk, off_t(local))
+            if got <= 0 { break }
+            filled += got
+            position += UInt64(got)
         }
-        output.count = filled
-        return output
+        guard filled > 0 else { buffer.deallocate(); return Data() }
+        return Data(bytesNoCopy: buffer, count: filled, deallocator: .custom { pointer, _ in pointer.deallocate() })
     }
 }
 

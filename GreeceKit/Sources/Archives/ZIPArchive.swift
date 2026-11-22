@@ -21,8 +21,10 @@ final class ZIPArchive {
     private let lock = NSLock()
     private var lenient: (normalized: [String: Int], folded: [String: Int])?
 
+    /// Maps the file, as every module's reader did: pages are read only when a member touches them,
+    /// and Deflate reads its input straight from the mapping.
     convenience init(url: URL, memberLimit: Int = ZIPArchive.memberLimit) throws {
-        try self.init(source: RandomAccessFile(url), memberLimit: memberLimit)
+        try self.init(source: InMemoryFile(Data(contentsOf: url, options: .alwaysMapped)), memberLimit: memberLimit)
     }
 
     convenience init(data: Data, memberLimit: Int = ZIPArchive.memberLimit) throws {
@@ -37,7 +39,8 @@ final class ZIPArchive {
         centralDirectoryOffset = directory.offset
         var exact: [String: Int] = [:]
         exact.reserveCapacity(members.count)
-        for (index, member) in members.enumerated() where exact[member.path] == nil { exact[member.path] = index }
+        // Backwards, so the first of several members with one name is the one kept.
+        for index in members.indices.reversed() { exact[members[index].path] = index }
         self.exact = exact
     }
 
@@ -114,14 +117,20 @@ final class ZIPArchive {
             return bytes.startIndex == 0 ? bytes : Data(bytes)
         }
         var output = Data()
-        output.reserveCapacity(Int(member.size))
-        let result = try ZIPReader.extract(range, method: member.method, from: source, limit: limit) { buffer in
-            if let base = buffer.baseAddress { output.append(base.assumingMemoryBound(to: UInt8.self), count: buffer.count) }
-            return true
+        var complete: Bool, endedEarly: Bool
+        if member.method == 8 {
+            (output, complete, endedEarly) = try ZIPReader.inflateWhole(range, expectedSize: member.size, from: source, limit: limit)
+        } else {
+            output.reserveCapacity(Int(member.size))
+            let result = try ZIPReader.extract(range, method: member.method, from: source, limit: limit) { buffer in
+                if let base = buffer.baseAddress { output.append(base.assumingMemoryBound(to: UInt8.self), count: buffer.count) }
+                return true
+            }
+            (complete, endedEarly) = (result.complete, result.endedEarly)
         }
-        guard result.complete else { throw ArchiveError.tooLarge }
+        guard complete else { throw ArchiveError.tooLarge }
         // A cut-off stream keeps what decoded; one that decoded nothing at all is damaged.
-        if result.endedEarly, output.isEmpty, range.length > 0 { throw ArchiveError.corrupt("damaged member") }
+        if endedEarly, output.isEmpty, range.length > 0 { throw ArchiveError.corrupt("damaged member") }
         return output
     }
 
@@ -141,6 +150,23 @@ final class ZIPArchive {
     func stream(_ member: ZIPMember, maximum: UInt64 = .max, chunkSize: Int = 1 << 20, _ body: (Data) throws -> Bool) throws {
         if member.isEncrypted { throw ArchiveError.encrypted }
         let range = try ZIPReader.locate(localHeader: member.localHeaderOffset, compressedSize: member.compressedSize, in: source)
+        if member.method == 0 {
+            // Stored: hand over the chunks as read, without copying them again.
+            var position = range.start
+            let end = range.start + min(range.length, maximum)
+            while position < end {
+                let chunk = source.read(at: position, count: Int(min(UInt64(max(chunkSize, 4096)), end - position)))
+                if chunk.isEmpty { return }
+                position += UInt64(chunk.count)
+                if try !body(chunk.startIndex == 0 ? chunk : Data(chunk)) { return }
+            }
+            return
+        }
+        if member.method == 8 {
+            // Deflate: each chunk is inflated into memory that becomes its Data, without a copy.
+            try ZIPReader.inflateChunks(range, from: source, maximum: maximum, chunkSize: chunkSize, deliver: body)
+            return
+        }
         _ = try ZIPReader.extract(range, method: member.method, from: source, limit: maximum, chunkSize: chunkSize) { buffer in
             guard let base = buffer.baseAddress else { return true }
             return try body(Data(bytes: base, count: buffer.count))

@@ -12,7 +12,11 @@ struct ZIPMember {
     var size: UInt64
     /// Where the member's local header starts in the archive's bytes (prefixes and volumes resolved).
     var localHeaderOffset: UInt64
-    var modified: Date?
+    /// The DOS date and time fields, and the precise Unix time when an extended timestamp has one.
+    /// Kept raw: turning them into a `Date` is slow, and most readers never ask.
+    var dosDate: UInt16
+    var dosTime: UInt16
+    var unixTime: Int32?
     var isDirectory: Bool
     var isSymlink: Bool
     var isEncrypted: Bool
@@ -25,6 +29,11 @@ struct ZIPMember {
     /// The stored name climbs out of the archive with a ".." component. Such a member is listed,
     /// but `ZIPArchive` never finds it by name.
     var escapesRoot: Bool { ZIPArchive.hasParentComponent(path) }
+
+    var modified: Date? {
+        if let unixTime { return Date(timeIntervalSince1970: TimeInterval(unixTime)) }
+        return ZIPReader.dosDateTime(date: dosDate, time: dosTime)
+    }
 }
 
 /// Reads ZIP archives: the central directory (including ZIP64, split and prefixed archives)
@@ -156,80 +165,23 @@ enum ZIPReader {
         entries.reserveCapacity(Int(min(entryCount, UInt64(max(limit, 0)))))
         var legacy: [(index: Int, bytes: [UInt8])] = []
 
-        while let fixed = cursor.reserve(46), cursor.buffer.u32(fixed) == 0x02014B50 {
+        while let fixed = cursor.reserve(46) {
+            let header = cursor.buffer.withUnsafeBytes { raw in
+                (signature: raw.le32(fixed), name: Int(raw.le16(fixed + 28)), extra: Int(raw.le16(fixed + 30)), comment: Int(raw.le16(fixed + 32)))
+            }
+            guard header.signature == 0x02014B50 else { break }
             if entries.count >= limit { result.truncated = true; break }
-            let nameLength = Int(cursor.buffer.u16(fixed + 28))
-            let extraLength = Int(cursor.buffer.u16(fixed + 30))
-            let entryCommentLength = Int(cursor.buffer.u16(fixed + 32))
             // The name must be there; a damaged extra field that runs past the directory is cut
             // short rather than costing the member.
-            let wanted = Int(min(UInt64(46 + nameLength + extraLength), cursor.remaining))
-            guard wanted >= 46 + nameLength, let at = cursor.reserve(wanted) else { break }
-            let record = cursor.buffer
-            cursor.advance(46 + nameLength + extraLength + entryCommentLength)
-            let base = record.startIndex
-
-            let madeBy = record.u16(at + 4)
-            let flags = record.u16(at + 8)
-            let method = Int(record.u16(at + 10))
-            let dosTime = record.u16(at + 12)
-            let dosDate = record.u16(at + 14)
-            let crc = record.u32(at + 16)
-            var compressed = UInt64(record.u32(at + 20))
-            var uncompressed = UInt64(record.u32(at + 24))
-            var disk = UInt64(record.u16(at + 34))
-            let external = record.u32(at + 38)
-            var localOffset = UInt64(record.u32(at + 42))
-
-            let nameBytes = [UInt8](record[(base + at + 46)..<(base + at + 46 + nameLength)])
-            var path: String?
-            if let utf8 = String(bytes: nameBytes, encoding: .utf8) { path = utf8 }   // flagged or not: most tools write UTF-8
-
-            var modified = dosDateTime(date: dosDate, time: dosTime)
-            var isAES = false
-            var extra = at + 46 + nameLength
-            let extraEnd = at + wanted
-            while extra + 4 <= extraEnd {
-                let id = record.u16(extra)
-                let size = Int(record.u16(extra + 2))
-                let body = extra + 4
-                guard body + size <= extraEnd else { break }
-                switch id {
-                case 0x0001:
-                    // ZIP64 extended info: only the fields saturated in the header are present, in order.
-                    var field = body
-                    if uncompressed == 0xFFFF_FFFF, field + 8 <= body + size { uncompressed = record.u64(field); field += 8 }
-                    if compressed == 0xFFFF_FFFF, field + 8 <= body + size { compressed = record.u64(field); field += 8 }
-                    if localOffset == 0xFFFF_FFFF, field + 8 <= body + size { localOffset = record.u64(field); field += 8 }
-                    if disk == 0xFFFF, field + 4 <= body + size { disk = UInt64(record.u32(field)) }
-                case 0x5455 where size >= 5 && record[base + body] & 0x01 != 0:
-                    // Extended timestamp: precise UTC modification time.
-                    modified = Date(timeIntervalSince1970: TimeInterval(Int32(bitPattern: record.u32(body + 1))))
-                case 0x7075 where size > 5 && path == nil:
-                    // Info-ZIP Unicode Path: the UTF-8 name, for archives whose header name is legacy.
-                    path = String(bytes: [UInt8](record[(base + body + 5)..<(base + body + size)]), encoding: .utf8)
-                case 0x9901:
-                    isAES = true
-                default:
-                    break
-                }
-                extra = body + size
+            let wanted = Int(min(UInt64(46 + header.name + header.extra), cursor.remaining))
+            guard wanted >= 46 + header.name, let at = cursor.reserve(wanted) else { break }
+            cursor.advance(46 + header.name + header.extra + header.comment)
+            let (member, legacyName) = cursor.buffer.withUnsafeBytes { raw in
+                record(raw, at: at, length: wanted, nameLength: header.name, volumes: spanned ? file : nil, delta: delta)
             }
-
-            let unixMode = (madeBy >> 8) == 3 ? (external >> 16) : 0
-            let decodedPath = path ?? String(decoding: nameBytes, as: UTF8.self)
-            var location = localOffset
-            if spanned, let volume = file.start(ofVolume: Int(clamping: disk)) { location = volume.saturatingAdd(localOffset) }
-            let member = ZIPMember(
-                path: decodedPath, method: method, flags: flags, crc: crc, compressedSize: compressed, size: uncompressed,
-                localHeaderOffset: UInt64(bitPattern: Int64(bitPattern: location) &+ delta), modified: modified,
-                isDirectory: decodedPath.hasSuffix("/") || (external & 0x10) != 0 || (unixMode & 0o170000) == 0o040000,
-                isSymlink: (unixMode & 0o170000) == 0o120000,
-                isEncrypted: flags & 0x0001 != 0 || isAES || method == 99,
-                permissions: unixMode != 0 ? UInt16(unixMode & 0o7777) : nil)
-            if path == nil { legacy.append((entries.count, nameBytes)) }
+            if let legacyName { legacy.append((entries.count, legacyName)) }
             entries.append(make(member, entries.count))
-            if flags & 0x2000 != 0 { result.headerEncrypted = true }
+            if member.flags & 0x2000 != 0 { result.headerEncrypted = true }
         }
 
         if !legacy.isEmpty {
@@ -243,6 +195,73 @@ enum ZIPReader {
         if entries.isEmpty && entryCount > 0 { throw ArchiveError.corrupt("unreadable central directory") }
         result.endsEarly = UInt64(entries.count) < min(entryCount, UInt64(max(limit, 0))) && !result.truncated
         return entries
+    }
+
+    /// One central directory record, known to lie within `raw[at..<at + length]`. Returns the
+    /// member, and its raw name when that isn't UTF-8 (decoded later, with all the others).
+    private static func record(_ raw: UnsafeRawBufferPointer, at: Int, length: Int, nameLength: Int,
+                               volumes: (any RandomAccessSource)?, delta: Int64) -> (ZIPMember, [UInt8]?) {
+        let madeBy = raw.le16(at + 4)
+        let flags = raw.le16(at + 8)
+        let method = Int(raw.le16(at + 10))
+        let crc = raw.le32(at + 16)
+        var compressed = UInt64(raw.le32(at + 20))
+        var uncompressed = UInt64(raw.le32(at + 24))
+        var disk = UInt64(raw.le16(at + 34))
+        let external = raw.le32(at + 38)
+        var localOffset = UInt64(raw.le32(at + 42))
+
+        // Flagged or not, most tools write UTF-8: decode natively, and keep it if nothing needed repair.
+        let name = UnsafeRawBufferPointer(rebasing: raw[(at + 46)..<(at + 46 + nameLength)]).bindMemory(to: UInt8.self)
+        var lossy = String(decoding: name, as: UTF8.self)
+        let isUTF8 = nameLength == 0 || (lossy.utf8.count == nameLength
+            && lossy.withUTF8 { memcmp($0.baseAddress, name.baseAddress, nameLength) == 0 })
+        var path: String? = isUTF8 ? lossy : nil
+
+        var unixTime: Int32?
+        var isAES = false
+        var extra = at + 46 + nameLength
+        let extraEnd = at + length
+        while extra + 4 <= extraEnd {
+            let id = raw.le16(extra)
+            let size = Int(raw.le16(extra + 2))
+            let body = extra + 4
+            guard body + size <= extraEnd else { break }
+            switch id {
+            case 0x0001:
+                // ZIP64 extended info: only the fields saturated in the header are present, in order.
+                var field = body
+                if uncompressed == 0xFFFF_FFFF, field + 8 <= body + size { uncompressed = raw.le64(field); field += 8 }
+                if compressed == 0xFFFF_FFFF, field + 8 <= body + size { compressed = raw.le64(field); field += 8 }
+                if localOffset == 0xFFFF_FFFF, field + 8 <= body + size { localOffset = raw.le64(field); field += 8 }
+                if disk == 0xFFFF, field + 4 <= body + size { disk = UInt64(raw.le32(field)) }
+            case 0x5455 where size >= 5 && raw[body] & 0x01 != 0:
+                // Extended timestamp: precise UTC modification time.
+                unixTime = Int32(bitPattern: raw.le32(body + 1))
+            case 0x7075 where size > 5 && path == nil:
+                // Info-ZIP Unicode Path: the UTF-8 name, for archives whose header name is legacy.
+                path = String(bytes: UnsafeRawBufferPointer(rebasing: raw[(body + 5)..<(body + size)]), encoding: .utf8)
+            case 0x9901:
+                isAES = true
+            default:
+                break
+            }
+            extra = body + size
+        }
+
+        let unixMode = (madeBy >> 8) == 3 ? (external >> 16) : 0
+        let decodedPath = path ?? lossy
+        var location = localOffset
+        if let volumes, let start = volumes.start(ofVolume: Int(clamping: disk)) { location = start.saturatingAdd(localOffset) }
+        let member = ZIPMember(
+            path: decodedPath, method: method, flags: flags, crc: crc, compressedSize: compressed, size: uncompressed,
+            localHeaderOffset: UInt64(bitPattern: Int64(bitPattern: location) &+ delta),
+            dosDate: raw.le16(at + 14), dosTime: raw.le16(at + 12), unixTime: unixTime,
+            isDirectory: decodedPath.utf8.last == UInt8(ascii: "/") || (external & 0x10) != 0 || (unixMode & 0o170000) == 0o040000,
+            isSymlink: (unixMode & 0o170000) == 0o120000,
+            isEncrypted: flags & 0x0001 != 0 || isAES || method == 99,
+            permissions: unixMode != 0 ? UInt16(unixMode & 0o7777) : nil)
+        return (member, path == nil ? [UInt8](name) : nil)
     }
 
     static func methodName(_ code: Int) -> String {
@@ -326,7 +345,11 @@ enum ZIPReader {
                 if !whole || (result.delivered == limit && source.remaining > 0) { return result }
             }
         case 8:
-            let end = try inflate(source, chunkSize: chunkSize, cancel: cancel, emit: emit)
+            let scratch = UnsafeMutableRawBufferPointer.allocate(byteCount: chunkSize, alignment: 16)
+            defer { scratch.deallocate() }
+            let end = try inflate(source, inputChunk: chunkSize, cancel: cancel, room: { scratch }) { count in
+                try emit(UnsafeRawBufferPointer(rebasing: scratch[0..<count]))
+            }
             result.complete = end != .stopped
             result.endedEarly = end == .inputEnded
             return result
@@ -354,22 +377,95 @@ enum ZIPReader {
         return (result.delivered, result.complete)
     }
 
+    /// Inflates a whole Deflate member straight into one buffer sized from its header (grown if
+    /// the header lied), never past `limit` (nor `maxDeflateRatio` times its input). Nothing is
+    /// copied on the way: the buffer becomes the result.
+    static func inflateWhole(_ range: DataRange, expectedSize: UInt64, from file: any RandomAccessSource,
+                             limit: UInt64) throws -> (data: Data, complete: Bool, endedEarly: Bool) {
+        let limit = min(limit, saturatingMultiply(range.length, maxDeflateRatio).saturatingAdd(1024))
+        // One byte past the limit is room enough to tell that there was more.
+        let ceiling = Int(clamping: limit.saturatingAdd(1))
+        // The declared size plus one byte: an honest header never needs the buffer grown to see the end.
+        var capacity = Int(clamping: min(expectedSize.saturatingAdd(1), UInt64(ceiling)))
+        guard var output = malloc(capacity) else { throw ArchiveError.tooLarge }
+        var produced = 0
+        let end: InflateEnd
+        do {
+            end = try inflate(RangeSource(file, offset: range.start, length: range.length), inputChunk: 256 * 1024, cancel: nil, room: {
+                if produced == capacity {
+                    guard capacity < ceiling else { return nil }
+                    let grown = Int(min(UInt64(capacity) * 2, UInt64(ceiling)))
+                    guard let bigger = realloc(output, grown) else { throw ArchiveError.tooLarge }
+                    output = bigger
+                    capacity = grown
+                }
+                return UnsafeMutableRawBufferPointer(start: output + produced, count: capacity - produced)
+            }) { count in
+                produced += count
+                return true
+            }
+        } catch {
+            free(output)
+            throw error
+        }
+        let complete = UInt64(produced) <= limit
+        let endedEarly = end == .inputEnded
+        guard produced > 0 else { free(output); return (Data(), complete, endedEarly) }
+        return (Data(bytesNoCopy: output, count: produced, deallocator: .free), complete, endedEarly)
+    }
+
+    /// Inflates a Deflate member into fresh chunks of up to `chunkSize` bytes that become the
+    /// `Data` handed to `deliver` as they are, never more than `maximum` bytes in all. Return
+    /// false from `deliver` to stop.
+    static func inflateChunks(_ range: DataRange, from file: any RandomAccessSource, maximum: UInt64, chunkSize: Int,
+                              deliver: (Data) throws -> Bool) throws {
+        let limit = min(maximum, saturatingMultiply(range.length, maxDeflateRatio).saturatingAdd(1024))
+        let chunkSize = max(chunkSize, 4096)
+        var current: UnsafeMutableRawPointer?
+        var filled = 0
+        var total: UInt64 = 0
+        defer { free(current) }
+
+        /// Hands over the chunk being filled, which then belongs to its `Data`.
+        func flush() throws -> Bool {
+            guard let chunk = current, filled > 0 else { return true }
+            current = nil
+            defer { filled = 0 }
+            return try deliver(Data(bytesNoCopy: chunk, count: filled, deallocator: .free))
+        }
+
+        let end = try inflate(RangeSource(file, offset: range.start, length: range.length), inputChunk: chunkSize, cancel: nil, room: {
+            guard total < limit else { return nil }
+            if current == nil {
+                guard let fresh = malloc(chunkSize) else { throw ArchiveError.tooLarge }
+                current = fresh
+            }
+            return UnsafeMutableRawBufferPointer(start: current! + filled, count: Int(min(UInt64(chunkSize - filled), limit - total)))
+        }) { count in
+            filled += count
+            total += UInt64(count)
+            if filled < chunkSize && total < limit { return true }
+            return try flush()
+        }
+        if end != .stopped { _ = try flush() }
+    }
+
     private enum InflateEnd { case finished, stopped, inputEnded }
 
-    /// Inflates raw Deflate data into `emit`.
-    private static func inflate(_ source: RangeSource, chunkSize: Int, cancel: CancelToken?,
-                                emit: (UnsafeRawBufferPointer) throws -> Bool) throws -> InflateEnd {
+    /// The one Deflate loop. `room` says where the next output goes (nil: no room left, stop);
+    /// `wrote` hears how many bytes went there and returns false to stop.
+    private static func inflate(_ source: RangeSource, inputChunk: Int, cancel: CancelToken?,
+                                room: () throws -> UnsafeMutableRawBufferPointer?,
+                                wrote: (Int) throws -> Bool) throws -> InflateEnd {
         var stream = z_stream()
         guard inflateInit2_(&stream, -15, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) == Z_OK else {
             throw ArchiveError.corrupt("inflate init")
         }
         defer { inflateEnd(&stream) }
-        let output = UnsafeMutableRawPointer.allocate(byteCount: chunkSize, alignment: 16)
-        defer { output.deallocate() }
 
         while true {
             if cancel?.isCancelled == true { throw ArchiveError.cancelled }
-            let chunk = try source.read(upTo: chunkSize)
+            let chunk = try source.read(upTo: inputChunk)
             if chunk.isEmpty { return .inputEnded }   // ran out of input: keep what decoded
             var ended = false
             var stopped = false
@@ -378,11 +474,13 @@ enum ZIPReader {
                 stream.avail_in = uInt(input.count)
                 defer { stream.next_in = nil; stream.next_out = nil }
                 while true {
-                    stream.next_out = output.assumingMemoryBound(to: Bytef.self)
-                    stream.avail_out = uInt(chunkSize)
+                    guard let space = try room(), let base = space.baseAddress, !space.isEmpty else { stopped = true; return }
+                    stream.next_out = base.assumingMemoryBound(to: Bytef.self)
+                    stream.avail_out = uInt(min(space.count, Int(UInt32.max)))
+                    let offered = stream.avail_out
                     let status = CArchive.inflate(&stream, Z_NO_FLUSH)
-                    let produced = chunkSize - Int(stream.avail_out)
-                    if produced > 0, try !emit(UnsafeRawBufferPointer(start: output, count: produced)) { stopped = true; return }
+                    let produced = Int(offered - stream.avail_out)
+                    if produced > 0, try !wrote(produced) { stopped = true; return }
                     if status == Z_STREAM_END { ended = true; return }
                     if status != Z_OK && status != Z_BUF_ERROR { throw ArchiveError.corrupt("deflate data error") }
                     if stream.avail_in == 0 && stream.avail_out > 0 { return }
@@ -411,7 +509,7 @@ enum ZIPReader {
         return nil
     }
 
-    private static func dosDateTime(date: UInt16, time: UInt16) -> Date? {
+    static func dosDateTime(date: UInt16, time: UInt16) -> Date? {
         guard date != 0 else { return nil }
         var components = DateComponents()
         components.year = Int((date >> 9) & 0x7F) + 1980
@@ -457,6 +555,13 @@ private struct DirectoryCursor {
 
     /// Bytes left before the directory's end.
     var remaining: UInt64 { end > position ? end - position : 0 }
+}
+
+extension UnsafeRawBufferPointer {
+    /// Little-endian reads at offsets the caller has already bounds-checked.
+    @inline(__always) func le16(_ offset: Int) -> UInt16 { loadUnaligned(fromByteOffset: offset, as: UInt16.self).littleEndian }
+    @inline(__always) func le32(_ offset: Int) -> UInt32 { loadUnaligned(fromByteOffset: offset, as: UInt32.self).littleEndian }
+    @inline(__always) func le64(_ offset: Int) -> UInt64 { loadUnaligned(fromByteOffset: offset, as: UInt64.self).littleEndian }
 }
 
 extension Data {
