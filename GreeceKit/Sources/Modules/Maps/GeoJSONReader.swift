@@ -522,14 +522,16 @@ enum GeoJSONReader {
             }
         }
         if budget.exhausted { result.truncated = true }
-        if result.features.isEmpty && result.skipped > 0 { throw GeoError.invalid("No line of this file is a GeoJSON feature.") }
+        if result.features.isEmpty && result.skipped > 0 { throw GeoError.invalid(String(localized: "No line of this file is a GeoJSON feature.", bundle: .greeceKit)) }
         return result
     }
 
     private static func message(_ failure: JSONCursor.Failure) -> String {
         switch failure {
-        case .syntax(let offset): return "This GeoJSON is damaged near byte \(offset.formatted())."
-        case .depth: return "This GeoJSON nests too deeply to read."
+        case .syntax(let offset):
+            return String(localized: "This GeoJSON is damaged near byte \(offset).", bundle: .greeceKit,
+                          comment: "Error. The argument is a position in the file, counted in bytes")
+        case .depth: return String(localized: "This GeoJSON nests too deeply to read.", bundle: .greeceKit)
         }
     }
 
@@ -762,10 +764,10 @@ enum TopoJSONReader {
                     }
                 }
             } catch {
-                throw GeoError.invalid("This TopoJSON is damaged.")
+                throw GeoError.invalid(String(localized: "This TopoJSON is damaged.", bundle: .greeceKit))
             }
         }
-        guard isTopology else { throw GeoError.invalid("This file isn’t a TopoJSON topology.") }
+        guard isTopology else { throw GeoError.invalid(String(localized: "This file isn’t a TopoJSON topology.", bundle: .greeceKit)) }
 
         // Quantized topologies store arcs as deltas from the previous position.
         if let transform {

@@ -135,9 +135,9 @@ enum GPXReader {
     static func read(_ data: Data, limits: GeoLimits) throws -> MapDocument {
         let document = MapDocument(format: .gpx)
         document.crs = .wgs84
-        let waypoints = GeoLayer(name: "Waypoints")
-        let routes = GeoLayer(name: "Routes")
-        let tracks = GeoLayer(name: "Tracks")
+        let waypoints = GeoLayer(name: String(localized: "Waypoints", bundle: .greeceKit, comment: "Map layer of a GPS file: its marked places"))
+        let routes = GeoLayer(name: String(localized: "Routes", bundle: .greeceKit, comment: "Map layer of a GPS file: its planned routes"))
+        let tracks = GeoLayer(name: String(localized: "Tracks", bundle: .greeceKit, comment: "Map layer of a GPS file: its recorded tracks"))
         routes.role = .route
         routes.colorIndex = 1
         tracks.role = .track
@@ -201,7 +201,12 @@ enum GPXReader {
                 else if stream.parent == "trk" || stream.parent == "rte" { itemName = text }
             case "desc", "cmt":
                 if stream.parent == "wpt" || stream.parent == "trk" || stream.parent == "rte" {
-                    if itemDetail == nil { itemDetail = text } else if !text.isEmpty { itemFields.append((name == "desc" ? "Description" : "Comment", .string(text))) }
+                    if itemDetail == nil { itemDetail = text } else if !text.isEmpty {
+                        let key = name == "desc"
+                            ? String(localized: "Description", bundle: .greeceKit, comment: "Inspector row title")
+                            : String(localized: "Comment", bundle: .greeceKit, comment: "Inspector row title")
+                        itemFields.append((key, .string(text)))
+                    }
                 }
             case "sym", "type", "src", "number":
                 if stream.parent == "wpt" { pointFields.append((name, .string(text))) }
@@ -233,7 +238,9 @@ enum GPXReader {
             case "trk", "rte":
                 if name == "rte", !segment.isEmpty { segments.append(segment) }
                 let lines = segments.map { $0.map(\.point) }.filter { $0.count >= 1 }
-                let label = itemName ?? (name == "trk" ? "Track \(tracks.features.count + 1)" : "Route \(routes.features.count + 1)")
+                let label = itemName ?? (name == "trk"
+                    ? String(localized: "Track \(String(tracks.features.count + 1))", bundle: .greeceKit, comment: "Name of an unnamed GPS track, such as “Track 2”")
+                    : String(localized: "Route \(String(routes.features.count + 1))", bundle: .greeceKit, comment: "Name of an unnamed GPS route, such as “Route 2”"))
                 if !lines.isEmpty {
                     var f = GeoFeature(geometry: lines.count == 1 ? .lineString(lines[0]) : .multiLineString(lines))
                     f.name = label
@@ -241,7 +248,8 @@ enum GPXReader {
                     f.properties.append(("name", .string(label)))
                     f.properties += itemFields
                     let profile = TrackProfile(name: label, segments: segments)
-                    f.properties.append(("Points", .number(Double(profile.pointCount))))
+                    f.properties.append((String(localized: "Points", bundle: .greeceKit, comment: "Row title in a map feature’s inspector: how many points a GPS track has"),
+                                         .number(Double(profile.pointCount))))
                     if budget.admit(nil) {
                         (name == "trk" ? tracks : routes).features.append(f)
                         if profile.pointCount >= 2 { document.tracks.append(profile) }
@@ -256,7 +264,7 @@ enum GPXReader {
         }
         let parsed = stream.parse(data)
         let empty = tracks.features.isEmpty && routes.features.isEmpty && waypoints.features.isEmpty
-        guard sawGPX, parsed, !(stream.failed && empty) else { throw GeoError.invalid("This GPX file is damaged.") }
+        guard sawGPX, parsed, !(stream.failed && empty) else { throw GeoError.invalid(String(localized: "This GPX file is damaged.", bundle: .greeceKit)) }
         if stream.timedOut || budget.exhausted { document.truncated = true }
         document.title = metadataName
         // Drawn bottom to top: the planned route under the recorded track.
@@ -267,7 +275,7 @@ enum GPXReader {
             return a.pointCount > b.pointCount
         }
         let count = waypoints.features.count
-        if count > 0 { document.facts.append("\(count.formatted()) \(count == 1 ? "waypoint" : "waypoints")") }
+        if count > 0 { document.facts.append(String(localized: "\(count) waypoints", bundle: .greeceKit, comment: "Info bar detail: marked places in a GPS file")) }
         return document
     }
 }

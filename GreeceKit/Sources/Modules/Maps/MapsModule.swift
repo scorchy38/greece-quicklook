@@ -194,7 +194,7 @@ enum MapLoader {
         do {
             return try ZIPArchive(url: url, memberLimit: 10_000)
         } catch ArchiveError.corrupt {
-            throw GeoError.invalid("This archive is damaged.")
+            throw GeoError.invalid(String(localized: "This archive is damaged.", bundle: .greeceKit))
         }
     }
 
@@ -202,7 +202,9 @@ enum MapLoader {
         let size = file.fileSize ?? 0
         func readAll() throws -> Data {
             guard size <= limits.maxBytes else {
-                throw GeoError.tooLarge("This file is \(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)), more than Greece draws as a map.")
+                let sizeText = ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)
+                throw GeoError.tooLarge(String(localized: "This file is \(sizeText), more than Greece draws as a map.", bundle: .greeceKit,
+                                               comment: "Error. The argument is the file’s size, such as “250 MB”"))
             }
             return try Data(contentsOf: file.url, options: .alwaysMapped)
         }
@@ -217,9 +219,12 @@ enum MapLoader {
             document.layers = [GeoLayer(name: name, features: result.features)]
             document.truncated = result.truncated
             if let crsName = result.crsName {
-                if let crs = CRS.named(crsName) { document.crs = crs } else { document.notices.append("Unknown coordinate system “\(crsName)”.") }
+                if let crs = CRS.named(crsName) { document.crs = crs } else {
+                    document.notices.append(String(localized: "Unknown coordinate system “\(crsName)”.", bundle: .greeceKit,
+                                                   comment: "Notice on a map. The argument is the name the file gives, such as “EPSG:2263”"))
+                }
             }
-            if result.skipped > 0 { document.notices.append("\(result.skipped.formatted()) unreadable \(result.skipped == 1 ? "line" : "lines") skipped.") }
+            if result.skipped > 0 { document.notices.append(unreadableLines(result.skipped)) }
             return document
 
         case .topojson:
@@ -266,7 +271,7 @@ enum MapLoader {
         case .kmz:
             let zip = try openZip(file.url)
             let kml = zip.member(named: "doc.kml") ?? zip.members.first { $0.path.lowercased().hasSuffix(".kml") && !$0.path.hasPrefix("__MACOSX") }
-            guard let kml, let data = try? zip.contents(of: kml, limit: limits.maxBytes) else { throw GeoError.invalid("This KMZ has no readable KML inside.") }
+            guard let kml, let data = try? zip.contents(of: kml, limit: limits.maxBytes) else { throw GeoError.invalid(String(localized: "This KMZ has no readable KML inside.", bundle: .greeceKit)) }
             let base = (kml.path as NSString).deletingLastPathComponent
             func memberPath(_ href: String) -> String? {
                 guard !href.contains("://") else { return nil }
@@ -303,18 +308,23 @@ enum MapLoader {
         case .wkt:
             let data = try readAll()
             let result = WKTReader.read(String(decoding: data, as: UTF8.self), limits: limits)
-            guard !result.geometries.isEmpty else { throw GeoError.invalid("No well-known text geometry found.") }
+            guard !result.geometries.isEmpty else { throw GeoError.invalid(String(localized: "No well-known text geometry found.", bundle: .greeceKit)) }
             let document = MapDocument(format: .wkt)
             let features = result.geometries.enumerated().map { index, geometry -> GeoFeature in
                 var f = GeoFeature(geometry: geometry)
-                f.properties = [("Geometry", .number(Double(index + 1)))]
+                f.properties = [(String(localized: "Geometry", bundle: .greeceKit,
+                                           comment: "Row title in a map feature’s inspector. Its value is the geometry’s number in a WKT file"),
+                                .number(Double(index + 1)))]
                 return f
             }
             document.layers = [GeoLayer(name: name, features: features)]
             if let srid = result.srid {
-                if let crs = CRS.epsg(srid) { document.crs = crs } else { document.notices.append("Unknown SRID \(srid).") }
+                if let crs = CRS.epsg(srid) { document.crs = crs } else {
+                    document.notices.append(String(localized: "Unknown SRID \(String(srid)).", bundle: .greeceKit,
+                                                   comment: "Notice on a map. The argument is a spatial reference ID, such as “2263”"))
+                }
             }
-            if result.skipped > 0 { document.notices.append("\(result.skipped.formatted()) unreadable \(result.skipped == 1 ? "line" : "lines") skipped.") }
+            if result.skipped > 0 { document.notices.append(unreadableLines(result.skipped)) }
             document.truncated = result.truncated
             return document
 
@@ -326,15 +336,15 @@ enum MapLoader {
             document.layers = [result.layer]
             document.crs = result.crs
             document.truncated = budget.exhausted
-            if sources.dbf == nil { document.notices.append("No .dbf beside this shapefile, so features have no attributes.") }
-            if result.prjUnreadable { document.notices.append("The .prj file couldn’t be read.") }
-            if sources.prj == nil { document.facts.append("No .prj") }
+            if sources.dbf == nil { document.notices.append(String(localized: "No .dbf beside this shapefile, so features have no attributes.", bundle: .greeceKit)) }
+            if result.prjUnreadable { document.notices.append(String(localized: "The .prj file couldn’t be read.", bundle: .greeceKit)) }
+            if sources.prj == nil { document.facts.append(String(localized: "No .prj", bundle: .greeceKit, comment: "Info bar detail: a shapefile has no .prj file, which names its coordinate system")) }
             return document
 
         case .zippedShapefile:
             let zip = try openZip(file.url)
             let all = ShapefileReader.sources(in: zip, maxBytes: limits.maxBytes)
-            guard !all.isEmpty else { throw GeoError.invalid("No readable shapefile in this archive.") }
+            guard !all.isEmpty else { throw GeoError.invalid(String(localized: "No readable shapefile in this archive.", bundle: .greeceKit)) }
             var budget = GeoBudget(limits)
             let document = MapDocument(format: .zippedShapefile)
             var reprojected: [String] = []
@@ -368,14 +378,29 @@ enum MapLoader {
             document.crs = .wgs84
             document.title = set.info.name
             document.tileSets = [set]
-            document.facts.append(set.info.kind == .vector
-                                  ? "Vector · \(set.info.vectorLayers.count) \(set.info.vectorLayers.count == 1 ? "layer" : "layers")"
-                                  : "Raster · \(set.info.format.uppercased())")
-            document.facts.append(set.info.minzoom == set.info.maxzoom ? "Zoom \(set.info.minzoom)" : "Zoom \(set.info.minzoom)–\(set.info.maxzoom)")
-            if let count { document.facts.append("\(count.formatted()) \(count == 1 ? "tile" : "tiles")") }
+            if set.info.kind == .vector {
+                let layers = set.info.vectorLayers.count
+                document.facts.append(String(localized: "Vector [tiles]", defaultValue: "Vector", bundle: .greeceKit,
+                                             comment: "Info bar detail: an MBTiles file of vector tiles")
+                                      + " · " + String(localized: "\(layers) layers", bundle: .greeceKit, comment: "Info bar detail: layers in a vector tile set"))
+            } else {
+                document.facts.append(String(localized: "Raster [tiles]", defaultValue: "Raster", bundle: .greeceKit,
+                                             comment: "Info bar detail: an MBTiles file of image tiles")
+                                      + " · " + set.info.format.uppercased())
+            }
+            let minzoom = String(set.info.minzoom), maxzoom = String(set.info.maxzoom)
+            document.facts.append(set.info.minzoom == set.info.maxzoom
+                                  ? String(localized: "Zoom \(minzoom)", bundle: .greeceKit, comment: "Info bar detail: a tile set’s only zoom level, such as “Zoom 14”")
+                                  : String(localized: "Zoom \(minzoom)–\(maxzoom)", bundle: .greeceKit, comment: "Info bar detail: a tile set’s zoom levels, such as “Zoom 0–14”"))
+            if let count { document.facts.append(String(localized: "\(count) tiles", bundle: .greeceKit, comment: "Info bar detail: tiles in an MBTiles file")) }
             _ = metadata
             return document
         }
+    }
+
+    /// "3 unreadable lines skipped.", for GeoJSON Lines and WKT.
+    private static func unreadableLines(_ count: Int) -> String {
+        String(localized: "\(count) unreadable lines skipped.", bundle: .greeceKit, comment: "Notice on a map: lines of the file that couldn’t be read")
     }
 
     /// Text formats that turn out not to be geodata are shown as code instead.
@@ -390,8 +415,8 @@ enum MapLoader {
         guard let text = try? TextFile(url: file.url) else { return nil }
         let lines = text.lineCount
         let summary = FileSummary(symbol: grammar == "json" ? "curlybraces.square" : "chevron.left.forwardslash.chevron.right",
-                                  title: grammar == "json" ? "JSON" : (grammar == "xml" ? "XML" : "Text"),
-                                  details: ["\(lines.formatted()) \(lines == 1 ? "line" : "lines")"] + [file.sizeText].compactMap { $0 },
+                                  title: grammar == "json" ? "JSON" : (grammar == "xml" ? "XML" : String(localized: "Text", bundle: .greeceKit, comment: "Info bar title: a plain text file")),
+                                  details: [String(localized: "\(lines) lines", bundle: .greeceKit, comment: "Info bar detail: lines of text in a file")] + [file.sizeText].compactMap { $0 },
                                   trailing: file.modifiedText)
         return .web(WebDocument(kind: .code, text: text.text, grammar: grammar, truncated: text.truncated), summary, NSSize(width: 920, height: 720))
     }

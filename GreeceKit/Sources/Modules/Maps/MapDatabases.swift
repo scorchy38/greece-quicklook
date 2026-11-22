@@ -18,7 +18,7 @@ final class MapSQLite: @unchecked Sendable {
         let uri = components.string ?? "file:\(url.path)?immutable=1"
         guard sqlite3_open_v2(uri, &db, SQLITE_OPEN_READONLY | SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX, nil) == SQLITE_OK, let db else {
             if let db { sqlite3_close(db) }
-            throw GeoError.invalid("This database can’t be opened.")
+            throw GeoError.invalid(String(localized: "This database can’t be opened.", bundle: .greeceKit))
         }
         handle = db
         sqlite3_progress_handler(db, 5_000, { context in
@@ -165,7 +165,7 @@ enum MBTilesReader {
 
     static func read(_ url: URL, name fileName: String) throws -> (TileSet, [String: String], tileCount: Int?) {
         let db = try MapSQLite(url: url)
-        guard db.tableExists("tiles") else { throw GeoError.invalid("This MBTiles file has no tiles table.") }
+        guard db.tableExists("tiles") else { throw GeoError.invalid(String(localized: "This MBTiles file has no tiles table.", bundle: .greeceKit)) }
         var metadata: [String: String] = [:]
         var order: [String] = []
         if db.tableExists("metadata") {
@@ -272,7 +272,7 @@ enum GeoPackageReader {
 
     static func read(_ url: URL, limits: GeoLimits) throws -> MapDocument {
         let db = try MapSQLite(url: url)
-        guard db.tableExists("gpkg_contents") else { throw GeoError.invalid("This GeoPackage has no contents table.") }
+        guard db.tableExists("gpkg_contents") else { throw GeoError.invalid(String(localized: "This GeoPackage has no contents table.", bundle: .greeceKit)) }
         let document = MapDocument(format: .geopackage)
 
         struct Content { var table: String; var type: String; var identifier: String?; var srs: Int64? }
@@ -300,7 +300,7 @@ enum GeoPackageReader {
                 if let parsed = CRS.parse(wkt: definition) { result = parsed }
                 else if row.text(1)?.uppercased() == "EPSG", let code = row.int(2) { result = CRS.epsg(Int(code)) }
                 if result == nil, srs == 4326 { result = .wgs84 }
-                if var r = result, let name = row.text(0, limit: 200), !name.isEmpty, r.name == "Geographic" || r.name == "Projected" { r.name = name; result = r }
+                if var r = result, let name = row.text(0, limit: 200), !name.isEmpty, r.isUnnamed { r.name = name; result = r }
                 return false
             }
             if result == nil, srs > 0 { result = CRS.epsg(Int(srs)) }
@@ -345,7 +345,8 @@ enum GeoPackageReader {
                 }
                 document.layers.append(layer)
                 if document.crs == nil, let tableCRS { document.crs = tableCRS }
-                let name = tableCRS?.name ?? "Undefined coordinate system"
+                let name = tableCRS?.name ?? String(localized: "Undefined coordinate system", bundle: .greeceKit,
+                                                    comment: "Info bar detail, in a list of a GeoPackage’s coordinate systems: a table that names none")
                 if !crsNames.contains(name) { crsNames.append(name) }
             case "attributes":
                 attributes += 1
@@ -353,7 +354,8 @@ enum GeoPackageReader {
                 if let set = tileSet(db, table: content.table, index: document.tileSets.count, name: content.identifier ?? content.table, crs: crs(for: content.srs)) {
                     document.tileSets.append(set)
                 } else {
-                    document.notices.append("The tile table “\(content.table)” isn’t in Web Mercator, so it isn’t drawn.")
+                    document.notices.append(String(localized: "The tile table “\(content.table)” isn’t in Web Mercator, so it isn’t drawn.", bundle: .greeceKit,
+                                                   comment: "Notice on a map. The argument is a table’s name in a GeoPackage"))
                 }
             default: break
             }
@@ -361,10 +363,10 @@ enum GeoPackageReader {
         if !reprojected.isEmpty { document.markReprojected(reprojected.joined(separator: ", ")) }
         if crsNames.count > 1 { document.crsSummary = crsNames.joined(separator: ", ") }
         if budget.exhausted { document.truncated = true }
-        let tables = document.layers.count
-        if tables > 0 { document.facts.append("\(tables) \(tables == 1 ? "feature table" : "feature tables")") }
-        if !document.tileSets.isEmpty { document.facts.append("\(document.tileSets.count) \(document.tileSets.count == 1 ? "tile table" : "tile tables")") }
-        if attributes > 0 { document.facts.append("\(attributes) \(attributes == 1 ? "attribute table" : "attribute tables")") }
+        let tables = document.layers.count, tileTables = document.tileSets.count
+        if tables > 0 { document.facts.append(String(localized: "\(tables) feature tables", bundle: .greeceKit, comment: "Info bar detail: tables of map features in a GeoPackage")) }
+        if tileTables > 0 { document.facts.append(String(localized: "\(tileTables) tile tables", bundle: .greeceKit, comment: "Info bar detail: tables of map tiles in a GeoPackage")) }
+        if attributes > 0 { document.facts.append(String(localized: "\(attributes) attribute tables", bundle: .greeceKit, comment: "Info bar detail: tables without geometry in a GeoPackage")) }
         return document
     }
 

@@ -67,7 +67,7 @@ enum MapPageBuilder {
         }
         let data = MapPageData(
             format: document.format, formatTitle: document.format.title, title: document.title, layers: layers,
-            bounds: fit.isEmpty ? nil : fit.array, notices: document.notices + (document.truncated ? ["Showing the first \(stats.features.formatted()) features: this file is larger than Greece draws in a preview."] : []),
+            bounds: fit.isEmpty ? nil : fit.array, notices: document.notices + (document.truncated ? [truncationNotice(stats.features)] : []),
             planar: document.planar, tracks: document.tracks, overlays: overlays,
             icons: document.icons.indices.map { "greece://module/icon/\($0)" },
             tiles: document.tileSets.map(\.info),
@@ -82,6 +82,11 @@ enum MapPageBuilder {
         let resources = MapResources(document: document)
         page.resources = { path in resources.serve(path) }
         return .web(page, summary(document, file: file), NSSize(width: 1040, height: 760))
+    }
+
+    static func truncationNotice(_ features: Int) -> String {
+        String(localized: "Showing the first \(features) features: this file is larger than Greece draws in a preview.", bundle: .greeceKit,
+               comment: "Notice on a map")
     }
 
     static func summary(_ document: MapDocument, file: FileInfo) -> FileSummary {
@@ -126,37 +131,57 @@ enum MapPageBuilder {
 }
 
 enum MapFormatting {
+    /// A measurement in the unit given, with a fixed number of decimals, written the locale's way
+    /// ("1.5 km", "1,5 km", "1,5 км").
+    static func measurement<U: Dimension>(_ value: Double, _ unit: U, decimals: Int,
+                                          width: Measurement<U>.FormatStyle.UnitWidth = .abbreviated) -> String {
+        Measurement(value: value, unit: unit)
+            .formatted(.measurement(width: width, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(decimals))))
+    }
+
     static func distance(_ metres: Double, imperial: Bool) -> String {
         if imperial {
             let miles = metres / 1609.344
-            return miles < 0.2 ? "\(Int((metres * 3.28084).rounded()).formatted()) ft" : String(format: miles < 100 ? "%.1f mi" : "%.0f mi", miles)
+            if miles < 0.2 { return measurement(metres * 3.28084, UnitLength.feet, decimals: 0) }
+            return measurement(miles, UnitLength.miles, decimals: miles < 100 ? 1 : 0)
         }
-        if metres < 1000 { return "\(Int(metres.rounded()).formatted()) m" }
-        return String(format: metres < 100_000 ? "%.1f km" : "%.0f km", metres / 1000)
+        if metres < 1000 { return measurement(metres, UnitLength.meters, decimals: 0) }
+        return measurement(metres / 1000, UnitLength.kilometers, decimals: metres < 100_000 ? 1 : 0)
     }
 
     static func elevation(_ metres: Double, imperial: Bool) -> String {
-        imperial ? "\(Int((metres * 3.28084).rounded()).formatted()) ft" : "\(Int(metres.rounded()).formatted()) m"
+        imperial ? measurement(metres * 3.28084, UnitLength.feet, decimals: 0) : measurement(metres, UnitLength.meters, decimals: 0)
     }
 
     static func duration(_ seconds: Double) -> String {
         let total = Int(seconds.rounded())
         let days = total / 86_400, hours = (total % 86_400) / 3600, minutes = (total % 3600) / 60
-        if days > 0 { return "\(days) d \(hours) h" }
-        if hours > 0 { return "\(hours) h \(minutes) min" }
-        if minutes > 0 { return "\(minutes) min" }
-        return "\(total) s"
+        let d = String(days), h = String(hours), m = String(minutes)
+        if days > 0 { return String(localized: "\(d) d \(h) h", bundle: .greeceKit, comment: "A track’s duration, abbreviated: days and hours, such as “2 d 5 h”") }
+        if hours > 0 { return String(localized: "\(h) h \(m) min", bundle: .greeceKit, comment: "A track’s duration, abbreviated: hours and minutes, such as “3 h 12 min”") }
+        if minutes > 0 { return String(localized: "\(m) min", bundle: .greeceKit, comment: "A track’s duration, abbreviated: minutes, such as “42 min”") }
+        let s = String(total)
+        return String(localized: "\(s) s", bundle: .greeceKit, comment: "A track’s duration, abbreviated: seconds, such as “30 s”")
     }
 
     /// "48.1°N–48.3°N, 16.2°E–16.5°E", precise enough for the extent.
     static func bounds(_ b: GeoBounds) -> String {
         let span = max(b.width, b.height)
         let digits = span >= 20 ? 0 : span >= 2 ? 1 : span >= 0.2 ? 2 : 3
-        func lat(_ v: Double) -> String { String(format: "%.\(digits)f°%@", abs(v), v < 0 ? "S" : "N") }
+        func degrees(_ v: Double) -> String { abs(v).formatted(.number.precision(.fractionLength(digits))) }
+        func lat(_ v: Double) -> String {
+            let value = degrees(v)
+            return v < 0
+                ? String(localized: "\(value)°S", bundle: .greeceKit, comment: "A latitude south of the equator, such as “33.9°S”")
+                : String(localized: "\(value)°N", bundle: .greeceKit, comment: "A latitude north of the equator, such as “48.1°N”")
+        }
         func lon(_ v: Double) -> String {
             var x = v.truncatingRemainder(dividingBy: 360)
             if x > 180 { x -= 360 } else if x < -180 { x += 360 }
-            return String(format: "%.\(digits)f°%@", abs(x), x < 0 ? "W" : "E")
+            let value = degrees(x)
+            return x < 0
+                ? String(localized: "\(value)°W", bundle: .greeceKit, comment: "A longitude west of Greenwich, such as “73.9°W”")
+                : String(localized: "\(value)°E", bundle: .greeceKit, comment: "A longitude east of Greenwich, such as “16.2°E”")
         }
         if b.width == 0 && b.height == 0 { return "\(lat(b.minY)), \(lon(b.minX))" }
         return "\(lat(b.minY))–\(lat(b.maxY)), \(lon(b.minX))–\(lon(b.maxX))"
@@ -273,15 +298,22 @@ final class MapResources: @unchecked Sendable {
 
 /// Lengths, areas and positions for the inspector, measured on the sphere.
 enum MapMeasure {
+    /// The feature inspector's subtitle: "Polygon", "3 lines". A multi-geometry of one part is named as that part.
     static func typeName(_ g: GeoGeometry) -> String {
+        let point = String(localized: "Point [map geometry]", defaultValue: "Point", bundle: .greeceKit, comment: "Map feature inspector: the feature is a point")
+        let line = String(localized: "Line [map geometry]", defaultValue: "Line", bundle: .greeceKit, comment: "Map feature inspector: the feature is a line")
+        let polygon = String(localized: "Polygon", bundle: .greeceKit, comment: "Map feature inspector: the feature is a polygon")
         switch g {
-        case .point: return "Point"
-        case .multiPoint(let p): return p.count == 1 ? "Point" : "\(p.count.formatted()) points"
-        case .lineString: return "Line"
-        case .multiLineString(let l): return l.count == 1 ? "Line" : "\(l.count.formatted()) lines"
-        case .polygon: return "Polygon"
-        case .multiPolygon(let p): return p.count == 1 ? "Polygon" : "\(p.count.formatted()) polygons"
-        case .collection(let parts): return "Collection of \(parts.count.formatted())"
+        case .point: return point
+        case .multiPoint(let p): return p.count == 1 ? point : GeoStats.points(p.count)
+        case .lineString: return line
+        case .multiLineString(let l): return l.count == 1 ? line : GeoStats.lines(l.count)
+        case .polygon: return polygon
+        case .multiPolygon(let p): return p.count == 1 ? polygon : GeoStats.polygons(p.count)
+        case .collection(let parts):
+            let count = parts.count
+            return String(localized: "Collection of \(count)", bundle: .greeceKit,
+                          comment: "Map feature inspector: a geometry collection. The argument is how many geometries it holds")
         }
     }
 
@@ -349,11 +381,12 @@ enum MapMeasure {
     static func area(squareMetres m2: Double, imperial: Bool) -> String {
         if imperial {
             let acres = m2 / 4046.8564224
-            if acres >= 640 { return String(format: "%.1f sq mi", m2 / 2_589_988.11) }
-            return acres >= 1 ? String(format: "%.1f acres", acres) : "\(Int((m2 * 10.7639).rounded()).formatted()) sq ft"
+            if acres >= 640 { return MapFormatting.measurement(m2 / 2_589_988.11, UnitArea.squareMiles, decimals: 1) }
+            return acres >= 1 ? MapFormatting.measurement(acres, UnitArea.acres, decimals: 1, width: .wide)
+                              : MapFormatting.measurement(m2 * 10.7639, UnitArea.squareFeet, decimals: 0)
         }
-        if m2 >= 1_000_000 { return String(format: m2 >= 100_000_000 ? "%.0f km²" : "%.2f km²", m2 / 1_000_000) }
-        if m2 >= 10_000 { return String(format: "%.2f ha", m2 / 10_000) }
-        return "\(Int(m2.rounded()).formatted()) m²"
+        if m2 >= 1_000_000 { return MapFormatting.measurement(m2 / 1_000_000, UnitArea.squareKilometers, decimals: m2 >= 100_000_000 ? 0 : 2) }
+        if m2 >= 10_000 { return MapFormatting.measurement(m2 / 10_000, UnitArea.hectares, decimals: 2) }
+        return MapFormatting.measurement(m2, UnitArea.squareMeters, decimals: 0)
     }
 }
