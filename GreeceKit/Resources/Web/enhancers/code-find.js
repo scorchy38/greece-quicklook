@@ -18,7 +18,7 @@
     // ---------------------------------------------------------------- The bar
 
     const bar = document.createElement('div');
-    bar.className = 'code-findbar code-overlay';
+    bar.className = 'findbar code-findbar code-overlay';
     bar.hidden = true;
     bar.setAttribute('role', 'search');
     bar.innerHTML = `

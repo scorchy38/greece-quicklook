@@ -1,0 +1,119 @@
+/* Greece — the find bar shared by the code view and documents: a translucent strip along the
+   top with a rounded search field, step buttons, option toggles and Done, sized and spaced like
+   AppKit's own. Code pages colour it from the code theme, documents from the reading theme. */
+
+.findbar {
+  --fb-bg: var(--page);
+  --fb-fg: var(--text);
+}
+.code-findbar {
+  --fb-bg: var(--bg);
+  --fb-fg: var(--fg);
+}
+.findbar {
+  --fb-bar: color-mix(in srgb, var(--fb-bg) 92%, transparent);
+  --fb-line: color-mix(in srgb, var(--fb-fg) 13%, transparent);
+  --fb-control: color-mix(in srgb, var(--fb-fg) 7%, transparent);
+  --fb-control-hover: color-mix(in srgb, var(--fb-fg) 12%, transparent);
+  --fb-control-text: color-mix(in srgb, var(--fb-fg) 72%, transparent);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 10px 0 12px;
+  font: 13px/1 var(--ui);
+  color: var(--fb-fg);
+  background: var(--fb-bar);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  box-shadow: inset 0 -.5px 0 var(--fb-line);
+}
+@media (prefers-color-scheme: dark) {
+  .findbar { --fb-bar: color-mix(in srgb, var(--fb-bg) 90%, transparent); }
+}
+.findbar[hidden] { display: none; }
+
+.findbar .find-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 1 360px;
+  min-width: 150px;
+  height: 24px;
+  padding: 0 8px 0 6px;
+  border-radius: 6px;
+  background: var(--fb-control);
+  box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fb-fg) 12%, transparent);
+  cursor: text;
+  transition: box-shadow .15s ease;
+}
+.findbar .find-field:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 38%, transparent), inset 0 0 0 .5px var(--accent); }
+.findbar .glyph { display: grid; place-items: center; width: 16px; color: color-mix(in srgb, var(--fb-fg) 50%, transparent); }
+.findbar .glyph svg { width: 12px; height: 12px; }
+.findbar .find-field input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0 0 0 4px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--fb-fg);
+  font: 13px var(--ui);
+}
+.findbar .find-field input::placeholder { color: color-mix(in srgb, var(--fb-fg) 40%, transparent); }
+.findbar .find-count {
+  flex: none;
+  margin-left: 8px;
+  font: 11.5px var(--ui);
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--fb-fg) 52%, transparent);
+  white-space: nowrap;
+}
+.findbar.invalid .find-count { color: var(--red); }
+
+.findbar .find-steps { display: flex; border-radius: 6px; background: var(--fb-control); box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fb-fg) 12%, transparent); }
+.findbar .find-steps button, .findbar .find-option, .findbar .find-done {
+  display: grid;
+  place-items: center;
+  height: 24px;
+  border: 0;
+  background: none;
+  color: var(--fb-control-text);
+  font: 500 12px/1 var(--ui);
+  cursor: default;
+}
+.findbar .find-steps button { width: 26px; }
+.findbar .find-steps button + button { box-shadow: -.5px 0 0 color-mix(in srgb, var(--fb-fg) 12%, transparent); }
+.findbar .find-steps button svg { width: 13px; height: 13px; }
+.findbar .find-steps button:hover, .findbar .find-option:hover, .findbar .find-done:hover { color: var(--fb-fg); background-color: var(--fb-control-hover); }
+.findbar .find-steps button:first-child { border-radius: 6px 0 0 6px; }
+.findbar .find-steps button:last-child { border-radius: 0 6px 6px 0; }
+.findbar .find-option { min-width: 28px; padding: 0 6px; border-radius: 6px; font-family: var(--code-font, ui-monospace, monospace); font-size: 11.5px; }
+.findbar .find-option.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.findbar .find-word span { padding: 0 2px; border-left: 1.2px solid currentColor; border-right: 1.2px solid currentColor; line-height: 1.05; }
+.findbar .find-spacer { flex: 1; }
+.findbar .find-done { padding: 0 12px; border-radius: 6px; background: var(--fb-control); box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fb-fg) 12%, transparent); }
+
+/* Quick Look: the query comes from a selection, so the field reads as a label, not an input. */
+.findbar.by-selection .find-field { cursor: default; }
+.findbar.by-selection input { pointer-events: none; caret-color: transparent; }
+
+/* Matches: the system's find yellow; the current one solid, as in Safari. */
+:root { --find: rgba(255, 214, 10, .38); --find-current: #ffd60a; --mark: rgba(214, 160, 0, .8); --mark-current: #ff9f0a; }
+@media (prefers-color-scheme: dark) { :root { --find: rgba(255, 214, 10, .28); --mark: rgba(255, 214, 10, .7); } }
+::highlight(greece-find) { background-color: var(--find); }
+::highlight(greece-find-current) { background-color: var(--find-current); color: #1d1d1f; }
+
+/* While the bar is open, a document moves down below it rather than being covered, and so do
+   the controls pinned to the top of the window. (The code view moves its own lines.) */
+html.findbar-open:not(.kind-code) { padding-top: 38px; }
+html.findbar-open .read-progress { top: 38px; }
+html.findbar-open .outline-show { top: 50px; }
+html.findbar-open .doc.outline-floating > nav.outline { top: 86px; }
