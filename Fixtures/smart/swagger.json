@@ -1,0 +1,18 @@
+{
+  "swagger": "2.0",
+  "info": { "title": "Greece Licensing", "version": "1.0.4" },
+  "host": "licensing.example.com",
+  "basePath": "/v1",
+  "schemes": ["https"],
+  "paths": {
+    "/licenses": {
+      "get": { "tags": ["Licenses"], "summary": "List licences for an email", "parameters": [{ "name": "email", "in": "query", "required": true, "type": "string" }], "responses": { "200": { "description": "Licences" } } },
+      "post": { "tags": ["Licenses"], "summary": "Activate a licence", "parameters": [{ "name": "body", "in": "body", "required": true, "schema": { "$ref": "#/definitions/Activation" } }], "responses": { "201": { "description": "Activated" }, "409": { "description": "Seat limit reached" } } }
+    },
+    "/licenses/{key}": {
+      "delete": { "tags": ["Licenses"], "summary": "Deactivate a Mac", "parameters": [{ "name": "key", "in": "path", "required": true, "type": "string" }], "responses": { "204": { "description": "Deactivated" } } }
+    },
+    "/health": { "get": { "summary": "Health check", "responses": { "200": { "description": "OK" } } } }
+  },
+  "definitions": { "Activation": { "type": "object", "properties": { "key": { "type": "string" }, "machine": { "type": "string" } } } }
+}
