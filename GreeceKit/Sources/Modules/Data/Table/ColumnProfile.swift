@@ -365,7 +365,7 @@ struct ColumnProfile {
     }
 
     private static func trim(_ value: Double) -> String {
-        let text = String(format: "%.1f", value)
+        let text = String(format: abs(value) >= 100 ? "%.0f" : "%.1f", value)
         return text.hasSuffix(".0") ? String(text.dropLast(2)) : text
     }
 
@@ -377,6 +377,11 @@ struct ColumnProfile {
     static func full(_ value: Double) -> String {
         if value == value.rounded() && abs(value) < 1e15 { return Int(value).formatted() }
         return value.formatted(.number.precision(.significantDigits(1...8)))
+    }
+
+    /// At most two decimals, for averages.
+    static func rounded(_ value: Double) -> String {
+        value.formatted(.number.precision(.fractionLength(0...2)))
     }
 
     static func dateText(_ seconds: Double, time: Bool) -> String {

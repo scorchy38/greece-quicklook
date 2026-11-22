@@ -109,8 +109,8 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
         tableView.style = .fullWidth
         tableView.usesAlternatingRowBackgroundColors = true
-        tableView.gridStyleMask = [.solidVerticalGridLineMask]
-        tableView.gridColor = NSColor.separatorColor
+        // Column rules are drawn by the row views, so they stop at the last row.
+        tableView.gridStyleMask = []
         tableView.intercellSpacing = NSSize(width: 0, height: 0)
         tableView.rowHeight = 22
         tableView.columnAutoresizingStyle = .noColumnAutoresizing
@@ -293,6 +293,10 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
     func tableView(_ tableView: NSTableView, shouldSelect tableColumn: NSTableColumn?) -> Bool { false }
 
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+        (tableView.makeView(withIdentifier: GridRowView.reuseID, owner: nil) as? GridRowView) ?? GridRowView()
+    }
+
     static func displayString(_ text: String) -> String {
         var display = text.utf16.count > 400 ? String(text.prefix(400)) + "…" : text
         if display.contains(where: { $0.isNewline }) {
@@ -320,15 +324,32 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
     }
 }
 
+/// A row that draws the column rules, so they end with the last row, like Numbers.
+final class GridRowView: NSTableRowView {
+    static let reuseID = NSUserInterfaceItemIdentifier("GridRow")
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        identifier = Self.reuseID
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    override func drawBackground(in dirtyRect: NSRect) {
+        super.drawBackground(in: dirtyRect)
+        guard let table = superview as? NSTableView else { return }
+        let line = 1 / (window?.backingScaleFactor ?? 2)
+        NSColor.separatorColor.withAlphaComponent(0.5).setFill()
+        for index in 0..<table.numberOfColumns {
+            let x = table.rect(ofColumn: index).maxX - line
+            let rule = NSRect(x: x, y: 0, width: line, height: bounds.height).intersection(bounds)
+            if rule.intersects(dirtyRect) { rule.fill() }
+        }
+    }
+}
+
 final class GridTableView: NSTableView {
     var copyHandler: (() -> Void)?
-
-    /// Grid lines stop at the last row, like Numbers, instead of striping empty space.
-    override func drawGrid(inClipRect clipRect: NSRect) {
-        guard numberOfRows > 0 else { return }
-        let lastRow = rect(ofRow: numberOfRows - 1)
-        super.drawGrid(inClipRect: clipRect.intersection(NSRect(x: clipRect.minX, y: 0, width: clipRect.width, height: lastRow.maxY)))
-    }
 
     @objc func copy(_ sender: Any?) { copyHandler?() }
 

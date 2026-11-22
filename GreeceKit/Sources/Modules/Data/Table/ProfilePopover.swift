@@ -65,7 +65,7 @@ final class ProfilePopoverView: NSView {
         case .integer, .number:
             if let v = profile.minimum { facts.append(("Minimum", ColumnProfile.full(v))) }
             if let v = profile.maximum { facts.append(("Maximum", ColumnProfile.full(v))) }
-            if let v = profile.mean { facts.append(("Mean", ColumnProfile.full(v))) }
+            if let v = profile.mean { facts.append(("Mean", ColumnProfile.rounded(v))) }
             if let v = profile.median { facts.append(("Median", ColumnProfile.full(v))) }
         case .date:
             if let v = profile.minimum { facts.append(("Earliest", ColumnProfile.dateText(v, time: profile.hasTime))) }
@@ -94,11 +94,13 @@ final class ProfilePopoverView: NSView {
             grid.addRow(with: [l, v])
         }
         grid.column(at: 0).xPlacement = .leading
+        grid.column(at: 1).xPlacement = .trailing
         stack.addArrangedSubview(separator())
         stack.addArrangedSubview(grid)
+        grid.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -32).isActive = true
 
         // Top values
-        if profile.kind != .empty, !profile.top.isEmpty, !profile.isUnique, profile.kind != .date || profile.distinct < profile.filled {
+        if profile.kind != .empty, let first = profile.top.first, first.count > 1 {
             stack.addArrangedSubview(separator())
             let heading = NSTextField(labelWithString: "Most Common")
             heading.font = .systemFont(ofSize: 11, weight: .semibold)
