@@ -1,0 +1,94 @@
+/* Greece — the symbol navigator: a quiet sidebar in the system font, with Xcode-style badges
+   tinted from the code theme. */
+
+.code-symbols {
+  position: fixed;
+  top: var(--code-inset);
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  width: 248px;
+  font: 12.5px/1.3 var(--ui);
+  color: var(--fg);
+  background: color-mix(in srgb, var(--bg) 94%, var(--fg) 3%);
+  box-shadow: inset .5px 0 0 var(--bar-line);
+}
+.code-symbols[hidden] { display: none; }
+html.symbols-open body { padding-right: 248px; }
+html.symbols-open .floating-tools { right: calc(248px + 12px); }
+html.symbols-open .code-find-marks { right: 248px; }
+html.symbols-open .code-sticky { right: 248px; }
+
+.code-symbols header { display: flex; align-items: baseline; gap: 8px; padding: 14px 16px 8px; }
+.code-symbols .title { font-weight: 620; font-size: 12px; }
+.code-symbols .count { font-size: 11px; color: color-mix(in srgb, var(--fg) 45%, transparent); font-variant-numeric: tabular-nums; }
+
+.symbols-filter {
+  display: flex;
+  align-items: center;
+  margin: 0 12px 8px;
+  height: 24px;
+  padding: 0 8px 0 6px;
+  border-radius: 6px;
+  background: var(--control);
+  box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fg) 10%, transparent);
+  cursor: text;
+}
+.symbols-filter:focus-within { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 38%, transparent), inset 0 0 0 .5px var(--accent); }
+.symbols-filter .glyph { display: grid; place-items: center; width: 14px; color: color-mix(in srgb, var(--fg) 45%, transparent); }
+.symbols-filter .glyph svg { width: 11px; height: 11px; }
+.symbols-filter input { flex: 1; min-width: 0; margin-left: 5px; border: 0; outline: 0; background: transparent; color: var(--fg); font: 12.5px var(--ui); }
+.symbols-filter input::placeholder { color: color-mix(in srgb, var(--fg) 40%, transparent); }
+
+.symbols-list { flex: 1; overflow-y: auto; padding: 0 8px 16px; overscroll-behavior: contain; }
+.symbols-list .sym {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 24px;
+  padding: 0 8px 0 calc(8px + var(--depth, 0) * 14px);
+  border-radius: 6px;
+  color: color-mix(in srgb, var(--fg) 86%, transparent);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: default;
+}
+.symbols-list .sym:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.symbols-list .sym.active { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); }
+.symbols-list .name { overflow: hidden; text-overflow: ellipsis; }
+.symbols-list .sym.mark {
+  height: auto;
+  margin-top: 10px;
+  padding-top: 6px;
+  padding-bottom: 4px;
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: .01em;
+  color: color-mix(in srgb, var(--fg) 55%, transparent);
+  border-radius: 0;
+  box-shadow: inset 0 .5px 0 var(--bar-line);
+}
+.symbols-list .sym.mark:first-child { margin-top: 0; box-shadow: none; }
+.symbols-list .sym.mark.active { background: none; color: var(--accent); }
+.symbols-list .none { margin: 12px 8px; color: color-mix(in srgb, var(--fg) 45%, transparent); }
+
+.badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 2px;
+  border-radius: 4px;
+  font: 700 9.5px/1 var(--ui);
+  font-style: normal;
+  --tone: var(--t-type);
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 17%, transparent);
+  box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--tone) 30%, transparent);
+}
+.badge.func { --tone: var(--t-function); }
+.badge.prop { --tone: var(--t-attr); }
+.badge.rule { --tone: var(--t-keyword); }
