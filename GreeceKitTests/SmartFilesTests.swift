@@ -81,7 +81,7 @@ final class SmartFilesTests: XCTestCase {
             ".env": "env", "package.json": "manifest", "Cargo.toml": "manifest", "pyproject.toml": "manifest",
             "go.mod": "manifest", "Gemfile": "manifest", "Podfile": "manifest", "Package.swift": "manifest",
             "composer.json": "manifest", "pubspec.yaml": "manifest", "mix.exs": "manifest", "build.gradle.kts": "manifest",
-            "server.log": "log", "events.jsonl": "log", "Dockerfile": "docker", "docker-compose.yml": "compose",
+            "server.log": "log", "events.log": "log", "Dockerfile": "docker", "docker-compose.yml": "compose",
             "ci.yml": "workflow", "deployment.yaml": "kubernetes", "openapi.yaml": "openapi", "swagger.json": "openapi",
             "crontab": "cron", "Makefile": "make", "config": "ssh",
         ]
@@ -293,7 +293,7 @@ final class SmartFilesTests: XCTestCase {
     func testEveryCardRendersWithoutErrors() async throws {
         for name in ["package.json", "Cargo.toml", "pyproject.toml", "go.mod", "Gemfile", "Podfile", "Package.swift", "composer.json",
                      "pubspec.yaml", "mix.exs", "build.gradle.kts", "Dockerfile", "docker-compose.yml", "ci.yml", "deployment.yaml",
-                     "openapi.yaml", "swagger.json", "crontab", "Makefile", "config", "events.jsonl"] {
+                     "openapi.yaml", "swagger.json", "crontab", "Makefile", "config", "events.log"] {
             let web = try await page(fixtures.appendingPathComponent(name))
             let count = try await evaluate(web, "return document.querySelectorAll('.smart-card').length") as? Int
             XCTAssertEqual(count, 1, name)
