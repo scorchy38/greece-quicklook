@@ -22,6 +22,19 @@ enum WebAssets {
         return Set(files.compactMap { $0.hasSuffix(".min.js") ? String($0.dropLast(7)) : nil })
     }()
 
+    /// Every enhancer file in the bundle, listed once.
+    private static let enhancerFiles: [String] = {
+        let folder = root.appendingPathComponent("enhancers")
+        return ((try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []).sorted()
+    }()
+
+    /// `enhancers/<kind>.<ext>` and `enhancers/<kind>-*.<ext>`, in name order.
+    static func enhancers(for kind: String, ext: String) -> [String] {
+        enhancerFiles.filter { name in
+            name.hasSuffix("." + ext) && (name == "\(kind).\(ext)" || name.hasPrefix(kind + "-"))
+        }.map { "enhancers/" + $0 }
+    }
+
     static func hasGrammar(_ id: String) -> Bool {
         LanguageCatalog.commonGrammars.contains(id) || bundledGrammars.contains(id)
     }

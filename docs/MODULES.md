@@ -74,7 +74,7 @@ Look at every PNG, in light and dark (`--appearance dark`). A preview isn't done
 ## Enhancers
 
 To add features to an existing kind of page without editing `greece.js`, put
-`GreeceKit/Resources/Web/enhancers/<kind>.js` (and optionally `.css`) in the bundle. `<kind>` is `code`, `markdown`, `diff`, `notebook`, a module's kind, or `all`.
+`GreeceKit/Resources/Web/enhancers/<kind>-<feature>.js` (and optionally `.css`) in the bundle. Examples: `code-tools.js`, `markdown-tabs.js`. `<kind>` is `code`, `markdown`, `diff`, `notebook`, a module's kind, or `all`. Each feature gets its own file, so features never edit the same file.
 - Pages of that kind load them automatically.
 - Register with `greece.enhance('<kind>', async (root, kit) => { … })`.
 - Enhancers run after the page has rendered and before it's shown. A failing enhancer is logged and skipped.
