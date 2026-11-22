@@ -1,6 +1,6 @@
 # Greece
 
-**A better look at your files.**
+**Press Space. See everything.**
 
 Greece makes Quick Look beautiful for the files developers and writers live in. Select a file in Finder, press <kbd>Space</kbd>, and you get typeset Markdown, syntax-highlighted code, real tables, browsable archives and databases, readable diffs and rendered notebooks. Everything happens on your Mac, in a fraction of a second.
 

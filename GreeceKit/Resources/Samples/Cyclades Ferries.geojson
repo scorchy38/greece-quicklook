@@ -1,0 +1,289 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Piraeus \u2013 Santorini",
+    "operator": "Blue Star Ferries",
+    "duration": "7 h 50 min",
+    "stops": 7,
+    "stroke": "#1e6fd9",
+    "stroke-width": 3
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      23.6335,
+      37.942
+     ],
+     [
+      24.9415,
+      37.444
+     ],
+     [
+      25.3289,
+      37.4467
+     ],
+     [
+      25.152,
+      37.0855
+     ],
+     [
+      25.376,
+      37.1036
+     ],
+     [
+      25.283,
+      36.723
+     ],
+     [
+      25.429,
+      36.387
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Piraeus \u2013 Milos",
+    "operator": "Aegean Speed Lines",
+    "duration": "3 h 30 min",
+    "stops": 3,
+    "stroke": "#e0882f",
+    "stroke-width": 3
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      23.6335,
+      37.942
+     ],
+     [
+      24.728,
+      36.967
+     ],
+     [
+      24.4206,
+      36.7258
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Rafina \u2013 Mykonos",
+    "operator": "Fast Ferries",
+    "duration": "4 h 15 min",
+    "stops": 4,
+    "stroke": "#2e9e6a",
+    "stroke-width": 3
+   },
+   "geometry": {
+    "type": "LineString",
+    "coordinates": [
+     [
+      24.011,
+      38.022
+     ],
+     [
+      24.948,
+      37.841
+     ],
+     [
+      25.163,
+      37.537
+     ],
+     [
+      25.3289,
+      37.4467
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Piraeus",
+    "kind": "port",
+    "marker-color": "#d23c3c"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     23.6335,
+     37.942
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Syros",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.9415,
+     37.444
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Mykonos",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     25.3289,
+     37.4467
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Paros",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     25.152,
+     37.0855
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Naxos",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     25.376,
+     37.1036
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Ios",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     25.283,
+     36.723
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Santorini",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     25.429,
+     36.387
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Sifnos",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.728,
+     36.967
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Milos",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.4206,
+     36.7258
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Tinos",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     25.163,
+     37.537
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Andros",
+    "kind": "port",
+    "marker-color": "#ffffff"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.948,
+     37.841
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "name": "Rafina",
+    "kind": "port",
+    "marker-color": "#d23c3c"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     24.011,
+     38.022
+    ]
+   }
+  }
+ ]
+}

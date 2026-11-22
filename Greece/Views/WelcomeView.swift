@@ -12,7 +12,13 @@ struct WelcomeView: View {
         (Samples.patch, "Patch", "plus.forwardslash.minus"),
         (Samples.notebook, "Notebook", "book.pages"),
         (Samples.sqlite, "SQLite", "cylinder.split.1x2"),
+        (Samples.map, "Map", "map"),
+        (Samples.model, "3D Model", "cube"),
+        (Samples.book, "Book", "book.closed"),
+        (Samples.animation, "Animation", "sparkles"),
+        (Samples.comic, "Comic", "photo.on.rectangle.angled"),
         (Samples.zip, "ZIP Archive", "archivebox"),
+        (Bundle.main.bundleURL, "This App", "checkmark.seal"),
         (Samples.folder, "Folder", "folder"),
     ]
 
@@ -27,7 +33,7 @@ struct WelcomeView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Greece")
                             .font(.largeTitle.weight(.semibold))
-                        Text("A better look at your files. Press Space on Markdown, code, data, archives and folders to see them beautifully, instantly, and entirely on your Mac.")
+                        Text("Press Space on almost anything, from code and Markdown to maps, 3D models, books, archives and apps, and see it beautifully and instantly, without anything leaving your Mac.")
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }

@@ -15,6 +15,11 @@ public enum Samples {
     public static let patch = url("Timetable.patch")
     public static let notebook = url("Voyage.ipynb")
     public static let zip = url("Atlas.zip")
+    public static let map = url("Cyclades Ferries.geojson")
+    public static let model = url("Mykonos Windmill.fbx")
+    public static let book = url("Aesop's Fables.epub")
+    public static let animation = url("Lighthouse.json")
+    public static let comic = url("Aegean Tales.cbz")
 
     /// Third-party licenses for the bundled web libraries.
     public static var licenses: [(name: String, text: String)] {
