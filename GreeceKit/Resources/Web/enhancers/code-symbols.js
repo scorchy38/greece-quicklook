@@ -15,7 +15,7 @@
   greece.enhance('code', (root, kit) => {
     const G = window.greeceCode;
     if (!G) return;
-    const html = document.documentElement;
+    const WIDTH = 248;
     let symbols = [];
     let active = -1;
     let items = [];
@@ -52,7 +52,7 @@
     function open(focus) {
       if (!symbols.length) return;
       panel.hidden = false;
-      html.classList.add('symbols-open');
+      G.setRightInset(WIDTH);
       if (button) button.classList.add('on');
       track();
       if (focus) filter.focus();
@@ -60,7 +60,7 @@
     }
     function close() {
       panel.hidden = true;
-      html.classList.remove('symbols-open');
+      G.setRightInset(0);
       if (button) button.classList.remove('on');
       if (document.activeElement === filter) filter.blur();
       G.emit('layout');
@@ -118,6 +118,7 @@
     if (G.analysis) start(G.analysis); else G.on('analysis', start);
 
     window.addEventListener('scroll', track, { passive: true });
+    G.on('inset', () => { panel.style.top = G.inset + 'px'; });
     G.on('fold', track);
     G.on('mode', () => { if (G.mode === 'tree') close(); });
     G.addKeys((event) => {

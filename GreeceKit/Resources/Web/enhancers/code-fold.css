@@ -1,6 +1,6 @@
 /* Greece — code folding: gutter chevrons on hover, a quiet pill for folded blocks. */
 
-html.has-folds .code-view .ln.fs::after {
+.code-view .ln.fs::after {
   content: '';
   position: absolute;
   left: calc(var(--code-x) - 14px);
@@ -15,9 +15,9 @@ html.has-folds .code-view .ln.fs::after {
   transition: opacity .15s ease;
   cursor: default;
 }
-html.has-folds .code-view:hover .ln.fs::after { opacity: 1; }
-html.has-folds .code-view .ln.fs:hover::after { color: color-mix(in srgb, var(--fg) 80%, transparent); }
-html.has-folds .code-view .ln.fo::after {
+.code-view:hover .ln.fs::after { opacity: 1; }
+.code-view .ln.fs:hover::after { color: color-mix(in srgb, var(--fg) 80%, transparent); }
+.code-view .ln.fo::after {
   opacity: 1;
   top: calc(var(--code-lh) * .5em - 3.5px);
   transform: rotate(-45deg);

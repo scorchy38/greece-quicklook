@@ -124,7 +124,17 @@
 
     window.addEventListener('scroll', () => { if (R) update(); }, { passive: true });
     window.addEventListener('resize', () => { if (R) update(); }, { passive: true });
-    for (const name of ['fold', 'inset', 'wrap', 'mode', 'lines']) G.on(name, () => { if (R) { lastKey = ''; update(); } });
+    G.on('inset', () => { overlay.style.top = G.inset + 'px'; overlay.style.right = G.insetRight + 'px'; });
+    for (const name of ['fold', 'inset', 'wrap', 'mode']) G.on(name, () => { if (R) { lastKey = ''; update(); } });
+    // Lines stream in and get their colours long after the first paint: redraw the pinned rows
+    // only when their own lines change (a full update would force a layout per batch).
+    G.on('lines', (fresh) => {
+      if (!R || !shown.length) return;
+      for (const chunk of fresh) {
+        const first = Number(chunk.dataset.start) || 0, end = first + chunk.children.length;
+        if (shown.some((r) => R.start[r] >= first && R.start[r] < end)) { lastKey = ''; update(); return; }
+      }
+    });
     kit.onApply(() => { if (R) { lastKey = ''; update(); } });
     kit.afterReady(() => { if (R) update(); });
     G.sticky = { update, get rows() { return shown.length; } };

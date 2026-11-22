@@ -56,10 +56,8 @@
       bar.classList.toggle('goto', as === 'goto');
       if (bar.hidden) {
         bar.hidden = false;
-        document.documentElement.classList.add('bar-open');
-        // The bar pushes the page down, as Safari's does, without moving what you're reading.
         const height = bar.offsetHeight;
-        root.style.paddingTop = height + 'px';
+        shift(height);
         if (window.scrollY > 0) window.scrollBy(0, height);
         G.setInset(height);
       }
@@ -85,8 +83,7 @@
       if (bar.hidden) return;
       const height = G.inset;
       bar.hidden = true;
-      document.documentElement.classList.remove('bar-open');
-      root.style.paddingTop = '';
+      shift(0);
       if (window.scrollY > height) window.scrollBy(0, -height);
       G.setInset(0);
       token++;
@@ -94,6 +91,17 @@
       clearHighlights();
       marks.hidden = true;
       if (document.activeElement === input) input.blur();
+    }
+
+    /** The bar pushes the page down, as Safari's does. A transform moves it without a new
+        layout (re-laying out a 100,000-line page would take seconds), and scrolling by the same
+        amount keeps what you're reading in place. */
+    function shift(px) {
+      for (const el of root.children) {
+        if (el.matches('.code-view, .notice, .json-tree')) el.style.transform = px ? `translateY(${px}px)` : '';
+      }
+      const tools = root.querySelector('.floating-tools');
+      if (tools) tools.style.top = px ? (px + 10) + 'px' : '';
     }
 
     function setOption(button, key) {
@@ -180,7 +188,7 @@
           this.lengths[this.count] = m[0].length;
           this.count++;
           if (this.count >= MAX_MATCHES) break;
-          if ((this.count & 255) === 0 && performance.now() - sliceStart > 12) {
+          if ((this.count & 255) === 0 && performance.now() - sliceStart > 40) {
             progress();
             await kit.tick();
             if (mine !== token) return;
@@ -231,6 +239,7 @@
       visibleRanges() {
         const first = Math.max(0, G.lineAt(G.inset) - 40);
         const last = Math.min(G.count - 1, Math.max(first, G.lineAt(window.innerHeight - 1)) + 40);
+        painted = [first, last];
         const from = G.starts[first];
         const to = last + 1 < G.count ? G.starts[last + 1] : G.text.length + 1;
         let lo = 0, hi = this.count;
@@ -247,20 +256,16 @@
         return { all, current };
       },
 
-      /** Where each match sits along the document, 0…1, for the scroller marks. */
+      /** Where each match sits along the document, 0…1, for the scroller marks. Worked out from
+          line numbers (less folded lines), never from layout: measuring a huge file's chunks would
+          make WebKit lay out every line. */
       positions() {
-        const chunks = Array.from(G.view.children).map((c) => ({ start: Number(c.dataset.start) || 0, top: c.offsetTop, height: c.offsetHeight, lines: c.children.length || 1 }));
-        const viewTop = G.view.offsetTop;
-        const total = document.documentElement.scrollHeight || 1;
-        const result = [];
-        let c = 0;
+        const hidden = G.fold ? G.fold.hiddenBefore() : null;
+        const shown = hidden ? G.count - hidden[G.count] : G.count;
+        const result = new Float32Array(this.count);
         for (let k = 0; k < this.count; k++) {
           const line = this.lineOf(this.offsets[k]);
-          while (c + 1 < chunks.length && chunks[c + 1].start <= line) c++;
-          const chunk = chunks[c];
-          if (!chunk) break;
-          const y = viewTop + chunk.top + ((line - chunk.start) / chunk.lines) * chunk.height;
-          result.push(y / total);
+          result[k] = (line - (hidden ? hidden[line] : 0)) / Math.max(1, shown);
         }
         return result;
       },
@@ -294,7 +299,8 @@
       const query = input.value;
       lastQuery = query;
       const p = provider();
-      const run = p.run(query, options, () => { updateCount(p, true); paint(); });
+      // While searching, only the count moves; highlights and marks are drawn once at the end.
+      const run = p.run(query, options, () => updateCount(p, true));
       await run;
       if (p.count && p.current < 0 && query === input.value) await p.select(p.nearest());
       updateCount(p, false);
@@ -331,7 +337,10 @@
       CSS.highlights.delete('greece-find-current');
     }
 
-    function paint() {
+    let painted = [0, -1];
+
+    /** Highlights matches near the viewport, and the scroller marks unless `marksToo` is false. */
+    function paint(marksToo = true) {
       if (bar.hidden || mode !== 'find') return;
       const p = provider();
       if (p === codeSearch && supportsHighlights) {
@@ -341,7 +350,7 @@
         else CSS.highlights.delete('greece-find-current');
       }
       if (p.paint) p.paint();
-      drawMarks(p);
+      if (marksToo) drawMarks(p);
     }
 
     function drawMarks(p) {
@@ -380,10 +389,20 @@
       const top = Math.round(window.scrollY / 200);
       if (top === lastPaintTop) return;
       lastPaintTop = top;
-      paint();
+      paint(false);
     }, { passive: true });
     window.addEventListener('resize', () => { if (!bar.hidden) paint(); }, { passive: true });
-    for (const name of ['lines', 'fold', 'wrap']) G.on(name, () => { if (!bar.hidden) paint(); });
+    G.on('inset', () => { marks.style.top = G.inset + 'px'; marks.style.right = G.insetRight + 'px'; });
+    for (const name of ['fold', 'wrap']) G.on(name, () => { if (!bar.hidden) paint(); });
+    // Colours stream into a big file long after it opens: re-highlight only when lines on screen
+    // were redrawn (doing more per batch would force a layout each time).
+    G.on('lines', (fresh) => {
+      if (bar.hidden || mode !== 'find' || !codeSearch.count) return;
+      for (const chunk of fresh) {
+        const first = Number(chunk.dataset.start) || 0, last = first + chunk.children.length - 1;
+        if (first <= painted[1] && last >= painted[0]) { paint(false); return; }
+      }
+    });
     G.on('mode', () => { if (!bar.hidden) { token++; codeSearch.clear(); clearHighlights(); if (mode === 'find') search(); } });
 
     // ---------------------------------------------------------------- Keys
@@ -416,6 +435,7 @@
       async searchAll(query) { open(query, 'find'); await search(); },
       get count() { return provider().count; },
       repaint: paint,
+      engine: codeSearch,
     };
   });
 })();

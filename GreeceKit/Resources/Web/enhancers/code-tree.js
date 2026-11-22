@@ -20,7 +20,6 @@
     const dataElement = document.getElementById('data');
     const plist = !!dataElement && kit.payload.language === 'xml';
     if (kit.payload.language !== 'json' && !plist) return;
-    const html = document.documentElement;
     G.mode = 'code';
 
     let source = null;      // the JSON text the tree reads
@@ -352,7 +351,6 @@
       if (G.mode === 'tree') return;
       scroll.code = [window.scrollX, window.scrollY];
       G.mode = 'tree';
-      html.classList.add('tree-mode');
       switcher.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.mode === 'tree'));
       G.view.hidden = true;
       if (notice) notice.hidden = true;
@@ -370,7 +368,6 @@
       if (G.mode !== 'tree') return;
       scroll.tree = [window.scrollX, window.scrollY];
       G.mode = 'code';
-      html.classList.remove('tree-mode');
       switcher.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.mode === 'code'));
       tree.hidden = true;
       pathBar.hidden = true;
@@ -481,7 +478,7 @@
           if (this.count === this.offsets.length) { const b = new Int32Array(this.offsets.length * 2); b.set(this.offsets); this.offsets = b; }
           this.offsets[this.count++] = m.index;
           if (this.count >= 500000) break;
-          if ((this.count & 255) === 0 && performance.now() - slice > 12) {
+          if ((this.count & 255) === 0 && performance.now() - slice > 40) {
             progress();
             await kit.tick();
             if (mine !== token) return;

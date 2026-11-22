@@ -99,7 +99,7 @@
 
 .code-find-marks {
   position: fixed;
-  top: var(--code-inset);
+  top: 0;
   right: 0;
   z-index: 19;
   width: 8px;

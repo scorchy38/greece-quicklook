@@ -25,12 +25,16 @@
     const view = root.querySelector('.code-view');
     if (!view) return;
 
-    let text = kit.payload.text.replace(/\r\n?/g, '\n');
+    // The same text the renderer drew (it normalises line breaks the same way).
+    let text = kit.payload.text;
+    if (text.indexOf('\r') !== -1) text = text.replace(/\r\n?/g, '\n');
     if (text.endsWith('\n')) text = text.slice(0, -1);
     const starts = A.lineStarts(text);
     const count = starts.length;
     const lang = kit.payload.language || 'plaintext';
-    const tabWidth = parseInt(getComputedStyle(html).getPropertyValue('--tab'), 10) || 4;
+    // Read from the settings' CSS rather than computed style, which would force a style pass.
+    const vars = document.getElementById('vars');
+    const tabWidth = parseInt(((vars && vars.textContent) || '').match(/--tab:\s*(\d+)/)?.[1], 10) || 4;
     const listeners = {};
     const decorators = [];
     const keys = [];
@@ -69,12 +73,21 @@
       /** Left edge of the code text inside a line, in px from the line's left. */
       codeLeft() { const el = lineElement(0); return el ? parseFloat(getComputedStyle(el).paddingLeft) || 0 : 0; },
 
-      /** Space taken at the top by bars (find), so sticky lines and jumps sit below them. */
+      /** Space taken at the top by bars (find) and at the right by the symbols sidebar. Overlays
+          move themselves on 'inset'. Never a custom property or class on <html>: every line
+          would be restyled, which takes seconds on a 100,000-line file. */
       inset: 0,
+      insetRight: 0,
       setInset(px) {
         G.inset = px;
-        html.style.setProperty('--code-inset', px + 'px');
         G.emit('inset', px);
+      },
+      setRightInset(px) {
+        G.insetRight = px;
+        document.body.style.paddingRight = px ? px + 'px' : '';
+        const tools = root.querySelector('.floating-tools');
+        if (tools) tools.style.right = px ? (px + 12) + 'px' : '';
+        G.emit('inset', G.inset);
       },
 
       scrollToLine,
@@ -153,7 +166,8 @@
     }
 
     function forEachLine(fn, scope) {
-      const lines = (scope || view).getElementsByClassName('ln');
+      // A static list: decorators change classes, which would invalidate a live collection.
+      const lines = (scope || view).querySelectorAll('.ln');
       for (let k = 0; k < lines.length; k++) fn(lines[k], Number(lines[k].dataset.n) - 1);
     }
 
@@ -172,12 +186,15 @@
       G.emit('lines', fresh);
     }).observe(view, { childList: true, subtree: true });
 
-    /** The line drawn at viewport height `y`, looking through Greece's own overlays. */
+    /** The line drawn at viewport height `y`, looking through Greece's own overlays (one hit
+        test, no style changes: on a huge file a restyle would cost more than the scroll). */
     function lineAt(y) {
-      html.classList.add('probing');
-      const el = document.elementFromPoint(2, Math.max(0, y));
-      html.classList.remove('probing');
-      const line = el && el.closest && el.closest('.code-view .ln');
+      const stack = document.elementsFromPoint(2, Math.max(0, y));
+      let line = null;
+      for (const el of stack) {
+        if (el.classList.contains('ln') && el.parentElement && el.parentElement.parentElement === view) { line = el; break; }
+        if (el === view) break;
+      }
       if (line) return Number(line.dataset.n) - 1;
       const box = view.getBoundingClientRect();
       if (y < box.top) return 0;

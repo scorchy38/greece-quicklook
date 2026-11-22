@@ -82,7 +82,7 @@
       if (!B || !B.pos.length) { B = null; return; }
       G.view.addEventListener('mousemove', onMove, { passive: true });
       G.view.addEventListener('mouseleave', () => show(-1), { passive: true });
-      G.on('lines', () => { const s = shown; shown = -2; show(s); });
+      G.on('lines', () => { if (shown >= 0) { const s = shown; shown = -2; show(s); } });
     }
     if (G.analysis) start(G.analysis); else G.on('analysis', start);
     G.brackets = { highlightAt };

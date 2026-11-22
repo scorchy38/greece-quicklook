@@ -16,11 +16,11 @@
     G.indentUnit = tabs ? G.tabWidth : unit;
     const html = document.documentElement;
     html.style.setProperty('--guide-unit', tabs ? 'calc(var(--tab) * 1ch)' : unit + 'ch');
-    html.classList.add('has-guides');
-    const names = Array.from({ length: 25 }, (_, n) => 'g' + n);
+    // One class write per line: this runs on every line of a huge file as it streams in.
+    const names = Array.from({ length: 25 }, (_, n) => ' gd g' + n);
     G.decorate((el, i) => {
       const n = guides[i];
-      if (n) el.classList.add('gd', names[Math.min(n, 24)]);
+      if (n && !el.classList.contains('gd')) el.className += names[Math.min(n, 24)];
     });
   });
 })();

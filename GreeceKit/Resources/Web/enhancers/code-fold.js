@@ -14,8 +14,17 @@
     let R = null;
     let folded = null;
 
+    let hiddenPrefix = null;
     G.fold = {
       isHidden: (i) => hidden[i] === 1,
+      /** For each line, how many lines above it are folded away (and the total at `count`). */
+      hiddenBefore() {
+        if (!hiddenPrefix) {
+          hiddenPrefix = new Int32Array(count + 1);
+          for (let i = 0; i < count; i++) hiddenPrefix[i + 1] = hiddenPrefix[i] + hidden[i];
+        }
+        return hiddenPrefix;
+      },
       isFolded: (r) => !!(folded && folded[r]),
       toggle, foldAll, unfoldAll, reveal,
       regionAt: (i) => (R ? R.at[i] : -1),
@@ -24,12 +33,14 @@
     function linesLabel(n) { return n === 1 ? '1 line' : n.toLocaleString() + ' lines'; }
 
     function decorate(el, i) {
+      // Touch classes only when they change: this runs on every line of a huge file.
       const r = R.at[i];
-      if (hidden[i]) el.classList.add('fh'); else el.classList.remove('fh');
+      const cl = el.classList;
+      if (hidden[i]) cl.add('fh'); else if (cl.contains('fh')) cl.remove('fh');
       if (r < 0) return;
-      el.classList.add('fs');
+      if (!cl.contains('fs')) cl.add('fs');
       const isFolded = folded[r] === 1;
-      el.classList.toggle('fo', isFolded);
+      if (cl.contains('fo') !== isFolded) cl.toggle('fo', isFolded);
       let pill = el.lastElementChild && el.lastElementChild.classList.contains('fold-ph') ? el.lastElementChild : null;
       if (isFolded && !pill) {
         pill = document.createElement('span');
@@ -72,6 +83,7 @@
         if (el) decorate(el, h);
       }
       hideEmptyChunks();
+      hiddenPrefix = null;
       G.emit('fold');
     }
 
@@ -132,7 +144,6 @@
       R = analysis.regions;
       folded = new Uint8Array(R.start.length);
       if (!R.start.length) return;
-      document.documentElement.classList.add('has-folds');
       G.decorate(decorate);
     }
     if (G.analysis) start(G.analysis); else G.on('analysis', start);

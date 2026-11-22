@@ -3,7 +3,6 @@
 
 .json-tree { position: relative; padding: 0 0 52px; outline: none; font: 13px/1 var(--ui); color: var(--fg); }
 .json-tree[hidden] { display: none; }
-html.tree-mode .code-view, html.tree-mode .code-sticky { display: none; }
 
 /* Flexible columns (grid tracks trip WebKit's ellipsis measurement). */
 .tree-head, .json-tree .row { display: flex; align-items: center; }
@@ -12,7 +11,7 @@ html.tree-mode .code-view, html.tree-mode .code-sticky { display: none; }
 .tree-head > :nth-child(3), .json-tree .cell.value { flex: 1 1 0; }
 .tree-head {
   position: sticky;
-  top: var(--code-inset);
+  top: 0;   /* the tree itself moves down under the find bar */
   z-index: 3;
   height: 28px;
   padding: 0 16px;
@@ -122,3 +121,6 @@ html.tree-mode .code-view, html.tree-mode .code-sticky { display: none; }
   color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
+
+/* Tree mode hides the code (its own display rule would otherwise beat the hidden attribute). */
+.code-view[hidden] { display: none; }

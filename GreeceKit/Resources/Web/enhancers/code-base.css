@@ -1,7 +1,6 @@
 /* Greece — shared styles for the code view's features. */
 
 :root {
-  --code-inset: 0px;
   --guide: color-mix(in srgb, var(--fg) 10%, transparent);
   --guide-active: color-mix(in srgb, var(--fg) 30%, transparent);
   --bar-bg: color-mix(in srgb, var(--bg) 92%, transparent);
@@ -17,9 +16,6 @@
 
 .code-view { --code-x: calc(var(--gutter) + 22px); }
 html.no-lines .code-view { --code-x: 22px; }
-
-/* Hit testing looks through Greece's own overlays. */
-html.probing .code-overlay, html.probing .code-overlay * { pointer-events: none !important; }
 
 /* The line a jump landed on. */
 .code-view .ln.target { background-color: var(--target); transition: background-color .2s ease; }
@@ -44,4 +40,3 @@ html.probing .code-overlay, html.probing .code-overlay * { pointer-events: none 
   padding: 4px 10px;
 }
 .floating-tools .segmented button.on { color: var(--fg); background: color-mix(in srgb, var(--fg) 11%, transparent); }
-html.bar-open .floating-tools { top: calc(var(--code-inset) + 10px); }
