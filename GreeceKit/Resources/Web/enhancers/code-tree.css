@@ -37,7 +37,10 @@
   white-space: nowrap;
   cursor: default;
 }
+.json-tree .row { position: relative; z-index: 1; }
 .json-tree .row:hover { background: color-mix(in srgb, var(--fg) 4%, transparent); }
+.tree-rows .hit { position: absolute; z-index: 0; border-radius: 3px; background: var(--find); pointer-events: none; }
+.tree-rows .hit.current { background: var(--find-current); }
 .json-tree .row.sel { background: color-mix(in srgb, var(--fg) 10%, transparent); }
 .json-tree:focus .row.sel { background: var(--accent); color: #fff; }
 .json-tree:focus .row.sel .cell { color: #fff !important; }
@@ -60,8 +63,6 @@
 .json-tree .value.literal { color: var(--t-keyword); }
 .json-tree .value.other { color: var(--red); }
 .json-tree .value.count { font: 12px/24px var(--ui); color: color-mix(in srgb, var(--fg) 45%, transparent); }
-.json-tree mark { background: var(--find); color: inherit; border-radius: 2px; }
-.json-tree .row.current mark { background: var(--find-current); color: #1d1d1f; }
 
 .json-tree .disclosure, .json-tree .leaf { flex: none; width: 16px; height: 16px; margin-right: 2px; }
 .json-tree .disclosure { position: relative; }

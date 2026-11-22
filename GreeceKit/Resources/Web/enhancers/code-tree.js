@@ -265,17 +265,38 @@
     const plural = (n, one, many) => n.toLocaleString() + ' ' + (n === 1 ? one : many);
 
     let marker = null;   // the find query, as a pattern, while searching
-    function marked(value) {
-      const safe = kit.esc(value);
-      if (!marker) return safe;
-      marker.lastIndex = 0;
-      let out = '', last = 0, m;
-      while ((m = marker.exec(value)) && out.length < 20000) {
-        if (!m[0].length) { marker.lastIndex++; continue; }
-        out += kit.esc(value.slice(last, m.index)) + '<mark>' + kit.esc(m[0]) + '</mark>';
-        last = m.index + m[0].length;
+
+    /** Marks matches in the rows on screen with boxes drawn behind the text, placed from the
+        matched glyphs' own rectangles. (Neither inline <mark> backgrounds nor the Custom
+        Highlight API paint reliably in these clipped outline cells.) */
+    function highlightRows() {
+      if (!marker) return;
+      const origin = rowsBox.getBoundingClientRect();
+      let boxes = '';
+      let count = 0;
+      for (const row of rowsBox.querySelectorAll('.row')) {
+        const tone = row.classList.contains('current') ? 'hit current' : 'hit';
+        for (const cell of row.querySelectorAll('.k, .cell.value')) {
+          const node = cell.firstChild;
+          if (!node || node.nodeType !== Node.TEXT_NODE) continue;
+          const clip = cell.getBoundingClientRect();
+          marker.lastIndex = 0;
+          let m;
+          while ((m = marker.exec(node.nodeValue)) && count < 500) {
+            if (!m[0].length) { marker.lastIndex++; continue; }
+            const range = document.createRange();
+            range.setStart(node, m.index);
+            range.setEnd(node, m.index + m[0].length);
+            for (const r of range.getClientRects()) {
+              const left = Math.max(r.left, clip.left), right = Math.min(r.right, clip.right - 4);
+              if (right <= left) continue;
+              boxes += `<i class="${tone}" style="left:${(left - origin.left - 1).toFixed(1)}px;top:${(r.top - origin.top - 1).toFixed(1)}px;width:${(right - left + 2).toFixed(1)}px;height:${(r.height + 2).toFixed(1)}px"></i>`;
+              count++;
+            }
+          }
+        }
       }
-      return last ? out + kit.esc(value.slice(last)) : safe;
+      if (boxes) rowsBox.insertAdjacentHTML('afterbegin', boxes);
     }
 
     function rowHTML(r) {
@@ -298,13 +319,13 @@
         tone = 'count';
       } else {
         const t = at.type[n];
-        value = marked(text(n));
+        value = text(n);
         tone = t === T.string ? 'string' : t === T.number ? 'number' : t === T.other ? 'other' : 'literal';
       }
       return `<div class="${classes.join(' ')}" data-r="${r}" style="--depth:${depth}" role="treeitem"${container ? ` aria-expanded="${open}"` : ''}>`
         + `<span class="cell key">${container ? `<i class="disclosure${open ? ' open' : ''}"></i>` : '<i class="leaf"></i>'}`
-        + `<span class="k${key.index ? ' index' : ''}">${marked(String(key.label))}</span></span>`
-        + `<span class="cell type">${typeName(n)}</span><span class="cell value ${tone}">${container ? kit.esc(value) : value}</span></div>`;
+        + `<span class="k${key.index ? ' index' : ''}">${kit.esc(String(key.label))}</span></span>`
+        + `<span class="cell type">${typeName(n)}</span><span class="cell value ${tone}">${kit.esc(value)}</span></div>`;
     }
 
     function paint(force) {
@@ -318,6 +339,7 @@
       for (let r = first; r <= last; r++) out += rowHTML(r);
       rowsBox.style.transform = `translateY(${first * ROW}px)`;
       rowsBox.innerHTML = out;
+      highlightRows();
     }
 
     function select(r, scrollIntoView = true) {
