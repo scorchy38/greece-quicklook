@@ -140,7 +140,9 @@ final class ArchivesTests: XCTestCase {
         ]
         for (name, flags, format, title) in cases {
             let url = try make(name, flags)
-            XCTAssertEqual(FileKind.detect(url), .module(ArchivesModule.id), name)
+            // ISO images open in the apps inspector (disk image details plus their files); the archive
+            // reader still has to list them, for archives that contain ISOs.
+            XCTAssertEqual(FileKind.detect(url), .module(name.hasSuffix(".iso") ? AppsModule.id : ArchivesModule.id), name)
             let session = try ArchiveSession(url: url)
             let listing = try session.listAll()
             XCTAssertEqual(listing.format, format, name)
@@ -155,7 +157,9 @@ final class ArchivesTests: XCTestCase {
     func testRarFormats() throws {
         for name in ["rar4.rar", "rar5.rar", "rar5-solid.rar"] {
             let url = fixture("libarchive/" + name)
-            XCTAssertEqual(FileKind.detect(url), .module(ArchivesModule.id), name)
+            // ISO images open in the apps inspector (disk image details plus their files); the archive
+            // reader still has to list them, for archives that contain ISOs.
+            XCTAssertEqual(FileKind.detect(url), .module(name.hasSuffix(".iso") ? AppsModule.id : ArchivesModule.id), name)
             let session = try ArchiveSession(url: url)
             let listing = try session.listAll()
             XCTAssertEqual(listing.format, .rar, name)
