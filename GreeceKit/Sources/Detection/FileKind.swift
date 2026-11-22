@@ -40,7 +40,7 @@ public enum FileKind: Equatable, Sendable {
         if let archive = ArchiveFormat.sniff(head.bytes, name: lowerName) { return .archive(archive) }
 
         switch ext {
-        case "md", "markdown", "mdown", "mkd", "mkdn", "mdwn", "mdtxt", "mdtext", "mdx", "rmd", "qmd", "livemd", "textbundle":
+        case "md", "markdown", "mdown", "mkd", "mkdn", "mkdown", "markdn", "mdwn", "mdtxt", "mdtext", "mdx", "rmd", "qmd", "livemd", "textbundle":
             return .markdown
         case "csv": return .delimited(separator: nil)
         case "tsv", "tab": return .delimited(separator: UInt8(ascii: "\t"))
