@@ -1,0 +1,13 @@
+# Greece fixture materials
+newmtl Ivory
+Ka 0 0 0
+Kd 0.92 0.89 0.82
+Ks 0.4 0.4 0.4
+Ns 60
+
+newmtl Walnut
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.1 0.1 0.1
+Ns 12
+map_Kd walnut.png
