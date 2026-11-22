@@ -4,6 +4,10 @@
     "other": "{0} bytes",
     "comment": "A file size under 1 KB, as Finder writes it."
   },
+  "{0} B": {
+    "value": "{0} B",
+    "comment": "A size under 1 KB in a narrow table column, abbreviated (B for bytes), as in Safari’s Web Inspector."
+  },
   "{0} KB": {
     "value": "{0} KB",
     "comment": "A file size in kilobytes (1000 bytes), as Finder writes it in this language."

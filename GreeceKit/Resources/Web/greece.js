@@ -82,10 +82,11 @@
   }
   /** "a, b and c" for the page's language. */
   function list(items, options) { return formatter(Intl.ListFormat, options, { type: 'conjunction' }).format(items.map(String)); }
-  /** A file size as Finder writes it: 1000-based, in the language's own units ("1,2 Mo"). */
-  function bytes(n) {
+  /** A file size as Finder writes it: 1000-based, in the language's own units ("1,2 Mo").
+      `{ compact: true }` writes small sizes as "300 B", for table columns. */
+  function bytes(n, options) {
     let value = Math.max(0, Number(n) || 0);
-    if (value < 1000) return kit.plural(Math.round(value), '{0} bytes');
+    if (value < 1000) return options && options.compact ? kit.t('{0} B', Math.round(value)) : kit.plural(Math.round(value), '{0} bytes');
     const units = [(v) => kit.t('{0} KB', v), (v) => kit.t('{0} MB', v), (v) => kit.t('{0} GB', v), (v) => kit.t('{0} TB', v)];
     let unit = -1;
     while (value >= 1000 && unit < units.length - 1) { value /= 1000; unit++; }

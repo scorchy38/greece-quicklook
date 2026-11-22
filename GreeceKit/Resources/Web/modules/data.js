@@ -20,8 +20,8 @@
   ];
   const MAX_ROWS = 5000;
 
-  function bytes(n) {
-    return n > 0 ? kit.bytes(n) : '—';
+  function bytes(n, options) {
+    return n > 0 ? kit.bytes(n, options) : '—';
   }
 
   function ms(n) {
@@ -137,7 +137,7 @@
           + `<td class="method">${esc(row.method)}</td>`
           + `<td class="name" title="${esc(row.url)}"><span class="fname">${esc(decodeSafe(name))}</span><span class="host">${esc(row.host)}${esc(row.path.length > 1 ? row.path : '')}</span></td>`
           + `<td class="type">${esc(TYPE_NAMES[row.type] || row.type)}</td>`
-          + `<td class="num">${esc(bytes(row.size))}</td>`
+          + `<td class="num">${esc(bytes(row.size, { compact: true }))}</td>`
           + `<td class="num">${esc(ms(row.time))}</td>`
           + `<td class="fall">${bar(row)}</td></tr>`;
       }
