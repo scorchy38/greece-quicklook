@@ -272,6 +272,23 @@
 				<string>com.scorchy.greece.mbtiles</string>
 				<string>com.scorchy.greece.osm</string>
 				<string>com.scorchy.greece.wkt</string>
+				<string>org.khronos.gltf</string>
+				<string>org.khronos.glb</string>
+				<string>com.autodesk.mac.fbx</string>
+				<string>org.khronos.collada.digital-asset-exchange</string>
+				<string>public.geometry-definition-format</string>
+				<string>public.standard-tesselated-geometry-format</string>
+				<string>public.polygon-file-format</string>
+				<string>com.scorchy.greece.3mf</string>
+				<string>com.scorchy.greece.off</string>
+				<string>com.scorchy.greece.3ds</string>
+				<string>com.scorchy.greece.vrml</string>
+				<string>com.scorchy.greece.amf</string>
+				<string>com.scorchy.greece.vox</string>
+				<string>com.scorchy.greece.vrm</string>
+				<string>com.scorchy.greece.las</string>
+				<string>com.scorchy.greece.laz</string>
+				<string>com.scorchy.greece.pcd</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>

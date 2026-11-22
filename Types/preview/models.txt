@@ -1,0 +1,21 @@
+# 3D models and point clouds (GreeceKit/Sources/Modules/Models).
+# macOS keeps USDZ, USD, Reality, SceneKit and Alembic: its own viewers render those well.
+# Its SceneKit viewer can't read glTF or FBX, and its Hydra viewer (STL, OBJ, PLY) has no
+# measurements, wireframe, statistics or Z-up handling, so Greece takes these.
+org.khronos.gltf
+org.khronos.glb
+com.autodesk.mac.fbx
+org.khronos.collada.digital-asset-exchange
+public.geometry-definition-format
+public.standard-tesselated-geometry-format
+public.polygon-file-format
+com.scorchy.greece.3mf
+com.scorchy.greece.off
+com.scorchy.greece.3ds
+com.scorchy.greece.vrml
+com.scorchy.greece.amf
+com.scorchy.greece.vox
+com.scorchy.greece.vrm
+com.scorchy.greece.las
+com.scorchy.greece.laz
+com.scorchy.greece.pcd

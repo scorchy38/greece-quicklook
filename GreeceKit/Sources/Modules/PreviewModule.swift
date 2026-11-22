@@ -75,6 +75,7 @@ enum PreviewModules {
     static let all: [PreviewModule.Type] = [
         AppsModule.self,       // before archives: installers, disk images and Android apps are inspected
         MapsModule.self,       // before archives: zipped shapefiles are maps
+        ModelsModule.self,     // before archives: 3MF models are zip packages
         ArchivesModule.self,
     ]
 
