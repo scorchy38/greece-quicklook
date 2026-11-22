@@ -47,6 +47,8 @@ public struct WebDocument {
     public var resources: ModuleResources?
     /// Where to scroll before the first paint (reloads after a save, remembered positions).
     public var initialScroll: CGPoint?
+    /// The previewed file's name, so enhancers can recognise files like package.json or .env.
+    public var fileName: String?
 
     public init(kind: Kind, text: String, grammar: String? = nil, baseDirectory: URL? = nil, truncated: Bool = false) {
         self.kind = kind
@@ -83,6 +85,7 @@ public struct WebDocument {
         var truncated: Bool
         var options: Options
         var diffLanguages: [String: String]?
+        var fileName: String?
     }
 
     // MARK: - Feature detection
@@ -188,7 +191,8 @@ public struct WebDocument {
             options: .init(outline: settings.showOutline, math: math, diagrams: diagrams,
                            remoteImages: settings.loadRemoteImages, frontMatter: settings.showFrontMatter,
                            scroll: initialScroll.map { [Double($0.x), Double($0.y)] }),
-            diffLanguages: diffLanguages.isEmpty ? nil : diffLanguages)
+            diffLanguages: diffLanguages.isEmpty ? nil : diffLanguages,
+            fileName: fileName)
         let json = (try? JSONEncoder().encode(payload)).map { String(decoding: $0, as: UTF8.self) } ?? "{}"
         // Make the JSON inert inside <script>: no "<" can ever close the element or open a comment.
         let safeJSON = json.replacingOccurrences(of: "<", with: "\\u003c")

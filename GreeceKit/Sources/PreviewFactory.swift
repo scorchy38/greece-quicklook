@@ -13,8 +13,9 @@ public enum PreviewFactory {
     @MainActor
     public static func makePreview(for url: URL, settings: PreviewSettings, scroll: CGPoint? = nil) async throws -> PreviewView {
         var prepared = try await Task.detached(priority: .userInitiated) { try prepare(url, settings: settings) }.value
-        if let scroll, case .web(var document, let summary, let size) = prepared {
+        if case .web(var document, let summary, let size) = prepared {
             document.initialScroll = scroll
+            if document.fileName == nil { document.fileName = url.lastPathComponent }
             prepared = .web(document, summary, size)
         }
         let view = try build(prepared, url: url, settings: settings)

@@ -875,6 +875,8 @@
     /** What module renderers share with Greece's own: escaping, highlighting, Markdown, notices. */
     kit: {
       $, $$, esc, post, root, payload, options,
+      /** The previewed file's name ("package.json", ".env"), when known. */
+      fileName: payload.fileName || '',
       highlight, languageTitle, splitHighlighted, copyText, notice, empty, tick, afterReady,
       katexHTML, createMarkdown, sanitize, markdownDocument, renderCode,
       /** The module's data (the JSON GreeceKit embedded for this page), parsed once. */
