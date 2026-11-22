@@ -33,7 +33,7 @@ enum AndroidSigning {
     static let playMetadataID: UInt32 = 0x2146_444e
     static let proofOfRotationID: UInt32 = 0x3ba0_6f8c
 
-    static func signature(of zip: ZipFile) -> AndroidSignature {
+    static func signature(of zip: ZIPArchive) -> AndroidSignature {
         var result = AndroidSignature()
         // v1: META-INF/*.RSA|DSA|EC are detached PKCS#7 SignedData.
         let v1Files = zip.members.filter { member in
@@ -49,7 +49,7 @@ enum AndroidSigning {
         }
         if !v1Files.isEmpty { result.schemes.append("v1 (JAR)") }
 
-        let block = signingBlock(zip.data, centralDirectory: zip.centralDirectoryOffset)
+        let block = signingBlock(of: zip)
         var blockChain: [Data] = []
         for (id, value) in block {
             switch id {
@@ -71,6 +71,18 @@ enum AndroidSigning {
         if result.signerCount == 0 && !v1Files.isEmpty { result.signerCount = v1Files.count }
         result.certificates = blockChain.isEmpty ? v1Chain : blockChain
         return result
+    }
+
+    /// The APK Signing Block's ID-value pairs, read straight from the archive: its footer (size
+    /// and magic) ends where the shared ZIP reader found the central directory.
+    static func signingBlock(of zip: ZIPArchive) -> [(UInt32, Data)] {
+        let directory = zip.centralDirectoryOffset
+        guard directory >= 32 else { return [] }
+        let footer = BinaryReader(zip.bytes(at: directory - 24, count: 24))
+        guard footer.bytes(at: 8, count: 16) == Data("APK Sig Block 42".utf8), let size = footer.u64(at: 0),
+              size >= 24, size < directory, let length = Int(exactly: size + 8) else { return [] }
+        let block = zip.bytes(at: directory - size - 8, count: length)
+        return signingBlock(block, centralDirectory: block.count)
     }
 
     /// The ID-value pairs of the APK Signing Block that sits right before the central directory.

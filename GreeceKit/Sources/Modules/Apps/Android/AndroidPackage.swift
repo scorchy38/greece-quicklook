@@ -84,11 +84,11 @@ enum AndroidPackageReader {
 
     static func read(_ url: URL, includeIcon: Bool = true, includeListing: Bool = true) throws -> AndroidPackage {
         let deadline = Date().addingTimeInterval(readBudget)
-        let zip = try ZipFile(url: url)
+        let zip = try ZIPArchive(url: url)
         let isBundle = zip.member("base/manifest/AndroidManifest.xml") != nil && zip.member("AndroidManifest.xml") == nil
         let prefix = isBundle ? "base/" : ""
         var package = AndroidPackage(kind: isBundle ? .bundle : .apk)
-        package.fileSize = UInt64(zip.data.count)
+        package.fileSize = zip.size
         package.memberCount = zip.members.lazy.filter { !$0.isDirectory }.count
 
         // Manifest
@@ -259,7 +259,7 @@ enum AndroidPackageReader {
 
     // MARK: Members
 
-    static func inspectMembers(_ zip: ZipFile, into package: inout AndroidPackage, prefix: String) {
+    static func inspectMembers(_ zip: ZIPArchive, into package: inout AndroidPackage, prefix: String) {
         var code: UInt64 = 0, native: UInt64 = 0, resources: UInt64 = 0, assets: UInt64 = 0, other: UInt64 = 0
         var abiSizes: [String: UInt64] = [:]
         var names = Set<String>()

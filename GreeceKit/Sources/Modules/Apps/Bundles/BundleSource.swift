@@ -75,13 +75,13 @@ final class DirectoryBundle: BundleSource {
 
 /// A bundle inside a ZIP (an .ipa's Payload/X.app/). Executables are streamed, not extracted.
 final class ZipBundle: BundleSource {
-    let zip: ZipFile
+    let zip: ZIPArchive
     let prefix: String
     let name: String
     var url: URL? { nil }
     private var directories: [String: Set<String>] = [:]
 
-    init(zip: ZipFile, prefix: String) {
+    init(zip: ZIPArchive, prefix: String) {
         self.zip = zip
         self.prefix = prefix.hasSuffix("/") ? prefix : prefix + "/"
         name = String(self.prefix.dropLast().split(separator: "/").last ?? "App.app")
@@ -121,7 +121,7 @@ final class ZipBundle: BundleSource {
 
     /// Streams a compressed Mach-O once, keeping only what the parser asks for: headers, load
     /// commands, the code signature and an embedded Info.plist. Bounded by size and time.
-    static func capture(_ member: ZipFile.Member, in zip: ZipFile, budget: TimeInterval = 2.5) -> SparseBytes? {
+    static func capture(_ member: ZIPMember, in zip: ZIPArchive, budget: TimeInterval = 2.5) -> SparseBytes? {
         let sparse = SparseBytes(size: member.size)
         let deadline = Date().addingTimeInterval(budget)
         var wanted = MachOFile.neededRanges(sparse)

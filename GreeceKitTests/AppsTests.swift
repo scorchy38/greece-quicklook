@@ -357,7 +357,7 @@ final class AppsCoreTests: XCTestCase {
         XCTAssertGreaterThan(corner.blueComponent, corner.redComponent + 0.3)
 
         // Hostile catalogs: truncated, corrupted, or not a BOM at all.
-        let zip = try ZipFile(url: fixture("ios/Catalog.ipa"))
+        let zip = try ZIPArchive(url: fixture("ios/Catalog.ipa"))
         let catalog = try XCTUnwrap(zip.contents(of: "Payload/Catalog.app/Assets.car"))
         XCTAssertNil(AssetCatalog.appIcon(in: catalog.prefix(600), named: "AppIcon"))
         XCTAssertNil(AssetCatalog.appIcon(in: Data("BOMStore".utf8) + Data(repeating: 0xFF, count: 200), named: nil))
@@ -370,7 +370,7 @@ final class AppsCoreTests: XCTestCase {
     }
 
     func testCgBIDecoding() throws {
-        let zip = try ZipFile(url: fixture("ios/Tiny.ipa"))
+        let zip = try ZIPArchive(url: fixture("ios/Tiny.ipa"))
         let data = try XCTUnwrap(zip.contents(of: "Payload/Tiny.app/AppIcon60x60@2x.png"))
         XCTAssertTrue(CgBIImage.isCgBI(data))
         let image = try XCTUnwrap(CgBIImage.decodeCgBI(data))
@@ -492,19 +492,19 @@ final class AppsCoreTests: XCTestCase {
     // MARK: - ZIP members
 
     func testZipMembersAndLimits() throws {
-        let zip = try ZipFile(url: fixture("ios/Tiny.ipa"))
+        let zip = try ZIPArchive(url: fixture("ios/Tiny.ipa"))
         XCTAssertNotNil(zip.member("Payload/Tiny.app/Info.plist"))
         XCTAssertThrowsError(try zip.contents(of: try XCTUnwrap(zip.member("Payload/Tiny.app/Tiny")), limit: 16))
-        XCTAssertThrowsError(try ZipFile(url: try write("random.zip", Data((0..<4096).map { UInt8(truncatingIfNeeded: $0 &* 31) }))))
+        XCTAssertThrowsError(try ZIPArchive(url: try write("random.zip", Data((0..<4096).map { UInt8(truncatingIfNeeded: $0 &* 31) }))))
 
         // An end record pointing far outside the file.
         var bogus = Data([0x50, 0x4B, 0x03, 0x04] + [UInt8](repeating: 0, count: 26))
         bogus.append(contentsOf: [0x50, 0x4B, 0x05, 0x06, 0, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F, 0xFF, 0xFF, 0xFF, 0x7F, 0, 0])
-        XCTAssertThrowsError(try ZipFile(url: try write("bogus.ipa", bogus)))
+        XCTAssertThrowsError(try ZIPArchive(url: try write("bogus.ipa", bogus)))
 
         // A member whose header claims 4 GB: streaming stops at the maximum.
         let data = try Data(contentsOf: fixture("ios/Tiny.ipa"))
-        let mapped = try ZipFile(url: try write("copy.ipa", data))
+        let mapped = try ZIPArchive(url: try write("copy.ipa", data))
         let member = try XCTUnwrap(mapped.member("Payload/Tiny.app/Tiny"))
         var total = 0
         try mapped.stream(member, maximum: 1000) { total += $0.count; return true }
@@ -512,7 +512,7 @@ final class AppsCoreTests: XCTestCase {
     }
 
     func testStreamedExecutableKeepsOnlyWhatItNeeds() throws {
-        let zip = try ZipFile(url: fixture("ios/Tiny.ipa"))
+        let zip = try ZIPArchive(url: fixture("ios/Tiny.ipa"))
         let member = try XCTUnwrap(zip.member("Payload/Tiny.app/Tiny"))
         let sparse = try XCTUnwrap(ZipBundle.capture(member, in: zip))
         let file = try MachOFile.parse(sparse)
@@ -1453,8 +1453,8 @@ final class AndroidTests: XCTestCase {
     }
 
     func testSigningBlockListsSchemesInOrder() throws {
-        let zip = try ZipFile(url: fixture("sample.apk"))
-        let ids = AndroidSigning.signingBlock(zip.data, centralDirectory: zip.centralDirectoryOffset).map(\.0)
+        let zip = try ZIPArchive(url: fixture("sample.apk"))
+        let ids = AndroidSigning.signingBlock(of: zip).map(\.0)
         XCTAssertTrue(ids.contains(AndroidSigning.v2ID))
         XCTAssertTrue(ids.contains(AndroidSigning.v3ID))
     }
@@ -1563,7 +1563,7 @@ final class AndroidTests: XCTestCase {
     }
 
     func testBinaryXMLSurvivesTruncationAndCorruption() throws {
-        let zip = try ZipFile(url: fixture("sample.apk"))
+        let zip = try ZIPArchive(url: fixture("sample.apk"))
         let manifest = try XCTUnwrap(zip.contents(of: "AndroidManifest.xml"))
         for length in stride(from: 0, to: manifest.count, by: 37) {
             _ = try? AndroidBinaryXML.parse(manifest.prefix(length))
@@ -1640,7 +1640,7 @@ final class AndroidTests: XCTestCase {
     }
 
     func testResourceTablesSurviveTruncation() throws {
-        let zip = try ZipFile(url: fixture("sample.apk"))
+        let zip = try ZIPArchive(url: fixture("sample.apk"))
         let table = try XCTUnwrap(zip.contents(of: "resources.arsc"))
         for length in stride(from: 0, to: table.count, by: 13) {
             if let resources = try? AndroidBinaryResources(data: table.prefix(length)) {
@@ -1658,7 +1658,7 @@ final class AndroidTests: XCTestCase {
                 for id: UInt32 in [0x7f01_0000, 0x7f02_0000, 0x7f03_0000, 0xFFFF_FFFF] { _ = resources.values(for: id) }
             }
         }
-        let bundle = try ZipFile(url: fixture("sample.aab"))
+        let bundle = try ZIPArchive(url: fixture("sample.aab"))
         let proto = try XCTUnwrap(bundle.contents(of: "base/resources.pb"))
         for length in stride(from: 0, to: proto.count, by: 29) { _ = try? AndroidProtoResources(data: proto.prefix(length)) }
     }

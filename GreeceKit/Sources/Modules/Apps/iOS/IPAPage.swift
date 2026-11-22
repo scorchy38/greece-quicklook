@@ -3,7 +3,7 @@ import AppKit
 /// iOS app archives (.ipa): the app inside Payload/, read straight from the ZIP.
 enum IPAPage {
 
-    static func appPrefix(in zip: ZipFile) -> String? {
+    static func appPrefix(in zip: ZIPArchive) -> String? {
         var best: String?
         for member in zip.members.prefix(5000) where member.path.hasPrefix("Payload/") {
             let parts = member.path.split(separator: "/", omittingEmptySubsequences: false)
@@ -15,7 +15,7 @@ enum IPAPage {
     }
 
     static func page(for url: URL, modified: String?) throws -> InspectorPage {
-        let zip = try ZipFile(url: url)
+        let zip = try ZIPArchive(url: url)
         guard let prefix = appPrefix(in: zip) else { throw PreviewError.unsupported }
         let source = ZipBundle(zip: zip, prefix: prefix)
         guard var facts = BundleFacts(source: source) else { throw PreviewError.unsupported }
@@ -88,7 +88,7 @@ enum IPAPage {
 
     /// For thumbnails: just the icon, as fast as possible.
     static func icon(for url: URL) -> NSImage? {
-        guard let zip = try? ZipFile(url: url), let prefix = appPrefix(in: zip) else { return nil }
+        guard let zip = try? ZIPArchive(url: url), let prefix = appPrefix(in: zip) else { return nil }
         let source = ZipBundle(zip: zip, prefix: prefix)
         let info = source.plist("Info.plist") ?? [:]
         return icon(in: source, info: info)
