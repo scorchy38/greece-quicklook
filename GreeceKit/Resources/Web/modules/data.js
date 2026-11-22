@@ -197,8 +197,9 @@
       state.selected = index;
       kit.$$('tr.sel', tbody).forEach((tr) => tr.classList.remove('sel'));
       const tr = kit.$(`tr[data-i="${index}"]`, tbody);
-      if (tr) { tr.classList.add('sel'); tr.scrollIntoView({ block: 'nearest' }); }
+      // The list shrinks when the details open: reveal the row after that.
       root.classList.add('has-selection');
+      if (tr) { tr.classList.add('sel'); tr.scrollIntoView({ block: 'nearest' }); }
       const row = entries[index];
       detail.innerHTML = `<div class="har-loading">${esc(row.url)}</div>`;
       let info;

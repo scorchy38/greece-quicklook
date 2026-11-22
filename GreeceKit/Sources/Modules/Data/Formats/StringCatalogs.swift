@@ -61,7 +61,7 @@ struct StringTable {
     /// Key, then languages (the source first), then comments.
     func store() -> RecordTable {
         // Several languages side by side: keep each column to about a phrase.
-        let width: CGFloat? = languages.count > 2 ? 210 : nil
+        let width: CGFloat? = languages.count > 3 ? 170 : languages.count > 2 ? 210 : nil
         var columns = [RecordColumn(title: "Key", profiled: false, width: width)]
         for language in languages {
             let name = Locale.current.localizedString(forIdentifier: language) ?? language
