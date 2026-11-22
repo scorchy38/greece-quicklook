@@ -248,10 +248,10 @@ struct ModelFacts: Encodable, Equatable {
 
     static func readThreeMF(_ url: URL, deadline: Date) -> ModelFacts {
         var facts = ModelFacts()
-        guard let package = try? ModelZipMembers(url: url) else { return facts }
-        let modelEntry = ThreeMFPackage.rootModelPath(in: package).flatMap { package.entry(named: $0) }
-            ?? package.entries.first { $0.name.lowercased().hasSuffix(".model") }
-        guard let modelEntry, let xml = package.contents(of: modelEntry, limit: scanLimit) else { return facts }
+        guard let package = ThreeMFPackage.open(url) else { return facts }
+        let modelEntry = ThreeMFPackage.rootModelPath(in: package).flatMap { package.member(named: $0) }
+            ?? package.members.first { $0.path.lowercased().hasSuffix(".model") }
+        guard let modelEntry, let xml = try? package.contents(of: modelEntry, limit: scanLimit) else { return facts }
         facts.vertices = count(Array("<vertex ".utf8), in: xml, deadline: deadline)
         facts.triangles = count(Array("<triangle ".utf8), in: xml, deadline: deadline)
         facts.meshes = count(Array("<mesh".utf8), in: xml, deadline: deadline)

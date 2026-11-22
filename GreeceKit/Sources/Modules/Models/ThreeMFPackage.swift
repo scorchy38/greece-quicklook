@@ -119,9 +119,16 @@ enum XMLTagScanner {
 /// A 3MF package: the root model part, its units, metadata, and geometry (including the
 /// production extension's components that live in other parts, as Bambu and Prusa write them).
 enum ThreeMFPackage {
+    static let memberLimit = 20_000
 
-    static func rootModelPath(in package: ModelZipMembers) -> String? {
-        guard let rels = package.entry(named: "_rels/.rels"), let data = package.contents(of: rels, limit: 1024 * 1024) else { return nil }
+    /// The package's ZIP, or nil if it isn't one or holds nothing.
+    static func open(_ url: URL) -> ZIPArchive? {
+        guard let package = try? ZIPArchive(url: url, memberLimit: memberLimit), !package.members.isEmpty else { return nil }
+        return package
+    }
+
+    static func rootModelPath(in package: ZIPArchive) -> String? {
+        guard let rels = package.member(named: "_rels/.rels"), let data = try? package.contents(of: rels, limit: 1024 * 1024) else { return nil }
         var target: String?
         XMLTagScanner.scan(data) { tag in
             if tag.nameIs("Relationship"), let type = tag.attribute("Type"), type.hasSuffix("/3dmodel"), let value = tag.attribute("Target") {
@@ -177,8 +184,8 @@ enum ThreeMFPackage {
     }
 
     static func load(_ url: URL, budget: ModelBudget) -> ModelScene? {
-        guard let package = try? ModelZipMembers(url: url) else { return nil }
-        let rootPath = rootModelPath(in: package) ?? package.entries.first { $0.name.lowercased().hasSuffix(".model") }?.name
+        guard let package = open(url) else { return nil }
+        let rootPath = rootModelPath(in: package) ?? package.members.first { $0.path.lowercased().hasSuffix(".model") }?.path
         guard let rootPath else { return nil }
         var parts: [String: Part] = [:]
         var triangleBudget = budget.triangles
@@ -186,7 +193,7 @@ enum ThreeMFPackage {
         func key(_ path: String) -> String { "/" + path.drop { $0 == "/" } }
         func part(_ path: String) -> Part? {
             if let cached = parts[key(path)] { return cached }
-            guard parts.count < 512, let entry = package.entry(named: path), let data = package.contents(of: entry, limit: budget.fileBytes) else { return nil }
+            guard parts.count < 512, let entry = package.member(named: path), let data = try? package.contents(of: entry, limit: budget.fileBytes) else { return nil }
             let parsed = parse(data, triangleBudget: &triangleBudget, budget: budget)
             parts[key(path)] = parsed
             return parsed
