@@ -130,6 +130,27 @@ final class DocumentFindTests: XCTestCase {
         XCTAssertEqual(state["label"] as? String, "1 of 3")
     }
 
+    func testTheOutlineTogglesFromTheContextMenu() async throws {
+        let url = directory.appendingPathComponent("Guide.md")
+        try (1...6).map { "## Section \($0)\n\nSome text about part \($0).\n" }.joined(separator: "\n").write(to: url, atomically: true, encoding: .utf8)
+        let preview = try await PreviewFactory.makePreview(for: url, settings: PreviewSettings())
+        await preview.waitUntilReady()
+        let web = try XCTUnwrap(preview.webView as? PreviewWebView)
+        let state = "const d = document.querySelector('.doc'); return d.classList.contains('outline-collapsed') || d.classList.contains('outline-floating')"
+        let before = try await evaluate(web, state) as? Bool
+        _ = try await evaluate(web, """
+            getSelection().removeAllRanges();
+            const p = document.querySelector('article p');
+            p.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }));
+            """)
+        for _ in 0..<50 where web.pageMenuItems.isEmpty { try await Task.sleep(nanoseconds: 20_000_000) }
+        let item = try XCTUnwrap(web.pageMenuItems.first { $0.title == "Outline" })
+        _ = try await evaluate(web, "greece.chooseMenuItem(\(item.id))")
+        try await Task.sleep(nanoseconds: 100_000_000)
+        let after = try await evaluate(web, state) as? Bool
+        XCTAssertNotEqual(before, after, "choosing Outline flips the outline")
+    }
+
     func testCodePagesKeepTheirOwnFind() async throws {
         let url = directory.appendingPathComponent("lamp.swift")
         try "let lamp = 1\n".write(to: url, atomically: true, encoding: .utf8)

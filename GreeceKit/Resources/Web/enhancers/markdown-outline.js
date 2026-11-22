@@ -126,6 +126,13 @@
       else setHidden(false);
     });
     window.matchMedia(MEDIA).addEventListener('change', () => setFloating(false));
+
+    // The outline from the context menu too: a right-click away wherever the pointer is.
+    greece.contextMenu(() => {
+      if (String(window.getSelection() || '')) return null;
+      const shown = isNarrow() ? doc.classList.contains('outline-floating') : !doc.classList.contains('outline-collapsed');
+      return [{ title: 'Outline', checked: shown, run: () => (isNarrow() ? setFloating(!shown) : setHidden(shown)) }];
+    });
     list.addEventListener('click', (event) => { if (event.target.closest('a') && isNarrow()) setFloating(false); });
     document.addEventListener('pointerdown', (event) => {
       if (doc.classList.contains('outline-floating') && !nav.contains(event.target) && !show.contains(event.target)) setFloating(false);
