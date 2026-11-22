@@ -15,6 +15,7 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
     /// The page's scroll position, reported shortly after scrolling stops.
     var onScroll: ((CGPoint) -> Void)?
     private let messages = MessageProxy()
+    private let schemeHandler: GreeceSchemeHandler
     private static let messageNames = ["ready", "copy", "log", "scroll", "menu"]
 
     init(document: WebDocument, settings: PreviewSettings, size: NSSize = NSSize(width: 900, height: 700)) {
@@ -22,8 +23,9 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
         self.settings = settings
 
         let configuration = WKWebViewConfiguration()
-        configuration.setURLSchemeHandler(GreeceSchemeHandler(readableDirectory: document.readableDirectory, resources: document.resources),
-                                          forURLScheme: GreeceSchemeHandler.scheme)
+        schemeHandler = GreeceSchemeHandler(readableDirectory: document.readableDirectory, resources: document.resources)
+        schemeHandler.allowsRemoteImages = settings.loadRemoteImages
+        configuration.setURLSchemeHandler(schemeHandler, forURLScheme: GreeceSchemeHandler.scheme)
         configuration.suppressesIncrementalRendering = true
         configuration.websiteDataStore = .nonPersistent()
         configuration.preferences.isElementFullscreenEnabled = false
@@ -96,6 +98,7 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
     func update(settings newSettings: PreviewSettings) {
         let old = settings
         settings = newSettings
+        schemeHandler.allowsRemoteImages = newSettings.loadRemoteImages
         if old.appearance != newSettings.appearance { applyAppearance() }
         if WebDocument.structuralKey(old) != WebDocument.structuralKey(newSettings) {
             load()

@@ -45,6 +45,8 @@ enum WebAssets {
 /// - `greece://file/<absolute path>`: local media (images, video, audio, PDF) for Markdown and
 ///   notebooks, plus any file inside the document's `readableDirectory`. Never scriptable.
 /// - `greece://module/<path>`: data a module computes on demand.
+/// - `greece://remote/<URL>`: a remote image, through `RemoteImages`, only while the reader
+///   allows remote images (so a file can't use the route to load anything behind their back).
 final class GreeceSchemeHandler: NSObject, WKURLSchemeHandler {
     static let scheme = "greece"
 
@@ -53,6 +55,8 @@ final class GreeceSchemeHandler: NSObject, WKURLSchemeHandler {
     private let resources: ModuleResources?
     /// Tasks WebKit has cancelled; answering one of them raises an exception.
     private var stopped = Set<ObjectIdentifier>()
+    /// The reader's "Load remote images" setting, kept current by the preview.
+    var allowsRemoteImages = false
 
     init(readableDirectory: URL? = nil, resources: ModuleResources? = nil) {
         self.readableDirectory = readableDirectory.map { $0.resolvingSymlinksInPath().standardizedFileURL.path }
@@ -80,6 +84,21 @@ final class GreeceSchemeHandler: NSObject, WKURLSchemeHandler {
             // Even if an SVG is ever opened directly, it can't run script or load anything.
             headers["Content-Security-Policy"] = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox"
             headers["Access-Control-Allow-Origin"] = "*"
+        case "remote":
+            guard allowsRemoteImages, let remote = RemoteImages.target(of: url) else { return fail(task) }
+            let id = ObjectIdentifier(task)
+            RemoteImages.fetch(remote) { image in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self, self.stopped.remove(id) == nil else { return }
+                    guard let image else { return self.fail(task) }
+                    self.respond(task, url: url, data: image.data, headers: [
+                        "Content-Type": image.type, "Cache-Control": "max-age=3600",
+                        // An SVG from the web can't run script or load anything else.
+                        "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src data:; sandbox",
+                    ])
+                }
+            }
+            return
         case "module":
             guard let resources else { return fail(task) }
             let id = ObjectIdentifier(task)

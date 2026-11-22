@@ -445,8 +445,16 @@
         img.replaceWith(placeholder);
         return;
       }
+      // Greece fetches remote images itself: cached for next time and offline, and never with cookies.
+      if (/^https?:/i.test(src)) img.setAttribute('src', remoteAddress(src));
+      if (img.srcset) img.srcset = remoteSrcset(img.srcset);
       img.loading = 'lazy';
       img.decoding = 'async';
+    });
+    // <picture> sources (GitHub's light and dark screenshots) follow the same policy.
+    $$('picture source[srcset]', article).forEach((source) => {
+      if (!options.remoteImages && /https?:/i.test(source.srcset)) source.srcset = '';
+      else source.srcset = remoteSrcset(source.srcset);
     });
 
     // Headings: stable ids for links and the outline.
@@ -454,6 +462,17 @@
     const headings = $$('h1, h2, h3, h4', article);
     headings.forEach((h) => { if (!h.id) h.id = slugify(h.textContent, used); else used.add(h.id); });
     return headings;
+  }
+
+  function remoteAddress(url) { return 'greece://remote/' + encodeURIComponent(url); }
+
+  /** Rewrites the remote candidates in a srcset ("a.png 1x, https://b/c.png 2x"). */
+  function remoteSrcset(srcset) {
+    return srcset.split(',').map((candidate) => {
+      const parts = candidate.trim().split(/\s+/);
+      if (/^https?:/i.test(parts[0])) parts[0] = remoteAddress(parts[0]);
+      return parts.join(' ');
+    }).join(', ');
   }
 
   function buildOutline(headings, doc) {
