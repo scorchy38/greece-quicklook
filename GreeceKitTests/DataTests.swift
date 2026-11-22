@@ -152,7 +152,7 @@ final class SQLiteDataTests: XCTestCase {
         let opened = CFAbsoluteTimeGetCurrent() - started
         let orders = try XCTUnwrap(database.objects.first { $0.name == "orders" })
         XCTAssertEqual(orders.rowCount, 1_000_000)
-        XCTAssertLessThan(opened, 2.5, "schema and counts")
+        try XCTAssertWithinBudget(opened, 2.5, "schema and counts")
 
         let worker = SQLiteWorker(url: url)
         let source = SQLiteGridSource(database: database, worker: worker, object: orders)
@@ -184,9 +184,9 @@ final class SQLiteDataTests: XCTestCase {
 
         print(String(format: "SQLite 1M rows: open %.0f ms · jump to end %.1f ms · next page %.2f ms · sort %.0f ms · sorted page %.2f ms",
                      opened * 1000, jump * 1000, sequential * 1000, sortTime * 1000, sortedPage * 1000))
-        XCTAssertLessThan(jump, 0.5)
-        XCTAssertLessThan(sequential, 0.02)
-        XCTAssertLessThan(sortedPage, 0.05)
+        try XCTAssertWithinBudget(jump, 0.5)
+        try XCTAssertWithinBudget(sequential, 0.02)
+        try XCTAssertWithinBudget(sortedPage, 0.05)
     }
 
     /// Filtering a million rows by a cell's value: the worker finds the rows while the main thread
@@ -239,7 +239,7 @@ final class SQLiteDataTests: XCTestCase {
         print(String(format: "SQLite 1M rows filter: returns in %.2f ms · equality %.0f ms · sort + bound %.0f ms · view %.0f ms",
                      returnedAfter * 1000, filterTime * 1000, both * 1000, viewTime * 1000))
         XCTAssertLessThan(returnedAfter, 0.01, "the main thread only hands the work over")
-        XCTAssertLessThan(filterTime, 5)
+        try XCTAssertWithinBudget(filterTime, 5)
     }
 
     /// Scrolling a real table view over a million rows: every frame fetches and lays out rows.
@@ -316,8 +316,8 @@ final class SQLiteDataTests: XCTestCase {
         let frame = fling + 30 * perRow
         print(String(format: "SQLite 1M rows scrolling: layout %.2f ms a frame (worst %.1f ms) · draw %.3f ms a row · fling frame ≈ %.1f ms · scroller jump %.2f ms",
                      fling * 1000, worst * 1000, perRow * 1000, frame * 1000, jumps * 1000))
-        XCTAssertLessThan(frame, 1.0 / 60, "a 30-row fling frame fits in a 60 Hz frame")
-        XCTAssertLessThan(jumps, 0.05)
+        try XCTAssertWithinBudget(frame, 1.0 / 60, "a 30-row fling frame fits in a 60 Hz frame")
+        try XCTAssertWithinBudget(jumps, 0.05)
     }
 
     func testHostileNamesAreQuotedNotExecuted() throws {
@@ -462,7 +462,7 @@ final class TableDataTests: XCTestCase {
         XCTAssertEqual(source.value(row: 0, column: 0).plainText, "Corfu")
     }
 
-    func testHundredThousandRowsParseSortAndProfileQuickly() {
+    func testHundredThousandRowsParseSortAndProfileQuickly() throws {
         var text = "id\tcity\tamount\twhen\n"
         let cities = ["Athens", "Naxos", "Paros", "Syros", "Milos", "Ios", "Kea", "Andros"]
         for i in 0..<120_000 {
@@ -487,18 +487,18 @@ final class TableDataTests: XCTestCase {
         print(String(format: "TSV 120k rows: parse %.0f ms · numeric sort %.0f ms · text sort %.0f ms · profile one column %.0f ms",
                      parse * 1000, numeric * 1000, text_ * 1000, profiling * 1000))
         // Generous for unoptimised test builds; release builds are several times faster.
-        XCTAssertLessThan(numeric, 1.0)
-        XCTAssertLessThan(text_, 1.0)
+        try XCTAssertWithinBudget(numeric, 1.0)
+        try XCTAssertWithinBudget(text_, 1.0)
     }
 
-    func testWideTablesProfileWithinBudget() {
+    func testWideTablesProfileWithinBudget() throws {
         let header = (0..<1000).map { "c\($0)" }.joined(separator: ",")
         let row = (0..<1000).map(String.init).joined(separator: ",")
         let table = DelimitedTable.parse(header + "\n" + Array(repeating: row, count: 500).joined(separator: "\n"))
         XCTAssertEqual(table.columnCount, 1000)
         let started = CFAbsoluteTimeGetCurrent()
         for column in 0..<1000 { _ = ColumnProfile.make(rows: table.rows.count, limit: 4_000) { table.rows[$0][column] } }
-        XCTAssertLessThan(CFAbsoluteTimeGetCurrent() - started, 3)
+        try XCTAssertWithinBudget(CFAbsoluteTimeGetCurrent() - started, 3)
     }
 }
 
