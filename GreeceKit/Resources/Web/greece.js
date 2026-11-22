@@ -875,6 +875,45 @@
   const applyCallbacks = [];
   let moduleData;
 
+  // ------------------------------------------------------------------ Context menu
+
+  /* Quick Look never passes typed keys to a preview (they go to Finder), so commands a keyboard
+     would reach elsewhere also live in the context menu, which works everywhere. Providers return
+     items for the right-clicked spot; the app puts them above WebKit's Copy, Look Up and Share. */
+  const menuProviders = [];
+  let menuActions = [];
+
+  window.addEventListener('contextmenu', (event) => {
+    menuActions = [];
+    const items = [];
+    for (const provider of menuProviders) {
+      let group;
+      try { group = provider(event) || []; } catch (e) { post('log', 'context menu: ' + e); continue; }
+      group.filter(Boolean).forEach((item, i) => {
+        menuActions.push(item.run);
+        items.push({ id: menuActions.length - 1, title: String(item.title), enabled: item.enabled !== false,
+                     checked: !!item.checked, separated: i === 0 && items.length > 0 });
+      });
+    }
+    post('menu', items);
+    // Nothing to offer (WebKit's own menu would only say Reload): no menu at all.
+    const target = event.target instanceof Element ? event.target : null;
+    if (!items.length && !String(window.getSelection() || '') && !(target && target.closest('a[href], img, video, audio'))) event.preventDefault();
+  }, true);
+
+  /** "Find “x”" for a short selection on one line, or null. */
+  function selectionQuery() {
+    const text = String(window.getSelection() || '');
+    if (!text || text.includes('\n') || text.length > 200 || !text.trim()) return null;
+    return text;
+  }
+
+  /** A selection quoted for a menu title: “withTimeout(_:)”, shortened in the middle when long. */
+  function quoted(text, max = 32) {
+    const flat = text.replace(/\s+/g, ' ').trim();
+    return '“' + (flat.length > max ? flat.slice(0, max - 12) + '…' + flat.slice(-10) : flat) + '”';
+  }
+
   window.greece = {
     /** Applies appearance changes without re-rendering (used by the app's live preview). */
     apply(config) {
@@ -895,9 +934,24 @@
         Enhancer scripts push to it as they load, before the page renders: `(md) => …`. */
     markdownPlugins,
 
+    /** Adds items to the context menu: `provider(event)` returns `[{ title, run, enabled?, checked? }]`
+        for the right-clicked spot (or nothing). Each provider's items form a group. */
+    contextMenu(provider) { menuProviders.push(provider); },
+
+    /** Called by the app when one of the page's menu items is chosen. */
+    chooseMenuItem(id) {
+      const run = menuActions[id];
+      menuActions = [];
+      if (run) Promise.resolve().then(run).catch((e) => post('log', 'menu item: ' + (e && e.stack || e)));
+    },
+
     /** What module renderers share with Greece's own: escaping, highlighting, Markdown, notices. */
     kit: {
       $, $$, esc, post, root, payload, options,
+      /** False in Quick Look, where typed keys never reach the page: offer selections, buttons and
+          context-menu items instead of fields, and never show a field that looks typeable. */
+      typing: !html.classList.contains('no-typing'),
+      selectionQuery, quoted,
       /** The previewed file's name ("package.json", ".env"), when known. */
       fileName: payload.fileName || '',
       highlight, languageTitle, splitHighlighted, copyText, notice, empty, tick, afterReady,
