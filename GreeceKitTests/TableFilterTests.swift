@@ -177,6 +177,37 @@ final class TableFilterTests: XCTestCase {
         XCTAssertEqual(source.value(row: 0, column: 0).plainText, "199999", "the older background result was dropped")
     }
 
+    /// A million rows made up as they're read, so the test measures filtering, not parsing.
+    private final class MillionRows: RecordStore {
+        let columns = [RecordColumn(title: "id", numeric: true), RecordColumn(title: "city")]
+        let rowCount = 1_000_000
+        private let cities = ["Athens", "Naxos", "Paros", "Syros"]
+        func value(row: Int, column: Int) -> GridValue { .text(text(row: row, column: column)) }
+        func text(row: Int, column: Int) -> String { column == 0 ? String(row) : cities[row % 4] }
+    }
+
+    func testMillionRowsFilterOffTheMainThread() {
+        let source = RecordGridSource(store: MillionRows())
+        let started = CFAbsoluteTimeGetCurrent()
+        let done = expectation(description: "filtered")
+        source.addColumnFilter(ColumnFilter(column: 1, test: .equals("Naxos"))) { done.fulfill() }
+        let returned = CFAbsoluteTimeGetCurrent() - started
+        wait(for: [done], timeout: 30)
+        let equality = CFAbsoluteTimeGetCurrent() - started
+        XCTAssertEqual(source.rowCount, 250_000)
+
+        let bounded = expectation(description: "bounded")
+        let again = CFAbsoluteTimeGetCurrent()
+        source.addColumnFilter(ColumnFilter(column: 0, test: .atMost(1000, text: "1000"))) { bounded.fulfill() }
+        wait(for: [bounded], timeout: 30)
+        let bound = CFAbsoluteTimeGetCurrent() - again
+        XCTAssertEqual(source.rowCount, 250)
+        print(String(format: "Table 1M rows filter: returns in %.2f ms · equality %.0f ms · plus a number bound %.0f ms",
+                     returned * 1000, equality * 1000, bound * 1000))
+        XCTAssertLessThan(returned, 0.01, "the main thread only hands the work over")
+        XCTAssertLessThan(equality, 5)
+    }
+
     // MARK: - Menus
 
     private func tableView(_ text: String = islands) -> DataTableView {
