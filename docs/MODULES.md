@@ -79,3 +79,14 @@ To add features to an existing kind of page without editing `greece.js`, put
 - Register with `greece.enhance('<kind>', async (root, kit) => { … })`.
 - Enhancers run after the page has rendered and before it's shown. A failing enhancer is logged and skipped.
 - To add Markdown syntax, push a markdown-it plugin to `greece.markdownPlugins` when the script loads (`greece.markdownPlugins.push((md) => …)`). Every Markdown renderer uses it: pages, notebooks and modules' prose.
+
+## Pointer first
+
+Quick Look's panel never passes typed keys to a preview (they go to Finder, where they move the selection) and opens the file in its default app on any double-click. Previews must work by pointer alone there:
+
+- `kit.typing` is false inside Quick Look (`PreviewHost.acceptsTyping` in Swift; `GREECE_NO_TYPING=1` forces it anywhere). Don't show a field that looks typeable when it's false: offer choices, buttons or a selection instead, as the find bar and the font tester do.
+- Every keyboard shortcut needs a pointer path too: a visible control, or a context-menu item.
+- Add context-menu items with `greece.contextMenu((event) => [{ title, run, enabled, checked }])`. Return nothing when the right-clicked spot has nothing to offer. `kit.selectionQuery()` gives a short, single-line selection and `kit.quoted(text)` quotes it for a title ("Find “beam”").
+- Never make double-click the only way to do something.
+- Native views: give interactive views `acceptsFirstMouse(for:) -> true` (the panel is never the key window, so the first click would be swallowed), and add `menu(for:)` with `ActionMenuItem`s for what keyboard shortcuts do elsewhere.
+- File lists that can preview their members use `MemberBrowserView` with a `MemberSource` (`ArchiveSession`, `LocalMembers`, `ZIPMembers`, `DiskImageMembers`).
