@@ -30,6 +30,14 @@ for appex in "$dest"/Contents/PlugIns/*.appex; do
 done
 qlmanage -r >/dev/null 2>&1 || true
 
+# Any other copy (old downloads, build folders) competes with this one: remove them.
+# (Launching a build's app, e.g. for a render, registers that copy again.)
+for id in "${ids[@]}"; do
+  pluginkit -m -A -D -v -i "$id" | awk -F'\t' '{print $NF}' | grep '^/' | grep -v "^$dest/" | while read -r other; do
+    pluginkit -r "$other" 2>/dev/null || true
+  done
+done
+
 # The registry can lag when the Mac is busy; give it up to 15 more seconds.
 for id in "${ids[@]}"; do
   for attempt in $(seq 1 30); do
