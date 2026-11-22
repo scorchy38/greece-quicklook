@@ -262,6 +262,10 @@
 				<string>com.apple.interfacebuilder.document.cocoa</string>
 				<string>com.apple.dt.interfacebuilder.document.storyboard</string>
 				<string>com.apple.xcode.strings-dictionary</string>
+				<string>public.precompiled-c-header</string>
+				<string>com.apple.dt.xctestplancontenttype</string>
+				<string>com.apple.sirikit.intentdefinition</string>
+				<string>com.sun.java-web-start</string>
 				<string>com.scorchy.greece.geojson-lines</string>
 				<string>com.scorchy.greece.topojson</string>
 				<string>com.google.earth.kml</string>
