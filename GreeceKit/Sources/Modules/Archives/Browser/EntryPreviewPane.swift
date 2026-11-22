@@ -10,7 +10,7 @@ import UniformTypeIdentifiers
 final class EntryPreviewPane: NSView {
     enum Mode: Int { case preview, info }
 
-    private let session: ArchiveSession
+    private let source: MemberSource
     private let scratch: ArchiveScratch
     private var settings: PreviewSettings
     private let header = PaneHeader()
@@ -27,8 +27,8 @@ final class EntryPreviewPane: NSView {
     /// Called when the person switches between Preview and Info.
     var onModeChange: ((Mode) -> Void)?
 
-    init(session: ArchiveSession, scratch: ArchiveScratch, settings: PreviewSettings, headerHeight: CGFloat) {
-        self.session = session
+    init(source: MemberSource, scratch: ArchiveScratch, settings: PreviewSettings, headerHeight: CGFloat) {
+        self.source = source
         self.scratch = scratch
         self.settings = settings
         super.init(frame: .zero)
@@ -147,11 +147,10 @@ final class EntryPreviewPane: NSView {
     }
 
     private func loadPreview(_ node: FileNode, kind: String) {
-        guard let entry = node.entry else { return }
         let token = CancelToken()
         self.token = token
         let current = generation
-        let session = self.session, scratch = self.scratch, settings = innerSettings
+        let source = self.source, scratch = self.scratch, settings = innerSettings
 
         // A spinner only if extraction takes a moment, so quick previews never flash.
         let spinner = ArchiveStateView.loading()
@@ -163,7 +162,7 @@ final class EntryPreviewPane: NSView {
         Task.detached(priority: .userInitiated) {
             let result: Result<Built, Error>
             do {
-                let file = try session.extract(entry, to: scratch, cancel: token)
+                let file = try source.extract(node, to: scratch, cancel: token)
                 result = .success(try EntryPreviewPane.prepare(file, settings: settings))
             } catch {
                 result = .failure(error)

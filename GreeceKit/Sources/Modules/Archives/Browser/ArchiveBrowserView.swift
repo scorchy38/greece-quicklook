@@ -3,15 +3,12 @@ import AppKit
 /// An archive's contents, Finder-style, with the selected file's real preview (or Get Info) in a
 /// pane that opens beside the list. Packages get their metadata card above.
 @MainActor
-final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegate {
+final class ArchiveBrowserView: NSView, PreviewSettingsAware {
     private let document: ArchiveDocument
     private var settings: PreviewSettings
     private let modified: String?
-    private let split = NSSplitView()
-    private let tree: FileTreeView
-    private let pane: EntryPreviewPane
-    private var paneShown = false
-    private var paneFraction: CGFloat = 0.5
+    private let browser: MemberBrowserView
+    private var tree: FileTreeView { browser.tree }
     private var state: NSView?
 
     /// Holds the package card; empty (zero height) for plain archives.
@@ -21,21 +18,14 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
         self.document = document
         self.settings = settings
         self.modified = modified
-        tree = FileTreeView(root: document.builder.root, settings: settings, showsKind: false,
-                            compressedSizes: document.listing.hasCompressedSizes)
-        pane = EntryPreviewPane(session: document.session, scratch: document.scratch, settings: settings,
-                                headerHeight: tree.outline.headerView?.frame.height ?? 28)
+        browser = MemberBrowserView(root: document.builder.root, source: document.session, scratch: document.scratch,
+                                    settings: settings, compressedSizes: document.listing.hasCompressedSizes)
         super.init(frame: NSRect(x: 0, y: 0, width: 980, height: 660))
 
-        split.isVertical = true
-        split.dividerStyle = .thin
-        split.delegate = self
-        split.addArrangedSubview(tree)
-
         headerSlot.translatesAutoresizingMaskIntoConstraints = false
-        split.translatesAutoresizingMaskIntoConstraints = false
+        browser.translatesAutoresizingMaskIntoConstraints = false
         addSubview(headerSlot)
-        addSubview(split)
+        addSubview(browser)
         let collapsed = headerSlot.heightAnchor.constraint(equalToConstant: 0)
         collapsed.priority = .defaultLow
         NSLayoutConstraint.activate([
@@ -43,18 +33,12 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
             headerSlot.leadingAnchor.constraint(equalTo: leadingAnchor),
             headerSlot.trailingAnchor.constraint(equalTo: trailingAnchor),
             collapsed,
-            split.topAnchor.constraint(equalTo: headerSlot.bottomAnchor),
-            split.leadingAnchor.constraint(equalTo: leadingAnchor),
-            split.trailingAnchor.constraint(equalTo: trailingAnchor),
-            split.bottomAnchor.constraint(equalTo: bottomAnchor),
+            browser.topAnchor.constraint(equalTo: headerSlot.bottomAnchor),
+            browser.leadingAnchor.constraint(equalTo: leadingAnchor),
+            browser.trailingAnchor.constraint(equalTo: trailingAnchor),
+            browser.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
 
-        tree.onSelectionChange = { [weak self] nodes in self?.selectionChanged(nodes) }
-        tree.onGetInfo = { [weak self] node in
-            guard let self else { return }
-            self.pane.setMode(.info)
-            self.selectionChanged(self.tree.selectedNodes.isEmpty ? [node] : self.tree.selectedNodes)
-        }
         if let package = document.package {
             showPackage(package)
             // A skill opens on its instructions.
@@ -71,7 +55,7 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
 
     override func layout() {
         super.layout()
-        guard let path = opening, split.bounds.width > 0 else { return }
+        guard let path = opening, browser.bounds.width > 0 else { return }
         opening = nil
         DispatchQueue.main.async { [weak self] in self?.tree.select(path: path) }
     }
@@ -95,7 +79,7 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
 
     func apply(_ settings: PreviewSettings) {
         self.settings = settings
-        pane.apply(settings)
+        browser.apply(settings)
     }
 
     // MARK: - Loading
@@ -137,54 +121,16 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
         }
         state?.removeFromSuperview()
         state = nil
-        split.isHidden = replacement != nil
+        browser.isHidden = replacement != nil
         guard let replacement else { return }
         replacement.translatesAutoresizingMaskIntoConstraints = false
         addSubview(replacement)
         NSLayoutConstraint.activate([
-            replacement.topAnchor.constraint(equalTo: split.topAnchor),
+            replacement.topAnchor.constraint(equalTo: browser.topAnchor),
             replacement.bottomAnchor.constraint(equalTo: bottomAnchor),
             replacement.leadingAnchor.constraint(equalTo: leadingAnchor),
             replacement.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
         state = replacement
     }
-
-    // MARK: - Selection
-
-    private func selectionChanged(_ nodes: [FileNode]) {
-        guard !nodes.isEmpty else { hidePane(); return }
-        showPane()
-        pane.show(nodes)
-    }
-
-    private func showPane() {
-        guard !paneShown else { return }
-        paneShown = true
-        split.addArrangedSubview(pane)
-        split.adjustSubviews()
-        let width = max(split.bounds.width, 1)
-        split.setPosition((width * (1 - paneFraction)).rounded(), ofDividerAt: 0)
-    }
-
-    private func hidePane() {
-        guard paneShown else { return }
-        if split.bounds.width > 0 { paneFraction = min(max(pane.frame.width / split.bounds.width, 0.3), 0.75) }
-        paneShown = false
-        pane.show([])
-        pane.removeFromSuperview()
-        split.adjustSubviews()
-    }
-
-    // MARK: - Split view
-
-    func splitView(_ splitView: NSSplitView, constrainMinCoordinate proposedMinimumPosition: CGFloat, ofSubviewAt dividerIndex: Int) -> CGFloat {
-        max(proposedMinimumPosition, 240)
-    }
-
-    func splitView(_ splitView: NSSplitView, constrainMaxCoordinate proposedMaximumPosition: CGFloat, ofSubviewAt dividerIndex: Int) -> CGFloat {
-        min(proposedMaximumPosition, splitView.bounds.width - 280)
-    }
-
-    func splitView(_ splitView: NSSplitView, shouldAdjustSizeOfSubview view: NSView) -> Bool { true }
 }
