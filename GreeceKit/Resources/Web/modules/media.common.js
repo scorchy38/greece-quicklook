@@ -106,9 +106,8 @@
     return response.text();
   }
 
-  const numberFormat = new Intl.NumberFormat();
-  const number = (value) => numberFormat.format(value);
-  const plural = (count, one, many) => `${number(count)} ${count === 1 ? one : (many || one + 's')}`;
+  /** A number for the page's locale (kit.number in greece.js). */
+  const number = (value, options) => window.greece.kit.number(value, options);
   const trimNumber = (value, digits) => Number(value.toFixed(digits == null ? 2 : digits)).toString();
 
   /** 00:01:02.345 */
@@ -127,7 +126,7 @@
     window.greece.kit.post('copy', text);
     let toast = document.querySelector('.m-copied');
     if (!toast) { toast = el('div', { class: 'm-copied', role: 'status' }); document.body.appendChild(toast); }
-    toast.textContent = label || ('Copied ' + text);
+    toast.textContent = label || window.greece.kit.t('Copied {0}', text);
     toast.classList.add('show');
     clearTimeout(copiedTimer);
     copiedTimer = setTimeout(() => toast.classList.remove('show'), 1300);
@@ -166,5 +165,5 @@
     }
   }
 
-  window.GreeceMedia = { el, icon, button, segmented, select, range, paintRange, fetchJSON, fetchText, number, plural, trimNumber, timecode, copy, isDark, measureLightness };
+  window.GreeceMedia = { el, icon, button, segmented, select, range, paintRange, fetchJSON, fetchText, number, trimNumber, timecode, copy, isDark, measureLightness };
 })();

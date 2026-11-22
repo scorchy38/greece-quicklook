@@ -48,11 +48,11 @@
 
     const page = el('div', { class: 'palette' });
     const formats = [{ value: 'hex', label: 'Hex' }, { value: 'rgb', label: 'RGB' }, { value: 'hsl', label: 'HSL' }];
-    if (hasOriginal) formats.push({ value: 'original', label: colors.every((c) => c.model === colors[0].model) ? colors[0].model.replace(' (P3)', '') : 'Original' });
+    if (hasOriginal) formats.push({ value: 'original', label: colors.every((c) => c.model === colors[0].model) ? colors[0].model.replace(' (P3)', '') : kit.t('Original') });
     page.appendChild(el('div', { class: 'palette-head' }, [
       el('div', { class: 'titles' }, [
         el('h1', { text: data.name || data.kind }),
-        el('div', { class: 'sub', text: `${M.plural(data.count, 'color')} · ${data.kind}` }),
+        el('div', { class: 'sub', text: `${kit.plural(data.count, '{0} colors')} · ${data.kind}` }),
       ]),
       M.segmented(formats, format, (value) => { format = value; refresh(); }),
     ]));
@@ -66,7 +66,7 @@
     for (const group of data.groups) {
       const section = el('section', { class: 'palette-group' });
       if (group.name || data.groups.length > 1) {
-        section.appendChild(el('h2', null, [group.name || 'Ungrouped', el('span', { class: 'n', text: M.number(group.colors.length) })]));
+        section.appendChild(el('h2', null, [group.name || kit.t('Ungrouped'), el('span', { class: 'n', text: M.number(group.colors.length) })]));
       }
       const unnamed = group.colors.every((c) => !c.name);
       const grid = el('div', { class: 'swatches' + (group.colors.length > 48 && unnamed ? ' dense' : '') });
@@ -75,13 +75,13 @@
         const chip = el('div', { class: 'chip' + (color.alpha < 1 ? ' checker' : '') }, [
           el('div', { class: 'fill', style: { background: `rgba(${color.rgb.join(',')},${color.alpha})` } }),
           // Spot inks matter when printing; "global" is a bookkeeping flag, left to the tooltip.
-          color.kind === 'Spot' ? el('span', { class: 'badge', text: 'Spot' }) : null,
-          el('span', { class: 'copy', style: { color: light ? 'rgba(0,0,0,.65)' : 'rgba(255,255,255,.85)' }, text: 'Copy' }),
+          color.kind === 'Spot' ? el('span', { class: 'badge', text: kit.t('Spot') }) : null,
+          el('span', { class: 'copy', style: { color: light ? 'rgba(0,0,0,.65)' : 'rgba(255,255,255,.85)' }, text: kit.t('Copy') }),
         ]);
         const value = el('div', { class: 'value' });
         values.push([value, color]);
         const kind = color.kind ? ` (${color.kind} ${color.model})` : color.model !== 'RGB' ? ` (${color.model})` : '';
-        const swatch = el('div', { class: 'swatch', title: `${color.name || hex(color)}${kind} — click to copy`, tabindex: '0' }, [
+        const swatch = el('div', { class: 'swatch', title: kit.t('{0} — click to copy', `${color.name || hex(color)}${kind}`), tabindex: '0' }, [
           chip,
           el('div', { class: 'name', text: color.name || hex(color) }),
           value,
@@ -98,7 +98,7 @@
     function refresh() {
       for (const [node, color] of values) {
         node.textContent = FORMATS[format](color);
-        if (color.clipped && format !== 'original') node.appendChild(el('span', { class: 'clip', title: 'Outside sRGB: shown as the nearest sRGB color', text: ' ◆' }));
+        if (color.clipped && format !== 'original') node.appendChild(el('span', { class: 'clip', title: kit.t('Outside sRGB: shown as the nearest sRGB color'), text: ' ◆' }));
       }
     }
     refresh();

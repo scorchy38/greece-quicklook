@@ -10,6 +10,13 @@
 
   const LIMITS = { expansions: 60000, depth: 160, frames: 300, output: 16e6, ms: 4000, items: 40000 };
 
+  /* Greece's own words (placeholders, buttons) in the page's language, from greece.js's kit. The
+     converter also runs on its own in JavaScriptCore (GreeceKitTests), with no page: English there.
+     What the document itself says (Figure, Theorem, References…) stays English, as LaTeX prints it. */
+  const kit = (global.greece && global.greece.kit) || {
+    t: (s, ...a) => String(s).replace(/\{(\d+)\}/g, (m, i) => (i < a.length ? String(a[i]) : m)),
+  };
+
   const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESC[c]);
   const plain = (h) => String(h).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\s+/g, ' ').trim();
@@ -1054,12 +1061,17 @@
         caption = `<figcaption><span class="cap-label">Listing ${number}:</span> ${this.inline(this.pendingListingCaption)}</figcaption>`;
         this.pendingListingCaption = null;
       }
-      this.out.block(`<figure class="codeblock tex-code"><div class="tools">${title ? `<span class="lang">${esc(title)}</span>` : ''}<button class="copy" type="button">Copy</button></div><pre><code class="hljs">${body}</code></pre>${caption}</figure>`);
+      this.out.block(`<figure class="codeblock tex-code"><div class="tools">${title ? `<span class="lang">${esc(title)}</span>` : ''}<button class="copy" type="button">${esc(kit.t('Copy'))}</button></div><pre><code class="hljs">${body}</code></pre>${caption}</figure>`);
     }
 
     picture(name) {
       const body = this.readUntilEnd(name);
-      const kind = { tikzpicture: 'TikZ drawing', pgfpicture: 'PGF drawing', picture: 'Picture', circuitikz: 'Circuit diagram', forest: 'Tree diagram', tikzcd: 'Commutative diagram', axis: 'Plot', pspicture: 'PSTricks drawing' }[name] || 'Drawing';
+      const kinds = {
+        tikzpicture: () => kit.t('TikZ drawing'), pgfpicture: () => kit.t('PGF drawing'), picture: () => kit.t('Picture'),
+        circuitikz: () => kit.t('Circuit diagram'), forest: () => kit.t('Tree diagram'), tikzcd: () => kit.t('Commutative diagram'),
+        axis: () => kit.t('Plot'), pspicture: () => kit.t('PSTricks drawing'),
+      };
+      const kind = esc(Object.prototype.hasOwnProperty.call(kinds, name) ? kinds[name]() : kit.t('Drawing'));
       const nodes = [];
       body.replace(/\\node[^{;]*\{([^{}]{1,60})\}/g, (m, text) => { if (nodes.length < 8 && text.trim()) nodes.push(text.trim()); return m; });
       const detail = nodes.length ? `<span class="detail">${nodes.map((n) => this.inline(n)).join(' · ')}</span>` : '';
@@ -1207,16 +1219,16 @@
     figureHTML(figure, path, options) {
       const name = esc(path.split('/').pop() || path);
       if (!figure || !figure.kind || figure.kind === 'missing') {
-        return `<span class="tex-placeholder figure"><span class="kind">Missing figure</span><span class="detail">${name}</span></span>`;
+        return `<span class="tex-placeholder figure"><span class="kind">${esc(kit.t('Missing figure'))}</span><span class="detail">${name}</span></span>`;
       }
       if (figure.kind === 'unsupported') {
-        return `<span class="tex-placeholder figure"><span class="kind">${esc(figure.note || 'Figure')}</span><span class="detail">${name}</span></span>`;
+        return `<span class="tex-placeholder figure"><span class="kind">${esc(figure.note || kit.t('Figure'))}</span><span class="detail">${name}</span></span>`;
       }
       const style = sizeStyle(options, figure);
       if (figure.kind === 'svg' && figure.svg) {
         return `<span class="tex-graphic svg"${style ? ` style="${style}"` : ''}>${figure.svg}</span>`;
       }
-      if (!/^greece:\/\/(file|module)\//.test(figure.src || '')) return `<span class="tex-placeholder figure"><span class="kind">Figure</span><span class="detail">${name}</span></span>`;
+      if (!/^greece:\/\/(file|module)\//.test(figure.src || '')) return `<span class="tex-placeholder figure"><span class="kind">${esc(kit.t('Figure'))}</span><span class="detail">${name}</span></span>`;
       return `<img class="tex-graphic" src="${esc(figure.src)}" alt="${name}"${style ? ` style="${style}"` : ''}>`;
     }
 
@@ -1937,7 +1949,7 @@
         return { item, key };
       });
       const link = (item, text) => `<a class="cite" href="#${item.id}">${text}</a>`;
-      const missing = (key) => `<span class="cite missing" title="Not in the bibliography">${esc(key)}?</span>`;
+      const missing = (key) => `<span class="cite missing" title="${esc(kit.t('Not in the bibliography'))}">${esc(key)}?</span>`;
       const pre = cite.pre ? cite.pre + ' ' : '';
       const post = cite.post ? ', ' + cite.post : '';
       if (name === 'citeauthor' || name === 'citeauthor*' || name === 'Citeauthor') {
@@ -2142,10 +2154,10 @@
   H.natexlab = function () { this.out.text(this.inline(this.readArg())); };
   H.BIBand = function () { this.out.text('and'); };
   H.includegraphics = function () { this.includeGraphics(); };
-  H.includepdf = function () { this.readOpt(); const path = this.readArg(); this.out.block(`<div class="tex-placeholder"><span class="kind">Included PDF</span><span class="detail">${esc(path)}</span></div>`); };
+  H.includepdf = function () { this.readOpt(); const path = this.readArg(); this.out.block(`<div class="tex-placeholder"><span class="kind">${esc(kit.t('Included PDF'))}</span><span class="detail">${esc(path)}</span></div>`); };
   H.greecemissing = function () {
     const path = this.readArg();
-    this.out.block(`<div class="tex-placeholder missing-file"><span class="kind">Missing file</span><span class="detail">${esc(path)}</span></div>`);
+    this.out.block(`<div class="tex-placeholder missing-file"><span class="kind">${esc(kit.t('Missing file'))}</span><span class="detail">${esc(path)}</span></div>`);
   };
   H.caption = H.captionof = function (name) { this.caption(this.s.peek() === '*' ? 'caption*' : name); };
   H.subcaption = function () { this.caption('caption'); };
@@ -2223,7 +2235,7 @@
     // Swift inlines project files; anything left was unreadable or outside the project.
     if (name === 'import' || name === 'subimport') this.readArg();
     const path = this.readArg();
-    if (path.trim()) this.out.block(`<div class="tex-placeholder missing-file"><span class="kind">Not included</span><span class="detail">${esc(path.trim())}</span></div>`);
+    if (path.trim()) this.out.block(`<div class="tex-placeholder missing-file"><span class="kind">${esc(kit.t('Not included'))}</span><span class="detail">${esc(path.trim())}</span></div>`);
   };
   H.vskip = H.hskip = H.kern = H.vspace = function (name) {
     if (name === 'vspace') { this.readStar(); this.readArg(); return; }

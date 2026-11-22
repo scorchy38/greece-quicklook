@@ -8,7 +8,7 @@
 
   window.greece.register('media-svg', async (info, kit) => {
     const root = kit.root;
-    const stage = el('div', { class: 'stage checker', role: 'img', 'aria-label': info.title || 'SVG image' });
+    const stage = el('div', { class: 'stage checker', role: 'img', 'aria-label': info.title || kit.t('SVG image') });
     const frame = el('div', { class: 'frame' });
     const image = new Image();
     image.alt = '';
@@ -23,7 +23,7 @@
       await image.decode();
     } catch (_) {
       stage.remove();
-      root.appendChild(el('div', { class: 'empty', text: 'This SVG couldn’t be drawn.' }));
+      root.appendChild(el('div', { class: 'empty', text: kit.t('This SVG couldn’t be drawn.') }));
       return;
     }
 
@@ -48,7 +48,7 @@
       frame.style.width = w + 'px';
       frame.style.height = h + 'px';
       frame.style.transform = `translate(${view.x}px, ${view.y}px)`;
-      zoomLabel.textContent = Math.round(view.scale * 100) + '%';
+      zoomLabel.textContent = kit.number(Math.round(view.scale * 100) / 100, { style: 'percent' });
       fitButton.classList.toggle('on', view.fitted);
       actualButton.classList.toggle('on', Math.abs(view.scale - 1) < 0.001);
     }
@@ -74,16 +74,16 @@
     }
 
     // -------------------------------------------------------------- Toolbar
-    const zoomLabel = el('button', { class: 'm-button wide', type: 'button', title: 'Actual size' });
+    const zoomLabel = el('button', { class: 'm-button wide', type: 'button', title: kit.t('Actual size') });
     zoomLabel.addEventListener('click', actual);
-    const fitButton = M.button({ icon: 'fit', title: 'Fit to window (F)', onClick: fit });
-    const actualButton = M.button({ icon: 'actual', title: 'Actual size (0)', onClick: actual });
-    const checkerButton = M.button({ icon: 'checker', title: 'Transparency checkerboard (T)' });
-    const sourceButton = M.button({ icon: 'code', title: 'Source (S)' });
+    const fitButton = M.button({ icon: 'fit', title: `${kit.t('Fit to window')} (F)`, onClick: fit });
+    const actualButton = M.button({ icon: 'actual', title: `${kit.t('Actual size')} (0)`, onClick: actual });
+    const checkerButton = M.button({ icon: 'checker', title: `${kit.t('Transparency checkerboard')} (T)` });
+    const sourceButton = M.button({ icon: 'code', title: `${kit.t('Source [code]')} (S)` });
     const tools = el('div', { class: 'svg-tools m-bar' }, [
-      M.button({ icon: 'minus', title: 'Zoom out (−)', onClick: () => zoomAt(1 / 1.25) }),
+      M.button({ icon: 'minus', title: `${kit.t('Zoom out')} (−)`, onClick: () => zoomAt(1 / 1.25) }),
       zoomLabel,
-      M.button({ icon: 'plus', title: 'Zoom in (+)', onClick: () => zoomAt(1.25) }),
+      M.button({ icon: 'plus', title: `${kit.t('Zoom in')} (+)`, onClick: () => zoomAt(1.25) }),
       el('span', { class: 'm-sep' }),
       fitButton, actualButton,
       el('span', { class: 'm-sep' }),
@@ -126,8 +126,8 @@
       sourceButton.classList.add('on');
       source = el('div', { class: 'svg-source' });
       const notes = [];
-      if (info.hasScripts) notes.push('This file contains scripts. Greece shows SVG as an image, so they never run.');
-      if (info.hasExternalReferences) notes.push('It refers to files or web addresses, which previews don’t load.');
+      if (info.hasScripts) notes.push(kit.t('This file contains scripts. Greece shows SVG as an image, so they never run.'));
+      if (info.hasExternalReferences) notes.push(kit.t('It refers to files or web addresses, which previews don’t load.'));
       for (const note of notes) source.appendChild(el('div', { class: 'm-note', text: note }));
       const pre = el('pre', { class: 'hljs' });
       source.appendChild(pre);
@@ -135,9 +135,9 @@
       try {
         const text = await M.fetchText('source.txt');
         pre.innerHTML = text.length <= 1500000 ? kit.highlight(text, 'xml') : kit.esc(text);
-        if (info.bytes > text.length * 1.01 && info.bytes > 8 * 1024 * 1024) source.appendChild(el('div', { class: 'm-note', text: 'Showing the first 8 MB.' }));
+        if (info.bytes > text.length * 1.01 && info.bytes > 8 * 1024 * 1024) source.appendChild(el('div', { class: 'm-note', text: kit.t('Showing the first {0}.', kit.t('{0} MB', 8)) }));
       } catch (_) {
-        pre.textContent = 'The source couldn’t be read.';
+        pre.textContent = kit.t('The source couldn’t be read.');
       }
     }
     sourceButton.addEventListener('click', toggleSource);

@@ -7,15 +7,16 @@
   const { el } = M;
 
   /** Quick Look keeps typed keys for Finder, so the tester offers ready-made texts to try instead. */
-  function sampleChoices(face, sample) {
+  function sampleChoices(face, sample, kit) {
     const latin = face.scripts[0] === 'Latin' || !face.scripts.length;
-    const choices = [['Sample', face.sample]];
+    const choices = [[kit.t('Sample'), face.sample]];
+    // The texts themselves are specimens, the same in every language.
     if (latin) {
-      choices.push(['Pangram', 'Sphinx of black quartz, judge my vow.'],
-                   ['Alphabet', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'],
-                   ['Figures', '0123456789 $€£¥ ½ % & @ # ( ) [ ] { } ? ! , . ; :']);
+      choices.push([kit.t('Pangram'), 'Sphinx of black quartz, judge my vow.'],
+                   [kit.t('Alphabet'), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'],
+                   [kit.t('Figures'), '0123456789 $€£¥ ½ % & @ # ( ) [ ] { } ? ! , . ; :']);
     }
-    const group = el('div', { class: 'sample-choices', role: 'group', 'aria-label': 'Sample text' });
+    const group = el('div', { class: 'sample-choices', role: 'group', 'aria-label': kit.t('Sample text') });
     choices.forEach(([label, text], i) => {
       const chip = el('button', { type: 'button', class: 'm-chip' + (i === 0 ? ' on' : ''), text: label, 'aria-pressed': String(i === 0) });
       chip.addEventListener('click', () => {
@@ -42,7 +43,7 @@
     kit.afterReady(() => { pageReady = true; });
     const root = kit.root;
     const faces = data.faces || [];
-    if (!faces.length) return kit.empty('No faces in this font');
+    if (!faces.length) return kit.empty(kit.t('No faces in this font'));
     const families = {};
 
     async function load(index) {
@@ -100,44 +101,45 @@
     const links = el('div', { class: 'm-segmented' });
     nav.appendChild(links);
     container.appendChild(nav);
-    const addSection = (id, title, count, extra) => {
-      const heading = el('h2', null, [title, count != null ? el('span', { class: 'count', text: count }) : null, el('span', { class: 'spacer' }), extra || null]);
+    // `link` names the section in the navigation, when shorter than its title.
+    const addSection = (id, title, count, link) => {
+      const heading = el('h2', null, [title, count != null ? el('span', { class: 'count', text: count }) : null, el('span', { class: 'spacer' })]);
       const section = el('section', { class: 'font-section', id: 'section-' + id }, [heading]);
-      sections.push({ id, title, section });
+      sections.push({ id, link: link || title, section });
       return section;
     };
 
     if (!family) {
-      container.appendChild(el('div', { class: 'notice', style: { margin: '18px 0 0' }, text: 'WebKit couldn’t load this font for display. Its details are below.' }));
+      container.appendChild(el('div', { class: 'notice', style: { margin: '18px 0 0' }, text: kit.t('WebKit couldn’t load this font for display. Its details are below.') }));
     }
 
     // ----------------------------------------------------------------- Hero
     const icon = face.icon;
     container.attached = [];
     if (family && !icon) {
-      const art = hero(face);
+      const art = hero(face, kit);
       container.appendChild(art);
       container.attached.push(art.layout);
     }
     else if (family && icon) container.appendChild(el('div', { class: 'font-hero' }, [
       el('div', { class: 'specimen', style: { fontSize: '96px', lineHeight: '1.1', letterSpacing: '.12em', overflowWrap: 'anywhere' }, text: face.hero }),
-      facts(face, data),
+      facts(face, kit),
     ]));
 
     if (family && !icon) {
       // --------------------------------------------------------- Tester
-      const specimen = addSection('specimen', 'Specimen');
+      const specimen = addSection('specimen', kit.t('Specimen'));
       const sample = el('div', kit.typing
         ? { class: 'sample specimen', contenteditable: 'plaintext-only', spellcheck: 'false', dir: face.direction, text: face.sample }
         : { class: 'sample specimen', dir: face.direction, text: face.sample });
       const sizeLabel = el('span', { class: 'size', text: '64 pt' });
       const tester = el('div', { class: 'tester' }, [
         el('div', { class: 'controls' }, [
-          el('span', { text: 'Size' }),
+          el('span', { text: kit.t('Size') }),
           M.range(10, 200, 1, 64, (value) => { tester.style.setProperty('--tester-size', value + 'px'); sizeLabel.textContent = value + ' pt'; }),
           sizeLabel,
           el('span', { style: { flex: '1' } }),
-          kit.typing ? el('span', { text: 'Click the sample to type your own' }) : sampleChoices(face, sample),
+          kit.typing ? el('span', { text: kit.t('Click the sample to type your own') }) : sampleChoices(face, sample, kit),
         ]),
         sample,
       ]);
@@ -146,7 +148,7 @@
       // ------------------------------------------------------------ Axes
       if (face.axes.length) {
         const visible = face.axes.filter((axis) => !axis.hidden);
-        const section = addSection('axes', 'Variable Axes', M.plural(face.axes.length, 'axis', 'axes'));
+        const section = addSection('axes', kit.t('Variable Axes'), kit.plural(face.axes.length, '{0} axes'), kit.t('Axes'));
         const sliders = {};
         if (face.instances.length) {
           const chips = el('div', { class: 'instances' });
@@ -186,16 +188,16 @@
 
       // -------------------------------------------------------- Features
       if (face.features.length) {
-        const section = addSection('features', 'OpenType Features', String(face.features.length));
+        const section = addSection('features', kit.t('OpenType Features'), M.number(face.features.length), kit.t('Features [font]'));
         const grid = el('div', { class: 'features' });
         for (const feature of face.features) {
-          const card = el('div', { class: 'feature', role: 'switch', 'aria-checked': 'false', tabindex: '0', title: 'Apply ' + feature.tag + ' to the specimen' });
+          const card = el('div', { class: 'feature', role: 'switch', 'aria-checked': 'false', tabindex: '0', title: kit.t('Apply {0} to the specimen', feature.tag) });
           const demo = el('div', { class: 'demo specimen' }, [
             el('span', { class: 'off', style: { fontFeatureSettings: `"${feature.tag}" 0` }, text: feature.sample }),
             el('span', { class: 'arrow', text: '→' }),
             el('span', { class: 'on', style: { fontFeatureSettings: `"${feature.tag}" 1` }, text: feature.sample }),
           ]);
-          card.append(el('div', null, [el('div', { class: 'name', text: feature.name }), el('div', { class: 'tag', text: feature.tag + (feature.on ? ' · on by default' : '') })]),
+          card.append(el('div', null, [el('div', { class: 'name', text: feature.name }), el('div', { class: 'tag', text: feature.on ? kit.t('{0} · on by default', feature.tag) : feature.tag })]),
             el('div', { class: 'switch' }), demo);
           const sync = () => {
             const on = feature.tag in state.features ? state.features[feature.tag] : feature.on;
@@ -217,7 +219,7 @@
       }
 
       // ------------------------------------------------------- Waterfall
-      const sizes = addSection('sizes', 'Sizes');
+      const sizes = addSection('sizes', kit.t('Sizes'));
       const waterfall = el('div', { class: 'waterfall' });
       for (const size of [96, 72, 48, 36, 28, 21, 16, 13]) {
         waterfall.appendChild(el('div', { class: 'row' }, [
@@ -227,6 +229,7 @@
       }
       sizes.appendChild(waterfall);
       const latin = face.scripts[0] === 'Latin' || !face.scripts.length;
+      // A Latin specimen paragraph, the same in every language; other scripts repeat the font's sample.
       const text = latin ? PARAGRAPH : [face.sample, face.sample, face.sample].join(' ');
       sizes.appendChild(el('div', { class: 'paragraphs', style: { marginTop: '26px' } }, [
         el('div', null, [el('div', { class: 'label', text: '18 pt' }), el('p', { class: 'specimen', dir: face.direction, style: { fontSize: '18px', lineHeight: '1.55' }, text })]),
@@ -237,16 +240,16 @@
     }
 
     // -------------------------------------------------------------- Glyphs
-    const glyphs = addSection('glyphs', icon ? 'Icons' : 'Characters', M.number(face.characters));
+    const glyphs = addSection('glyphs', icon ? kit.t('Icons') : kit.t('Characters'), M.number(face.characters));
     const glyphHolder = el('div');
     glyphs.appendChild(glyphHolder);
 
     // ---------------------------------------------------------------- Info
-    container.appendChild(info(face, data, addSection('info', 'Information')));
+    container.appendChild(info(face, data, addSection('info', kit.t('Information')), kit));
 
-    for (const { id, title, section } of sections) {
+    for (const { id, link: name, section } of sections) {
       container.appendChild(section);
-      const link = el('button', { type: 'button', text: title === 'OpenType Features' ? 'Features' : title === 'Variable Axes' ? 'Axes' : title });
+      const link = el('button', { type: 'button', text: name });
       link.addEventListener('click', () => section.scrollIntoView({ behavior: 'smooth', block: 'start' }));
       if (!['sizes'].includes(id)) links.appendChild(link);
     }
@@ -267,7 +270,7 @@
     return container;
   }
 
-  function hero(face) {
+  function hero(face, kit) {
     const m = face.metrics;
     const S = 1000;
     const upm = Math.max(m.upm, 1);
@@ -290,8 +293,8 @@
     // Guides are HTML lines across the whole hero, placed at the same heights as the SVG's metrics.
     const art = el('div', { class: 'hero-art' });
     const guides = [
-      ['Ascender', baseline - asc, ''], ['Cap height', baseline - cap, ''], ['x-height', baseline - xh, ''],
-      ['Baseline', baseline, ' base'], ['Descender', baseline + desc, ''],
+      [kit.t('Ascender'), baseline - asc, ''], [kit.t('Cap height'), baseline - cap, ''], [kit.t('x-height'), baseline - xh, ''],
+      [kit.t('Baseline'), baseline, ' base'], [kit.t('Descender'), baseline + desc, ''],
     ];
     const used = [];
     for (const [label, y, kind] of guides) {
@@ -302,7 +305,7 @@
       art.appendChild(el('div', { class: 'guide' + kind, style: { top: (y / height * 100) + '%' } }, crowded ? [] : [el('span', { text: label })]));
     }
     art.appendChild(svg);
-    const wrap = el('div', { class: 'font-hero' }, [art, facts(face)]);
+    const wrap = el('div', { class: 'font-hero' }, [art, facts(face, kit)]);
     // The glyphs' width is known once the page is in the document with the font loaded.
     const layout = () => {
       let width = 1200;
@@ -322,17 +325,17 @@
     return wrap;
   }
 
-  function facts(face) {
+  function facts(face, kit) {
     const items = [];
-    items.push(['Glyphs', M.number(face.glyphs)]);
-    if (face.axes.length) items.push(['Variable', face.axes.filter((a) => !a.hidden).map((a) => a.name).join(', ') || M.plural(face.axes.length, 'axis', 'axes')]);
-    if (face.version) items.push(['Version', face.version]);
-    if (face.designer || face.manufacturer) items.push(['Designer', face.designer || face.manufacturer]);
-    if (face.scripts.length) items.push(['Scripts', face.scripts.slice(0, 4).join(', ') + (face.scripts.length > 4 ? ` +${face.scripts.length - 4}` : '')]);
+    items.push([kit.t('Glyphs'), M.number(face.glyphs)]);
+    if (face.axes.length) items.push([kit.t('Variable'), face.axes.filter((a) => !a.hidden).map((a) => a.name).join(', ') || kit.plural(face.axes.length, '{0} axes')]);
+    if (face.version) items.push([kit.t('Version'), face.version]);
+    if (face.designer || face.manufacturer) items.push([kit.t('Designer'), face.designer || face.manufacturer]);
+    if (face.scripts.length) items.push([kit.t('Scripts [writing]'), face.scripts.slice(0, 4).join(', ') + (face.scripts.length > 4 ? ` +${face.scripts.length - 4}` : '')]);
     return el('div', { class: 'font-facts' }, items.slice(0, 5).map(([k, v]) => el('div', { class: 'fact' }, [el('div', { class: 'k', text: k }), el('div', { class: 'v', text: v })])));
   }
 
-  function info(face, data, section) {
+  function info(face, data, section, kit) {
     const grid = el('div', { class: 'info-grid' });
     const row = (key, value, options) => {
       if (value == null || value === '' || (Array.isArray(value) && !value.length)) return;
@@ -341,43 +344,46 @@
         cell.appendChild(el('a', { href: options.link, text: value }));
       } else if (options && options.clamp && String(value).length > 280) {
         const text = el('div', { class: 'clamp', text: value });
-        const more = el('button', { class: 'more', type: 'button', text: 'Show more' });
-        more.addEventListener('click', () => { const open = text.classList.toggle('clamp'); more.textContent = open ? 'Show more' : 'Show less'; });
+        const more = el('button', { class: 'more', type: 'button', text: kit.t('Show more') });
+        more.addEventListener('click', () => { const open = text.classList.toggle('clamp'); more.textContent = open ? kit.t('Show more') : kit.t('Show less'); });
         cell.append(text, more);
       } else {
         cell.textContent = value;
       }
       grid.append(el('div', { class: 'k', text: key }), cell);
     };
-    row('Family', face.family);
-    row('Style', face.style);
-    row('Full name', face.fullName);
-    row('PostScript name', face.postScriptName);
-    row('Version', face.version);
-    row('Designer', face.designer, face.designerURL && !face.designer.includes('://') ? { link: face.designerURL } : null);
-    if (face.designerURL && (!face.designer)) row('Designer URL', face.designerURL, { link: face.designerURL });
-    row('Manufacturer', face.manufacturer, face.vendorURL ? { link: face.vendorURL } : null);
-    if (face.vendorURL && !face.manufacturer) row('Vendor URL', face.vendorURL, { link: face.vendorURL });
-    row('Vendor ID', face.vendor);
-    row('Description', face.description, { clamp: true });
-    row('Format', `${data.format} · ${face.outlines} outlines` + (face.color.length ? ` · Color (${face.color.join(', ')})` : ''));
-    row('Glyphs', M.number(face.glyphs));
-    row('Characters', M.number(face.characters));
-    row('Units per em', M.number(face.metrics.upm));
-    row('Metrics', `Ascender ${face.metrics.ascender} · Descender ${face.metrics.descender} · Cap height ${face.metrics.capHeight} · x-height ${face.metrics.xHeight}`);
-    if (face.weight) row('Weight class', String(face.weight));
-    if (face.width && face.width !== 5) row('Width class', String(face.width));
-    const traits = [face.italic ? 'Italic' : null, face.monospaced ? 'Monospaced' : null].filter(Boolean).join(', ');
-    row('Traits', traits);
-    row('Scripts', face.scripts.join(', '));
-    if (face.languages.length) row('Languages', `${M.number(face.languages.length)}: ${face.languages.join(', ')}`, { clamp: true });
-    row('Embedding', face.embedding);
-    row('Created', face.created);
-    row('Modified', face.modified);
-    row('Copyright', face.copyright, { clamp: true });
-    row('Trademark', face.trademark, { clamp: true });
-    row('License', face.license, { clamp: true });
-    if (face.licenseURL) row('License URL', face.licenseURL, { link: face.licenseURL });
+    const m = face.metrics;
+    row(kit.t('Family'), face.family);
+    row(kit.t('Style'), face.style);
+    row(kit.t('Full name'), face.fullName);
+    row(kit.t('PostScript name'), face.postScriptName);
+    row(kit.t('Version'), face.version);
+    row(kit.t('Designer'), face.designer, face.designerURL && !face.designer.includes('://') ? { link: face.designerURL } : null);
+    if (face.designerURL && (!face.designer)) row(kit.t('Designer URL'), face.designerURL, { link: face.designerURL });
+    row(kit.t('Manufacturer'), face.manufacturer, face.vendorURL ? { link: face.vendorURL } : null);
+    if (face.vendorURL && !face.manufacturer) row(kit.t('Vendor URL'), face.vendorURL, { link: face.vendorURL });
+    row(kit.t('Vendor ID'), face.vendor);
+    row(kit.t('Description'), face.description, { clamp: true });
+    const format = [kit.t('{0} · {1} outlines', data.format, face.outlines)];
+    if (face.color.length) format.push(kit.t('Color ({0})', face.color.join(', ')));
+    row(kit.t('Format'), format.join(' · '));
+    row(kit.t('Glyphs'), M.number(face.glyphs));
+    row(kit.t('Characters'), M.number(face.characters));
+    row(kit.t('Units per em'), M.number(m.upm));
+    row(kit.t('Metrics'), kit.t('Ascender {0} · Descender {1} · Cap height {2} · x-height {3}', String(m.ascender), String(m.descender), String(m.capHeight), String(m.xHeight)));
+    if (face.weight) row(kit.t('Weight class'), String(face.weight));
+    if (face.width && face.width !== 5) row(kit.t('Width class'), String(face.width));
+    const traits = [face.italic ? kit.t('Italic') : null, face.monospaced ? kit.t('Monospaced') : null].filter(Boolean);
+    row(kit.t('Traits'), traits.length ? kit.list(traits) : '');
+    row(kit.t('Scripts [writing]'), face.scripts.join(', '));
+    if (face.languages.length) row(kit.t('Languages'), `${M.number(face.languages.length)}: ${face.languages.join(', ')}`, { clamp: true });
+    row(kit.t('Embedding'), face.embedding);
+    row(kit.t('Created'), face.created);
+    row(kit.t('Modified'), face.modified);
+    row(kit.t('Copyright'), face.copyright, { clamp: true });
+    row(kit.t('Trademark'), face.trademark, { clamp: true });
+    row(kit.t('License'), face.license, { clamp: true });
+    if (face.licenseURL) row(kit.t('License URL'), face.licenseURL, { link: face.licenseURL });
     section.appendChild(grid);
     return section;
   }
@@ -385,9 +391,9 @@
   async function loadGlyphs(holder, index, face, family, kit) {
     let result;
     try { result = await M.fetchJSON('glyphs/' + index); } catch (_) { return; }
-    if (!family) { holder.appendChild(el('div', { class: 'm-note', text: 'Characters can’t be drawn without the font.' })); return; }
+    if (!family) { holder.appendChild(el('div', { class: 'm-note', text: kit.t('Characters can’t be drawn without the font.') })); return; }
     if (result.shown < result.total) {
-      holder.appendChild(el('div', { class: 'notice', style: { margin: '0 0 14px' }, text: `Showing the first ${M.number(result.shown)} of ${M.number(result.total)} characters.` }));
+      holder.appendChild(el('div', { class: 'notice', style: { margin: '0 0 14px' }, text: kit.plural(result.total, 'Showing the first {1} of {0} characters.', result.shown) }));
     }
     let selected = null;
     let inspector = null;
@@ -403,25 +409,25 @@
       const character = String.fromCodePoint(cp);
       if (!inspector) { inspector = el('div', { class: 'inspector specimen' }); document.body.appendChild(inspector); }
       inspector.innerHTML = '';
-      const close = M.button({ icon: 'close', title: 'Close' });
+      const close = M.button({ icon: 'close', title: kit.t('Close') });
       close.classList.add('close');
       close.addEventListener('click', closeInspector);
       const list = el('dl');
       const add = (k, v) => { if (v != null && v !== '') list.append(el('dt', { text: k }), el('dd', { text: v })); };
-      add('Code point', 'U+' + hex);
+      add(kit.t('Code point'), 'U+' + hex);
       inspector.append(close, el('div', { class: 'big', text: character }), list, el('div', { class: 'actions' }, [
-        M.button({ icon: 'copy', text: 'Character', title: 'Copy the character', onClick: () => M.copy(character, 'Copied ' + character) }),
-        M.button({ text: 'U+' + hex, title: 'Copy the code point', onClick: () => M.copy('U+' + hex) }),
+        M.button({ icon: 'copy', text: kit.t('Character'), title: kit.t('Copy the character'), onClick: () => M.copy(character) }),
+        M.button({ text: 'U+' + hex, title: kit.t('Copy the code point'), onClick: () => M.copy('U+' + hex) }),
       ]));
       try {
         const detail = await M.fetchJSON(`glyph/${index}/${hex}`);
         if (selected !== cell) return;
         list.innerHTML = '';
-        add('Name', detail.name ? detail.name.toLowerCase().replace(/(^|\s)\S/g, (s) => s.toUpperCase()) : 'Unnamed');
-        add('Code point', 'U+' + hex);
-        add('Glyph', detail.glyph);
-        add('Glyph ID', detail.id != null ? String(detail.id) : null);
-        add('Advance', detail.advance != null ? `${M.number(detail.advance)} units` : null);
+        add(kit.t('Name'), detail.name ? detail.name.toLowerCase().replace(/(^|\s)\S/g, (s) => s.toUpperCase()) : kit.t('Unnamed'));
+        add(kit.t('Code point'), 'U+' + hex);
+        add(kit.t('Glyph'), detail.glyph);
+        add(kit.t('Glyph ID'), detail.id != null ? String(detail.id) : null);
+        add(kit.t('Advance'), detail.advance != null ? kit.plural(detail.advance, '{0} units') : null);
       } catch (_) { }
     };
 

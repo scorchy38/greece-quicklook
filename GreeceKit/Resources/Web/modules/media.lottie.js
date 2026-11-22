@@ -32,10 +32,10 @@
   window.greece.register('media-lottie', async (data, kit) => {
     kit.afterReady(() => { shown = true; });
     const root = kit.root;
-    if (!window.lottie) return kit.empty('The Lottie player is missing');
+    if (!window.lottie) return kit.empty(kit.t('The Lottie player is missing'));
 
     const stage = el('div', { class: 'lottie-stage checker' });
-    const canvas = el('div', { class: 'canvas', title: 'Click to play or pause (K)' });
+    const canvas = el('div', { class: 'canvas', title: `${kit.t('Click to play or pause')} (K)` });
     stage.appendChild(canvas);
     root.appendChild(stage);
 
@@ -45,7 +45,7 @@
     let speed = 1;
 
     // ------------------------------------------------------------ Controls
-    const playButton = M.button({ icon: 'play', title: 'Play (K)' });
+    const playButton = M.button({ icon: 'play', title: `${kit.t('Play')} (K)` });
     const time = el('div', { class: 'time' });
     const scrub = M.range(0, 1, 1, 0, (value) => {
       if (!animation) return;
@@ -56,7 +56,7 @@
     scrub.addEventListener('pointerdown', () => { resumeAfterScrub = playing; pause(); });
     scrub.addEventListener('pointerup', () => { if (resumeAfterScrub) play(); });
 
-    const loopButton = M.button({ icon: 'loop', title: 'Loop' });
+    const loopButton = M.button({ icon: 'loop', title: kit.t('Loop') });
     let loop = true;
     loopButton.classList.add('on');
     loopButton.addEventListener('click', () => {
@@ -66,17 +66,21 @@
     });
 
     // One button cycles the backdrop: transparency checkerboard, white, black.
-    const backgrounds = [['checker', 'Checkerboard'], ['bg-light', 'White'], ['bg-dark', 'Black']];
+    const backgrounds = [
+      ['checker', () => kit.t('Background: Checkerboard')],
+      ['bg-light', () => kit.t('Background: White')],
+      ['bg-dark', () => kit.t('Background: Black')],
+    ];
     let backgroundIndex = 0;
-    const background = M.button({ icon: 'checker', title: 'Background: Checkerboard (B)' });
+    const background = M.button({ icon: 'checker', title: `${backgrounds[0][1]()} (B)` });
     background.addEventListener('click', () => {
       stage.classList.remove(backgrounds[backgroundIndex][0]);
       backgroundIndex = (backgroundIndex + 1) % backgrounds.length;
       stage.classList.add(backgrounds[backgroundIndex][0]);
-      background.title = `Background: ${backgrounds[backgroundIndex][1]} (B)`;
+      background.title = `${backgrounds[backgroundIndex][1]()} (B)`;
       background.classList.toggle('on', backgroundIndex !== 0);
     });
-    const speeds = M.segmented([0.5, 1, 2].map((s) => ({ value: s, label: s + '×', title: 'Speed ' + s + '×' })), 1, (value) => {
+    const speeds = M.segmented([0.5, 1, 2].map((s) => ({ value: s, label: kit.number(s) + '×', title: kit.t('Speed {0}', kit.number(s) + '×') })), 1, (value) => {
       speed = value;
       if (animation) animation.setSpeed(speed);
     });
@@ -107,9 +111,10 @@
       scrub.value = String(frame);
       M.paintRange(scrub);
       const seconds = frame / info.frameRate, duration = total / info.frameRate;
-      time.innerHTML = `<b>${kit.esc(seconds.toFixed(2))}</b> / ${kit.esc(duration.toFixed(2))} s · ${kit.esc(String(Math.round(frame)))}/${kit.esc(String(Math.round(total)))}`;
+      const fixed = (value) => kit.esc(kit.number(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+      time.innerHTML = `<b>${fixed(seconds)}</b> / ${fixed(duration)} s · ${kit.esc(String(Math.round(frame)))}/${kit.esc(String(Math.round(total)))}`;
       playButton.innerHTML = M.icon(playing ? 'pause' : 'play');
-      playButton.title = playing ? 'Pause (K)' : 'Play (K)';
+      playButton.title = `${playing ? kit.t('Pause') : kit.t('Play')} (K)`;
     }
 
     function play() { if (!animation) return; playing = true; animation.play(); update(); }
@@ -127,7 +132,7 @@
       layout();
       let json;
       try { json = prepare(await M.fetchJSON(`animation/${index}.json`), data.packaged ? null : data.directory); }
-      catch (_) { canvas.appendChild(el('div', { class: 'empty', text: 'This animation couldn’t be read.' })); return; }
+      catch (_) { canvas.appendChild(el('div', { class: 'empty', text: kit.t('This animation couldn’t be read.') })); return; }
       try {
         animation = window.lottie.loadAnimation({
           container: canvas, renderer: 'svg', loop, autoplay: false, animationData: json,
@@ -135,7 +140,7 @@
         });
       } catch (error) {
         kit.post('log', 'lottie: ' + error);
-        canvas.appendChild(el('div', { class: 'empty', text: 'This animation couldn’t be played.' }));
+        canvas.appendChild(el('div', { class: 'empty', text: kit.t('This animation couldn’t be played.') }));
         return;
       }
       animation.setSpeed(speed);
@@ -154,7 +159,7 @@
       stage.classList.toggle('with-markers', (info.markers || []).length > 0);
       layout();
       for (const marker of info.markers || []) {
-        const chip = el('button', { type: 'button', class: 'm-chip', text: marker.name, title: `Play from frame ${Math.round(marker.start)}` });
+        const chip = el('button', { type: 'button', class: 'm-chip', text: marker.name, title: kit.t('Play from frame {0}', Math.round(marker.start)) });
         chip.addEventListener('click', () => {
           const start = Math.max(marker.start - info.inPoint, 0);
           if (marker.duration > 0) animation.playSegments([marker.start, marker.start + marker.duration], true);
@@ -164,7 +169,7 @@
         });
         markers.appendChild(chip);
       }
-      if (info.hasExpressions) badge.appendChild(el('span', { class: 'm-chip', title: 'Lottie expressions are code; Greece doesn’t run them, so some motion may differ.', text: 'Expressions not evaluated' }));
+      if (info.hasExpressions) badge.appendChild(el('span', { class: 'm-chip', title: kit.t('Lottie expressions are code; Greece doesn’t run them, so some motion may differ.'), text: kit.t('Expressions not evaluated') }));
 
       // Start playing once Quick Look is actually showing the page.
       if (shown) play(); else kit.afterReady(play);
