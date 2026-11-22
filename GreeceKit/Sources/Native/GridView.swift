@@ -750,13 +750,15 @@ final class GridHeaderBar: NSView, NSViewToolTipOwner {
 enum GridStripRenderer {
     private static let small = NSFont.systemFont(ofSize: 10, weight: .medium)
     private static let detailFont = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
+    /// A profile's detail shows only on strips wider than this.
+    private static let detailMinimumWidth: CGFloat = 90
 
     /// The width a strip's text needs on one line: a profile's kind and detail, or a caption.
     static func width(of strip: GridHeaderStrip) -> CGFloat {
         func measure(_ string: String, _ font: NSFont) -> CGFloat { (string as NSString).size(withAttributes: [.font: font]).width }
         switch strip {
         case .profile(let kind, let detail, _, _, _):
-            return measure(kind, small) + (detail.map { 6 + measure($0, detailFont) } ?? 0)
+            return detail.map { max(detailMinimumWidth + 1, measure(kind, small) + 6 + measure($0, detailFont)) } ?? measure(kind, small)
         case .caption(let caption, let symbol):
             return measure(caption, small) + (symbol == nil ? 0 : 12)
         case .progress(_, let caption):
@@ -802,7 +804,7 @@ enum GridStripRenderer {
         case .profile(let kind, let detail, let bars, let segments, let warning):
             let line = NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: 13)
             text(kind, font: small, color: .tertiaryLabelColor, in: line, align: .left)
-            if let detail, rect.width > 90 {
+            if let detail, rect.width > detailMinimumWidth {
                 let kindWidth = (kind as NSString).size(withAttributes: [.font: small]).width + 6
                 text(detail, font: detailFont, color: warning ? .systemOrange : .tertiaryLabelColor,
                      in: NSRect(x: line.minX + kindWidth, y: line.minY, width: line.width - kindWidth, height: 13), align: .right)
