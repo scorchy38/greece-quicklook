@@ -179,6 +179,18 @@
     if (data.bounds && data.bounds[0] === data.bounds[2] && data.bounds[1] === data.bounds[3]) fitAll(false);
     if (!data.bounds) fitAll(false);
 
+    // Quick Look often resizes the panel after the page has loaded (it opens at the size the reader
+    // last chose). Keep the data framed until the reader moves the map themselves.
+    let readerMoved = false;
+    for (const name of ['mousedown', 'wheel', 'touchstart', 'keydown', 'dblclick']) {
+      map.getCanvasContainer().addEventListener(name, () => { readerMoved = true; }, { passive: true });
+    }
+    window.addEventListener('resize', () => {
+      if (readerMoved) return;
+      map.resize();
+      fitAll(false);
+    });
+
     // ---------------------------------------------------------------- Basemap
 
     const state = { basemap: !planar, grid: false, labels: true };
