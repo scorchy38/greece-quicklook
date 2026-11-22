@@ -1,8 +1,11 @@
 import AppKit
 import WebKit
+import os
 
 /// Hosts a `WebDocument` in a WKWebView with local assets, link handling and a ready signal.
 final class WebPreviewView: NSView, WKNavigationDelegate {
+    /// What preview pages report: script errors, renderer notes.
+    static let pageLog = Logger(subsystem: "com.scorchy.greece", category: "page")
 
     let webView: WKWebView
     private(set) var document: WebDocument
@@ -133,7 +136,7 @@ final class WebPreviewView: NSView, WKNavigationDelegate {
                 NSPasteboard.general.setString(text, forType: .string)
             }
         case "log":
-            NSLog("[Greece] %@", String(describing: message.body))
+            Self.pageLog.info("\(String(describing: message.body), privacy: .public)")
         case "scroll":
             if let point = message.body as? [Double], point.count == 2, point.allSatisfy(\.isFinite) {
                 onScroll?(CGPoint(x: point[0], y: point[1]))
