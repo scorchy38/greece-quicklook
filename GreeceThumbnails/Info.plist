@@ -54,6 +54,7 @@
 				<string>com.redhat.rpm-archive</string>
 				<string>org.debian.deb-archive</string>
 				<string>org.chromium.extension</string>
+				<string>com.android.package-archive</string>
 				<string>com.scorchy.greece.zstd-archive</string>
 				<string>com.scorchy.greece.tar-zstd-archive</string>
 				<string>com.scorchy.greece.lzip-archive</string>
@@ -70,8 +71,6 @@
 				<string>com.scorchy.greece.nuget-package</string>
 				<string>com.scorchy.greece.vsix</string>
 				<string>com.scorchy.greece.firefox-extension</string>
-				<string>com.android.package-archive</string>
-				<string>com.scorchy.greece.android-app-bundle</string>
 				<string>com.scorchy.greece.enterprise-archive</string>
 				<string>net.daringfireball.markdown</string>
 				<string>com.scorchy.greece.markdown</string>

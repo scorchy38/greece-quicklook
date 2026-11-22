@@ -25,6 +25,7 @@ public.iso-image
 com.redhat.rpm-archive
 org.debian.deb-archive
 org.chromium.extension
+com.android.package-archive
 com.scorchy.greece.zstd-archive
 com.scorchy.greece.tar-zstd-archive
 com.scorchy.greece.lzip-archive
@@ -41,6 +42,4 @@ com.scorchy.greece.ruby-gem
 com.scorchy.greece.nuget-package
 com.scorchy.greece.vsix
 com.scorchy.greece.firefox-extension
-com.android.package-archive
-com.scorchy.greece.android-app-bundle
 com.scorchy.greece.enterprise-archive
