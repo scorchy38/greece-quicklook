@@ -24,7 +24,8 @@
 
   /* The page's words in the reader's language. GreeceKit embeds one table (WebStrings.swift, from
      l10n/<lang>.json), keyed by the English text: a string, or plural forms by CLDR category. Every
-     key is there (English where a language has none); an unknown key shows as itself. */
+     key is there (English where a language has none); an unknown key shows as itself. A key may end
+     in a context, "Line [shape]", when one English word needs two translations. */
   const strings = (() => { try { return JSON.parse($('#strings').textContent); } catch (_) { return {}; } })();
   const lang = strings.lang || 'en';
   const locale = strings.locale || lang;
@@ -39,20 +40,21 @@
   function fill(text, args) {
     return String(text).replace(/\{(\d+)\}/g, (m, i) => (i < args.length ? (typeof args[i] === 'number' ? number(args[i]) : String(args[i])) : m));
   }
+  const english = (key) => key.replace(/ \[[^\]]+\]$/, '');
   /** `t('{0} of {1}', 3, 12)`: the text for an English key, with its placeholders filled. */
   function t(key, ...args) {
     const value = lookup(key);
-    return fill(typeof value === 'string' ? value : key, args);
+    return fill(typeof value === 'string' ? value : english(key), args);
   }
   const pluralRules = {};
   function forms(type, count, key, args) {
     const value = lookup(key);
-    let form = key;
+    let form = english(key);
     if (value && typeof value === 'object') {
       if (!pluralRules[type]) {
         try { pluralRules[type] = new Intl.PluralRules(lang, { type }); } catch (_) { pluralRules[type] = new Intl.PluralRules('en', { type }); }
       }
-      form = value[pluralRules[type].select(Number(count))] || value.other || key;
+      form = value[pluralRules[type].select(Number(count))] || value.other || form;
     }
     return fill(form, [count, ...args]);
   }

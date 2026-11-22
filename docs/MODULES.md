@@ -47,6 +47,7 @@ A module adds a family of formats to Greece (apps and binaries, 3D models, maps,
   - `kit.plural(n, '{0} layers')` (the key is the English "other" form) and `kit.ordinal(n, 'On the {0}th')`.
   - `kit.number`, `kit.date`, `kit.list` and `kit.bytes` instead of `toLocaleString()`.
   - Whole sentences with placeholders, never sentences glued from translated pieces. The result is text: `esc` it into HTML.
+  - When one English word needs two translations, give the key a context: `kit.t('Line [shape]')` reads "Line" in English, apart from Go to Line's "Line".
   - Add each key to `GreeceKit/Resources/Web/l10n/en.json` (with a `comment` when it's short or ambiguous) and to every language's file. `PageLocalizationTests` fails until every key is there, translated, with the same placeholders and every plural form the language needs.
   - `GREECE_LANGUAGE=de` shows pages in another language (renders, tests).
 - Workers must be blob workers whose code is fetched from `greece://asset/…` (see `highlightInSegments` in `greece.js`).
