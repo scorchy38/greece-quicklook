@@ -1023,7 +1023,7 @@ final class InstallerPackageTests: XCTestCase {
         XCTAssertTrue(findings.contains("Sets up a launch daemon"))
         let background = page.section("background")?.rows.compactMap(\.item) ?? []
         XCTAssertEqual(background.map(\.subtitle), ["com.example.sample.helper"])
-        guard case .tree(let root, let title, let count)? = page.contents else { return XCTFail("no payload tab") }
+        guard case .tree(let root, let title, let count, _)? = page.contents else { return XCTFail("no payload tab") }
         XCTAssertEqual(title, "Payload")
         XCTAssertEqual(count, 4)
         XCTAssertEqual(Set(root.children?.map(\.name) ?? []), ["Applications", "Library"])
@@ -1507,7 +1507,7 @@ final class AndroidTests: XCTestCase {
         XCTAssertTrue(permissions.contains { $0.title == "Custom permissions" && $0.details.first?.title == "com.example.other.permission.CUSTOM" })
         let integrations = page.section("integrations")?.rows.compactMap(\.item).map(\.title) ?? []
         XCTAssertEqual(integrations, ["Accessibility service", "Home screen widget"])
-        guard case .tree(_, _, let count)? = page.contents else { return XCTFail("contents") }
+        guard case .tree(_, _, let count, _)? = page.contents else { return XCTFail("contents") }
         XCTAssertEqual(count, 9)
     }
 
@@ -1862,6 +1862,24 @@ final class DiskImageTests: XCTestCase {
         XCTAssertThrowsError(try volume.readFile("Docs/missing.txt", limit: 1024))
     }
 
+    func testFilesInsideAnImagePreview() throws {
+        // The Files tab reads members through the image without mounting it, for the preview pane.
+        let page = try AppsModule.makePage(FileInfo(url: fixture("Sample-HFS-zlib.dmg")))
+        guard case .tree(let root, _, _, let members)? = page.contents, let members else { return XCTFail("no previewable file tab") }
+        func node(_ path: String, in parent: FileNode) -> FileNode? {
+            if parent.path == path { return parent }
+            for child in parent.children ?? [] { if let found = node(path, in: child) { return found } }
+            return nil
+        }
+        let readme = try XCTUnwrap(node("Docs/Nested/Deeper/readme.txt", in: root))
+        let scratch = ArchiveScratch()
+        let file = try members.extract(readme, to: scratch, cancel: CancelToken())
+        XCTAssertEqual(try String(contentsOf: file, encoding: .utf8), "Deep file contents\n")
+        XCTAssertEqual(file.lastPathComponent, "readme.txt", "named as inside, so its kind is recognised")
+        let folder = try XCTUnwrap(node("Docs/Nested", in: root))
+        XCTAssertThrowsError(try members.extract(folder, to: scratch, cancel: CancelToken()))
+    }
+
     func testAPFSLZFSEImage() throws {
         let image = try DiskImage(url: fixture("Sample-APFS-lzfse.dmg"))
         XCTAssertEqual(image.format.code, "ULFO")
@@ -1935,7 +1953,7 @@ final class DiskImageTests: XCTestCase {
         XCTAssertEqual(page.badges.map(\.id), ["format", "license"])
         XCTAssertEqual(page.sections.map(\.id), ["apps", "image", "volume", "license"])
         XCTAssertEqual(page.summary.title, "Disk Image")
-        guard case .tree(_, let title, let count)? = page.contents else { return XCTFail("no file listing") }
+        guard case .tree(_, let title, let count, _)? = page.contents else { return XCTFail("no file listing") }
         XCTAssertEqual(title, "Files")
         XCTAssertEqual(count, 8)
     }

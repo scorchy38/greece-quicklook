@@ -185,8 +185,9 @@ struct InspectorNote {
 }
 
 enum InspectorContents {
-    /// A file tree with a tab title ("Files", "Contents", "Payload").
-    case tree(FileNode, title: String, count: Int?)
+    /// A file tree with a tab title ("Files", "Contents", "Payload"), and where to read its files
+    /// from to preview them, when Greece can.
+    case tree(FileNode, title: String, count: Int?, members: MemberSource? = nil)
 }
 
 struct InspectorCheck {

@@ -35,11 +35,14 @@ final class InspectorModel: ObservableObject {
     @Published var showsFiles = false
     @Published var expandedSections: Set<String> = []
     let tree: FileNode?
+    let members: MemberSource?
+    /// Files previewed from the Files tab, kept while the inspector is open.
+    let scratch = ArchiveScratch()
 
     init(page: InspectorPage, settings: PreviewSettings) {
         self.page = page
         self.settings = settings
-        if case .tree(let node, _, _)? = page.contents { tree = node } else { tree = nil }
+        if case .tree(let node, _, _, let members)? = page.contents { (tree, self.members) = (node, members) } else { (tree, members) = (nil, nil) }
     }
 
     func runChecks() {
@@ -79,7 +82,7 @@ private struct InspectorRoot: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if case .tree(_, let title, let count)? = model.page.contents, model.tree != nil {
+            if case .tree(_, let title, let count, _)? = model.page.contents, model.tree != nil {
                 Picker("", selection: $model.showsFiles) {
                     Text("Info").tag(false)
                     Text(count.map { "\(title) (\($0.formatted()))" } ?? title).tag(true)
@@ -92,7 +95,11 @@ private struct InspectorRoot: View {
                 Divider()
             }
             if model.showsFiles, let tree = model.tree {
-                FileTreeRepresentable(root: tree, settings: model.settings)
+                if let members = model.members {
+                    MemberBrowserRepresentable(root: tree, members: members, scratch: model.scratch, settings: model.settings)
+                } else {
+                    FileTreeRepresentable(root: tree, settings: model.settings)
+                }
             } else {
                 InspectorForm(model: model)
             }
@@ -554,6 +561,20 @@ private struct SizesView: View {
         }
         .padding(.vertical, 2)
     }
+}
+
+/// The Files tab with a preview pane: select a file to see it, as in an archive.
+private struct MemberBrowserRepresentable: NSViewRepresentable {
+    let root: FileNode
+    let members: MemberSource
+    let scratch: ArchiveScratch
+    let settings: PreviewSettings
+
+    func makeNSView(context: Context) -> MemberBrowserView {
+        MemberBrowserView(root: root, source: members, scratch: scratch, settings: settings)
+    }
+
+    func updateNSView(_ view: MemberBrowserView, context: Context) { view.apply(settings) }
 }
 
 private struct FileTreeRepresentable: NSViewRepresentable {

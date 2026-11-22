@@ -16,12 +16,12 @@ enum ArchivePage {
         }
         if let appURL, let facts = BundleFacts(source: DirectoryBundle(url: appURL)) {
             page = BundlePage.page(for: facts, icon: .file(appURL), subject: .bundle, modified: modified)
-            page.contents = .tree(FileNode.folder(at: url, showHidden: false), title: "Contents", count: nil)
+            page.contents = .tree(FileNode.folder(at: url, showHidden: false), title: "Contents", count: nil, members: LocalMembers())
         } else {
             let version = Format.version(properties["CFBundleShortVersionString"] as? String, build: properties["CFBundleVersion"] as? String)
             page = InspectorPage(header: InspectorHeader(icon: .file(url), title: name, subtitle: version, identifier: properties["CFBundleIdentifier"] as? String),
                                  summary: FileSummary(symbol: "archivebox", title: "Xcode Archive", trailing: modified))
-            page.contents = .tree(FileNode.folder(at: url, showHidden: false), title: "Contents", count: nil)
+            page.contents = .tree(FileNode.folder(at: url, showHidden: false), title: "Contents", count: nil, members: LocalMembers())
         }
         page.summary.symbol = "archivebox"
         page.summary.title = "Xcode Archive"
@@ -104,7 +104,7 @@ enum ArchivePage {
         if !names.isEmpty { details.append(.field("Binary", names.joined(separator: ", "))) }
         details.append(.field("Size", Format.bytes(total)))
         page.sections.append(InspectorSection("info", title: "Info", rows: details.map(InspectorRow.item)))
-        page.contents = .tree(FileNode.folder(at: url, showHidden: false), title: "Contents", count: nil)
+        page.contents = .tree(FileNode.folder(at: url, showHidden: false), title: "Contents", count: nil, members: LocalMembers())
         return page
     }
 }

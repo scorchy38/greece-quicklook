@@ -62,7 +62,8 @@ enum DiskImagePage {
         if let contents, !contents.entries.isEmpty {
             let entries = contents.entries.map { ArchiveEntry(path: $0.path, isDirectory: $0.isDirectory, isSymlink: $0.isSymlink, size: $0.size, modified: $0.modified) }
             let listing = ArchiveListing(format: .zip, container: .zip, entries: entries, archiveSize: image.fileSize, truncated: contents.truncated)
-            page.contents = .tree(FileNode.tree(from: listing, showHidden: settings.showHiddenFiles), title: "Files", count: contents.fileCount)
+            page.contents = .tree(FileNode.tree(from: listing, showHidden: settings.showHiddenFiles), title: "Files", count: contents.fileCount,
+                                  members: DiskImageMembers(url: image.url))
         }
         return page
     }

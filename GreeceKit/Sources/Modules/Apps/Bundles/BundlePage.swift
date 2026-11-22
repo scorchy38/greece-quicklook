@@ -76,7 +76,7 @@ enum BundlePage {
 
         if let url = facts.source.url {
             let node = FileNode.folder(at: url, showHidden: false)
-            page.contents = .tree(node, title: "Contents", count: nil)
+            page.contents = .tree(node, title: "Contents", count: nil, members: node.url != nil ? LocalMembers() : nil)
         }
         return page
     }
