@@ -6,7 +6,7 @@ enum AndroidIcon {
     static let outputSide: CGFloat = 192
     private static let maxImageBytes = 8 << 20
 
-    static func image(manifest: AndroidXMLElement, resources: AndroidResourceTable?, zip: ZipFile, prefix: String,
+    static func image(manifest: AndroidXMLElement, resources: AndroidResourceTable?, zip: ZIPArchive, prefix: String,
                       deadline: Date) -> NSImage? {
         guard let application = manifest.children(named: "application").first else { return nil }
         var candidates: [AndroidValue] = []
@@ -42,7 +42,7 @@ enum AndroidIcon {
 
     struct Context {
         let resources: AndroidResourceTable?
-        let zip: ZipFile
+        let zip: ZIPArchive
         let prefix: String
         let deadline: Date
 

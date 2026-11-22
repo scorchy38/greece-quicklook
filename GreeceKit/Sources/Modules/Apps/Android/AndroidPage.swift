@@ -16,7 +16,7 @@ enum AndroidPage {
 
     /// The launcher icon alone, for Finder thumbnails.
     static func icon(for url: URL) -> NSImage? {
-        guard let zip = try? ZipFile(url: url) else { return nil }
+        guard let zip = try? ZIPArchive(url: url) else { return nil }
         let deadline = Date().addingTimeInterval(1)
         let isBundle = zip.member("base/manifest/AndroidManifest.xml") != nil && zip.member("AndroidManifest.xml") == nil
         let manifestPath = isBundle ? "base/manifest/AndroidManifest.xml" : "AndroidManifest.xml"

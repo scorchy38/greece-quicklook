@@ -294,7 +294,7 @@ enum DocumentThumbnails {
 
     static func epub(_ file: FileInfo, size: CGSize) -> ThumbnailPage? {
         guard let book = try? EPUBBook(url: file.url) else { return nil }
-        if let path = book.coverPath, let data = book.archive.read(path, limit: 24 << 20),
+        if let path = book.coverPath, let data = book.archive.contents(named: path, limit: 24 << 20),
            let source = CGImageSourceCreateWithData(data as CFData, nil),
            let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [kCGImageSourceCreateThumbnailFromImageAlways: true,
                                                                        kCGImageSourceThumbnailMaxPixelSize: max(size.width, size.height) * 2,

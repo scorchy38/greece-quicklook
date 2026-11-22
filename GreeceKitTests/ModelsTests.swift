@@ -268,12 +268,12 @@ final class ModelsTests: XCTestCase {
     // MARK: - Readers
 
     func testZipMembersAndXML() throws {
-        let package = try ModelZipMembers(url: fixture("bracket.3mf"))
+        let package = try XCTUnwrap(ThreeMFPackage.open(fixture("bracket.3mf")))
         XCTAssertEqual(ThreeMFPackage.rootModelPath(in: package), "/3D/3dmodel.model")
-        let model = try XCTUnwrap(package.entry(named: "/3D/3dmodel.model").flatMap { package.contents(of: $0, limit: 1 << 20) })
+        let model = try XCTUnwrap(package.member(named: "/3D/3dmodel.model").flatMap { try? package.contents(of: $0, limit: 1 << 20) })
         XCTAssertTrue(String(decoding: model, as: UTF8.self).contains("<model unit=\"millimeter\""))
         // The size limit holds even when the directory lies about sizes.
-        XCTAssertNil(package.entry(named: "/3D/3dmodel.model").flatMap { package.contents(of: $0, limit: 100) })
+        XCTAssertNil(package.member(named: "/3D/3dmodel.model").flatMap { try? package.contents(of: $0, limit: 100) })
 
         var tags: [(String, String?, Float?)] = []
         XMLTagScanner.scan("<?xml?><!-- <b x='1'/> --><a p:path='/x.model' v1=\"7\"/><b y = '2.5'></b><c broken=\"", { tag in
@@ -362,7 +362,8 @@ final class ModelsTests: XCTestCase {
         XCTAssertEqual(short.sample(shortData, budget: 1000).count, 0)
         XCTAssertNil(ModelThumbnails.lasPoints(fixture("hostile/short.las"), budget: budget))
         // A 3MF whose zip directory is garbage.
-        XCTAssertThrowsError(try ModelZipMembers(url: fixture("hostile/broken.3mf")))
+        XCTAssertThrowsError(try ZIPArchive(url: fixture("hostile/broken.3mf")))
+        XCTAssertNil(ThreeMFPackage.open(fixture("hostile/broken.3mf")))
         XCTAssertNil(ThreeMFPackage.load(fixture("hostile/broken.3mf"), budget: budget))
         XCTAssertEqual(ModelFacts.read(.threeMF, url: fixture("hostile/broken.3mf")).triangles, nil)
     }

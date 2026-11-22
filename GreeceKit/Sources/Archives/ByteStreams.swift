@@ -5,9 +5,36 @@ protocol ByteSource: AnyObject {
     func read(upTo count: Int) throws -> Data
 }
 
+/// Bytes at any offset: a file on disk or bytes already in memory. Reads never trap: past the
+/// end they come back short or empty.
+protocol RandomAccessSource: AnyObject {
+    var size: UInt64 { get }
+    /// Up to `count` bytes from `offset`; shorter only at the end.
+    func read(at offset: UInt64, count: Int) -> Data
+    /// The offset where volume `index` begins, for archives split across several files.
+    func start(ofVolume index: Int) -> UInt64?
+}
+
+/// Bytes already in memory (often a mapped file) behind the `RandomAccessSource` interface.
+/// Reads return slices that share the storage, so nothing is copied until it is used.
+final class InMemoryFile: RandomAccessSource, @unchecked Sendable {
+    let data: Data
+    init(_ data: Data) { self.data = data }
+
+    var size: UInt64 { UInt64(data.count) }
+
+    func read(at offset: UInt64, count: Int) -> Data {
+        guard count > 0, offset < size else { return Data() }
+        let start = data.startIndex + Int(offset)
+        return data[start..<(start + Int(min(UInt64(count), size - offset)))]
+    }
+
+    func start(ofVolume index: Int) -> UInt64? { index == 0 ? 0 : nil }
+}
+
 /// Bytes at any offset of one file, or of several volumes read back to back as one.
 /// Reads use `pread`, so several threads can share one instance.
-final class RandomAccessFile: @unchecked Sendable {
+final class RandomAccessFile: RandomAccessSource, @unchecked Sendable {
     struct Part { let url: URL; let start: UInt64; let size: UInt64; let descriptor: Int32 }
     let parts: [Part]
     let size: UInt64
@@ -41,32 +68,31 @@ final class RandomAccessFile: @unchecked Sendable {
     func read(at offset: UInt64, count: Int) -> Data {
         guard count > 0, offset < size else { return Data() }
         let wanted = Int(min(UInt64(count), size - offset))
-        var output = Data(count: wanted)
+        // Read straight into fresh memory: zero-filling it first would touch every byte twice.
+        let buffer = UnsafeMutableRawPointer.allocate(byteCount: wanted, alignment: 16)
         var filled = 0
-        output.withUnsafeMutableBytes { buffer in
-            var position = offset
-            while filled < wanted {
-                guard let part = parts.last(where: { $0.start <= position }), position < part.start + part.size else { break }
-                let local = position - part.start
-                let chunk = Int(min(UInt64(wanted - filled), part.size - local))
-                let got = pread(part.descriptor, buffer.baseAddress! + filled, chunk, off_t(local))
-                if got <= 0 { break }
-                filled += got
-                position += UInt64(got)
-            }
+        var position = offset
+        while filled < wanted {
+            guard let part = parts.last(where: { $0.start <= position }), position < part.start + part.size else { break }
+            let local = position - part.start
+            let chunk = Int(min(UInt64(wanted - filled), part.size - local))
+            let got = pread(part.descriptor, buffer + filled, chunk, off_t(local))
+            if got <= 0 { break }
+            filled += got
+            position += UInt64(got)
         }
-        output.count = filled
-        return output
+        guard filled > 0 else { buffer.deallocate(); return Data() }
+        return Data(bytesNoCopy: buffer, count: filled, deallocator: .custom { pointer, _ in pointer.deallocate() })
     }
 }
 
-/// A window of a `RandomAccessFile` (a member of a .deb, an RPM's payload), read forwards.
+/// A window of a file (a member of a .deb or a ZIP, an RPM's payload), read forwards.
 final class RangeSource: ByteSource {
-    private let file: RandomAccessFile
+    private let file: any RandomAccessSource
     private let end: UInt64
     private(set) var position: UInt64
 
-    init(_ file: RandomAccessFile, offset: UInt64 = 0, length: UInt64? = nil) {
+    init(_ file: any RandomAccessSource, offset: UInt64 = 0, length: UInt64? = nil) {
         self.file = file
         position = min(offset, file.size)
         end = min(file.size, length.map { offset.saturatingAdd($0) } ?? file.size)

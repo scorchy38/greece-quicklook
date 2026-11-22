@@ -1,111 +1,4 @@
 import AppKit
-import CArchive
-
-/// Reads members of a ZIP file (stored or deflated) with hard size limits.
-final class EPUBZipMembers {
-    struct Member {
-        var name: String
-        var method: UInt16
-        var compressedSize: Int
-        var size: Int
-        var localHeader: Int
-        var encrypted: Bool
-    }
-
-    let data: Data
-    private(set) var members: [String: Member] = [:]
-    private(set) var order: [String] = []
-    static let memberLimit = 20_000
-
-    init(url: URL) throws {
-        data = try Data(contentsOf: url, options: .alwaysMapped)
-        guard data.count >= 22 else { throw ArchiveError.corrupt("too small") }
-        var eocd: Int?
-        var index = data.count - 22
-        let lowest = max(0, data.count - 65_557)
-        while index >= lowest { if data.u32(index) == 0x06054B50 { eocd = index; break }; index -= 1 }
-        guard let end = eocd else { throw ArchiveError.corrupt("no central directory") }
-        var offset = Int(data.u32(end + 16))
-        let size = Int(data.u32(end + 12))
-        if offset >= data.count || data.u32(offset) != 0x02014B50, size <= end, data.u32(end - size) == 0x02014B50 { offset = end - size }
-        while offset + 46 <= data.count, data.u32(offset) == 0x02014B50, members.count < Self.memberLimit {
-            let flags = data.u16(offset + 8)
-            let method = data.u16(offset + 10)
-            let compressed = Int(data.u32(offset + 20))
-            let uncompressed = Int(data.u32(offset + 24))
-            let nameLength = Int(data.u16(offset + 28))
-            let extraLength = Int(data.u16(offset + 30))
-            let commentLength = Int(data.u16(offset + 32))
-            let local = Int(data.u32(offset + 42))
-            let nameStart = offset + 46
-            guard nameStart + nameLength <= data.count else { break }
-            let name = String(decoding: data.subdata(in: nameStart..<(nameStart + nameLength)), as: UTF8.self)
-            let member = Member(name: name, method: method, compressedSize: compressed, size: uncompressed, localHeader: local, encrypted: flags & 1 != 0)
-            if members[name] == nil { order.append(name) }
-            members[name] = member
-            offset = nameStart + nameLength + extraLength + commentLength
-        }
-        guard !members.isEmpty else { throw ArchiveError.corrupt("empty") }
-    }
-
-    func member(_ name: String) -> Member? {
-        if let m = members[name] { return m }
-        // Some books get case or percent-encoding wrong.
-        let lower = name.lowercased()
-        return members.values.first { $0.name.lowercased() == lower }
-    }
-
-    /// A member's bytes, or nil if it's missing, encrypted, or bigger than `limit` when inflated.
-    func read(_ name: String, limit: Int = 32 * 1024 * 1024) -> Data? {
-        guard let m = member(name), !m.encrypted, m.size <= limit, m.compressedSize <= data.count else { return nil }
-        let header = m.localHeader
-        guard header + 30 <= data.count, data.u32(header) == 0x04034B50 else { return nil }
-        let start = header + 30 + Int(data.u16(header + 26)) + Int(data.u16(header + 28))
-        guard start >= 0, start + m.compressedSize <= data.count else { return nil }
-        let compressed = data.subdata(in: start..<(start + m.compressedSize))
-        switch m.method {
-        case 0: return compressed.count <= limit ? compressed : nil
-        case 8: return Self.inflate(compressed, expected: m.size, limit: limit)
-        default: return nil
-        }
-    }
-
-    static func inflate(_ input: Data, expected: Int, limit: Int) -> Data? {
-        var stream = z_stream()
-        guard inflateInit2_(&stream, -15, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) == Z_OK else { return nil }
-        defer { inflateEnd(&stream) }
-        var output = Data(count: max(1024, min(expected, limit)))
-        var produced = 0
-        var status: Int32 = Z_OK
-        var source = input
-        let result: Bool = source.withUnsafeMutableBytes { inPtr -> Bool in
-            guard let base = inPtr.baseAddress else { return false }
-            stream.next_in = base.assumingMemoryBound(to: Bytef.self)
-            stream.avail_in = uInt(inPtr.count)
-            while status == Z_OK {
-                if produced == output.count {
-                    guard output.count < limit else { return false }
-                    output.count = min(limit, output.count * 2)
-                }
-                status = output.withUnsafeMutableBytes { outPtr -> Int32 in
-                    stream.next_out = outPtr.baseAddress!.assumingMemoryBound(to: Bytef.self).advanced(by: produced)
-                    stream.avail_out = uInt(outPtr.count - produced)
-                    let before = stream.avail_out
-                    let r = zlib_inflate_call(&stream)
-                    produced += Int(before - stream.avail_out)
-                    return r
-                }
-                if status == Z_BUF_ERROR && stream.avail_in == 0 { break }
-            }
-            return status == Z_STREAM_END || (status == Z_BUF_ERROR && produced > 0)
-        }
-        guard result else { return nil }
-        output.count = produced
-        return output
-    }
-}
-
-@inline(__always) private func zlib_inflate_call(_ stream: inout z_stream) -> Int32 { inflate(&stream, Z_NO_FLUSH) }
 
 /// An EPUB 2 or 3 book: metadata, cover, table of contents and chapters.
 final class EPUBBook {
@@ -113,7 +6,7 @@ final class EPUBBook {
     struct TOCEntry: Encodable { var title: String; var href: String; var chapter: Int?; var anchor: String?; var children: [TOCEntry] }
     struct Person: Encodable { var name: String; var role: String?; var fileAs: String? }
 
-    let archive: EPUBZipMembers
+    let archive: ZIPArchive
     var opfPath = ""
     var title = ""
     var subtitle: String?
@@ -139,11 +32,13 @@ final class EPUBBook {
     var encrypted = false
 
     static let fileLimit = 512 * 1024 * 1024
+    static let memberLimit = 20_000
 
     init(url: URL) throws {
         if let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size > Self.fileLimit { throw PreviewError.unsupported }
-        archive = try EPUBZipMembers(url: url)
-        guard let container = archive.read("META-INF/container.xml", limit: 1 << 20).map({ String(decoding: $0, as: UTF8.self) }) else { throw PreviewError.unsupported }
+        archive = try ZIPArchive(url: url, memberLimit: Self.memberLimit)
+        guard !archive.members.isEmpty else { throw ArchiveError.corrupt("empty") }
+        guard let container = archive.contents(named: "META-INF/container.xml", limit: 1 << 20).map({ String(decoding: $0, as: UTF8.self) }) else { throw PreviewError.unsupported }
         for token in Markup.tokens(container) {
             if case .start(let name, let attributes, _) = token, name == "rootfile",
                let path = attributes.first(where: { $0.0 == "full-path" })?.1 {
@@ -151,8 +46,8 @@ final class EPUBBook {
                 if type.contains("oebps") { opfPath = path; break }
             }
         }
-        guard !opfPath.isEmpty, let opf = archive.read(opfPath, limit: 8 << 20).map({ TextFile.decode($0).0 }) else { throw PreviewError.unsupported }
-        encrypted = archive.member("META-INF/encryption.xml") != nil && (archive.read("META-INF/encryption.xml", limit: 1 << 20).map { String(decoding: $0, as: UTF8.self).contains("EncryptedData") } ?? false)
+        guard !opfPath.isEmpty, let opf = archive.contents(named: opfPath, limit: 8 << 20).map({ TextFile.decode($0).0 }) else { throw PreviewError.unsupported }
+        encrypted = archive.member(named: "META-INF/encryption.xml") != nil && (archive.contents(named: "META-INF/encryption.xml", limit: 1 << 20).map { String(decoding: $0, as: UTF8.self).contains("EncryptedData") } ?? false)
         parsePackage(opf)
         findCover()
         parseTOC()
@@ -293,7 +188,7 @@ final class EPUBBook {
     }
 
     private func firstImage(inPage path: String) -> String? {
-        guard let data = archive.read(path, limit: 4 << 20) else { return nil }
+        guard let data = archive.contents(named: path, limit: 4 << 20) else { return nil }
         for token in Markup.tokens(TextFile.decode(data).0, limit: 20_000) {
             if case .start(let name, let attributes, _) = token, name == "img" || name == "image" || name.hasSuffix(":image") {
                 if let src = attributes.first(where: { $0.0 == "src" || $0.0 == "xlink:href" || $0.0 == "href" })?.1 {
@@ -307,10 +202,10 @@ final class EPUBBook {
     // MARK: - Table of contents
 
     private func parseTOC() {
-        if let nav = navPath, let data = archive.read(nav, limit: 8 << 20) {
+        if let nav = navPath, let data = archive.contents(named: nav, limit: 8 << 20) {
             toc = parseNav(TextFile.decode(data).0, base: nav)
         }
-        if toc.isEmpty, let ncx = ncxPath, let data = archive.read(ncx, limit: 8 << 20) {
+        if toc.isEmpty, let ncx = ncxPath, let data = archive.contents(named: ncx, limit: 8 << 20) {
             toc = parseNCX(TextFile.decode(data).0, base: ncx)
         }
         if toc.isEmpty {
@@ -430,7 +325,7 @@ final class EPUBBook {
             if fallback == nil { fallback = index }
             let name = (item.href as NSString).lastPathComponent.lowercased() + " " + item.id.lowercased()
             if item.properties.contains("nav") || skip.contains(where: { name.contains($0) }) { continue }
-            guard let data = archive.read(item.href, limit: 16 << 20) else { continue }
+            guard let data = archive.contents(named: item.href, limit: 16 << 20) else { continue }
             let text = Markup.text(TextFile.decode(data).0, limit: 60_000)
             if text.filter({ !$0.isWhitespace }).count >= 600 { return index }
         }
@@ -439,14 +334,14 @@ final class EPUBBook {
 
     /// A chapter as sanitised HTML, with images and links rewritten for the page.
     func chapterHTML(_ index: Int) -> (html: String, title: String?, words: Int)? {
-        guard let path = chapterPath(index), let data = archive.read(path, limit: 16 << 20) else { return nil }
+        guard let path = chapterPath(index), let data = archive.contents(named: path, limit: 16 << 20) else { return nil }
         let source = TextFile.decode(data).0
         var sanitizer = HTMLSanitizer()
         sanitizer.idPrefix = "c\(index)-"
         sanitizer.image = { [weak self] src in
             guard let self else { return nil }
             let resolved = self.resolve(src, relativeTo: path)
-            guard self.archive.member(resolved) != nil, Self.isImage(resolved, mediaType: self.mediaType(of: resolved)) else { return nil }
+            guard self.archive.member(named: resolved) != nil, Self.isImage(resolved, mediaType: self.mediaType(of: resolved)) else { return nil }
             return "greece://module/item/" + Self.encode(resolved)
         }
         sanitizer.link = { [weak self] href in
@@ -485,7 +380,7 @@ final class EPUBBook {
         var total = 0
         for ref in spine where ref.linear {
             guard Date() < deadline, total < 96 << 20 else { return (words, false) }
-            guard let item = manifest[ref.idref], let data = archive.read(item.href, limit: 16 << 20) else { continue }
+            guard let item = manifest[ref.idref], let data = archive.contents(named: item.href, limit: 16 << 20) else { continue }
             total += data.count
             words += PreviewFactory.wordCount(Markup.text(TextFile.decode(data).0))
         }
@@ -622,7 +517,7 @@ enum EPUBPreview {
             if path.hasPrefix("item/") {
                 let name = String(path.dropFirst(5)).removingPercentEncoding ?? String(path.dropFirst(5))
                 let type = book.mediaType(of: name)
-                guard EPUBBook.isImage(name, mediaType: type), let data = book.archive.read(name, limit: 24 << 20) else { return nil }
+                guard EPUBBook.isImage(name, mediaType: type), let data = book.archive.contents(named: name, limit: 24 << 20) else { return nil }
                 return (data, EPUBBook.mime(for: name, mediaType: type))
             }
             if path.hasPrefix("chapter/"), !book.encrypted, let index = Int(path.dropFirst(8)), let chapter = book.chapterHTML(index) {

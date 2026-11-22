@@ -540,16 +540,8 @@ final class EPUBTests: DocumentsTestCase {
         let book = try EPUBBook(url: try book(chapter: "<p>x</p>"))
         XCTAssertEqual(book.resolve("../../../../etc/passwd", relativeTo: "OEBPS/text/ch1.xhtml"), "etc/passwd")
         XCTAssertEqual(book.resolve("/abs/x.png", relativeTo: "OEBPS/text/ch1.xhtml"), "abs/x.png")
-        XCTAssertNil(book.archive.read("etc/passwd"))
-    }
-
-    func testInflateRespectsLimits() throws {
-        // 4 MB of zeros deflates to a few KB: a small bomb.
-        let zeros = Data(count: 4 * 1024 * 1024)
-        let compressed = try XCTUnwrap(deflate(zeros))
-        XCTAssertNil(EPUBZipMembers.inflate(compressed, expected: 100, limit: 1024 * 1024))
-        XCTAssertEqual(EPUBZipMembers.inflate(compressed, expected: zeros.count, limit: 8 * 1024 * 1024)?.count, zeros.count)
-        XCTAssertNil(EPUBZipMembers.inflate(Data([1, 2, 3, 4, 5]), expected: 10, limit: 100))
+        XCTAssertNil(book.archive.contents(named: "etc/passwd"))
+        XCTAssertNil(book.archive.contents(named: "OEBPS/../../etc/passwd"))
     }
 
     func testCorruptBooksFailCleanly() throws {
@@ -572,12 +564,6 @@ final class EPUBTests: DocumentsTestCase {
         XCTAssertEqual(fables.version, "2.0")
         XCTAssertNotNil(fables.coverPath)
         XCTAssertEqual(fables.toc.count, 2)
-    }
-
-    private func deflate(_ data: Data) -> Data? {
-        // Raw deflate via Foundation's zlib wrapper (strip the 2-byte header and 4-byte trailer).
-        guard let compressed = try? (data as NSData).compressed(using: .zlib) as Data else { return nil }
-        return compressed
     }
 }
 
