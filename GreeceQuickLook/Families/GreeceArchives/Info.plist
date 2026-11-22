@@ -71,6 +71,7 @@
 				<string>com.scorchy.greece.ruby-gem</string>
 				<string>com.scorchy.greece.nuget-package</string>
 				<string>com.scorchy.greece.vsix</string>
+				<string>com.scorchy.greece.skill</string>
 				<string>com.scorchy.greece.firefox-extension</string>
 				<string>com.scorchy.greece.enterprise-archive</string>
 				<string>public.folder</string>

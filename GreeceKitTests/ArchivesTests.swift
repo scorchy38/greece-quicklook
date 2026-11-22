@@ -507,6 +507,46 @@ final class PackageTests: XCTestCase {
         XCTAssertEqual(try inspect("tide-clock-1.2.crx").kind, .crx)
     }
 
+    func testAgentSkills() throws {
+        let skill = try inspect("harbour-forms.skill")
+        XCTAssertEqual(skill.kind, .skill)
+        XCTAssertEqual(skill.name, "harbour-forms")
+        XCTAssertEqual(skill.version, "1.4.0", "metadata.version")
+        XCTAssertEqual(skill.summary, "Fills in and checks Aegean harbour permit forms (PDF). Use when the user asks to complete, validate or summarise a berth or ferry permit.",
+                       "a folded description, joined into one line")
+        let facts = Dictionary(skill.facts, uniquingKeysWith: { a, _ in a })
+        XCTAssertEqual(facts["License"], "Apache-2.0")
+        XCTAssertEqual(facts["Allowed Tools"], "Bash, Read")
+        XCTAssertEqual(facts["Scripts"], "2 files")
+        XCTAssertEqual(facts["References"], "1 file")
+        XCTAssertEqual(PackageInspector.skillFile(in: ["a/SKILL.md", "a/b/SKILL.md", "README.md"]), "a/SKILL.md")
+        XCTAssertNil(PackageInspector.skillFile(in: ["a/b/c/SKILL.md"]), "too deep to be the package's own")
+    }
+
+    func testFrontMatter() {
+        let fields = FrontMatter.fields("""
+        ---
+        title: "Quoted: yes"
+        tags: [one, 'two']
+        summary: |
+          Line one
+          Line two
+        list:
+          - a
+          - b
+        nested:
+          key: value # a comment
+        ---
+        # Body
+        """)
+        XCTAssertEqual(fields["title"], "Quoted: yes")
+        XCTAssertEqual(fields["tags"], "one, two")
+        XCTAssertEqual(fields["summary"], "Line one\nLine two")
+        XCTAssertEqual(fields["list"], "a, b")
+        XCTAssertEqual(fields["nested.key"], "value")
+        XCTAssertTrue(FrontMatter.fields("# No front matter").isEmpty)
+    }
+
     func testAndroid() throws {
         for name in ["lighthouse-keeper.apk", "lighthouse-keeper.aab"] {
             let info = try inspect(name)

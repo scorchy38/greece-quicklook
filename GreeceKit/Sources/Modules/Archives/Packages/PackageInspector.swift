@@ -34,6 +34,7 @@ enum PackageInspector {
         if byPath["package/package.json"] != nil { kinds.append(.npm) }
         if paths.contains(where: { $0.hasSuffix("/PKG-INFO") && $0.split(separator: "/").count == 2 }) { kinds.append(.sdist) }
         if byPath["META-INF/MANIFEST.MF"] != nil { kinds.append(.jar) }
+        if skillFile(in: Array(paths)) != nil { kinds.append(.skill) }
         return kinds
     }
 
@@ -74,6 +75,7 @@ enum PackageInspector {
         case .deb: return deb(members)
         case .rpm: return rpm(reader.session)
         case .npm: return npm(reader)
+        case .skill: return skill(reader, files: files)
         }
     }
 
@@ -350,6 +352,35 @@ enum PackageInspector {
         info.homepage = json["homepage"] as? String
         if let dependencies = json["dependencies"] as? [String: Any] {
             info.dependencies = dependencies.keys.sorted().map { key in (dependencies[key] as? String).map { "\(key) \($0)" } ?? key }
+        }
+        return info
+    }
+
+    // MARK: Agent skills
+
+    /// A skill's instructions: SKILL.md at the top, or in the one folder the package holds.
+    static func skillFile(in paths: [String]) -> String? {
+        paths.filter { ($0 as NSString).lastPathComponent == "SKILL.md" && $0.split(separator: "/").count <= 2 }
+            .min { $0.count < $1.count }
+    }
+
+    /// An agent skill (Claude and others): its name and description from SKILL.md's front matter,
+    /// and what it bundles (scripts, references, assets).
+    private static func skill(_ reader: Reader, files: [ArchiveEntry]) -> PackageInfo? {
+        guard let path = skillFile(in: Array(reader.byPath.keys)), let text = reader.text(path) else { return nil }
+        let front = FrontMatter.fields(text)
+        let folder = path.contains("/") ? String(path.split(separator: "/")[0]) : nil
+        var info = PackageInfo(kind: .skill, name: front["name"] ?? folder, version: front["version"] ?? front["metadata.version"],
+                               summary: front["description"].map(firstSentence))
+        info.fact("License", front["license"])
+        info.fact("Allowed Tools", front["allowed-tools"])
+        info.fact("Compatibility", front["compatibility"])
+        let inside = files.map { ArchiveSession.normalized($0.path) }.map { path in
+            folder.map { path.hasPrefix($0 + "/") ? String(path.dropFirst($0.count + 1)) : path } ?? path
+        }
+        for (label, prefix) in [("Scripts", "scripts/"), ("References", "references/"), ("Assets", "assets/")] {
+            let count = inside.filter { $0.hasPrefix(prefix) }.count
+            if count > 0 { info.fact(label, "\(count.formatted()) \(count == 1 ? "file" : "files")") }
         }
         return info
     }

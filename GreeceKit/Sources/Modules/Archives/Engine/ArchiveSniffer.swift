@@ -2,7 +2,7 @@ import Foundation
 
 /// Kinds of software package Greece reads metadata from.
 enum PackageKind: String, Sendable {
-    case wheel, jar, war, ear, apk, aab, nuget, vsix, xpi, crx, gem, deb, rpm, npm, sdist
+    case wheel, jar, war, ear, apk, aab, nuget, vsix, xpi, crx, gem, deb, rpm, npm, sdist, skill
 
     var title: String {
         switch self {
@@ -21,6 +21,7 @@ enum PackageKind: String, Sendable {
         case .deb: return "Debian Package"
         case .rpm: return "RPM Package"
         case .npm: return "npm Package"
+        case .skill: return "Agent Skill"
         }
     }
 
@@ -39,6 +40,7 @@ enum PackageKind: String, Sendable {
         case "gem": return .gem
         case "deb", "udeb": return .deb
         case "rpm": return .rpm
+        case "skill": return .skill
         default: return nil
         }
     }

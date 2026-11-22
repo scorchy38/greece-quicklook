@@ -55,9 +55,25 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
             self.pane.setMode(.info)
             self.selectionChanged(self.tree.selectedNodes.isEmpty ? [node] : self.tree.selectedNodes)
         }
-        if let package = document.package { showPackage(package) }
+        if let package = document.package {
+            showPackage(package)
+            // A skill opens on its instructions.
+            if package.kind == .skill {
+                opening = PackageInspector.skillFile(in: document.listing.entries.map { ArchiveSession.normalized($0.path) })
+            }
+        }
         updateState()
         if document.isLoading { startLoading() }
+    }
+
+    /// A member to show in the preview pane once the browser has its size.
+    private var opening: String?
+
+    override func layout() {
+        super.layout()
+        guard let path = opening, split.bounds.width > 0 else { return }
+        opening = nil
+        DispatchQueue.main.async { [weak self] in self?.tree.select(path: path) }
     }
 
     private func showPackage(_ info: PackageInfo) {

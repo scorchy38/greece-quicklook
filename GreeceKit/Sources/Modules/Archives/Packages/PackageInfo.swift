@@ -35,6 +35,7 @@ struct PackageInfo: Sendable {
         case .gem: return "diamond"
         case .deb, .rpm: return "terminal"
         case .npm: return "shippingbox"
+        case .skill: return "sparkles"
         }
     }
 

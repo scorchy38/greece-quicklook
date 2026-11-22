@@ -138,6 +138,37 @@ zip_file(os.path.join(packages, "Aegean.Ferries.3.1.0.nupkg"), [
 
 # --- Editors and browsers ---------------------------------------------------------------------
 
+# An agent skill: SKILL.md with front matter, plus the scripts and references it bundles.
+zip_file(os.path.join(packages, "harbour-forms.skill"), [
+    ("harbour-forms/SKILL.md", b"""---
+name: harbour-forms
+description: >
+  Fills in and checks Aegean harbour permit forms (PDF). Use when the user asks to complete,
+  validate or summarise a berth or ferry permit.
+license: Apache-2.0
+allowed-tools:
+  - Bash
+  - Read
+metadata:
+  version: 1.4.0
+---
+
+# Harbour forms
+
+Fill permit forms with `scripts/fill_form.py`, then check them against
+[the field reference](references/fields.md).
+
+## Steps
+
+1. Read the form's fields.
+2. Fill them from the user's details.
+3. Validate the dates and the berth number.
+"""),
+    ("harbour-forms/scripts/fill_form.py", b"import sys\n\nprint('filling', sys.argv[1])\n"),
+    ("harbour-forms/scripts/validate.py", b"def validate(form):\n    return bool(form)\n"),
+    ("harbour-forms/references/fields.md", b"# Fields\n\n- berth\n- vessel\n- arrival\n"),
+])
+
 zip_file(os.path.join(packages, "ferry-tracker-0.9.2.vsix"), [
     ("extension.vsixmanifest", b'<PackageManifest Version="2.0.0"><Metadata><Identity Id="ferry-tracker" Version="0.9.2" Publisher="aegean-labs"/>'
                                b"<DisplayName>Ferry Tracker</DisplayName></Metadata></PackageManifest>"),

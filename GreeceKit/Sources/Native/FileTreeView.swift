@@ -345,6 +345,24 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
+    /// Selects the member at `path` (as `ArchiveSession.normalized` writes it), opening the
+    /// folders above it. False when there's no such member.
+    @discardableResult
+    func select(path: String) -> Bool {
+        func chain(_ node: FileNode) -> [FileNode]? {
+            if ArchiveSession.normalized(node.path) == path { return [node] }
+            for child in node.children ?? [] { if let rest = chain(child) { return [node] + rest } }
+            return nil
+        }
+        guard let nodes = chain(root), let target = nodes.last, target !== root else { return false }
+        for folder in nodes.dropLast() where folder !== root { outline.expandItem(folder) }
+        let row = outline.row(forItem: target)
+        guard row >= 0 else { return false }
+        outline.selectRowIndexes([row], byExtendingSelection: false)
+        outline.scrollRowToVisible(row)
+        return true
+    }
+
     /// A lone top-level folder (typical for archives) opens itself.
     private func expandLoneFolder() {
         if let only = root.children, only.count == 1, only[0].isExpandable, !outline.isItemExpanded(only[0]) {

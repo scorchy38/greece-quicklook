@@ -40,5 +40,6 @@ com.scorchy.greece.python-wheel
 com.scorchy.greece.ruby-gem
 com.scorchy.greece.nuget-package
 com.scorchy.greece.vsix
+com.scorchy.greece.skill
 com.scorchy.greece.firefox-extension
 com.scorchy.greece.enterprise-archive

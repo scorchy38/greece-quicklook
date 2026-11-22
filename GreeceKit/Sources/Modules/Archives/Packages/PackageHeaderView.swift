@@ -196,6 +196,7 @@ final class PackageIconView: NSView {
         case .crx: return .systemTeal
         case .gem, .rpm, .npm: return .systemRed
         case .deb: return .systemPink
+        case .skill: return .systemBrown
         }
     }
 

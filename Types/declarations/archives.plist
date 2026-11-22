@@ -297,6 +297,24 @@
 			<string>public.data</string>
 		</array>
 		<key>UTTypeDescription</key>
+		<string>Agent Skill</string>
+		<key>UTTypeIdentifier</key>
+		<string>com.scorchy.greece.skill</string>
+		<key>UTTypeTagSpecification</key>
+		<dict>
+			<key>public.filename-extension</key>
+			<array>
+				<string>skill</string>
+			</array>
+		</dict>
+	</dict>
+	<dict>
+		<key>UTTypeConformsTo</key>
+		<array>
+			<string>public.zip-archive</string>
+			<string>public.data</string>
+		</array>
+		<key>UTTypeDescription</key>
 		<string>Firefox Extension</string>
 		<key>UTTypeIdentifier</key>
 		<string>com.scorchy.greece.firefox-extension</string>
