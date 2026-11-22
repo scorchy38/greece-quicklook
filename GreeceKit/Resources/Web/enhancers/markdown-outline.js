@@ -53,7 +53,8 @@
     handle.className = 'outline-resizer';
     handle.setAttribute('role', 'separator');
     handle.setAttribute('aria-orientation', 'vertical');
-    handle.title = 'Drag to resize. Double-click to reset.';
+    // Quick Look opens the file on any double-click, so it only advertises dragging there.
+    handle.title = kit.typing ? 'Drag to resize. Double-click to reset.' : 'Drag to resize';
     nav.appendChild(handle);
 
     const show = document.createElement('button');
