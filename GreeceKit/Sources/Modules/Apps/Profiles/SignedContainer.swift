@@ -74,6 +74,30 @@ struct ProvisioningProfile {
         case developerID = "Developer ID"
         case macDevelopment = "Mac Development"
         case macAppStore = "Mac App Store"
+
+        /// The kind's name, as people read it: "Development", "App Store".
+        var title: String {
+            switch self {
+            case .development: return String(localized: "Development", bundle: .greeceKit, comment: "A kind of provisioning profile")
+            case .adHoc: return String(localized: "Ad Hoc", bundle: .greeceKit, comment: "A kind of provisioning profile: for testing on registered devices")
+            case .enterprise: return String(localized: "Enterprise", bundle: .greeceKit, comment: "A kind of provisioning profile: for an organization’s own apps")
+            case .macDevelopment: return String(localized: "Mac Development", bundle: .greeceKit, comment: "A kind of provisioning profile")
+            case .appStore, .developerID, .macAppStore: return rawValue
+            }
+        }
+
+        /// "Development Profile", under the profile's name.
+        var profileTitle: String {
+            switch self {
+            case .development: return String(localized: "Development Profile", bundle: .greeceKit, comment: "A kind of provisioning profile")
+            case .adHoc: return String(localized: "Ad Hoc Profile", bundle: .greeceKit, comment: "A kind of provisioning profile: for testing on registered devices")
+            case .appStore: return String(localized: "App Store Profile", bundle: .greeceKit, comment: "A kind of provisioning profile")
+            case .enterprise: return String(localized: "Enterprise Profile", bundle: .greeceKit, comment: "A kind of provisioning profile: for an organization’s own apps")
+            case .developerID: return String(localized: "Developer ID Profile", bundle: .greeceKit, comment: "A kind of provisioning profile")
+            case .macDevelopment: return String(localized: "Mac Development Profile", bundle: .greeceKit, comment: "A kind of provisioning profile")
+            case .macAppStore: return String(localized: "Mac App Store Profile", bundle: .greeceKit, comment: "A kind of provisioning profile")
+            }
+        }
     }
 
     var name: String
@@ -107,7 +131,8 @@ struct ProvisioningProfile {
 
     init?(plist: [String: Any]) {
         guard plist["Name"] != nil || plist["UUID"] != nil || plist["Entitlements"] != nil else { return nil }
-        name = Format.clean(plist["Name"] as? String ?? "Provisioning Profile", limit: 200)
+        name = Format.clean(plist["Name"] as? String ?? String(localized: "Provisioning Profile", bundle: .greeceKit, comment: "A kind of file; also the name of one that has none"),
+                            limit: 200)
         appIDName = plist["AppIDName"] as? String
         teamName = plist["TeamName"] as? String
         teamIDs = (plist["TeamIdentifier"] as? [String]) ?? []
