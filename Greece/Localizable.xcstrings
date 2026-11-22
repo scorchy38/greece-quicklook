@@ -24571,7 +24571,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rechercher des réglages"
+            "value" : "Rechercher"
           }
         },
         "it" : {
@@ -24672,7 +24672,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rechercher des thèmes"
+            "value" : "Rechercher un thème"
           }
         },
         "it" : {
