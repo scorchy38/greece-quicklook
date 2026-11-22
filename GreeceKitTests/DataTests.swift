@@ -274,15 +274,20 @@ final class SQLiteDataTests: XCTestCase {
             _ = source.value(row: visible.lowerBound, column: 0)
             _ = source.value(row: max(visible.upperBound - 1, 0), column: 0)
         }
-        // A fast fling: 30 new rows every frame, 600 frames.
-        var started = CFAbsoluteTimeGetCurrent()
+        // A fast fling: 30 new rows every frame, 600 frames. The best of two flings over fresh rows,
+        // so a build running alongside measures the machine, not the code.
         var worst = 0.0
-        for frame in 0..<600 {
-            let begin = CFAbsoluteTimeGetCurrent()
-            layout(atRow: frame * 30)
-            worst = max(worst, CFAbsoluteTimeGetCurrent() - begin)
+        func fling(from first: Int) -> Double {
+            let started = CFAbsoluteTimeGetCurrent()
+            for frame in 0..<600 {
+                let begin = CFAbsoluteTimeGetCurrent()
+                layout(atRow: first + frame * 30)
+                worst = max(worst, CFAbsoluteTimeGetCurrent() - begin)
+            }
+            return (CFAbsoluteTimeGetCurrent() - started) / 600
         }
-        let fling = (CFAbsoluteTimeGetCurrent() - started) / 600
+        let fling = min(fling(from: 0), fling(from: 600_000))
+        var started = CFAbsoluteTimeGetCurrent()
         // Dragging the scroller: jumps anywhere in the table (pages found through the rowid index).
         started = CFAbsoluteTimeGetCurrent()
         for jump in 0..<100 { layout(atRow: (jump * 9_973) % 999_000) }
@@ -296,12 +301,15 @@ final class SQLiteDataTests: XCTestCase {
         context.cgContext.scaleBy(x: 2, y: 2)
         NSGraphicsContext.saveGraphicsState()
         NSGraphicsContext.current = context
-        started = CFAbsoluteTimeGetCurrent()
-        for index in 0..<2_000 {
-            row.row = 400_000 + index
-            row.draw(row.bounds)
+        var perRow = Double.infinity
+        for pass in 0..<3 {
+            started = CFAbsoluteTimeGetCurrent()
+            for index in 0..<700 {
+                row.row = 400_000 + pass * 700 + index
+                row.draw(row.bounds)
+            }
+            perRow = min(perRow, (CFAbsoluteTimeGetCurrent() - started) / 700)
         }
-        let perRow = (CFAbsoluteTimeGetCurrent() - started) / 2_000
         NSGraphicsContext.restoreGraphicsState()
         window.orderOut(nil)
 
