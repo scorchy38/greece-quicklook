@@ -46,7 +46,7 @@ public enum PreviewFactory {
             let file = try TextFile(url: fileURL)
             let words = wordCount(file.text)
             let minutes = max(1, Int((Double(words) / 230).rounded()))
-            let summary = FileSummary(symbol: "doc.richtext", title: "Markdown",
+            let summary = FileSummary(symbol: "doc.richtext", title: markdownFlavour(url.pathExtension),
                                       details: ["\(words.formatted()) words", "\(minutes) min read"], trailing: modified)
             return .web(WebDocument(kind: .markdown, text: file.text, baseDirectory: base, truncated: file.truncated), summary, NSSize(width: 980, height: 780))
 
@@ -59,8 +59,10 @@ public enum PreviewFactory {
                 text = pretty
                 formatted = true
             }
-            var summary = codeSummary(language.name, symbol: language.symbol, file: file, size: size, modified: modified,
-                                      lineCount: formatted ? TextFile(text: text).lineCount : nil)
+            // A .env file is highlighted as shell, but it's a list of settings, often secret.
+            let isEnvironment = EnvMask.applies(to: url.lastPathComponent)
+            var summary = codeSummary(isEnvironment ? "Environment" : language.name, symbol: isEnvironment ? "key" : language.symbol,
+                                      file: file, size: size, modified: modified, lineCount: formatted ? TextFile(text: text).lineCount : nil)
             if formatted { summary.details.append("Formatted") }
             return .web(WebDocument(kind: .code, text: text, grammar: language.grammar, baseDirectory: url.deletingLastPathComponent(), truncated: file.truncated),
                         summary, NSSize(width: 920, height: 720))
@@ -250,6 +252,17 @@ public enum PreviewFactory {
     }
 
     // MARK: - Facts
+
+    /// What the info bar calls a Markdown file: its flavour when the extension says which.
+    static func markdownFlavour(_ ext: String) -> String {
+        switch ext.lowercased() {
+        case "mdx": return "MDX"
+        case "rmd": return "R Markdown"
+        case "qmd": return "Quarto"
+        case "livemd": return "Livebook"
+        default: return "Markdown"
+        }
+    }
 
     private static func codeSummary(_ name: String, symbol: String, file: TextFile, size: String?, modified: String?, lineCount: Int? = nil) -> FileSummary {
         let lines = lineCount ?? file.lineCount
