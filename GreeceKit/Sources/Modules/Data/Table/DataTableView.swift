@@ -75,61 +75,6 @@ final class DataToolbar: NSView {
     }
 }
 
-/// An active filter in the toolbar, like a search token: what it keeps, and a button that removes it.
-final class FilterToken: NSView {
-    private let label = NSTextField(labelWithString: "")
-    private let remove: NSButton
-    private let onRemove: () -> Void
-
-    init(text: String, onRemove: @escaping () -> Void) {
-        self.onRemove = onRemove
-        let image = NSImage(systemSymbolName: "xmark", accessibilityDescription: "Remove Filter")?
-            .withSymbolConfiguration(.init(pointSize: 8, weight: .bold)) ?? NSImage()
-        remove = NSButton(image: image, target: nil, action: nil)
-        super.init(frame: .zero)
-        label.stringValue = text
-        label.font = .systemFont(ofSize: 11)
-        label.textColor = .labelColor
-        label.lineBreakMode = .byTruncatingTail
-        label.toolTip = text
-        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        remove.isBordered = false
-        remove.imagePosition = .imageOnly
-        remove.contentTintColor = .secondaryLabelColor
-        remove.toolTip = "Remove Filter"
-        remove.target = self
-        remove.action = #selector(removeClicked)
-        for view in [label, remove] {
-            view.translatesAutoresizingMaskIntoConstraints = false
-            addSubview(view)
-        }
-        NSLayoutConstraint.activate([
-            heightAnchor.constraint(equalToConstant: 20),
-            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            label.centerYAnchor.constraint(equalTo: centerYAnchor),
-            label.widthAnchor.constraint(lessThanOrEqualToConstant: 220),
-            remove.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 3),
-            remove.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -5),
-            remove.centerYAnchor.constraint(equalTo: centerYAnchor),
-            remove.widthAnchor.constraint(equalToConstant: 14),
-            remove.heightAnchor.constraint(equalToConstant: 14),
-        ])
-        setAccessibilityElement(true)
-        setAccessibilityRole(.group)
-        setAccessibilityLabel("Filter: \(text)")
-    }
-
-    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
-
-    override func draw(_ dirtyRect: NSRect) {
-        let shape = NSBezierPath(roundedRect: bounds, xRadius: bounds.height / 2, yRadius: bounds.height / 2)
-        NSColor.controlAccentColor.withAlphaComponent(0.16).setFill()
-        shape.fill()
-    }
-
-    @objc private func removeClicked() { onRemove() }
-}
-
 /// A table in memory with a filter field, column filters and column profiles: delimited text,
 /// JSON Lines, dBase files, lock files, string catalogs and Parquet previews. Column filters come
 /// from a cell's context menu or a profile's common values and show as tokens in the toolbar, so
@@ -285,36 +230,22 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
 
     // MARK: - Column filters
 
-    /// Filter items for a right-click on a cell, then Clear Filters whenever anything is filtered.
-    func filterMenuItems(row: Int?, column: Int?) -> [NSMenuItem] {
-        var items: [NSMenuItem] = []
-        if let row, let column, row < source.rowCount {
-            let name = columnName(column)
-            let text = source.text(row: row, column: column)
-            let blank = ColumnFilter.isBlank(text)
-            let subject = blank ? "Is Empty" : "Is \(MenuText.quoted(text))"
-            let value = blank ? "" : text
-            items.append(toggleItem("Show Only Rows Where \(name) \(subject)", ColumnFilter(column: column, test: .equals(value))))
-            items.append(toggleItem("Hide Rows Where \(name) \(subject)", ColumnFilter(column: column, test: .notEquals(value))))
-            if source.holdsNumbers(column: column), let number = DataValueParser.number(text) {
-                let shown = MenuText.short(text)
-                items.append(toggleItem("Show Only Rows Where \(name) ≥ \(shown)", ColumnFilter(column: column, test: .atLeast(number, text: text))))
-                items.append(toggleItem("Show Only Rows Where \(name) ≤ \(shown)", ColumnFilter(column: column, test: .atMost(number, text: text))))
-            }
-        }
-        if source.isFiltered {
-            if !items.isEmpty { items.append(.separator()) }
-            items.append(ActionMenuItem("Clear Filters") { [weak self] in self?.clearFilters() })
-        }
-        return items
+    private var filterMenu: FilterMenu {
+        FilterMenu(active: source.columnFilters,
+                   add: { [weak self] in self?.addFilter($0) },
+                   remove: { [weak self] in self?.removeFilter($0) },
+                   clear: source.isFiltered ? { [weak self] in self?.clearFilters() } : nil)
     }
 
-    /// A filter's item, checked while the filter is on; choosing it then turns the filter off.
-    private func toggleItem(_ title: String, _ filter: ColumnFilter) -> NSMenuItem {
-        let active = source.columnFilters.contains(filter)
-        return ActionMenuItem(title, state: active ? .on : .off) { [weak self] in
-            if active { self?.removeFilter(filter) } else { self?.addFilter(filter) }
+    /// Filter items for a right-click on a cell, then Clear Filters whenever anything is filtered.
+    func filterMenuItems(row: Int?, column: Int?) -> [NSMenuItem] {
+        var cell: FilterMenu.Cell?
+        if let row, let column, row < source.rowCount {
+            let text = source.text(row: row, column: column)
+            cell = ColumnFilter.isBlank(text) ? .empty : .text(text)
         }
+        return filterMenu.items(column: column ?? 0, name: column.map(columnName) ?? "",
+                                cell: cell, numeric: column.map(source.holdsNumbers) ?? false)
     }
 
     func addFilter(_ filter: ColumnFilter) {
@@ -357,14 +288,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
 
     private func updateTokens() {
         tokens.arrangedSubviews.forEach { $0.removeFromSuperview() }
-        for filter in source.columnFilters {
-            let token = FilterToken(text: filter.label(columnTitle: columnName(filter.column))) { [weak self] in self?.removeFilter(filter) }
-            token.menu = .context([
-                ActionMenuItem("Remove Filter") { [weak self] in self?.removeFilter(filter) },
-                ActionMenuItem("Clear Filters") { [weak self] in self?.clearFilters() },
-            ])
-            tokens.addArrangedSubview(token)
-        }
+        for token in filterMenu.tokens(name: columnName) { tokens.addArrangedSubview(token) }
         tokens.isHidden = source.columnFilters.isEmpty || alternate != nil
     }
 

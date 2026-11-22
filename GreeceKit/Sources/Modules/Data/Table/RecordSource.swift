@@ -78,65 +78,6 @@ final class DelimitedStore: RecordStore {
     }
 }
 
-/// A condition on one column, chosen from a cell's context menu or a column profile.
-struct ColumnFilter: Equatable {
-    enum Test: Equatable {
-        /// The cell reads exactly this. "" stands for an empty cell (blank or missing).
-        case equals(String)
-        case notEquals(String)
-        /// A number at least, or at most, `bound`, as `text` was written in the cell it came
-        /// from. Cells that aren't numbers don't match.
-        case atLeast(Double, text: String)
-        case atMost(Double, text: String)
-    }
-
-    var column: Int
-    var test: Test
-
-    func matches(_ text: String) -> Bool {
-        switch test {
-        case .equals(let value): return Self.same(text, value)
-        case .notEquals(let value): return !Self.same(text, value)
-        case .atLeast(let bound, _): return DataValueParser.number(text).map { $0 >= bound } ?? false
-        case .atMost(let bound, _): return DataValueParser.number(text).map { $0 <= bound } ?? false
-        }
-    }
-
-    /// Nothing there, or only spaces.
-    static func isBlank(_ text: String) -> Bool {
-        text.isEmpty || text.utf8.allSatisfy { $0 == 0x20 || $0 == 0x09 || $0 == 0x0A || $0 == 0x0D }
-    }
-
-    private static func same(_ text: String, _ value: String) -> Bool {
-        value.isEmpty ? isBlank(text) : text == value
-    }
-
-    /// True when this newer filter makes an older one pointless or contradicts it, so it takes the
-    /// older one's place: one value is shown at a time, and showing what was hidden (or hiding what
-    /// was shown) undoes the earlier choice.
-    func replaces(_ older: ColumnFilter) -> Bool {
-        guard column == older.column else { return false }
-        switch (test, older.test) {
-        case (.equals, .equals), (.equals, .notEquals), (.atLeast, .atLeast), (.atMost, .atMost):
-            return true
-        case (.notEquals(let hidden), .equals(let other)), (.notEquals(let hidden), .notEquals(let other)):
-            return hidden == other
-        default:
-            return false
-        }
-    }
-
-    /// How its token reads: "group = Cyclades", "notes is empty", "size ≥ 42".
-    func label(columnTitle title: String) -> String {
-        switch test {
-        case .equals(let value): return value.isEmpty ? "\(title) is empty" : "\(title) = \(MenuText.short(value, limit: 40))"
-        case .notEquals(let value): return value.isEmpty ? "\(title) is not empty" : "\(title) ≠ \(MenuText.short(value, limit: 40))"
-        case .atLeast(_, let text): return "\(title) ≥ \(MenuText.short(text, limit: 40))"
-        case .atMost(_, let text): return "\(title) ≤ \(MenuText.short(text, limit: 40))"
-        }
-    }
-}
-
 /// Sorts, filters and measures a `RecordStore` for `GridView`.
 final class RecordGridSource: GridSource {
     let store: RecordStore
@@ -281,7 +222,7 @@ final class RecordGridSource: GridSource {
 
     /// Adds a column filter in place of any it makes pointless (see `ColumnFilter.replaces`).
     func addColumnFilter(_ new: ColumnFilter, completion: @escaping () -> Void) {
-        setColumnFilters(columnFilters.filter { !new.replaces($0) && $0 != new } + [new], completion: completion)
+        setColumnFilters(ColumnFilter.adding(new, to: columnFilters), completion: completion)
     }
 
     func removeColumnFilter(_ old: ColumnFilter, completion: @escaping () -> Void) {
