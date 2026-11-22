@@ -421,7 +421,7 @@ final class MapsTests: XCTestCase {
         dbf[4] = 0xFF; dbf[5] = 0xFF; dbf[6] = 0xFF; dbf[7] = 0x7F
         dbf[8] = 0xFF; dbf[9] = 0x7F
         dbf[10] = 1
-        XCTAssertNil(DBFTable(data: dbf, cpg: nil, maxFields: 10))
+        XCTAssertNil(ShapefileDBF(data: dbf, cpg: nil, maxFields: 10))
     }
 
     // MARK: - KML, KMZ, GPX

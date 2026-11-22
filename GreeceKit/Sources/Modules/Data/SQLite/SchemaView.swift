@@ -282,10 +282,6 @@ class SchemaPageView: NSView {
     }
 }
 
-final class FlippedView: NSView {
-    override var isFlipped: Bool { true }
-}
-
 /// Highlighted SQL, sized to its content, restyled for light and dark.
 final class SQLTextView: NSView {
     private let text: String

@@ -67,7 +67,7 @@ enum ShapefileReader {
         guard data.count >= 100, data.beU32(0) == 9994 else { throw GeoError.invalid("This isn’t a shapefile.") }
         let shapeType = Int32(bitPattern: data.u32(32))
         let layer = GeoLayer(name: sources.name)
-        let table = sources.dbf.flatMap { DBFTable(data: $0, cpg: sources.cpg, maxFields: max(limits.maxProperties, 1)) }
+        let table = sources.dbf.flatMap { ShapefileDBF(data: $0, cpg: sources.cpg, maxFields: max(limits.maxProperties, 1)) }
 
         var offset = 100
         var index = 0
@@ -202,7 +202,7 @@ enum ShapefileReader {
 }
 
 /// A dBase III/IV table (.dbf).
-struct DBFTable {
+struct ShapefileDBF {
     struct Field { let name: String; let type: UInt8; let offset: Int; let length: Int; let decimals: Int }
 
     private let data: Data
@@ -233,7 +233,7 @@ struct DBFTable {
             at += 32
         }
         self.fields = fields
-        encoding = DBFTable.encoding(cpg: cpg, languageDriver: data[data.startIndex + 29])
+        encoding = ShapefileDBF.encoding(cpg: cpg, languageDriver: data[data.startIndex + 29])
     }
 
     static func encoding(cpg: String?, languageDriver: UInt8) -> String.Encoding? {
