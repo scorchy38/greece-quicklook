@@ -1,0 +1,12 @@
+SHELL=/bin/bash
+MAILTO=ops@example.com
+CRON_TZ=Europe/Athens
+
+# m   h  dom mon dow  command
+30    6  *   *   1-5  /usr/local/bin/greece-report --daily
+*/15  *  *   *   *    /usr/local/bin/sync-previews >> /var/log/sync.log 2>&1
+0     */4 *  *   *    find /tmp/greece -mtime +1 -delete
+0     0  1   *   *    /usr/local/bin/rotate-keys --all
+15    3  *   *   0    pg_dump greece | gzip > /backups/greece-$(date +\%F).sql.gz
+0     9-17 * *   1-5  curl -fsS https://hc-ping.example.com/greece
+@reboot              /usr/local/bin/greece-agent --daemon
