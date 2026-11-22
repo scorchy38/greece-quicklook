@@ -562,6 +562,25 @@ struct SeededGenerator: RandomNumberGenerator {
 
 // MARK: - WindowsTests
 
+extension AppsCoreTests {
+    func testFilesInsideAnAppPreview() throws {
+        // An iOS app's Files tab reads members through the shared ZIP reader for the preview pane.
+        let url = Self.fixtures.appendingPathComponent("ios/Tiny.ipa")
+        let page = try AppsModule.makePage(FileInfo(url: url))
+        guard case .tree(let root, _, _, let members)? = page.contents, let members else { return XCTFail("no previewable file tab") }
+        func node(_ path: String, in parent: FileNode) -> FileNode? {
+            if parent.path == path { return parent }
+            for child in parent.children ?? [] { if let found = node(path, in: child) { return found } }
+            return nil
+        }
+        let plist = try XCTUnwrap(node("Payload/Tiny.app/Info.plist", in: root))
+        let scratch = ArchiveScratch()   // the copy lives as long as its scratch folder
+        let file = try members.extract(plist, to: scratch, cancel: CancelToken())
+        XCTAssertEqual(try Data(contentsOf: file), try ZIPArchive(url: url).contents(of: "Payload/Tiny.app/Info.plist"))
+        XCTAssertEqual(file.lastPathComponent, "Info.plist")
+    }
+}
+
 final class WindowsTests: XCTestCase {
 
     private func fixture(_ name: String) -> URL {

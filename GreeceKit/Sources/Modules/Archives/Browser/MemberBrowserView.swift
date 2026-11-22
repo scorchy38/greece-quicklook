@@ -517,3 +517,26 @@ final class LocalMembers: MemberSource {
         return url
     }
 }
+
+/// Files inside a ZIP-based package (an iOS or Android app), read through the shared ZIP reader.
+/// The archive is opened on first use and kept while the Files tab is open.
+final class ZIPMembers: MemberSource, @unchecked Sendable {
+    private let url: URL
+    private let lock = NSLock()
+    private var archive: ZIPArchive?
+
+    init(url: URL) { self.url = url }
+
+    func extract(_ node: FileNode, to scratch: ArchiveScratch, cancel: CancelToken) throws -> URL {
+        guard !node.isDirectory else { throw PreviewError.unsupported }
+        lock.lock()
+        defer { lock.unlock() }
+        if archive == nil { archive = try ZIPArchive(url: url) }
+        guard let archive, let member = archive.member(named: node.path), !cancel.isCancelled else { throw PreviewError.unsupported }
+        // Read whole before it's written out, so the cap is lower than the streamed archives' one.
+        let data = try archive.contents(of: member, limit: 64 * 1024 * 1024)
+        let file = scratch.location(for: node.name)
+        try data.write(to: file)
+        return file
+    }
+}

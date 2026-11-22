@@ -52,7 +52,8 @@ enum AndroidPage {
             infoSection(package),
         ].compactMap { $0 }
         if let listing = package.listing {
-            page.contents = .tree(FileNode.tree(from: listing, showHidden: settings.showHiddenFiles), title: "Files", count: listing.fileCount)
+            page.contents = .tree(FileNode.tree(from: listing, showHidden: settings.showHiddenFiles), title: "Files", count: listing.fileCount,
+                                  members: ZIPMembers(url: url))
         }
         return page
     }
