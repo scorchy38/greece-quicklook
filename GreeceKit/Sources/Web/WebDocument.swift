@@ -165,6 +165,8 @@ public struct WebDocument {
         scripts += extraGrammars(diffLanguages: diffLanguages).map { "vendor/highlight/languages/\($0).min.js" }
         var styles = ["greece.css"]
         if usesMarkdown {
+            // Reading themes: typography per theme (colours come with the variables below).
+            styles.append("themes/reading.css")
             scripts += ["vendor/markdown-it/markdown-it.min.js", "vendor/markdown-it/markdown-it-footnote.min.js", "vendor/markdown-it/markdown-it-emoji.min.js"]
         }
         if math {
@@ -213,7 +215,8 @@ public struct WebDocument {
             "frame-src 'none'", "object-src 'none'", "base-uri 'none'", "form-action 'none'",
         ].joined(separator: "; ")
 
-        let classes = WebDocument.classes(settings: settings, kind: kind).filter(\.value).map(\.key).sorted().joined(separator: " ")
+        var classes = WebDocument.classes(settings: settings, kind: kind).filter(\.value).map(\.key).sorted().joined(separator: " ")
+        if usesMarkdown { classes += " reading" }
         return """
         <!DOCTYPE html>
         <html lang="en" class="\(classes)">
@@ -238,11 +241,14 @@ public struct WebDocument {
     // MARK: - Live styling
 
     static func classes(settings: PreviewSettings, kind: Kind?) -> [String: Bool] {
-        [
+        var classes = [
             "wrap": settings.wrapLines,
             "no-lines": !settings.lineNumbers,
             "outline-on": settings.showOutline,
         ]
+        // The reading theme as `rt-<id>`, every other theme's class off so live changes swap cleanly.
+        for theme in ReadingTheme.all { classes["rt-" + theme.id] = theme.id == settings.markdownTheme.id }
+        return classes
     }
 
     static func variablesCSS(_ settings: PreviewSettings) -> String {
@@ -252,11 +258,13 @@ public struct WebDocument {
         default: font = "'\(settings.codeFont.replacingOccurrences(of: "'", with: ""))', ui-monospace, Menlo, monospace"
         }
         let ligatures = ["JetBrains Mono", "Fira Code", "Cascadia Code", "Monaspace Neon", "Iosevka"].contains(settings.codeFont)
-        let heading = settings.readingFont == .serif ? "--heading-font: ui-serif, 'New York', Georgia, serif;" : ""
         return """
         :root{--code-font:\(font);--code-size:\(settings.codeFontSize)px;--code-lh:1.55;--tab:\(settings.tabWidth);\
-        --code-ligatures:\(ligatures ? "normal" : "none");--read-font:\(settings.readingFont.cssStack);\
-        --read-size:\(settings.readingSize)px;--measure:\(settings.readingWidth.css);\(heading)}
+        --code-ligatures:\(ligatures ? "normal" : "none");--code-weight:\(settings.codeFontWeight.value);\
+        --read-font:\(settings.readingFontStack);--heading-font:\(settings.headingFontStack);\
+        --read-size:\(settings.readingSize)px;--measure:\(settings.readingWidth.css);}
+        \(settings.markdownTheme.css)
+        \(settings.mermaidTheme.css(code: settings.codeTheme, reading: settings.markdownTheme))
         """
     }
 

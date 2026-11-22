@@ -841,45 +841,91 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>1st</string>
+					<string>abnf</string>
 					<string>ado</string>
+					<string>ahk</string>
 					<string>aidl</string>
+					<string>aj</string>
+					<string>al</string>
+					<string>am</string>
+					<string>apacheconf</string>
+					<string>arb</string>
+					<string>arcade</string>
 					<string>arm</string>
 					<string>asc</string>
+					<string>ascx</string>
+					<string>asd</string>
+					<string>asp</string>
+					<string>aspx</string>
 					<string>atom</string>
+					<string>au3</string>
+					<string>automount</string>
+					<string>avsc</string>
 					<string>awk</string>
+					<string>axaml</string>
 					<string>babelrc</string>
 					<string>bas</string>
 					<string>bash_aliases</string>
 					<string>bash_profile</string>
 					<string>bashrc</string>
 					<string>bats</string>
+					<string>bazel</string>
 					<string>bb</string>
+					<string>bf</string>
+					<string>bicep</string>
+					<string>bicepparam</string>
+					<string>bnf</string>
+					<string>bsl</string>
+					<string>build</string>
+					<string>caddyfile</string>
 					<string>cake</string>
+					<string>ccm</string>
+					<string>ceylon</string>
+					<string>cff</string>
+					<string>cginc</string>
+					<string>cli</string>
 					<string>clj</string>
 					<string>cljc</string>
 					<string>cljs</string>
 					<string>cmake</string>
 					<string>cmd</string>
 					<string>cnf</string>
+					<string>code-snippets</string>
+					<string>code-workspace</string>
 					<string>coffee</string>
 					<string>comp</string>
 					<string>conf</string>
 					<string>containerfile</string>
+					<string>cppm</string>
+					<string>cql</string>
+					<string>cshtml</string>
 					<string>cson</string>
 					<string>csproj</string>
+					<string>cue</string>
+					<string>cxxm</string>
 					<string>d</string>
+					<string>dcl</string>
 					<string>ddl</string>
 					<string>desktop</string>
 					<string>di</string>
 					<string>dml</string>
 					<string>do</string>
 					<string>dockerfile</string>
+					<string>dpk</string>
 					<string>dpr</string>
+					<string>dtd</string>
 					<string>dtsi</string>
+					<string>dtso</string>
+					<string>dust</string>
+					<string>ebnf</string>
 					<string>ebuild</string>
+					<string>eclass</string>
 					<string>eex</string>
+					<string>ejs</string>
+					<string>eliom</string>
 					<string>elisp</string>
 					<string>elm</string>
+					<string>ep</string>
 					<string>err</string>
 					<string>es6</string>
 					<string>escript</string>
@@ -887,155 +933,330 @@
 					<string>eslintrc</string>
 					<string>f03</string>
 					<string>f08</string>
+					<string>f18</string>
 					<string>feature</string>
 					<string>flake8</string>
+					<string>flix</string>
 					<string>fnl</string>
 					<string>fpp</string>
 					<string>frm</string>
 					<string>fsproj</string>
 					<string>fsscript</string>
+					<string>ftn</string>
 					<string>fun</string>
+					<string>fx</string>
+					<string>fxh</string>
+					<string>fxml</string>
 					<string>gawk</string>
 					<string>gco</string>
 					<string>gcode</string>
+					<string>gdextension</string>
+					<string>gdshader</string>
 					<string>gemspec</string>
 					<string>gitconfig</string>
+					<string>glade</string>
 					<string>gml</string>
+					<string>gms</string>
+					<string>gn</string>
+					<string>gni</string>
 					<string>go</string>
+					<string>godot</string>
+					<string>gohtml</string>
+					<string>golo</string>
+					<string>gotmpl</string>
+					<string>gpr</string>
 					<string>graphql</string>
 					<string>groovy</string>
+					<string>gss</string>
+					<string>gv</string>
 					<string>gvy</string>
+					<string>gy</string>
 					<string>gyp</string>
 					<string>gypi</string>
 					<string>handlebars</string>
+					<string>hgrc</string>
+					<string>hip</string>
+					<string>hlsli</string>
 					<string>hql</string>
 					<string>hs</string>
+					<string>hs-boot</string>
 					<string>hsc</string>
+					<string>hsp</string>
 					<string>htaccess</string>
 					<string>http</string>
 					<string>hx</string>
 					<string>hxml</string>
+					<string>hy</string>
+					<string>i7x</string>
 					<string>iced</string>
+					<string>icl</string>
+					<string>idr</string>
 					<string>inc</string>
 					<string>ino</string>
 					<string>inputrc</string>
+					<string>ipy</string>
+					<string>iss</string>
+					<string>ixx</string>
+					<string>jake</string>
+					<string>janet</string>
 					<string>jbuilder</string>
 					<string>jenkinsfile</string>
 					<string>jinja2</string>
+					<string>jshintrc</string>
+					<string>jsonnet</string>
+					<string>jsp</string>
+					<string>jspf</string>
 					<string>jsx</string>
+					<string>just</string>
 					<string>kt</string>
+					<string>lasso</string>
+					<string>lasso9</string>
+					<string>lc</string>
+					<string>ldif</string>
+					<string>leaf</string>
 					<string>leex</string>
 					<string>less</string>
 					<string>lhs</string>
+					<string>libsonnet</string>
 					<string>lic</string>
 					<string>license</string>
+					<string>lidr</string>
 					<string>lisp</string>
+					<string>livecodescript</string>
 					<string>lpr</string>
 					<string>ls</string>
+					<string>lsl</string>
 					<string>lsp</string>
 					<string>lua</string>
 					<string>luau</string>
 					<string>matlab</string>
+					<string>mcmeta</string>
 					<string>me</string>
+					<string>mel</string>
+					<string>miz</string>
 					<string>mll</string>
 					<string>mly</string>
+					<string>monkey</string>
+					<string>monkey2</string>
 					<string>moon</string>
+					<string>mount</string>
 					<string>mt</string>
+					<string>mxml</string>
 					<string>mysql</string>
+					<string>n1ql</string>
 					<string>nb</string>
+					<string>nf</string>
+					<string>ngc</string>
 					<string>nginx</string>
 					<string>nginxconf</string>
+					<string>ni</string>
 					<string>nimble</string>
 					<string>nims</string>
+					<string>ninja</string>
 					<string>nix</string>
+					<string>nmconnection</string>
+					<string>nomad</string>
 					<string>npmignore</string>
+					<string>nse</string>
+					<string>nsh</string>
+					<string>nsi</string>
+					<string>nu</string>
+					<string>nuspec</string>
+					<string>nut</string>
 					<string>objc</string>
 					<string>opml</string>
 					<string>p6</string>
+					<string>pac</string>
+					<string>pbi</string>
+					<string>pck</string>
 					<string>pde</string>
 					<string>pgsql</string>
 					<string>php5</string>
 					<string>php7</string>
 					<string>phps</string>
+					<string>pkb</string>
+					<string>pks</string>
 					<string>pl6</string>
 					<string>plpgsql</string>
+					<string>plsql</string>
+					<string>plx</string>
 					<string>pm6</string>
 					<string>pod</string>
 					<string>podspec</string>
+					<string>pony</string>
 					<string>postcss</string>
 					<string>prefs</string>
 					<string>prettierignore</string>
 					<string>prettierrc</string>
 					<string>pro</string>
 					<string>profile</string>
+					<string>proj</string>
 					<string>prolog</string>
 					<string>props</string>
+					<string>psgi</string>
 					<string>psql</string>
+					<string>purs</string>
 					<string>pxd</string>
+					<string>pxi</string>
 					<string>pylintrc</string>
 					<string>pypirc</string>
 					<string>pyw</string>
+					<string>q</string>
+					<string>qbs</string>
+					<string>qml</string>
+					<string>qmlproject</string>
+					<string>qrc</string>
+					<string>rahit</string>
 					<string>rake</string>
 					<string>raku</string>
 					<string>rakumod</string>
+					<string>rakutest</string>
+					<string>razor</string>
 					<string>rbi</string>
+					<string>rbs</string>
+					<string>rcall</string>
+					<string>rchit</string>
+					<string>rdf</string>
 					<string>reg</string>
 					<string>rej</string>
+					<string>res</string>
+					<string>resi</string>
+					<string>resolved</string>
 					<string>rest</string>
+					<string>resw</string>
 					<string>resx</string>
+					<string>rgen</string>
 					<string>rhtml</string>
+					<string>rib</string>
+					<string>rint</string>
 					<string>rkt</string>
+					<string>rktd</string>
 					<string>rktl</string>
+					<string>rmiss</string>
 					<string>rockspec</string>
 					<string>ron</string>
 					<string>rprofile</string>
 					<string>rpy</string>
 					<string>rs</string>
+					<string>rsc</string>
+					<string>rsl</string>
 					<string>ru</string>
+					<string>sage</string>
 					<string>sas</string>
 					<string>sass</string>
 					<string>sbt</string>
 					<string>sc</string>
 					<string>scad</string>
 					<string>scala</string>
+					<string>sce</string>
+					<string>sci</string>
 					<string>scm</string>
 					<string>scss</string>
 					<string>service</string>
+					<string>sh-session</string>
 					<string>shader</string>
+					<string>sl</string>
 					<string>sld</string>
+					<string>slice</string>
+					<string>sls</string>
+					<string>smali</string>
+					<string>smk</string>
 					<string>sml</string>
+					<string>socket</string>
+					<string>sps</string>
+					<string>sqf</string>
 					<string>sqlite-sql</string>
 					<string>ss</string>
 					<string>st</string>
+					<string>stan</string>
 					<string>stylus</string>
+					<string>sublime-build</string>
+					<string>sublime-color-scheme</string>
+					<string>sublime-commands</string>
+					<string>sublime-completions</string>
+					<string>sublime-keymap</string>
+					<string>sublime-macro</string>
+					<string>sublime-menu</string>
+					<string>sublime-mousemap</string>
+					<string>sublime-project</string>
+					<string>sublime-settings</string>
+					<string>sublime-snippet</string>
 					<string>sublime-syntax</string>
+					<string>sublime-theme</string>
+					<string>sum</string>
 					<string>svelte</string>
+					<string>swcrc</string>
 					<string>t</string>
 					<string>targets</string>
+					<string>tcc</string>
 					<string>tcl</string>
+					<string>tera</string>
 					<string>tesc</string>
 					<string>tese</string>
+					<string>tf</string>
+					<string>tfbackend</string>
+					<string>tfstate</string>
 					<string>thor</string>
+					<string>timer</string>
 					<string>tk</string>
+					<string>tld</string>
+					<string>tm</string>
+					<string>tmlanguage</string>
+					<string>tmpreferences</string>
+					<string>tmsnippet</string>
+					<string>tmtheme</string>
+					<string>tofu</string>
 					<string>tpp</string>
+					<string>tres</string>
+					<string>tscn</string>
+					<string>types</string>
+					<string>usf</string>
+					<string>ush</string>
 					<string>vala</string>
 					<string>vapi</string>
 					<string>vb</string>
+					<string>vba</string>
 					<string>vbproj</string>
 					<string>vbs</string>
+					<string>vcxproj</string>
 					<string>vh</string>
 					<string>vhost</string>
 					<string>vimrc</string>
 					<string>vue</string>
+					<string>vy</string>
 					<string>wast</string>
 					<string>wl</string>
 					<string>wls</string>
+					<string>work</string>
+					<string>wren</string>
 					<string>wsdl</string>
+					<string>wsgi</string>
+					<string>wxi</string>
+					<string>wxl</string>
+					<string>wxm</string>
+					<string>wxs</string>
+					<string>xaml</string>
+					<string>xcworkspacedata</string>
+					<string>xdc</string>
+					<string>xl</string>
+					<string>xpp</string>
+					<string>xq</string>
+					<string>xql</string>
+					<string>xqm</string>
+					<string>xquery</string>
+					<string>xqy</string>
+					<string>xrl</string>
 					<string>xsd</string>
 					<string>xsl</string>
 					<string>xslt</string>
+					<string>xspf</string>
+					<string>xul</string>
+					<string>yrl</string>
+					<string>zep</string>
+					<string>zon</string>
 					<string>zone</string>
 					<string>zprofile</string>
+					<string>zsh-theme</string>
 					<string>zshenv</string>
 					<string>zshrc</string>
 				</array>

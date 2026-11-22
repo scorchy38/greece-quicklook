@@ -214,6 +214,10 @@
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xcode.app-privacy-property-list</string>
 				<string>com.scorchy.greece.code</string>
+				<string>public.precompiled-c-header</string>
+				<string>com.apple.dt.xctestplancontenttype</string>
+				<string>com.apple.sirikit.intentdefinition</string>
+				<string>com.sun.java-web-start</string>
 				<string>com.scorchy.greece.tex-support</string>
 				<string>com.scorchy.greece.bibtex</string>
 				<string>org.idpf.epub-container</string>

@@ -1,4 +1,5 @@
 import SwiftUI
+import GreeceKit
 
 /// Every setting, so the sidebar's search can find it by name or by what it's about.
 struct SettingsEntry: Identifiable, Hashable {
@@ -15,16 +16,23 @@ struct SettingsEntry: Identifiable, Hashable {
     }
 
     static let all: [SettingsEntry] = [
-        .init(title: "Reading font", page: .markdown, keywords: "typeface serif new york rounded typography"),
+        .init(title: "Reading theme", page: .markdown,
+              keywords: "style look appearance typography colours colors sepia paper serif " + ReadingTheme.all.map(\.name).joined(separator: " ")),
+        .init(title: "Reading font", page: .markdown, keywords: "typeface serif new york rounded typography theme default"),
         .init(title: "Reading size", page: .markdown, keywords: "text size zoom typography"),
         .init(title: "Line width", page: .markdown, keywords: "measure column wide narrow"),
         .init(title: "Outline beside long documents", page: .markdown, keywords: "table of contents toc headings sidebar"),
         .init(title: "Front matter as properties", page: .markdown, keywords: "yaml metadata frontmatter"),
         .init(title: "Math", page: .markdown, keywords: "katex latex equations formulas"),
         .init(title: "Mermaid diagrams", page: .markdown, keywords: "charts flowchart sequence graphs"),
+        .init(title: "Diagram theme", page: .markdown,
+              keywords: "mermaid charts flowchart colours colors palette match code " + DiagramTheme.all.map(\.name).joined(separator: " ")),
         .init(title: "Load remote images", page: .markdown, keywords: "internet network web privacy"),
-        .init(title: "Code theme", page: .code, keywords: "colors colours syntax highlighting dark light palette"),
+        .init(title: "Code theme", page: .code,
+              keywords: "colors colours syntax highlighting dark light palette " + CodeTheme.all.map { "\($0.name) \($0.keywords)" }.joined(separator: " ")),
+        .init(title: "Theme variant", page: .code, keywords: "light dark automatic pin appearance always"),
         .init(title: "Code font", page: .code, keywords: "monospace typeface sf mono jetbrains fira ligatures"),
+        .init(title: "Code font weight", page: .code, keywords: "light regular medium semibold bold thin heavy"),
         .init(title: "Code size", page: .code, keywords: "text size zoom"),
         .init(title: "Tab width", page: .code, keywords: "indentation spaces tabs"),
         .init(title: "Line numbers", page: .code, keywords: "gutter"),

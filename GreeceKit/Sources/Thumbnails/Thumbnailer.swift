@@ -44,23 +44,23 @@ public enum Thumbnailer {
         switch kind {
         case .markdown:
             return ThumbnailPage(size: size, badge: ext.isEmpty ? "MD" : ext) { rect in
-                MarkdownPage.draw(file.text, in: rect, palette: palette)
+                MarkdownPage.draw(file.text, in: rect, palette: palette, reading: settings.markdownTheme)
             }
         case .code(let language):
             let short = ["Dockerfile": "DOCKER", "Makefile": "MAKE", "Git Ignore": "GIT", "Shell": "SH", "Plain Text": "TXT"]
             let badge = ext.isEmpty ? (short[language.name] ?? String(language.name.split(separator: " ").first ?? "").uppercased().prefix(6).description) : ext
             return ThumbnailPage(size: size, badge: badge) { rect in
-                CodePage.draw(file.text, grammar: language.grammar, in: rect, theme: settings.codeTheme)
+                CodePage.draw(file.text, grammar: language.grammar, in: rect, theme: settings.codeTheme, weight: settings.codeFontWeight)
             }
         case .json:
             var text = file.text
             if JSONFormatter.looksMinified(text), let pretty = JSONFormatter.prettyPrinted(text, lenient: true) { text = pretty }
             return ThumbnailPage(size: size, badge: "JSON") { rect in
-                CodePage.draw(text, grammar: "json", in: rect, theme: settings.codeTheme)
+                CodePage.draw(text, grammar: "json", in: rect, theme: settings.codeTheme, weight: settings.codeFontWeight)
             }
         case .diff:
             return ThumbnailPage(size: size, badge: ext.isEmpty ? "DIFF" : ext) { rect in
-                CodePage.draw(file.text, grammar: "diff", in: rect, theme: settings.codeTheme)
+                CodePage.draw(file.text, grammar: "diff", in: rect, theme: settings.codeTheme, weight: settings.codeFontWeight)
             }
         case .propertyList:
             var text = file.text
@@ -70,12 +70,12 @@ public enum Thumbnailer {
                 text = String(decoding: xml, as: UTF8.self)
             }
             return ThumbnailPage(size: size, badge: ext.isEmpty ? "PLIST" : ext) { rect in
-                CodePage.draw(text, grammar: "xml", in: rect, theme: settings.codeTheme)
+                CodePage.draw(text, grammar: "xml", in: rect, theme: settings.codeTheme, weight: settings.codeFontWeight)
             }
         case .notebook:
             guard let document = NotebookOutline.markdown(from: url) else { return nil }
             return ThumbnailPage(size: size, badge: "IPYNB") { rect in
-                MarkdownPage.draw(document, in: rect, palette: palette)
+                MarkdownPage.draw(document, in: rect, palette: palette, reading: settings.markdownTheme)
             }
         case .delimited(let separator):
             let table = DelimitedTable.parse(file.text, separator: separator, maxRows: 80)
@@ -107,8 +107,20 @@ private func fillPage(_ rect: CGRect, _ color: NSColor) {
 
 // MARK: - Code
 
+extension PreviewSettings.CodeFontWeight {
+    public var fontWeight: NSFont.Weight {
+        switch self {
+        case .light: return .light
+        case .regular: return .regular
+        case .medium: return .medium
+        case .semibold: return .semibold
+        }
+    }
+}
+
 enum CodePage {
-    static func draw(_ text: String, grammar: String, in rect: CGRect, theme: CodeTheme) {
+    static func draw(_ text: String, grammar: String, in rect: CGRect, theme: CodeTheme,
+                     weight: PreviewSettings.CodeFontWeight = .regular) {
         let palette = theme.light
         fillPage(rect, NSColor(hex: palette.background))
         let padding = rect.width * 0.075
@@ -118,7 +130,7 @@ enum CodePage {
         let lines = text.replacingOccurrences(of: "\r\n", with: "\n").split(separator: "\n", omittingEmptySubsequences: false)
         let excerpt = lines.prefix(visibleLines).joined(separator: "\n").replacingOccurrences(of: "\t", with: "    ")
 
-        let font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: .regular)
+        let font = NSFont.monospacedSystemFont(ofSize: fontSize, weight: weight.fontWeight)
         let style = NSMutableParagraphStyle()
         style.minimumLineHeight = lineHeight
         style.maximumLineHeight = lineHeight
@@ -176,7 +188,9 @@ final class Highlighter {
         var stack: [String] = []
         var index = markup.startIndex
         let baseFont = base[.font] as? NSFont ?? NSFont.monospacedSystemFont(ofSize: 10, weight: .regular)
-        let boldFont = NSFont.monospacedSystemFont(ofSize: baseFont.pointSize, weight: .semibold)
+        // Bold keywords sit a step above the text's own weight.
+        let baseWeight = (baseFont.fontDescriptor.object(forKey: .traits) as? [NSFontDescriptor.TraitKey: Any])?[.weight] as? CGFloat ?? 0
+        let boldFont = NSFont.monospacedSystemFont(ofSize: baseFont.pointSize, weight: baseWeight > NSFont.Weight.medium.rawValue ? .bold : .semibold)
 
         func color(for classes: String) -> (NSColor, Bool)? {
             let names = classes.split(separator: " ").map { $0.replacingOccurrences(of: "hljs-", with: "") }
@@ -243,13 +257,29 @@ final class Highlighter {
 // MARK: - Markdown
 
 enum MarkdownPage {
-    static func draw(_ text: String, in rect: CGRect, palette: CodeTheme.Palette) {
-        fillPage(rect, .white)
+    static func draw(_ text: String, in rect: CGRect, palette: CodeTheme.Palette, reading theme: ReadingTheme = .default) {
+        // Finder thumbnails are pages on paper: the reading theme's light palette.
+        let page = theme.light
+        fillPage(rect, theme.isNative ? .white : NSColor(hex: page.page))
         let padding = rect.width * 0.09
         let body = max(rect.width / 30, 1)
-        let ink = NSColor(srgbRed: 0.11, green: 0.11, blue: 0.12, alpha: 1)
-        let secondary = NSColor(srgbRed: 0.43, green: 0.43, blue: 0.45, alpha: 1)
-        let accent = NSColor(srgbRed: 0, green: 0.48, blue: 1, alpha: 1)
+        let ink = theme.isNative ? NSColor(srgbRed: 0.11, green: 0.11, blue: 0.12, alpha: 1) : NSColor(hex: page.text)
+        let headingInk = theme.isNative ? ink : NSColor(hex: page.heading)
+        let secondary = theme.isNative ? NSColor(srgbRed: 0.43, green: 0.43, blue: 0.45, alpha: 1) : NSColor(hex: page.secondary)
+        let accent = theme.isNative ? NSColor(srgbRed: 0, green: 0.48, blue: 1, alpha: 1) : NSColor(hex: page.accent)
+        func face(_ face: ReadingTheme.Face, size: CGFloat, weight: NSFont.Weight) -> NSFont {
+            let system = NSFont.systemFont(ofSize: size, weight: weight)
+            switch face {
+            case .system: return system
+            case .mono: return NSFont.monospacedSystemFont(ofSize: size * 0.92, weight: weight)
+            case .serif, .rounded:
+                let design: NSFontDescriptor.SystemDesign = face == .serif ? .serif : .rounded
+                return system.fontDescriptor.withDesign(design).flatMap { NSFont(descriptor: $0, size: size) } ?? system
+            case .family(let family):
+                let bold = weight.rawValue >= NSFont.Weight.semibold.rawValue
+                return NSFontManager.shared.font(withFamily: family, traits: bold ? .boldFontMask : [], weight: bold ? 9 : 5, size: size) ?? system
+            }
+        }
         let output = NSMutableAttributedString()
 
         func paragraph(spacingBefore: CGFloat, spacingAfter: CGFloat, indent: CGFloat = 0, lineHeight: CGFloat = 1.35, size: CGFloat) -> NSParagraphStyle {
@@ -307,7 +337,7 @@ enum MarkdownPage {
             lines.removeSubrange(0...end)
         }
         var inCode = false
-        let regular = NSFont.systemFont(ofSize: body)
+        let regular = face(theme.bodyFace, size: body, weight: .regular)
         for raw in lines.prefix(160) {
             let line = raw.trimmingCharacters(in: .whitespaces)
             if line.hasPrefix("```") || line.hasPrefix("~~~") { inCode.toggle(); continue }
@@ -323,9 +353,9 @@ enum MarkdownPage {
             if line.hasPrefix("#") {
                 let level = line.prefix { $0 == "#" }.count
                 let scale: CGFloat = level == 1 ? 1.75 : level == 2 ? 1.38 : 1.15
-                let font = NSFont.systemFont(ofSize: body * scale, weight: level <= 2 ? .bold : .semibold)
+                let font = face(theme.headingFace, size: body * scale, weight: level <= 2 ? .bold : .semibold)
                 let style = paragraph(spacingBefore: body * 0.9, spacingAfter: body * 0.35, lineHeight: 1.1, size: body * scale)
-                output.append(inline(String(line.drop { $0 == "#" }).trimmingCharacters(in: .whitespaces), font: font, color: ink, style: style))
+                output.append(inline(String(line.drop { $0 == "#" }).trimmingCharacters(in: .whitespaces), font: font, color: headingInk, style: style))
             } else if let marker = ["- [ ] ", "- [x] ", "- ", "* ", "+ "].first(where: { line.hasPrefix($0) }) {
                 let bullet = marker.contains("[x]") ? "☑︎  " : marker.contains("[ ]") ? "☐  " : "•  "
                 let style = paragraph(spacingBefore: 0, spacingAfter: body * 0.2, indent: body * 1.1, size: body)

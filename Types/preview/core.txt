@@ -151,3 +151,7 @@ public.rss
 com.apple.interfacebuilder.document.cocoa
 com.apple.dt.interfacebuilder.document.storyboard
 com.apple.xcode.strings-dictionary
+public.precompiled-c-header  # prefix headers (.pch)
+com.apple.dt.xctestplancontenttype  # Xcode test plans (JSON)
+com.apple.sirikit.intentdefinition  # SiriKit intent definitions (XML)
+com.sun.java-web-start  # Java Web Start descriptors (.jnlp, XML)

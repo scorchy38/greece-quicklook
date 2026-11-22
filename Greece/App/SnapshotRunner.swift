@@ -6,7 +6,7 @@ import GreeceKit
 
 /// Renders a preview to a PNG without any UI, for design review and regression checks.
 ///
-///     Greece --render <file> <out.png> [--size 1000x720] [--appearance light|dark] [--theme xcode]
+///     Greece --render <file> <out.png> [--size 1000x720] [--appearance light|dark] [--theme xcode] [--settings <json>]
 enum SnapshotRunner {
 
     static func run() {
@@ -45,6 +45,13 @@ enum SnapshotRunner {
             if parts.count == 2 { size = NSSize(width: parts[0], height: parts[1]) }
         }
         var settings = PreviewSettings()
+        // Any other settings as JSON, e.g. --settings '{"readingTheme":"paper","diagramTheme":"nord"}'.
+        if let json = value(after: "--settings"), let overrides = try? JSONSerialization.jsonObject(with: Data(json.utf8)) as? [String: Any],
+           var base = (try? JSONSerialization.jsonObject(with: JSONEncoder().encode(settings))) as? [String: Any] {
+            base.merge(overrides) { _, new in new }
+            if let data = try? JSONSerialization.data(withJSONObject: base),
+               let merged = try? JSONDecoder().decode(PreviewSettings.self, from: data) { settings = merged }
+        }
         if let theme = value(after: "--theme") { settings.theme = theme }
         if let appearance = value(after: "--appearance").flatMap(PreviewSettings.Appearance.init(rawValue:)) { settings.appearance = appearance }
         if args.contains("--wrap") { settings.wrapLines = true }
@@ -124,7 +131,10 @@ enum SnapshotRunner {
         }
         let output = URL(fileURLWithPath: args[index + 2])
         let dark = value(after: "--appearance") == "dark"
-        let size = NSSize(width: 1060, height: 780)
+        var size = NSSize(width: 1060, height: 780)
+        if let parts = value(after: "--size")?.split(separator: "x").compactMap({ Double($0) }), parts.count == 2 {
+            size = NSSize(width: parts[0], height: parts[1])
+        }
 
         let root = RootView(pinnedPage: page)
             .environmentObject(SettingsStore.shared)

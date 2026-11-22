@@ -1,0 +1,322 @@
+/* Greece — Markdown reading themes.
+   Colours and typefaces come from ReadingTheme.swift as variables on html.reading (--page, --text,
+   --text-2, --text-3, --heading, --accent, --hairline…, --read-font, --heading-font). This file holds
+   each theme's typographic details, under html.reading.rt-<id>. The Greece theme is greece.css itself. */
+
+html.reading article :is(h1, h2, h3, h4) { color: var(--heading, var(--text)); }
+
+/* ------------------------------------------------------------------ GitHub */
+
+html.reading.rt-github {
+  & body { line-height: 1.5; }
+  & article :is(h1, h2, h3, h4, h5, h6) { font-weight: 600; letter-spacing: 0; line-height: 1.25; margin: 1.5em 0 .67em; }
+  & article :is(h1, h2) { padding-bottom: .3em; border-bottom: 1px solid var(--hairline); }
+  & article h1 { font-size: 2em; }
+  & article h2 { font-size: 1.5em; }
+  & article h3 { font-size: 1.25em; }
+  & article h4 { font-size: 1em; }
+  & article p, & article ul, & article ol, & article blockquote, & article .table-wrap, & article details { margin-bottom: 1em; }
+  & blockquote:not(.alert) { border-left: .25em solid var(--hairline-strong); padding: 0 1em; color: var(--text-2); }
+  & .alert { border-left-width: .25em; border-radius: 0; background: none; padding: .5em 1em; }
+  & article :not(pre) > code { font-size: 85%; padding: .2em .4em; border-radius: 6px; background: color-mix(in srgb, #818B98 20%, transparent); }
+  & .codeblock { border-radius: 6px; box-shadow: none; }
+  & .codeblock pre { padding: 16px; font-size: calc(var(--code-size) * 1.0); line-height: 1.45; }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article table { font-size: 1em; }
+  & article :is(th, td) { padding: 6px 13px; border: 1px solid var(--hairline-strong); }
+  & article th { background: none; font-weight: 600; }
+  & article tbody tr:nth-child(even) td { background: var(--fill); }
+  & article hr { height: .25em; background: var(--hairline); margin: 1.5em 0; }
+  & article a { text-decoration: none; }
+  & article ::marker { color: inherit; }
+  & article mark { background: color-mix(in srgb, #D4A72C 35%, transparent); }
+}
+
+/* -------------------------------------------------------------------- Docs */
+
+html.reading.rt-docs {
+  & body { line-height: 1.53; letter-spacing: -.003em; }
+  & article h1 { font-size: 2.35em; font-weight: 700; letter-spacing: -.022em; line-height: 1.08; border: none; padding: 0; margin-bottom: .55em; }
+  & article h2 { font-size: 1.65em; font-weight: 600; letter-spacing: -.016em; border-top: 1px solid var(--hairline-strong); padding-top: 1.05em; margin-top: 2.1em; }
+  & article h1 + h2 { border-top: none; padding-top: 0; }
+  & article h3 { font-size: 1.3em; font-weight: 600; letter-spacing: -.01em; }
+  & article h4 { font-size: 1.06em; font-weight: 600; }
+  & article :not(pre) > code { background: none; padding: 0; font-size: .92em; color: var(--text); }
+  & article a > code { color: var(--accent); }
+  & .codeblock { border-radius: 15px; box-shadow: none; }
+  & .codeblock pre { padding: 18px 22px; }
+  & .alert { border-left: none; border-radius: 15px; padding: .95em 1.3em; background: color-mix(in srgb, var(--c) 8%, var(--page)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 32%, transparent); }
+  & blockquote:not(.alert) { border-left: none; border-radius: 15px; padding: .9em 1.3em; background: var(--fill); color: var(--text); }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article th { background: none; border-bottom: 1px solid var(--hairline-strong); }
+  & article tbody tr:nth-child(even) td { background: none; }
+  & article ::marker { color: var(--text-2); }
+}
+
+/* ------------------------------------------------------------------- Notes */
+
+html.reading.rt-notes {
+  --check: #EBAA00;
+  & body { line-height: 1.45; }
+  & article h1 { font-size: 1.9em; font-weight: 700; letter-spacing: -.02em; border: none; padding: 0; margin-bottom: .45em; }
+  & article h2 { font-size: 1.42em; font-weight: 700; letter-spacing: -.012em; }
+  & article h3 { font-size: 1.12em; font-weight: 600; letter-spacing: 0; }
+  & article :is(h2, h3) { margin-top: 1.4em; margin-bottom: .4em; }
+  & article a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .15em; }
+  & article li + li { margin-top: .18em; }
+  & .task-list-item > input[type=checkbox], & .task-list-item > p > input[type=checkbox] { border-radius: 50%; width: 1.05em; height: 1.05em; top: .22em; border-color: var(--text-3); border-width: 1.2px; }
+  & .task-list-item > input:checked, & .task-list-item > p > input:checked { background-color: var(--check); border-color: var(--check); }
+  & blockquote:not(.alert) { border-left: 3px solid var(--text-3); color: var(--text); padding: 0 .9em; }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article :is(th, td) { border: 1px solid var(--hairline-strong); }
+  & article th { background: none; }
+  & article tbody tr:nth-child(even) td { background: none; }
+  & .codeblock { border-radius: 8px; }
+}
+@media (prefers-color-scheme: dark) { html.reading.rt-notes { --check: #FFD60A; } }
+
+/* --------------------------------------------------------------- Newsprint */
+
+html.reading.rt-newsprint {
+  & body { line-height: 1.6; }
+  & article p { text-align: justify; -webkit-hyphens: auto; hyphens: auto; }
+  & article h1 { font-size: 2.55em; font-weight: 700; line-height: 1.08; letter-spacing: -.012em; text-align: center; border-bottom: 3px double var(--heading); padding-bottom: .4em; margin-bottom: .7em; }
+  &.kind-markdown .doc > article > h1 + p { text-align: center; font-style: italic; font-size: 1.14em; line-height: 1.5; color: var(--text-2); margin-bottom: 1.6em; }
+  & article h2 { font-size: .9em; font-weight: 700; text-transform: uppercase; letter-spacing: .14em; border-top: 1.5px solid var(--heading); padding-top: .7em; margin-top: 2.6em; }
+  & article h3 { font-size: 1.22em; font-weight: 400; font-style: italic; letter-spacing: 0; }
+  & article h4 { font-variant: small-caps; letter-spacing: .05em; font-weight: 700; }
+  & article a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: .16em; }
+  & blockquote:not(.alert) { border-left: none; border-top: 1px solid var(--hairline-strong); border-bottom: 1px solid var(--hairline-strong); padding: .8em 1.5em; font-size: 1.08em; font-style: italic; color: var(--text); text-align: center; }
+  & .alert { border-radius: 0; }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article table { border-top: 2px solid var(--heading); border-bottom: 2px solid var(--heading); }
+  & article th { background: none; border-bottom: 1px solid var(--heading); font-variant: small-caps; letter-spacing: .04em; }
+  & article tbody tr:nth-child(even) td { background: none; }
+  & article hr { height: auto; background: none; text-align: center; margin: 2em 0; }
+  & article hr::after { content: "⁂"; color: var(--text-3); font-size: 1.2em; }
+  & .codeblock { border-radius: 2px; }
+}
+
+/* ---------------------------------------------------------------- Academic */
+
+html.reading.rt-academic {
+  & body { line-height: 1.5; }
+  & article { counter-reset: rt-h2; }
+  & article > p { text-align: justify; -webkit-hyphens: auto; hyphens: auto; margin: 0; }
+  & article > p + p { text-indent: 1.5em; }
+  & article > p + :not(p) { margin-top: .9em; }
+  & article :is(h1, h2, h3, h4) { font-weight: 700; letter-spacing: 0; }
+  & article h1 { font-size: 1.75em; font-weight: 400; text-align: center; border: none; padding: 0; margin: .4em 0 1.3em; line-height: 1.25; }
+  & article h2 { font-size: 1.36em; counter-increment: rt-h2; counter-reset: rt-h3; margin-top: 1.7em; }
+  & article h3 { font-size: 1.15em; counter-increment: rt-h3; counter-reset: rt-h4; margin-top: 1.4em; }
+  & article h4 { font-size: 1em; counter-increment: rt-h4; }
+  & article h2::before { content: counter(rt-h2); margin-right: 1em; }
+  & article h3::before { content: counter(rt-h2) "." counter(rt-h3); margin-right: 1em; }
+  & article h4::before { content: counter(rt-h2) "." counter(rt-h3) "." counter(rt-h4); margin-right: 1em; }
+  & blockquote:not(.alert) { border: none; margin-left: 2.5em; margin-right: 2.5em; padding: 0; font-size: .95em; color: var(--text); }
+  & .alert { border-radius: 0; background: none; border-left-width: 1px; }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article table { border-top: 1.5px solid var(--heading); border-bottom: 1.5px solid var(--heading); }
+  & article th { background: none; border-bottom: .75px solid var(--heading); }
+  & article :is(th, td) { border-bottom-color: transparent; }
+  & article thead th { border-bottom-color: var(--heading); }
+  & article tbody tr:nth-child(even) td { background: none; }
+  & article hr { margin: 1.6em 25%; }
+  & article a { text-decoration: none; }
+  & .footnotes { border-top: none; color: var(--text); font-size: .86em; }
+  & .footnotes::before { content: ""; display: block; width: 30%; border-top: .75px solid var(--text); margin-bottom: 1em; }
+  & .codeblock { border-radius: 2px; }
+}
+
+/* ------------------------------------------------------------------- Paper */
+
+html.reading.rt-paper {
+  & body { line-height: 1.68; }
+  & article p { text-align: justify; -webkit-hyphens: auto; hyphens: auto; }
+  & article h1 { font-size: 2.2em; font-weight: 400; letter-spacing: .005em; text-align: center; border: none; padding: 0; margin-bottom: 1.1em; }
+  & article h1::after { content: ""; display: block; width: 2.4em; height: 1px; margin: .55em auto 0; background: var(--text-3); }
+  &.kind-markdown .doc > article > h1 + p::first-letter { float: left; font-size: 3.35em; line-height: .86; padding: .06em .08em 0 0; color: var(--heading); }
+  & article h2 { font-size: 1.32em; font-weight: 600; font-variant: small-caps; letter-spacing: .05em; }
+  & article h3 { font-size: 1.14em; font-weight: 400; font-style: italic; letter-spacing: 0; }
+  & article a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: .16em; }
+  & blockquote:not(.alert) { border-left: none; padding: 0 2em; font-style: italic; }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article table { border-top: 1px solid var(--hairline-strong); border-bottom: 1px solid var(--hairline-strong); }
+  & article th { background: none; }
+  & article tbody tr:nth-child(even) td { background: none; }
+  & article hr { height: auto; background: none; text-align: center; margin: 2em 0; }
+  & article hr::after { content: "*\2003*\2003*"; color: var(--text-3); }
+  & article img { border-radius: 1px; }
+}
+
+/* ------------------------------------------------------------------- Story */
+
+html.reading.rt-story {
+  & body { font-size: calc(var(--read-size) * 1.18); line-height: 1.58; letter-spacing: -.003em; }
+  & article :is(h1, h2, h3, h4) { font-weight: 700; }
+  & article h1 { font-size: 1.95em; letter-spacing: -.018em; line-height: 1.15; border: none; padding: 0; }
+  & article h2 { font-size: 1.35em; letter-spacing: -.012em; margin-top: 1.7em; }
+  & article h3 { font-size: 1.1em; }
+  & article a { color: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .18em; }
+  & article a:hover { color: var(--accent); }
+  & blockquote:not(.alert) { border-left: 3px solid var(--text); padding: 0 0 0 1.1em; color: var(--text); font-style: italic; }
+  & article hr { height: auto; background: none; text-align: center; margin: 2.2em 0; }
+  & article hr::after { content: "·\2003·\2003·"; color: var(--text); font-size: 1.4em; line-height: 1; }
+  & .codeblock pre { font-size: calc(var(--code-size) * 1.04); }
+  & article table, & .front-matter { font-size: .82em; }
+}
+
+/* ------------------------------------------------------------------ Writer */
+
+html.reading.rt-writer {
+  & body { font-size: calc(var(--read-size) * .94); line-height: 1.75; }
+  & article :is(h1, h2, h3, h4, h5, h6) { position: relative; font-weight: 700; letter-spacing: 0; line-height: 1.5; border: none; padding: 0; margin: 1.6em 0 .5em; }
+  & article h1 { font-size: 1.3em; }
+  & article h2 { font-size: 1.14em; }
+  & article :is(h3, h4, h5, h6) { font-size: 1em; color: var(--heading); }
+  & article :is(h1, h2, h3, h4)::before { position: absolute; right: 100%; padding-right: 1ch; color: var(--text-3); font-weight: 400; }
+  & article h1::before { content: "#"; }
+  & article h2::before { content: "##"; }
+  & article h3::before { content: "###"; }
+  & article h4::before { content: "####"; }
+  & article strong { font-weight: 700; }
+  & article a { text-decoration: none; }
+  & blockquote:not(.alert) { border-left: 2px solid var(--hairline-strong); color: var(--text-2); }
+  & article :not(pre) > code { background: none; padding: 0; color: var(--text-2); font-size: 1em; }
+  & article hr { height: 0; background: none; border-top: 1px dashed var(--text-3); }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article th { background: none; border-bottom: 1px solid var(--hairline-strong); }
+  & article tbody tr:nth-child(even) td { background: none; }
+}
+
+/* ---------------------------------------------------------------- Graphite */
+
+html.reading.rt-graphite {
+  & body { line-height: 1.6; }
+  & article :is(h1, h2, h3, h4) { font-weight: 600; letter-spacing: -.005em; }
+  & article h1 { font-size: 1.95em; border: none; padding: 0; }
+  & article h2 { font-size: 1.45em; }
+  & article h3 { font-size: 1.18em; }
+  & article ::marker { color: var(--accent); }
+  & article a { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent); text-underline-offset: .16em; }
+  & blockquote:not(.alert) { border-left-color: color-mix(in srgb, var(--accent) 70%, transparent); color: var(--text-2); font-style: italic; }
+  & .task-list-item > input[type=checkbox], & .task-list-item > p > input[type=checkbox] { border-color: var(--accent); }
+  & .task-list-item > input:checked, & .task-list-item > p > input:checked { background-color: var(--accent); border-color: var(--accent); }
+  & article hr { background: color-mix(in srgb, var(--accent) 40%, transparent); height: 1px; }
+  & article mark { background: color-mix(in srgb, #FFD60A 50%, transparent); }
+}
+
+/* ------------------------------------------------------------------ Whitey */
+
+html.reading.rt-whitey {
+  & body { font-size: calc(var(--read-size) * 1.06); line-height: 1.65; }
+  & article :is(h1, h2, h3, h4) { font-weight: 600; letter-spacing: 0; }
+  & article h1 { font-size: 2.25em; border: none; padding: 0; text-align: center; margin-bottom: 1em; }
+  & article h2 { font-size: 1.6em; border-bottom: 1px solid var(--hairline); padding-bottom: .2em; }
+  & article h3 { font-size: 1.3em; font-style: italic; font-weight: 400; }
+  & blockquote:not(.alert) { border-left: 4px solid var(--hairline-strong); color: var(--text-2); }
+  & article :not(pre) > code { background: var(--fill); box-shadow: inset 0 0 0 1px var(--hairline); border-radius: 3px; }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article :is(th, td) { border: 1px solid var(--hairline-strong); }
+  & article th { background: var(--fill); }
+  & article tbody tr:nth-child(even) td { background: none; }
+  & .codeblock { border-radius: 4px; }
+}
+
+/* ------------------------------------------------------------------ Gothic */
+
+html.reading.rt-gothic {
+  & body { line-height: 1.7; letter-spacing: .008em; }
+  & article :is(h1, h2, h3, h4) { font-weight: 500; letter-spacing: .02em; }
+  & article h1 { font-size: 2.3em; border: none; padding: 0; line-height: 1.15; }
+  & article h2 { font-size: 1.55em; }
+  & article h3 { font-size: .95em; text-transform: uppercase; letter-spacing: .12em; }
+  & article h4 { font-size: .95em; color: var(--text-2); }
+  & article strong { font-weight: 600; }
+  & article a { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+  & blockquote:not(.alert) { border-left: 2px solid var(--accent); color: var(--text-2); }
+  & article hr { height: 2px; background: var(--heading); width: 3em; margin-left: 0; }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article th { background: none; text-transform: uppercase; letter-spacing: .08em; font-size: .85em; font-weight: 500; border-bottom: 1.5px solid var(--heading); }
+  & article tbody tr:nth-child(even) td { background: none; }
+}
+
+/* ------------------------------------------------------------------ Pixyll */
+
+html.reading.rt-pixyll {
+  & body { font-size: calc(var(--read-size) * 1.03); line-height: 1.78; }
+  & article :is(h1, h2, h3, h4) { font-weight: 700; letter-spacing: -.01em; line-height: 1.2; }
+  & article h1 { font-size: 2.45em; border: none; padding: 0; margin-bottom: .7em; }
+  & article h2 { font-size: 1.7em; margin-top: 1.8em; }
+  & article h3 { font-size: 1.3em; }
+  & article a { text-decoration: none; }
+  & blockquote:not(.alert) { border-left: 5px solid var(--hairline-strong); font-style: italic; padding: .2em 1.2em; color: var(--text-2); }
+  & article hr { margin: 2.6em 0; }
+  & .front-matter, & article table { font-size: .9em; }
+}
+
+/* --------------------------------------------------------------- Solarized */
+
+html.reading.rt-solarized {
+  & article h1 { border-bottom-color: color-mix(in srgb, var(--text-3) 60%, transparent); }
+  & article ::marker { color: var(--accent); }
+  & article strong { color: var(--heading); }
+  & blockquote:not(.alert) { border-left-color: color-mix(in srgb, #B58900 60%, transparent); }
+  & article mark { background: color-mix(in srgb, #B58900 30%, transparent); }
+}
+
+/* -------------------------------------------------------------------- Nord */
+
+html.reading.rt-nord {
+  & article h1 { border: none; padding: 0; }
+  & article h2 { padding-left: .6em; border-left: 3px solid var(--accent); }
+  & article ::marker { color: var(--accent); }
+  & blockquote:not(.alert) { border-left-color: var(--accent); }
+  & article mark { background: color-mix(in srgb, #EBCB8B 45%, transparent); }
+}
+
+/* ----------------------------------------------------------------- Dracula */
+
+html.reading.rt-dracula {
+  --dr-orange: #A34D14; --dr-yellow: #846E15; --dr-green: #14710A; --dr-pink: #A3144D;
+  & article h1 { border-bottom-color: color-mix(in srgb, var(--heading) 40%, transparent); }
+  & article strong { color: var(--dr-orange); }
+  & article em { color: var(--dr-yellow); }
+  & article :not(pre) > code { color: var(--dr-green); }
+  & article ::marker { color: var(--dr-pink); }
+  & blockquote:not(.alert) { border-left-color: var(--heading); color: var(--dr-yellow); font-style: italic; }
+  & article mark { background: color-mix(in srgb, var(--dr-yellow) 30%, transparent); }
+}
+@media (prefers-color-scheme: dark) {
+  html.reading.rt-dracula { --dr-orange: #FFB86C; --dr-yellow: #F1FA8C; --dr-green: #50FA7B; --dr-pink: #FF79C6; }
+}
+
+/* ---------------------------------------------------------------- Terminal */
+
+html.reading.rt-terminal {
+  & body { font-size: calc(var(--read-size) * .93); line-height: 1.62; }
+  & article :is(h1, h2, h3, h4, h5, h6) { font-weight: 700; letter-spacing: 0; line-height: 1.45; border: none; padding: 0; margin: 1.7em 0 .6em; }
+  & article h1 { font-size: 1.25em; text-transform: uppercase; letter-spacing: .04em; }
+  & article h2 { font-size: 1.1em; }
+  & article :is(h3, h4, h5, h6) { font-size: 1em; }
+  & article :is(h1, h2, h3, h4)::before { color: var(--accent); font-weight: 400; }
+  & article h1::before { content: "# "; }
+  & article h2::before { content: "## "; }
+  & article h3::before { content: "### "; }
+  & article h4::before { content: "#### "; }
+  & article ul:not(:has(> .task-list-item)) { list-style-type: "- "; }
+  & article ::marker { color: var(--accent); }
+  & article a { text-decoration: underline; text-underline-offset: .2em; }
+  & article :not(pre) > code { background: none; padding: 0; color: var(--accent); font-size: 1em; }
+  & blockquote:not(.alert) { position: relative; border-left: none; padding-left: 2ch; }
+  & blockquote:not(.alert)::before { content: ">"; position: absolute; left: 0; color: var(--text-3); }
+  & .alert { border-radius: 0; }
+  & article hr { height: 0; background: none; border-top: 1px dashed var(--text-3); }
+  & .table-wrap { box-shadow: none; border-radius: 0; }
+  & article :is(th, td) { border: 1px solid var(--hairline-strong); }
+  & article th { background: none; }
+  & article tbody tr:nth-child(even) td { background: none; }
+  & .codeblock { border-radius: 0; box-shadow: inset 0 0 0 1px var(--hairline-strong); }
+  & article img { border-radius: 0; }
+  & .task-list-item > input[type=checkbox], & .task-list-item > p > input[type=checkbox] { border-radius: 0; }
+}
