@@ -1,0 +1,88 @@
+/* Greece — Markdown syntax extras: callouts, admonitions, wiki links, definition lists, MDX. */
+
+:root { --teal: #0a8f9e; --gray-c: rgba(0, 0, 0, .5); }
+@media (prefers-color-scheme: dark) { :root { --teal: #4cc8d6; --gray-c: rgba(255, 255, 255, .55); } }
+
+/* ------------------------------------------------------------------ Callouts */
+
+.alert.info, .alert.todo { --c: var(--blue); }
+.alert.abstract { --c: var(--teal); }
+.alert.success { --c: var(--green); }
+.alert.question { --c: var(--orange); }
+.alert.danger, .alert.failure, .alert.bug { --c: var(--red); }
+.alert.example { --c: var(--purple); }
+.alert.quote { --c: var(--gray-c); }
+.alert-title > span { min-width: 0; }
+.alert-title svg { align-self: flex-start; margin-top: .14em; }
+.alert > :last-child { margin-bottom: 0; }
+
+details.alert {
+  margin: 0 0 1.05em;
+  padding: .75em 1.15em;
+  border-left: 3px solid var(--c);
+  border-radius: 0 9px 9px 0;
+  box-shadow: none;
+}
+details.alert > summary.alert-title { list-style: none; margin: 0; cursor: default; -webkit-user-select: none; user-select: none; }
+details.alert > summary.alert-title::-webkit-details-marker { display: none; }
+details.alert > summary.alert-title::after {
+  content: "";
+  margin-left: auto;
+  flex: none;
+  width: .9em;
+  height: .9em;
+  background: currentColor;
+  opacity: .7;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3.5 10.5 8 6 12.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M6 3.5 10.5 8 6 12.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform .15s ease;
+}
+details.alert[open] > summary.alert-title { margin-bottom: .45em; }
+details.alert[open] > summary.alert-title::after { transform: rotate(90deg); }
+details.alert > summary.alert-title:hover::after { opacity: 1; }
+
+/* ------------------------------------------------------------------ Wiki links */
+
+article a.wikilink { text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent); text-underline-offset: .2em; text-decoration-thickness: 1px; }
+article a.wikilink:hover { text-decoration-color: var(--accent); }
+article a.wikilink.embed {
+  display: inline-flex; align-items: center; gap: .35em;
+  padding: .05em .55em; border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  text-decoration: none; font-size: .94em;
+}
+article a.wikilink.embed::before {
+  content: ""; width: .85em; height: .85em; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1.75h5.5L13 5.25v8.5a.5.5 0 0 1-.5.5h-8.5a.5.5 0 0 1-.5-.5v-11.5a.5.5 0 0 1 .5-.5zM9.25 1.75v3.75H13' fill='none' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 1.75h5.5L13 5.25v8.5a.5.5 0 0 1-.5.5h-8.5a.5.5 0 0 1-.5-.5v-11.5a.5.5 0 0 1 .5-.5zM9.25 1.75v3.75H13' fill='none' stroke='black' stroke-width='1.4' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* ------------------------------------------------------------- Definition lists */
+
+article dl:not(.front-matter) > dt { font-weight: 620; color: var(--text); margin-top: .8em; }
+article dl:not(.front-matter) > dt:first-child { margin-top: 0; }
+article dl:not(.front-matter) > dd { margin: .2em 0 0 1.25em; color: var(--text-2); }
+article dl:not(.front-matter) > dd > p { margin: .25em 0; }
+article abbr[title] { cursor: help; text-decoration-thickness: 1px; text-underline-offset: .18em; }
+
+/* ------------------------------------------------------------------------ MDX */
+
+.mdx {
+  margin: 0 0 1.15em;
+  padding: .7em 1em .8em;
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 .5px var(--hairline-strong);
+  background: color-mix(in srgb, var(--fill) 60%, transparent);
+}
+.mdx > :last-child { margin-bottom: 0; }
+.mdx > .mdx-label + * { margin-top: 0; }
+.mdx-label {
+  margin: 0 0 .55em !important;
+  font: 11.5px/1.45 var(--code-font);
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+}
+.mdx-leaf .mdx-label { margin: 0 !important; }
+.mdx-name { color: var(--purple); font-weight: 600; }
+code.mdx-expr { color: var(--purple); }
+details.mdx-details > summary { -webkit-user-select: none; user-select: none; }

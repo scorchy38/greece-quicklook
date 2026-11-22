@@ -1,0 +1,80 @@
+/* Greece — Mermaid zoom and pan view. */
+
+.mermaid-block { position: relative; cursor: zoom-in; }
+.mermaid-expand {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--page) 70%, transparent);
+  box-shadow: 0 0 0 .5px var(--hairline-strong);
+  color: var(--text-2);
+  opacity: 0;
+  transition: opacity .15s ease;
+  cursor: default;
+}
+.mermaid-expand svg { width: 14px; height: 14px; }
+.mermaid-block:hover .mermaid-expand { opacity: 1; }
+.mermaid-expand:hover { color: var(--text); }
+
+html.diagram-open, html.diagram-open body { overflow: hidden; }
+
+.diagram-view {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--page) 94%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  animation: diagram-in .16s ease-out;
+}
+@keyframes diagram-in { from { opacity: 0; } to { opacity: 1; } }
+
+.diagram-stage { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none; }
+.diagram-stage.dragging { cursor: grabbing; }
+.diagram-canvas { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.diagram-canvas svg { display: block; }
+
+.diagram-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--page) 80%, transparent);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 0 0 .5px var(--hairline-strong), 0 8px 28px rgba(0, 0, 0, .14);
+  font: 500 12px/1 var(--ui);
+}
+.diagram-bar button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 30px;
+  height: 28px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  cursor: default;
+}
+.diagram-bar button svg { width: 15px; height: 15px; flex: none; }
+.diagram-bar button:hover { background: var(--fill-2); color: var(--text); }
+.diagram-bar button:active { background: color-mix(in srgb, var(--text) 12%, transparent); }
+.diagram-bar button.done { color: var(--green); }
+.diagram-bar .zoom-level { min-width: 52px; font-variant-numeric: tabular-nums; }
+.diagram-bar .sep { width: .5px; height: 18px; margin: 0 4px; background: var(--hairline-strong); }

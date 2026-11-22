@@ -1,0 +1,121 @@
+/* Greece — outline: resizable, hideable, floating on narrow windows, task progress. */
+
+@media (min-width: 1081px) {
+  html.outline-on .doc.has-outline { grid-template-columns: minmax(0, var(--measure)) var(--outline-w, 208px); }
+  html.outline-on .doc.has-outline.outline-collapsed { grid-template-columns: minmax(0, var(--measure)); }
+  .doc.outline-collapsed > nav.outline { display: none; }
+}
+
+nav.outline.enhanced {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  max-height: calc(100vh - 88px);
+}
+/* Colour transitions freeze on their first value when a hidden page changes appearance. */
+.outline.enhanced a { transition: none; }
+.outline.enhanced > .outline-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+
+.outline-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 .7em; flex: none; }
+.outline-head .title { margin: 0 !important; }
+
+.outline-button {
+  appearance: none;
+  -webkit-appearance: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 22px;
+  margin: -3px -4px -3px 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-3);
+  cursor: default;
+}
+.outline-button svg { width: 15px; height: 15px; }
+.outline-button:hover { background: var(--fill-2); color: var(--text-2); }
+.outline-button:active { background: color-mix(in srgb, var(--text) 12%, transparent); }
+
+/* Shown when the outline isn't: hidden by the reader, or no room for a sidebar. */
+.outline-show {
+  display: none;
+  position: fixed;
+  top: 12px;
+  right: 14px;
+  z-index: 31;
+  width: 30px;
+  height: 28px;
+  margin: 0;
+  border-radius: 8px;
+  color: var(--text-2);
+  background: color-mix(in srgb, var(--page) 78%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
+  box-shadow: 0 0 0 .5px var(--hairline-strong), 0 1px 6px rgba(0, 0, 0, .07);
+}
+.outline-show:hover { background: color-mix(in srgb, var(--page) 70%, var(--text) 6%); color: var(--text); }
+.outline-show.active { color: var(--accent); }
+body:has(.doc.outline-collapsed) .outline-show { display: grid; }
+@media (max-width: 1080px) { .outline-show { display: grid; } }
+html:not(.outline-on) .outline-show { display: none !important; }
+
+/* Resizing: a hairline in the gap between the text and the outline. */
+.outline-resizer {
+  position: absolute;
+  top: 0;
+  left: -37px;
+  width: 11px;
+  height: calc(100vh - 88px);
+  cursor: col-resize;
+  touch-action: none;
+}
+.outline-resizer::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  border-radius: 1px;
+  background: transparent;
+}
+.outline-resizer:hover::after { background: var(--hairline-strong); }
+.doc.outline-resizing { cursor: col-resize; -webkit-user-select: none; user-select: none; }
+.doc.outline-resizing .outline-resizer::after { background: var(--accent); }
+
+/* Narrow windows: the outline opens as a floating panel. */
+@media (max-width: 1080px) {
+  .doc.outline-floating > nav.outline {
+    display: flex;
+    position: fixed;
+    top: 48px;
+    right: 14px;
+    z-index: 30;
+    width: min(300px, calc(100vw - 28px));
+    max-height: calc(100vh - 66px);
+    padding: 12px 12px 10px 14px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--page) 86%, transparent);
+    -webkit-backdrop-filter: saturate(180%) blur(22px);
+    backdrop-filter: saturate(180%) blur(22px);
+    box-shadow: 0 0 0 .5px var(--hairline-strong), 0 12px 32px rgba(0, 0, 0, .16);
+  }
+  .doc.outline-floating .outline-resizer { display: none; }
+}
+
+/* Task-list progress */
+.outline-tasks {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: -.15em 0 1em;
+  font: 11.5px/1.3 var(--ui);
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.outline-meter { display: block; height: 4px; border-radius: 2px; background: var(--fill-2); overflow: hidden; }
+.outline-meter i { display: block; height: 100%; min-width: 0; border-radius: 2px; background: var(--accent); }
+.outline-tasks.complete .outline-meter i { background: var(--green); }

@@ -1,0 +1,28 @@
+/* Greece — footnote popovers. */
+
+.footnote-pop {
+  position: absolute;
+  z-index: 50;
+  width: max-content;
+  max-width: min(380px, calc(100vw - 24px));
+  max-height: 260px;
+  overflow: auto;
+  padding: 10px 13px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--page) 88%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 0 0 .5px var(--hairline-strong), 0 8px 26px rgba(0, 0, 0, .14);
+  font: 13px/1.5 var(--read-font, var(--ui));
+  color: var(--text);
+  animation: footnote-in .12s ease-out;
+}
+.footnote-pop[hidden] { display: none; }
+@keyframes footnote-in { from { opacity: 0; transform: translateY(-2px); } to { opacity: 1; transform: none; } }
+.footnote-pop.above { animation-name: footnote-in-above; }
+@keyframes footnote-in-above { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+.footnote-pop > :first-child { margin-top: 0; }
+.footnote-pop > :last-child { margin-bottom: 0; }
+.footnote-pop p { margin: 0 0 .5em; }
+.footnote-pop a { color: var(--accent); text-decoration: none; }
+.footnote-pop code { font-family: var(--code-font); font-size: .88em; padding: .1em .3em; border-radius: 4px; background: var(--fill-2); }
