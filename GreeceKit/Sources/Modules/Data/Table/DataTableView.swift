@@ -157,6 +157,27 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         grid.setShowsRowNumbers(settings.rowNumbers)
     }
 
+    private var alternate: NSView?
+
+    /// Shows another view (a schema page) in place of the grid, under the same toolbar; nil
+    /// brings the grid back.
+    func setAlternateContent(_ view: NSView?) {
+        alternate?.removeFromSuperview()
+        alternate = view
+        grid.isHidden = view != nil
+        countLabel.isHidden = view != nil
+        toolbar.trailing.isHidden = view != nil
+        guard let view else { return }
+        view.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(view)
+        NSLayoutConstraint.activate([
+            view.topAnchor.constraint(equalTo: toolbar.bottomAnchor),
+            view.leadingAnchor.constraint(equalTo: leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: trailingAnchor),
+            view.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+    }
+
 
     // MARK: - Count
 

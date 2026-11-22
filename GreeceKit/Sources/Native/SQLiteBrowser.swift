@@ -287,6 +287,34 @@ final class SQLiteDatabase {
 
     static func quote(_ identifier: String) -> String { "\"" + identifier.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
 
+    // MARK: - Thumbnails
+
+    struct ThumbnailSample {
+        let name: String
+        let rows: Int?
+        let tables: Int
+        let store: RecordTable
+    }
+
+    /// The first table with rows, read without loading the whole schema (Finder asks for many
+    /// thumbnails at once).
+    static func thumbnailSample(_ url: URL) -> ThumbnailSample? {
+        guard let db = try? SQLiteDatabase(url: url, loadSchema: false),
+              let tables = try? db.query("SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite\\_%' ESCAPE '\\' ORDER BY name COLLATE NOCASE LIMIT 2000", budget: 0.4)
+        else { return nil }
+        let names = tables.map { $0.first?.plainText ?? "" }.filter { !$0.isEmpty }
+        guard !names.isEmpty else { return nil }
+        let name = names.prefix(50).first { (try? db.query("SELECT 1 FROM \(db.quote($0)) LIMIT 1", budget: 0.1))?.isEmpty == false } ?? names[0]
+        let columns = db.columns(of: name)
+        guard !columns.isEmpty, let rows = try? db.query("SELECT * FROM \(db.quote(name)) LIMIT 40", budget: 0.5) else { return nil }
+        let records = columns.map { column -> RecordColumn in
+            let type = column.type.uppercased()
+            let numeric = ["INT", "REAL", "FLOA", "DOUB", "NUM", "DEC"].contains { type.contains($0) }
+            return RecordColumn(title: column.name, numeric: numeric)
+        }
+        return ThumbnailSample(name: name, rows: db.count(name, budget: 0.2), tables: names.count, store: RecordTable(columns: records, rows: rows))
+    }
+
     // MARK: - Queries
 
     /// Runs one statement and returns its rows, giving up after `budget` seconds or `maxRows` rows.

@@ -163,6 +163,18 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
     @objc private func columnsResized(_ note: Notification) { header.needsDisplay = true; header.window?.invalidateCursorRects(for: header) }
 
+    /// Tables narrower than the view stretch their last column to its edge.
+    override func layout() {
+        super.layout()
+        guard let last = tableView.tableColumns.last, last.identifier != Self.rowNumberID else { return }
+        let used = tableView.tableColumns.reduce(0) { $0 + $1.width }
+        let available = scrollView.contentView.bounds.width
+        if used < available - 1 {
+            last.width += available - used
+            header.needsDisplay = true
+        }
+    }
+
     func setSource(_ newSource: GridSource) {
         source = newSource
         onBusy?(false)

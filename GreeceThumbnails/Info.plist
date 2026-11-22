@@ -162,6 +162,18 @@
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xcode.app-privacy-property-list</string>
 				<string>com.scorchy.greece.code</string>
+				<string>org.sqlite.sqlite3</string>
+				<string>com.scorchy.greece.dbf</string>
+				<string>org.libreoffice.dbf-document</string>
+				<string>com.scorchy.greece.json-lines</string>
+				<string>com.scorchy.greece.har</string>
+				<string>com.scorchy.greece.parquet</string>
+				<string>com.scorchy.greece.psv</string>
+				<string>com.scorchy.greece.package-resolved</string>
+				<string>com.scorchy.greece.go-sum</string>
+				<string>com.scorchy.greece.gradle-lockfile</string>
+				<string>com.apple.xcode.strings-dictionary</string>
+				<string>dyn.ah62d4rv4ge80k2u</string>
 			</array>
 			<key>QLThumbnailMinimumDimension</key>
 			<integer>0</integer>

@@ -36,6 +36,8 @@ public enum Thumbnailer {
             // Modules choose their own proportions (a model's render, an app's card), within the maximum.
             return PreviewModules.module(id: id)?.thumbnail(info, size: maximumSize, settings: settings)
         }
+        // Databases aren't text: their first table becomes the page.
+        if case .sqlite = kind { return DataThumbnails.sqlite(url, size: maximumSize) }
         guard let file = try? TextFile(url: url, limit: 48 * 1024) else { return nil }
         let size = pageSize(fitting: maximumSize)
         let palette = settings.codeTheme.light
@@ -79,10 +81,7 @@ public enum Thumbnailer {
             }
         case .delimited(let separator):
             let table = DelimitedTable.parse(file.text, separator: separator, maxRows: 80)
-            guard table.columnCount > 0 else { return nil }
-            return ThumbnailPage(size: size, badge: ext.isEmpty ? "CSV" : ext) { rect in
-                TablePage.draw(table, in: rect, palette: palette)
-            }
+            return DataThumbnails.delimited(table, title: url.deletingPathExtension().lastPathComponent, badge: ext.isEmpty ? "CSV" : ext, size: size)
         default:
             return nil
         }

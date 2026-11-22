@@ -335,10 +335,14 @@ struct ColumnProfile {
             warning = true
         } else {
             switch kind {
-            case .text: detail = isUnique ? "all unique" : "\(Self.count(distinct, capped: distinctCapped)) distinct"
+            case .text: detail = isUnique ? nil : "\(Self.count(distinct, capped: distinctCapped)) distinct"
             case .boolean: detail = "\(Self.percent(Double(trueCount) / Double(max(filled, 1)))) true"
             case .integer, .number:
-                if let minimum, let maximum { detail = minimum == maximum ? Self.short(minimum) : "\(Self.short(minimum))–\(Self.short(maximum))" }
+                // Below ten thousand, whole: years and counts stay legible ("1988–2011", not "2K–2K").
+                if let minimum, let maximum {
+                    let low = Self.short(minimum, integerBelow: 10_000), high = Self.short(maximum, integerBelow: 10_000)
+                    detail = low == high ? low : "\(low)–\(high)"
+                }
             case .date:
                 if let minimum, let maximum {
                     let a = Self.year(minimum), b = Self.year(maximum)

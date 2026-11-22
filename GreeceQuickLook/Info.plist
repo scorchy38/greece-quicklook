@@ -194,6 +194,15 @@
 				<string>com.apple.interfacebuilder.document.cocoa</string>
 				<string>com.apple.dt.interfacebuilder.document.storyboard</string>
 				<string>com.apple.xcode.strings-dictionary</string>
+				<string>com.scorchy.greece.dbf</string>
+				<string>org.libreoffice.dbf-document</string>
+				<string>com.scorchy.greece.json-lines</string>
+				<string>com.scorchy.greece.har</string>
+				<string>com.scorchy.greece.parquet</string>
+				<string>com.scorchy.greece.psv</string>
+				<string>com.scorchy.greece.package-resolved</string>
+				<string>com.scorchy.greece.go-sum</string>
+				<string>com.scorchy.greece.gradle-lockfile</string>
 			</array>
 			<key>QLSupportsSearchableItems</key>
 			<false/>
