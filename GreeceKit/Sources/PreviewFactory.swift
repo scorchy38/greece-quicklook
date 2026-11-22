@@ -245,6 +245,8 @@ public enum PreviewFactory {
                 // The info bar describes the folder showing, after one has been opened inside.
                 browser.onFolderChange = { [weak view] folder, isRoot in
                     view?.setSummary(isRoot ? summary : folderSummary(folder, modified: folder.modified.map(modifiedText)))
+                    // Its path too: the bar's tooltip, Copy Path and Show in Finder.
+                    if let url = folder.url { view?.fileURL = url }
                 }
                 return view
             }
