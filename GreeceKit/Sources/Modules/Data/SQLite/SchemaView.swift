@@ -174,12 +174,13 @@ final class SchemaTableView: NSView, NSMenuDelegate {
         var items: [NSMenuItem] = []
         if let column, column < rows[row].count, rows[row][column].style != .tertiary {
             let text = rows[row][column].text
-            items.append(ActionMenuItem("Copy \(MenuText.quoted(text))") { Clipboard.copy(text) })
+            let value = MenuText.short(text)
+            items.append(ActionMenuItem(String(localized: "Copy “\(value)”", bundle: .greeceKit, comment: "Menu item. The argument is the value it copies")) { Clipboard.copy(text) })
         }
         let line = Self.line(rows[row])
-        items.append(ActionMenuItem("Copy Row") { Clipboard.copy(line) })
+        items.append(ActionMenuItem(String(localized: "Copy Row", bundle: .greeceKit, comment: "Menu item: copies a table row as text")) { Clipboard.copy(line) })
         let table = ([headers.joined(separator: "\t")] + rows.map(Self.line)).joined(separator: "\n")
-        items.append(ActionMenuItem("Copy Table") { Clipboard.copy(table) })
+        items.append(ActionMenuItem(String(localized: "Copy Table", bundle: .greeceKit, comment: "Menu item: copies a whole table as text")) { Clipboard.copy(table) })
         return items
     }
 
@@ -288,6 +289,14 @@ class SchemaPageView: NSView {
         view.widthAnchor.constraint(equalTo: stack.widthAnchor, constant: -(stack.edgeInsets.left + stack.edgeInsets.right)).isActive = true
         if let spacingAfter { stack.setCustomSpacing(spacingAfter, after: view) }
     }
+
+    // Words several schema pages share.
+    static var dataMode: String { String(localized: "Data", bundle: .greeceKit, comment: "Segmented control: show a table’s rows") }
+    static var schemaMode: String { String(localized: "Schema", bundle: .greeceKit, comment: "Segmented control: show a table’s structure") }
+    static var columnsTitle: String { String(localized: "Columns", bundle: .greeceKit, comment: "Section title or column header: a table’s columns") }
+    static var nameTitle: String { String(localized: "Name", bundle: .greeceKit, comment: "Column header in a schema table") }
+    static var typeTitle: String { String(localized: "Type", bundle: .greeceKit, comment: "Column header in a schema table: a column’s data type") }
+    static var sizeTitle: String { String(localized: "Size", bundle: .greeceKit, comment: "Column header in a schema table: bytes on disk") }
 
     func addSection(_ title: String, count: Int? = nil) {
         let label = NSTextField(labelWithString: title)
@@ -404,7 +413,7 @@ final class SQLTextView: NSView, NSTextViewDelegate {
     }
 
     func textView(_ view: NSTextView, menu: NSMenu, for event: NSEvent, at charIndex: Int) -> NSMenu? {
-        menu.insertItem(ActionMenuItem("Copy SQL") { [text] in Clipboard.copy(text) }, at: 0)
+        menu.insertItem(ActionMenuItem(String(localized: "Copy SQL", bundle: .greeceKit, comment: "Menu item: copies a table’s SQL definition")) { [text] in Clipboard.copy(text) }, at: 0)
         menu.insertItem(.separator(), at: 1)
         return menu
     }
@@ -465,12 +474,22 @@ enum SQLFormatter {
 final class SQLiteSchemaView: SchemaPageView {
     init(object: SQLiteDatabase.Object, database: SQLiteDatabase, settings: PreviewSettings) {
         super.init(frame: .zero)
-        let kind = object.kind == .view ? "View" : object.kind == .virtual ? "Virtual Table" : "Table"
+        let kind = object.kind == .view
+            ? String(localized: "View [database]", defaultValue: "View", bundle: .greeceKit, comment: "Kind of database object: a stored query that reads like a table")
+            : object.kind == .virtual
+            ? String(localized: "Virtual Table", bundle: .greeceKit, comment: "Kind of database object: a table a module computes (full-text search, R-tree…)")
+            : String(localized: "Table", bundle: .greeceKit, comment: "Kind of database object")
         var facts = [kind]
-        if let rows = object.rowCount { facts.append("\(rows.formatted()) \(rows == 1 ? "row" : "rows")") }
-        else if let estimate = object.estimatedRows { facts.append("about \(estimate.formatted()) rows") }
-        facts.append("\(object.columns.count) \(object.columns.count == 1 ? "column" : "columns")")
-        if object.withoutRowid { facts.append("Without rowid") }
+        if let rows = object.rowCount {
+            facts.append(String(localized: "\(rows) rows", bundle: .greeceKit, comment: "Rows in a table"))
+        } else if let estimate = object.estimatedRows {
+            facts.append(String(localized: "about \(estimate) rows", bundle: .greeceKit, comment: "Rows in a database table, estimated"))
+        }
+        let columnCount = object.columns.count
+        facts.append(String(localized: "\(columnCount) columns", bundle: .greeceKit, comment: "Columns in a table"))
+        if object.withoutRowid {
+            facts.append(String(localized: "Without rowid", bundle: .greeceKit, comment: "An SQLite table created WITHOUT ROWID; “rowid” is SQLite’s term, as is"))
+        }
         addHeader(symbol: SQLiteBrowserView.symbol(for: object), title: object.name, subtitle: facts.joined(separator: " · "))
 
         // Columns
@@ -482,11 +501,18 @@ final class SQLiteSchemaView: SchemaPageView {
             let symbol = column.isPrimaryKey ? "key.fill" : key != nil ? "arrow.up.right" : nil
             let tint: NSColor? = column.isPrimaryKey ? .systemOrange : key != nil ? .controlAccentColor : nil
             var constraints: [String] = []
-            if column.isPrimaryKey { constraints.append(object.columns.filter(\.isPrimaryKey).count > 1 ? "Primary key (\(column.primaryKey))" : "Primary key") }
-            if column.isPrimaryKey, autoincrement, column.type.uppercased() == "INTEGER" { constraints.append("Autoincrement") }
-            if column.notNull, !column.isPrimaryKey { constraints.append("Not null") }
-            if uniqueColumns.contains(column.name.lowercased()) { constraints.append("Unique") }
-            if column.generated { constraints.append("Generated") }
+            if column.isPrimaryKey {
+                let position = String(column.primaryKey)
+                constraints.append(object.columns.filter(\.isPrimaryKey).count > 1
+                    ? String(localized: "Primary key (\(position))", bundle: .greeceKit, comment: "Column constraint: part of a primary key of several columns. The argument is its position in the key")
+                    : Self.primaryKeyTitle)
+            }
+            if column.isPrimaryKey, autoincrement, column.type.uppercased() == "INTEGER" {
+                constraints.append(String(localized: "Autoincrement", bundle: .greeceKit, comment: "Column constraint: numbered automatically"))
+            }
+            if column.notNull, !column.isPrimaryKey { constraints.append(String(localized: "Not null", bundle: .greeceKit, comment: "Column constraint: must hold a value")) }
+            if uniqueColumns.contains(column.name.lowercased()) { constraints.append(Self.uniqueTitle) }
+            if column.generated { constraints.append(String(localized: "Generated", bundle: .greeceKit, comment: "Column constraint: computed from other columns")) }
             var row: [SchemaTableView.Cell] = [
                 .name(column.name, symbol: symbol, tint: tint),
                 column.type.isEmpty ? .none : .code(column.type.uppercased()),
@@ -496,7 +522,10 @@ final class SQLiteSchemaView: SchemaPageView {
             if showReferences {
                 if let key, let index = key.from.firstIndex(where: { $0.caseInsensitiveCompare(column.name) == .orderedSame }) {
                     let target = index < key.to.count && !key.to[index].isEmpty ? key.to[index] : primaryKey(of: key.table, in: database)
-                    let action = key.onDelete != "NO ACTION" && !key.onDelete.isEmpty ? "on delete \(key.onDelete.lowercased())" : nil
+                    let rule = key.onDelete.lowercased()
+                    let action = key.onDelete != "NO ACTION" && !key.onDelete.isEmpty
+                        ? String(localized: "on delete \(rule)", bundle: .greeceKit, comment: "After a foreign key: what deleting the row it points at does. The argument is an SQL action, such as “cascade”")
+                        : nil
                     row.append(.link("\(key.table).\(target)", detail: action))
                 } else {
                     row.append(.none)
@@ -504,22 +533,27 @@ final class SQLiteSchemaView: SchemaPageView {
             }
             return row
         }
-        addSection("Columns", count: object.columns.count)
-        var headers = ["Name", "Type", "Constraints", "Default"]
-        if showReferences { headers.append("References") }
+        addSection(Self.columnsTitle, count: object.columns.count)
+        var headers = [Self.nameTitle, Self.typeTitle,
+                       String(localized: "Constraints", bundle: .greeceKit, comment: "Column header in a table’s schema: primary key, not null, unique…"),
+                       String(localized: "Default [value]", defaultValue: "Default", bundle: .greeceKit, comment: "Column header in a table’s schema: a column’s default value")]
+        if showReferences {
+            headers.append(String(localized: "References", bundle: .greeceKit, comment: "Column header in a table’s schema: the table and column a foreign key points at"))
+        }
         addFullWidth(SchemaCard(content: SchemaTableView(headers: headers, rows: rows, flexible: 2)))
 
         // Indexes
         if !object.indexes.isEmpty {
-            addSection("Indexes", count: object.indexes.count)
+            addSection(String(localized: "Indexes", bundle: .greeceKit, comment: "Section title in a table’s schema"), count: object.indexes.count)
             let rows: [[SchemaTableView.Cell]] = object.indexes.map { index in
                 var kind: [String] = []
-                if index.origin == "pk" { kind.append("Primary key") } else if index.unique { kind.append("Unique") }
-                if index.partial { kind.append("Partial") }
-                if index.origin == "u" { kind.append("Constraint") }
+                if index.origin == "pk" { kind.append(Self.primaryKeyTitle) } else if index.unique { kind.append(Self.uniqueTitle) }
+                if index.partial { kind.append(String(localized: "Partial", bundle: .greeceKit, comment: "Kind of index: covers only some rows")) }
+                if index.origin == "u" { kind.append(String(localized: "Constraint", bundle: .greeceKit, comment: "Kind of index: made for a UNIQUE constraint")) }
                 return [.name(index.name), .code(index.columns.joined(separator: ", ")), kind.isEmpty ? .none : .plain(kind.joined(separator: " · "))]
             }
-            addFullWidth(SchemaCard(content: SchemaTableView(headers: ["Name", "Columns", "Kind"], rows: rows, flexible: 1)))
+            let kindTitle = String(localized: "Kind", bundle: .greeceKit, comment: "Column header in a table’s schema: what kind of index it is")
+            addFullWidth(SchemaCard(content: SchemaTableView(headers: [Self.nameTitle, Self.columnsTitle, kindTitle], rows: rows, flexible: 1)))
         }
 
         // Incoming references
@@ -527,19 +561,25 @@ final class SQLiteSchemaView: SchemaPageView {
             other.foreignKeys.filter { $0.table.caseInsensitiveCompare(object.name) == .orderedSame }.map { (other.name, $0) }
         }
         if !incoming.isEmpty {
-            addSection("Referenced By", count: incoming.count)
+            addSection(String(localized: "Referenced By", bundle: .greeceKit, comment: "Section title in a table’s schema: tables whose foreign keys point at this one"), count: incoming.count)
             let rows: [[SchemaTableView.Cell]] = incoming.prefix(500).map { table, key in
-                [.name(table, symbol: "arrow.down.right", tint: .controlAccentColor), .code(key.from.joined(separator: ", ")),
-                 key.onDelete == "NO ACTION" || key.onDelete.isEmpty ? .none : .plain("On delete \(key.onDelete.lowercased())")]
+                let rule = key.onDelete.lowercased()
+                return [.name(table, symbol: "arrow.down.right", tint: .controlAccentColor), .code(key.from.joined(separator: ", ")),
+                        key.onDelete == "NO ACTION" || key.onDelete.isEmpty ? .none
+                            : .plain(String(localized: "On delete \(rule)", bundle: .greeceKit,
+                                            comment: "What deleting a row does to the rows that point at it. The argument is an SQL action, such as “cascade”"))]
             }
-            addFullWidth(SchemaCard(content: SchemaTableView(headers: ["Table", "Columns", "Action"], rows: rows, flexible: 1)))
+            let headers = [String(localized: "Table", bundle: .greeceKit, comment: "Kind of database object"), Self.columnsTitle,
+                           String(localized: "Action", bundle: .greeceKit, comment: "Column header in a table’s schema: what deleting a row does (cascade, set null…)")]
+            addFullWidth(SchemaCard(content: SchemaTableView(headers: headers, rows: rows, flexible: 1)))
         }
 
         // Triggers
         if !object.triggers.isEmpty {
-            addSection("Triggers", count: object.triggers.count)
+            addSection(String(localized: "Triggers", bundle: .greeceKit, comment: "Section title in a table’s schema"), count: object.triggers.count)
             let rows: [[SchemaTableView.Cell]] = object.triggers.map { [.name($0.name), .code("\($0.timing) \($0.event)".trimmingCharacters(in: .whitespaces))] }
-            addFullWidth(SchemaCard(content: SchemaTableView(headers: ["Name", "When"], rows: rows, flexible: 0)))
+            let when = String(localized: "When", bundle: .greeceKit, comment: "Column header in a table’s schema: when a trigger runs, such as “AFTER INSERT”")
+            addFullWidth(SchemaCard(content: SchemaTableView(headers: [Self.nameTitle, when], rows: rows, flexible: 0)))
         }
 
         // Definition
@@ -547,13 +587,16 @@ final class SQLiteSchemaView: SchemaPageView {
         statements += object.indexes.compactMap(\.sql)
         statements += object.triggers.map(\.sql)
         if !statements.isEmpty {
-            addSection("Definition")
+            addSection(String(localized: "Definition", bundle: .greeceKit, comment: "Section title in a table’s schema: its CREATE statements"))
             let sql = statements.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) + ($0.hasSuffix(";") ? "" : ";") }.joined(separator: "\n\n")
             addFullWidth(SchemaCard(content: SQLTextView(sql: String(sql.prefix(200_000)), theme: settings.codeTheme)))
         }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    private static var primaryKeyTitle: String { String(localized: "Primary key", bundle: .greeceKit, comment: "Column constraint or kind of index") }
+    private static var uniqueTitle: String { String(localized: "Unique", bundle: .greeceKit, comment: "Column constraint or kind of index: no two rows share a value") }
 
     private func primaryKey(of table: String, in database: SQLiteDatabase) -> String {
         database.objects.first { $0.name.caseInsensitiveCompare(table) == .orderedSame }?

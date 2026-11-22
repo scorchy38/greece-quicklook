@@ -27,6 +27,13 @@ struct StringTable {
     static let maxRows = 50_000
     static let maxLanguages = 60
 
+    static var catalogTitle: String { String(localized: "String Catalog", bundle: .greeceKit, comment: "Info bar title: an Xcode string catalog (.xcstrings)") }
+    static var stringsTitle: String { String(localized: "Strings", bundle: .greeceKit, comment: "Info bar title: an Apple .strings file of translations") }
+    static var stringsdictTitle: String { String(localized: "Strings Dictionary", bundle: .greeceKit, comment: "Info bar title: an Apple .stringsdict file of plural rules") }
+
+    /// The column of a .strings file that isn't in a language folder (.lproj).
+    static let unlabeled = "Value"
+
     // MARK: - Completion
 
     /// Share of translatable strings that are translated in `language`.
@@ -62,18 +69,27 @@ struct StringTable {
     func store() -> RecordTable {
         // Several languages side by side: keep each column to about a phrase.
         let width: CGFloat? = languages.count > 3 ? 170 : languages.count > 2 ? 210 : nil
-        var columns = [RecordColumn(title: "Key", profiled: false, width: width)]
+        var columns = [RecordColumn(title: Self.keyTitle, profiled: false, width: width)]
         for language in languages {
-            let name = Locale.current.localizedString(forIdentifier: language) ?? language
-            columns.append(RecordColumn(title: language == sourceLanguage ? "\(name) (source)" : name, toolTip: language, profiled: false, width: width))
+            let name = language == Self.unlabeled
+                ? String(localized: "Value", bundle: .greeceKit, comment: "Column header in a .strings file’s table: the translated text")
+                : Locale.current.localizedString(forIdentifier: language) ?? language
+            let title = language == sourceLanguage
+                ? String(localized: "\(name) (source)", bundle: .greeceKit, comment: "Column header in a string catalog’s table: the language strings are written in. The argument is a language, such as “English”")
+                : name
+            columns.append(RecordColumn(title: title, toolTip: language == Self.unlabeled ? nil : language, profiled: false, width: width))
         }
         let hasComments = rows.contains { $0.comment?.isEmpty == false }
-        if hasComments { columns.append(RecordColumn(title: "Comment", profiled: false, width: width.map { $0 + 60 })) }
+        if hasComments {
+            columns.append(RecordColumn(title: String(localized: "Comment", bundle: .greeceKit, comment: "Column header in a string catalog’s table: the note for translators"),
+                                        profiled: false, width: width.map { $0 + 60 }))
+        }
+        let missing = String(localized: "Missing [translation]", defaultValue: "Missing", bundle: .greeceKit, comment: "A string catalog cell: no translation into this language")
         let values: [[GridValue]] = rows.map { row in
             var cells: [GridValue] = [.text(row.key)]
             for language in languages {
                 guard let entry = row.entries[language] else {
-                    cells.append(.placeholder("Missing"))
+                    cells.append(.placeholder(missing))
                     continue
                 }
                 var text = entry.value ?? (language == sourceLanguage ? row.key : "")
@@ -81,10 +97,15 @@ struct StringTable {
                 switch entry.state {
                 case .translated: cells.append(.text(text))
                 case .needsReview: cells.append(.status(text, .orange))
-                case .new: cells.append(text.isEmpty ? .placeholder("New") : .status(text, .gray))
+                case .new:
+                    cells.append(text.isEmpty
+                        ? .placeholder(String(localized: "New [translation]", defaultValue: "New", bundle: .greeceKit, comment: "A string catalog cell: a string not translated yet"))
+                        : .status(text, .gray))
                 case .stale: cells.append(.status(text, .gray))
-                case .missing: cells.append(.placeholder("Missing"))
-                case .notTranslated: cells.append(.placeholder(language == sourceLanguage ? text : "Not translated"))
+                case .missing: cells.append(.placeholder(missing))
+                case .notTranslated:
+                    cells.append(.placeholder(language == sourceLanguage ? text
+                        : String(localized: "Not translated", bundle: .greeceKit, comment: "A string catalog cell: a string marked as not to be translated")))
                 }
             }
             if hasComments { cells.append(row.comment.map { GridValue.secondary($0) } ?? .placeholder("")) }
@@ -98,12 +119,21 @@ struct StringTable {
         let index = column - 1
         guard index >= 0, index < languages.count else { return nil }
         let language = languages[index]
-        if language == sourceLanguage { return .caption("\(rows.count.formatted()) strings", symbol: nil) }
+        if language == sourceLanguage {
+            let strings = rows.count
+            return .caption(String(localized: "\(strings) strings", bundle: .greeceKit, comment: "Translatable strings in a strings file or string catalog"), symbol: nil)
+        }
         let c = completion(language)
         let fraction = c.total == 0 ? 1 : Double(c.done) / Double(c.total)
         var caption = ColumnProfile.percent(fraction)
-        if c.review > 0 { caption += " · \(c.review) to review" }
-        else if c.total - c.done > 0 { caption += " · \(c.total - c.done) missing" }
+        if c.review > 0 {
+            let review = c.review
+            caption += " · " + String(localized: "\(review) to review", bundle: .greeceKit, comment: "Under a language in a string catalog: translations that need review")
+        } else if c.total - c.done > 0 {
+            let missing = c.total - c.done
+            caption += " · " + String(localized: "%lld missing [translations]", defaultValue: "\(missing) missing", bundle: .greeceKit,
+                                      comment: "Under a language in a string catalog: strings without a translation")
+        }
         return .progress(fraction, caption: caption)
     }
 
@@ -142,7 +172,7 @@ struct StringTable {
         let others = languages.subtracting([source]).sorted { a, b in
             (Locale.current.localizedString(forIdentifier: a) ?? a).localizedStandardCompare(Locale.current.localizedString(forIdentifier: b) ?? b) == .orderedAscending
         }
-        return StringTable(title: "String Catalog", sourceLanguage: source, languages: [source] + others, rows: rows)
+        return StringTable(title: catalogTitle, sourceLanguage: source, languages: [source] + others, rows: rows)
     }
 
     /// A localization's value and state; variations report their "other" form and their worst state.
@@ -155,11 +185,14 @@ struct StringTable {
             for (name, form) in cases { entries[name] = entry(form as? [String: Any] ?? [:]) }
             let preferred = entries["other"] ?? entries.values.first
             let worst = entries.values.map(\.state).max { rank($0) < rank($1) } ?? .translated
-            let label = kind == "plural" ? "Plural" : kind == "device" ? "Device" : kind.capitalized
+            let label = kind == "plural" ? String(localized: "Plural", bundle: .greeceKit, comment: "A string catalog entry that varies by plural form")
+                : kind == "device" ? String(localized: "Device", bundle: .greeceKit, comment: "A string catalog entry that varies by device (iPhone, Mac…)")
+                : kind.capitalized
             return Entry(value: preferred?.value, state: worst, variation: "\(label) (\(entries.count))")
         }
         if let substitutions = localization["substitutions"] as? [String: Any], !substitutions.isEmpty {
-            return Entry(value: nil, state: .translated, variation: "Substitutions")
+            return Entry(value: nil, state: .translated,
+                         variation: String(localized: "Substitutions", bundle: .greeceKit, comment: "A string catalog entry made of several substituted plural phrases"))
         }
         return Entry(value: nil, state: .new)
     }
@@ -224,7 +257,7 @@ struct StringTable {
         guard let pairs = parseStrings(data) else { return nil }
         let folder = url.deletingLastPathComponent()
         let here = folder.pathExtension == "lproj" ? folder.deletingPathExtension().lastPathComponent : nil
-        var tables: [(String, [(key: String, value: String, comment: String?)])] = [(here ?? "Value", pairs)]
+        var tables: [(String, [(key: String, value: String, comment: String?)])] = [(here ?? unlabeled, pairs)]
         if let here {
             let parent = folder.deletingLastPathComponent()
             let siblings = ((try? FileManager.default.contentsOfDirectory(at: parent, includingPropertiesForKeys: nil)) ?? [])
@@ -251,8 +284,8 @@ struct StringTable {
             }
         }
         let languages = tables.map(\.0)
-        let source = here ?? "Value"
-        return StringTable(title: "Strings", sourceLanguage: tables.count > 1 ? source : nil, languages: languages,
+        let source = here ?? unlabeled
+        return StringTable(title: stringsTitle, sourceLanguage: tables.count > 1 ? source : nil, languages: languages,
                            rows: order.prefix(maxRows).compactMap { rows[$0] })
     }
 
@@ -266,6 +299,21 @@ struct StringTable {
     }
 
     static let pluralForms = ["zero", "one", "two", "few", "many", "other"]
+
+    /// A plural category's name as a column header ("Zero", "One"…).
+    static func pluralFormTitle(_ form: String) -> String {
+        switch form {
+        case "zero": return String(localized: "Zero", bundle: .greeceKit, comment: "Column header: the “zero” plural category of a .stringsdict rule")
+        case "one": return String(localized: "One", bundle: .greeceKit, comment: "Column header: the “one” plural category of a .stringsdict rule")
+        case "two": return String(localized: "Two", bundle: .greeceKit, comment: "Column header: the “two” plural category of a .stringsdict rule")
+        case "few": return String(localized: "Few", bundle: .greeceKit, comment: "Column header: the “few” plural category of a .stringsdict rule")
+        case "many": return String(localized: "Many", bundle: .greeceKit, comment: "Column header: the “many” plural category of a .stringsdict rule")
+        case "other": return String(localized: "Other", bundle: .greeceKit, comment: "Column header: the “other” plural category of a .stringsdict rule")
+        default: return form.capitalized
+        }
+    }
+
+    static var keyTitle: String { String(localized: "Key", bundle: .greeceKit, comment: "Column header in a string catalog’s table: the string’s key") }
 
     static func stringsdict(_ data: Data) -> [PluralRule]? {
         guard let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { return nil }
@@ -287,8 +335,12 @@ struct StringTable {
 
     static func stringsdictStore(_ rules: [PluralRule]) -> RecordTable {
         let used = pluralForms.filter { form in rules.contains { $0.forms[form] != nil } }
-        var columns = [RecordColumn(title: "Key", profiled: false), RecordColumn(title: "Format", profiled: false), RecordColumn(title: "Variable", profiled: false)]
-        columns += used.map { RecordColumn(title: $0.capitalized, profiled: false) }
+        var columns = [RecordColumn(title: keyTitle, profiled: false),
+                       RecordColumn(title: String(localized: "Format [string]", defaultValue: "Format", bundle: .greeceKit,
+                                                  comment: "Column header in a .stringsdict file’s table: the format string a rule fills in"), profiled: false),
+                       RecordColumn(title: String(localized: "Variable", bundle: .greeceKit, comment: "Column header in a .stringsdict file’s table: the variable a plural rule is for"),
+                                    profiled: false)]
+        columns += used.map { RecordColumn(title: pluralFormTitle($0), profiled: false) }
         let rows: [[GridValue]] = rules.map { rule in
             [.text(rule.key), .secondary(rule.format), .secondary(rule.variable)] + used.map { form in rule.forms[form].map { GridValue.text($0) } ?? .placeholder("") }
         }

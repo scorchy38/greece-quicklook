@@ -204,12 +204,12 @@ struct ColumnProfile {
 
         var title: String {
             switch self {
-            case .empty: return "Empty"
-            case .boolean: return "Boolean"
-            case .integer: return "Integer"
-            case .number: return "Number"
-            case .date: return "Date"
-            case .text: return "Text"
+            case .empty: return String(localized: "Empty", bundle: .greeceKit, comment: "Type of a table column: it holds nothing")
+            case .boolean: return String(localized: "Boolean", bundle: .greeceKit, comment: "Type of a table column: true or false values")
+            case .integer: return String(localized: "Integer", bundle: .greeceKit, comment: "Type of a table column: whole numbers")
+            case .number: return String(localized: "Number", bundle: .greeceKit, comment: "Type of a table column")
+            case .date: return String(localized: "Date", bundle: .greeceKit, comment: "Type of a table column")
+            case .text: return String(localized: "Text", bundle: .greeceKit, comment: "Type of a table column, or of a plain text document")
             }
         }
     }
@@ -331,12 +331,18 @@ struct ColumnProfile {
         var detail: String?
         var warning = false
         if kind != .empty && empty > 0 && emptyShare >= 0.005 {
-            detail = "\(Self.percent(emptyShare)) empty"
+            let share = Self.percent(emptyShare)
+            detail = String(localized: "\(share) empty", bundle: .greeceKit, comment: "Under a column header: the share of empty cells, such as “12% empty”")
             warning = true
         } else {
             switch kind {
-            case .text: detail = isUnique ? nil : "\(Self.count(distinct, capped: distinctCapped)) distinct"
-            case .boolean: detail = "\(Self.percent(Double(trueCount) / Double(max(filled, 1)))) true"
+            case .text:
+                let count = Self.count(distinct, capped: distinctCapped)
+                detail = isUnique ? nil : String(localized: "\(count) distinct", bundle: .greeceKit,
+                                                 comment: "Under a column header: how many different values it holds. The argument is a short number, such as “1.2K”")
+            case .boolean:
+                let share = Self.percent(Double(trueCount) / Double(max(filled, 1)))
+                detail = String(localized: "\(share) true", bundle: .greeceKit, comment: "Under a column header: the share of true values, such as “64% true”")
             case .integer, .number:
                 // Below ten thousand, whole: years and counts stay legible ("1988–2011", not "2K–2K").
                 if let minimum, let maximum {
@@ -351,7 +357,7 @@ struct ColumnProfile {
             case .empty: detail = nil
             }
         }
-        let kindTitle = isUnique ? "Unique" : kind.title
+        let kindTitle = isUnique ? String(localized: "Unique", bundle: .greeceKit, comment: "Type of a table column: text that never repeats") : kind.title
         var bars: [CGFloat] = []
         var segments: [CGFloat] = []
         switch kind {
@@ -369,30 +375,28 @@ struct ColumnProfile {
     }
 
     static func percent(_ share: Double) -> String {
-        if share > 0 && share < 0.01 { return "<1%" }
-        if share < 1 && share > 0.99 { return ">99%" }
-        return "\(Int((share * 100).rounded()))%"
+        if share > 0 && share < 0.01 { return "<" + 1.formatted(.percent) }
+        if share < 1 && share > 0.99 { return ">" + 99.formatted(.percent) }
+        return Int((share * 100).rounded()).formatted(.percent)
     }
 
     static func count(_ value: Int, capped: Bool) -> String {
         capped ? "\(short(Double(value)))+" : short(Double(value), integerBelow: 10_000)
     }
 
-    /// 1.2K, 3.4M, 12.5 — compact numbers for tight spaces.
+    /// 1.2K, 3.4M, 12.5 — compact numbers for tight spaces, in the reader's language.
     static func short(_ value: Double, integerBelow: Double = 1_000) -> String {
         let magnitude = abs(value)
-        if magnitude >= 1e9 { return trim(value / 1e9) + "B" }
-        if magnitude >= 1e6 { return trim(value / 1e6) + "M" }
-        if magnitude >= integerBelow && magnitude >= 1e3 { return trim(value / 1e3) + "K" }
+        if magnitude >= 1e6 || (magnitude >= integerBelow && magnitude >= 1e3) {
+            // One decimal below a hundred of the unit (1.2K, 12.5M), none above (340K).
+            let unit: Double = magnitude >= 1e12 ? 1e12 : magnitude >= 1e9 ? 1e9 : magnitude >= 1e6 ? 1e6 : 1e3
+            let precision: NumberFormatStyleConfiguration.Precision = magnitude / unit >= 100 ? .fractionLength(0) : .fractionLength(0...1)
+            return value.formatted(.number.notation(.compactName).precision(precision))
+        }
         if value == value.rounded() { return Int(value).formatted() }
-        if magnitude >= 100 { return String(format: "%.0f", value) }
-        if magnitude >= 1 { return trim(value) }
-        return String(format: "%.3g", value)
-    }
-
-    private static func trim(_ value: Double) -> String {
-        let text = String(format: abs(value) >= 100 ? "%.0f" : "%.1f", value)
-        return text.hasSuffix(".0") ? String(text.dropLast(2)) : text
+        if magnitude >= 100 { return value.formatted(.number.precision(.fractionLength(0))) }
+        if magnitude >= 1 { return value.formatted(.number.precision(.fractionLength(0...1))) }
+        return value.formatted(.number.precision(.significantDigits(1...3)))
     }
 
     static func year(_ seconds: Double) -> Int {

@@ -309,7 +309,7 @@ struct ParquetFile {
                     continue
                 }
                 var column = Column(path: prefix + [name], physical: element[1]?.int.flatMap { Physical(rawValue: Int($0)) },
-                                    typeLength: Int(element[2]?.int ?? 0), logical: "", repetition: ["Required", "Optional", "Repeated"][min(max(repetitionType, 0), 2)],
+                                    typeLength: Int(element[2]?.int ?? 0), logical: "", repetition: Self.repetitionName(repetitionType),
                                     maxDefinition: def, maxRepetition: rep, scale: Int(element[7]?.int ?? 0), kind: .plain)
                 describeLogical(&column, element)
                 if insideGroup || rep > 0 { nested.append(column.name) }
@@ -387,7 +387,17 @@ struct ParquetFile {
     // MARK: - Names
 
     static func codecName(_ codec: Int) -> String {
-        ["Uncompressed", "Snappy", "Gzip", "LZO", "Brotli", "LZ4", "Zstandard", "LZ4 (raw)"][min(max(codec, 0), 7)]
+        guard codec > 0 else { return String(localized: "Uncompressed", bundle: .greeceKit, comment: "Compression of a Parquet column: none") }
+        return ["Snappy", "Gzip", "LZO", "Brotli", "LZ4", "Zstandard", "LZ4 (raw)"][min(codec, 7) - 1]
+    }
+
+    /// Whether a column must have a value, may lack one, or holds a list.
+    static func repetitionName(_ type: Int) -> String {
+        switch type {
+        case ...0: return String(localized: "Required", bundle: .greeceKit, comment: "Repetition of a Parquet column: every row has a value")
+        case 1: return String(localized: "Optional", bundle: .greeceKit, comment: "Repetition of a Parquet column: a row may have no value")
+        default: return String(localized: "Repeated", bundle: .greeceKit, comment: "Repetition of a Parquet column: a row holds a list of values")
+        }
     }
 
     static func encodingName(_ encoding: Int) -> String {
@@ -401,7 +411,9 @@ struct ParquetFile {
         case 7: return "Delta byte array"
         case 8: return "RLE dictionary"
         case 9: return "Byte stream split"
-        default: return "Encoding \(encoding)"
+        default:
+            let number = String(encoding)
+            return String(localized: "Encoding \(number)", bundle: .greeceKit, comment: "An unknown Parquet encoding. The argument is its number in the format")
         }
     }
 
@@ -431,14 +443,23 @@ struct ParquetFile {
     /// Columns that can't be read come back nil, with the reason.
     func firstRows(_ url: URL, limit: Int = 1000) -> (columns: [[GridValue]?], reasons: [String?]) {
         guard let group = groups.first, let handle = try? FileHandle(forReadingFrom: url) else {
-            return (columns.map { _ in nil }, columns.map { _ in "No row groups" })
+            let reason = String(localized: "No row groups", bundle: .greeceKit, comment: "Why a Parquet column’s values aren’t shown: the file has no row groups")
+            return (columns.map { _ in nil }, columns.map { _ in reason })
         }
         defer { try? handle.close() }
         var result: [[GridValue]?] = []
         var reasons: [String?] = []
         for (index, column) in columns.enumerated() {
-            guard index < group.chunks.count else { result.append(nil); reasons.append("Missing"); continue }
-            guard column.maxRepetition == 0, !nested.contains(column.name) else { result.append(nil); reasons.append("Nested"); continue }
+            guard index < group.chunks.count else {
+                result.append(nil)
+                reasons.append(String(localized: "Missing", bundle: .greeceKit, comment: "Why a Parquet column’s values aren’t shown: the file has no data for it"))
+                continue
+            }
+            guard column.maxRepetition == 0, !nested.contains(column.name) else {
+                result.append(nil)
+                reasons.append(String(localized: "Nested", bundle: .greeceKit, comment: "Why a Parquet column’s values aren’t shown: they’re lists or structures"))
+                continue
+            }
             do {
                 result.append(try readColumn(column, group.chunks[index], handle: handle, limit: limit))
                 reasons.append(nil)
@@ -447,22 +468,27 @@ struct ParquetFile {
                 reasons.append(error.reason)
             } catch {
                 result.append(nil)
-                reasons.append("Unreadable")
+                reasons.append(ColumnFailure.unreadable.reason)
             }
         }
         return (result, reasons)
     }
 
-    struct ColumnFailure: Error { let reason: String }
+    struct ColumnFailure: Error {
+        let reason: String
+        static var unreadable: ColumnFailure {
+            ColumnFailure(reason: String(localized: "Unreadable", bundle: .greeceKit, comment: "Why a Parquet column’s values aren’t shown: they can’t be read"))
+        }
+    }
 
     private func readColumn(_ column: Column, _ chunk: ColumnChunk, handle: FileHandle, limit: Int) throws -> [GridValue] {
         guard [0, 1, 2].contains(chunk.codec) else { throw ColumnFailure(reason: Self.codecName(chunk.codec)) }
         let start = min(chunk.dictionaryOffset ?? chunk.dataOffset, chunk.dataOffset)
-        guard start >= 4, start < fileSize, chunk.compressed > 0 else { throw ColumnFailure(reason: "Unreadable") }
+        guard start >= 4, start < fileSize, chunk.compressed > 0 else { throw ColumnFailure.unreadable }
         // The chunk (dictionary page included), capped: the first rows are near its start.
         let length = min(chunk.compressed, 64 * 1024 * 1024, fileSize - start)
         try handle.seek(toOffset: UInt64(start))
-        guard let data = try handle.read(upToCount: length), !data.isEmpty else { throw ColumnFailure(reason: "Unreadable") }
+        guard let data = try handle.read(upToCount: length), !data.isEmpty else { throw ColumnFailure.unreadable }
 
         var values: [GridValue] = []
         var dictionary: [GridValue] = []
@@ -491,10 +517,10 @@ struct ParquetFile {
                 var cursor = page.startIndex
                 var defined = [Bool](repeating: true, count: count)
                 if column.maxDefinition > 0 {
-                    guard cursor + 4 <= page.endIndex else { throw ColumnFailure(reason: "Unreadable") }
+                    guard cursor + 4 <= page.endIndex else { throw ColumnFailure.unreadable }
                     let length = Int(page[cursor]) | Int(page[cursor + 1]) << 8 | Int(page[cursor + 2]) << 16 | Int(page[cursor + 3]) << 24
                     cursor += 4
-                    guard length >= 0, cursor + length <= page.endIndex else { throw ColumnFailure(reason: "Unreadable") }
+                    guard length >= 0, cursor + length <= page.endIndex else { throw ColumnFailure.unreadable }
                     let levels = try Hybrid.decode(page[cursor..<cursor + length], bitWidth: bitWidth(column.maxDefinition), count: count)
                     defined = levels.map { Int($0) == column.maxDefinition }
                     cursor += length
@@ -506,7 +532,7 @@ struct ParquetFile {
                 let encoding = Int(h?[4]?.int ?? 0)
                 let defLength = Int(h?[5]?.int ?? 0), repLength = Int(h?[6]?.int ?? 0)
                 let isCompressed = h?[7]?.bool ?? true
-                guard defLength >= 0, repLength >= 0, defLength + repLength <= payload.count else { throw ColumnFailure(reason: "Unreadable") }
+                guard defLength >= 0, repLength >= 0, defLength + repLength <= payload.count else { throw ColumnFailure.unreadable }
                 var defined = [Bool](repeating: true, count: count)
                 let levelStart = payload.startIndex + repLength
                 if column.maxDefinition > 0, defLength > 0 {
@@ -533,7 +559,7 @@ struct ParquetFile {
         switch codec {
         case 0: return data
         case 1: return try Snappy.decompress(data, limit: max(size, 0) + 16)
-        case 2: guard let out = Gzip.inflate(data, expected: size) else { throw ColumnFailure(reason: "Unreadable") }; return out
+        case 2: guard let out = Gzip.inflate(data, expected: size) else { throw ColumnFailure.unreadable }; return out
         default: throw ColumnFailure(reason: Self.codecName(codec))
         }
     }
@@ -553,7 +579,7 @@ struct ParquetFile {
             guard data.count >= 4 else { return defined.map { _ in .null } }
             let start = data.startIndex
             let length = Int(data[start]) | Int(data[start + 1]) << 8 | Int(data[start + 2]) << 16 | Int(data[start + 3]) << 24
-            guard length >= 0, start + 4 + length <= data.endIndex else { throw ColumnFailure(reason: "Unreadable") }
+            guard length >= 0, start + 4 + length <= data.endIndex else { throw ColumnFailure.unreadable }
             raw = try Hybrid.decode(data[(start + 4)..<(start + 4 + length)], bitWidth: 1, count: present).map { .text($0 == 1 ? "true" : "false") }
         default:
             throw ColumnFailure(reason: Self.encodingName(encoding))
@@ -640,7 +666,7 @@ struct ParquetFile {
             return .text(parts.joined(separator: "-"))
         case .decimal:
             // Big-endian two's complement.
-            guard !bytes.isEmpty, bytes.count <= 16 else { return .secondary("\(bytes.count) bytes") }
+            guard !bytes.isEmpty, bytes.count <= 16 else { return .secondary(Self.byteCount(bytes.count)) }
             let negative = bytes[0] & 0x80 != 0
             var magnitude = bytes
             if negative {
@@ -656,8 +682,13 @@ struct ParquetFile {
             return .text(Self.decimal(Self.bigEndianDecimalString(magnitude), negative: negative, scale: column.scale))
         default:
             if let text = String(bytes: bytes.prefix(4096), encoding: .utf8), !text.contains("\0") { return .text(text) }
-            return .secondary(bytes.count <= 16 ? "x'" + bytes.map { String(format: "%02x", $0) }.joined() + "'" : "\(bytes.count) bytes")
+            return .secondary(bytes.count <= 16 ? "x'" + bytes.map { String(format: "%02x", $0) }.joined() + "'" : Self.byteCount(bytes.count))
         }
+    }
+
+    /// "24 bytes", in a cell whose binary value is too long to show.
+    static func byteCount(_ count: Int) -> String {
+        String(localized: "\(count) bytes", bundle: .greeceKit, comment: "A table cell holding binary data too long to show")
     }
 
     /// An unsigned big-endian integer of up to 16 bytes, in decimal.

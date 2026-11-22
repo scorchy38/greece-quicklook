@@ -65,10 +65,16 @@ struct ColumnFilter: Equatable {
     /// How its token reads: "group = Cyclades", "notes is empty", "size ≥ 42".
     func label(columnTitle title: String) -> String {
         switch test {
-        case .equals(let value): return value.isEmpty ? "\(title) is empty" : "\(title) = \(MenuText.short(value, limit: 40))"
-        case .notEquals(let value): return value.isEmpty ? "\(title) is not empty" : "\(title) ≠ \(MenuText.short(value, limit: 40))"
-        case .null: return "\(title) is NULL"
-        case .notNull: return "\(title) is not NULL"
+        case .equals(let value):
+            return value.isEmpty
+                ? String(localized: "\(title) is empty", bundle: .greeceKit, comment: "An active table filter. The argument is a column’s name, such as “notes”")
+                : "\(title) = \(MenuText.short(value, limit: 40))"
+        case .notEquals(let value):
+            return value.isEmpty
+                ? String(localized: "\(title) is not empty", bundle: .greeceKit, comment: "An active table filter. The argument is a column’s name, such as “notes”")
+                : "\(title) ≠ \(MenuText.short(value, limit: 40))"
+        case .null: return String(localized: "\(title) is NULL", bundle: .greeceKit, comment: "An active table filter. The argument is a column’s name; NULL is the database term, as is")
+        case .notNull: return String(localized: "\(title) is not NULL", bundle: .greeceKit, comment: "An active table filter. The argument is a column’s name; NULL is the database term, as is")
         case .atLeast(_, let text): return "\(title) ≥ \(MenuText.short(text, limit: 40))"
         case .atMost(_, let text): return "\(title) ≤ \(MenuText.short(text, limit: 40))"
         }
@@ -105,35 +111,49 @@ struct FilterMenu {
         }
         switch cell {
         case .text(let text):
-            toggle("Show Only Rows Where \(name) Is \(MenuText.quoted(text))", .equals(text))
-            toggle("Hide Rows Where \(name) Is \(MenuText.quoted(text))", .notEquals(text))
+            let value = MenuText.short(text)
+            toggle(Self.showOnly(name, value), .equals(text))
+            toggle(String(localized: "Hide Rows Where \(name) Is “\(value)”", bundle: .greeceKit,
+                          comment: "Menu item. The arguments are a column’s name and a value in it, such as “group” and “Cyclades”"), .notEquals(text))
             if numeric, let number = DataValueParser.number(text) {
-                let shown = MenuText.short(text)
-                toggle("Show Only Rows Where \(name) ≥ \(shown)", .atLeast(number, text: text))
-                toggle("Show Only Rows Where \(name) ≤ \(shown)", .atMost(number, text: text))
+                toggle(String(localized: "Show Only Rows Where \(name) ≥ \(value)", bundle: .greeceKit,
+                              comment: "Menu item. The arguments are a column’s name and a number in it, such as “area” and “1,401”"), .atLeast(number, text: text))
+                toggle(String(localized: "Show Only Rows Where \(name) ≤ \(value)", bundle: .greeceKit,
+                              comment: "Menu item. The arguments are a column’s name and a number in it, such as “area” and “1,401”"), .atMost(number, text: text))
             }
         case .empty:
-            toggle("Show Only Rows Where \(name) Is Empty", .equals(""))
-            toggle("Hide Rows Where \(name) Is Empty", .notEquals(""))
+            toggle(String(localized: "Show Only Rows Where \(name) Is Empty", bundle: .greeceKit, comment: "Menu item. The argument is a column’s name, such as “notes”"), .equals(""))
+            toggle(String(localized: "Hide Rows Where \(name) Is Empty", bundle: .greeceKit, comment: "Menu item. The argument is a column’s name, such as “notes”"), .notEquals(""))
         case .null:
-            toggle("Show Only Rows Where \(name) Is NULL", .null)
-            toggle("Hide Rows Where \(name) Is NULL", .notNull)
+            toggle(String(localized: "Show Only Rows Where \(name) Is NULL", bundle: .greeceKit,
+                          comment: "Menu item. The argument is a column’s name; NULL is the database term, as is"), .null)
+            toggle(String(localized: "Hide Rows Where \(name) Is NULL", bundle: .greeceKit,
+                          comment: "Menu item. The argument is a column’s name; NULL is the database term, as is"), .notNull)
         case .unfilterable, nil:
             break
         }
         if let clear {
             if !items.isEmpty { items.append(.separator()) }
-            items.append(ActionMenuItem("Clear Filters", handler: clear))
+            items.append(ActionMenuItem(Self.clearFilters, handler: clear))
         }
         return items
     }
+
+    /// "Show Only Rows Where group Is “Cyclades”", for a menu item or a common value in a column's profile.
+    static func showOnly(_ name: String, _ value: String) -> String {
+        String(localized: "Show Only Rows Where \(name) Is “\(value)”", bundle: .greeceKit,
+               comment: "Menu item or tooltip. The arguments are a column’s name and a value in it, such as “group” and “Cyclades”")
+    }
+
+    static var clearFilters: String { String(localized: "Clear Filters", bundle: .greeceKit, comment: "Menu item: removes every filter on a table") }
+    static var removeFilter: String { String(localized: "Remove Filter", bundle: .greeceKit, comment: "Menu item and button on an active table filter") }
 
     /// The toolbar's tokens for the active filters, each removable.
     func tokens(name: (Int) -> String) -> [FilterToken] {
         active.map { filter in
             let token = FilterToken(text: filter.label(columnTitle: name(filter.column))) { [remove] in remove(filter) }
-            var items: [NSMenuItem] = [ActionMenuItem("Remove Filter") { [remove] in remove(filter) }]
-            if let clear { items.append(ActionMenuItem("Clear Filters", handler: clear)) }
+            var items: [NSMenuItem] = [ActionMenuItem(Self.removeFilter) { [remove] in remove(filter) }]
+            if let clear { items.append(ActionMenuItem(Self.clearFilters, handler: clear)) }
             token.menu = .context(items)
             return token
         }
@@ -148,7 +168,7 @@ final class FilterToken: NSView {
 
     init(text: String, onRemove: @escaping () -> Void) {
         self.onRemove = onRemove
-        let image = NSImage(systemSymbolName: "xmark", accessibilityDescription: "Remove Filter")?
+        let image = NSImage(systemSymbolName: "xmark", accessibilityDescription: FilterMenu.removeFilter)?
             .withSymbolConfiguration(.init(pointSize: 8, weight: .bold)) ?? NSImage()
         remove = NSButton(image: image, target: nil, action: nil)
         super.init(frame: .zero)
@@ -161,7 +181,7 @@ final class FilterToken: NSView {
         remove.isBordered = false
         remove.imagePosition = .imageOnly
         remove.contentTintColor = .secondaryLabelColor
-        remove.toolTip = "Remove Filter"
+        remove.toolTip = FilterMenu.removeFilter
         remove.target = self
         remove.action = #selector(removeClicked)
         for view in [label, remove] {
@@ -181,7 +201,8 @@ final class FilterToken: NSView {
         ])
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
-        setAccessibilityLabel("Filter: \(text)")
+        setAccessibilityLabel(String(localized: "Filter: \(text)", bundle: .greeceKit,
+                                     comment: "Accessibility label of an active table filter. The argument describes it, such as “group = Cyclades”"))
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }

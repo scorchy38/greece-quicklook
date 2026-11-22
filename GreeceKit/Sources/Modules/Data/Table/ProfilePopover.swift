@@ -29,7 +29,15 @@ final class ProfilePopoverView: NSView {
         name.font = .systemFont(ofSize: 13, weight: .semibold)
         name.lineBreakMode = .byTruncatingMiddle
         name.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        let kind = NSTextField(labelWithString: profile.isUnique ? "Unique Text" : profile.kind.title + (profile.kind == .date && profile.hasTime ? " & Time" : ""))
+        let kindTitle: String
+        if profile.isUnique {
+            kindTitle = String(localized: "Unique Text", bundle: .greeceKit, comment: "Type of a table column: text that never repeats")
+        } else if profile.kind == .date && profile.hasTime {
+            kindTitle = String(localized: "Date & Time", bundle: .greeceKit, comment: "Type of a table column: dates with times of day")
+        } else {
+            kindTitle = profile.kind.title
+        }
+        let kind = NSTextField(labelWithString: kindTitle)
         kind.font = .systemFont(ofSize: 11, weight: .medium)
         kind.textColor = .secondaryLabelColor
         let titleRow = NSStackView(views: [name, NSView(), kind])
@@ -57,26 +65,39 @@ final class ProfilePopoverView: NSView {
         }
 
         // Facts
+        let emptyText = profile.empty == 0
+            ? String(localized: "None", bundle: .greeceKit, comment: "Column profile: no cells in the column are empty")
+            : "\(profile.empty.formatted()) (\(ColumnProfile.percent(Double(profile.empty) / Double(max(profile.examined, 1)))))"
         var facts: [(String, String)] = [
-            ("Values", profile.filled.formatted()),
-            ("Empty", profile.empty == 0 ? "None" : "\(profile.empty.formatted()) (\(ColumnProfile.percent(Double(profile.empty) / Double(max(profile.examined, 1)))))"),
-            ("Distinct", profile.distinctCapped ? "\(profile.distinct.formatted())+" : profile.distinct.formatted()),
+            (String(localized: "Values", bundle: .greeceKit, comment: "Column profile row: how many cells hold a value"), profile.filled.formatted()),
+            (String(localized: "Empty [cells]", defaultValue: "Empty", bundle: .greeceKit, comment: "Column profile row: how many cells are empty"), emptyText),
+            (String(localized: "Distinct", bundle: .greeceKit, comment: "Column profile row: how many different values the column holds"),
+             profile.distinctCapped ? "\(profile.distinct.formatted())+" : profile.distinct.formatted()),
         ]
         switch profile.kind {
         case .integer, .number:
-            if let v = profile.minimum { facts.append(("Minimum", ColumnProfile.full(v))) }
-            if let v = profile.maximum { facts.append(("Maximum", ColumnProfile.full(v))) }
-            if let v = profile.mean { facts.append(("Mean", ColumnProfile.rounded(v))) }
-            if let v = profile.median { facts.append(("Median", ColumnProfile.full(v))) }
+            if let v = profile.minimum { facts.append((String(localized: "Minimum", bundle: .greeceKit, comment: "Column profile row: the smallest number"), ColumnProfile.full(v))) }
+            if let v = profile.maximum { facts.append((String(localized: "Maximum", bundle: .greeceKit, comment: "Column profile row: the largest number"), ColumnProfile.full(v))) }
+            if let v = profile.mean { facts.append((String(localized: "Mean", bundle: .greeceKit, comment: "Column profile row: the average of the numbers"), ColumnProfile.rounded(v))) }
+            if let v = profile.median { facts.append((String(localized: "Median", bundle: .greeceKit, comment: "Column profile row"), ColumnProfile.full(v))) }
         case .date:
-            if let v = profile.minimum { facts.append(("Earliest", ColumnProfile.dateText(v, time: profile.hasTime))) }
-            if let v = profile.maximum { facts.append(("Latest", ColumnProfile.dateText(v, time: profile.hasTime))) }
+            if let v = profile.minimum {
+                facts.append((String(localized: "Earliest", bundle: .greeceKit, comment: "Column profile row: the earliest date"), ColumnProfile.dateText(v, time: profile.hasTime)))
+            }
+            if let v = profile.maximum {
+                facts.append((String(localized: "Latest", bundle: .greeceKit, comment: "Column profile row: the latest date"), ColumnProfile.dateText(v, time: profile.hasTime)))
+            }
         case .boolean:
-            facts.append(("True", profile.trueCount.formatted()))
-            facts.append(("False", (profile.filled - profile.trueCount).formatted()))
+            facts.append((String(localized: "True", bundle: .greeceKit, comment: "Column profile row: how many values are true"), profile.trueCount.formatted()))
+            facts.append((String(localized: "False", bundle: .greeceKit, comment: "Column profile row: how many values are false"), (profile.filled - profile.trueCount).formatted()))
         case .text:
             if profile.longest > 0 {
-                facts.append(("Length", profile.shortest == profile.longest ? "\(profile.longest)" : "\(profile.shortest)–\(profile.longest) characters"))
+                let (shortest, longest) = (profile.shortest, profile.longest)
+                let length = shortest == longest
+                    ? "\(longest)"
+                    : String(localized: "\(shortest)–\(longest) characters", bundle: .greeceKit,
+                             comment: "Column profile: the shortest and longest text in the column, such as “3–24 characters”")
+                facts.append((String(localized: "Length", bundle: .greeceKit, comment: "Column profile row: how long the texts are"), length))
             }
         case .empty:
             break
@@ -103,7 +124,7 @@ final class ProfilePopoverView: NSView {
         // Top values
         if profile.kind != .empty, let first = profile.top.first, first.count > 1 {
             stack.addArrangedSubview(separator())
-            let heading = NSTextField(labelWithString: "Most Common")
+            let heading = NSTextField(labelWithString: String(localized: "Most Common", bundle: .greeceKit, comment: "Column profile heading above the values that occur most"))
             heading.font = .systemFont(ofSize: 11, weight: .semibold)
             heading.textColor = .secondaryLabelColor
             stack.addArrangedSubview(heading)
@@ -143,7 +164,7 @@ final class ProfilePopoverView: NSView {
                 let pickable = onPick != nil && entry.value.utf8.count < 512
                 let row = CommonValueRow(views: [values[index], bar, counts[index]], onPick: pickable ? { onPick?(entry.value) } : nil)
                 if pickable {
-                    row.toolTip = "Show Only Rows Where \(title) Is \(MenuText.quoted(entry.value))"
+                    row.toolTip = FilterMenu.showOnly(title, MenuText.short(entry.value))
                     row.setAccessibilityLabel(entry.value)
                     row.setAccessibilityHelp(row.toolTip)
                 }
@@ -153,7 +174,9 @@ final class ProfilePopoverView: NSView {
         }
 
         if profile.sampled {
-            let note = caption("Based on \(profile.examined.formatted()) of \(profile.totalRows.formatted()) rows")
+            let (examined, total) = (profile.examined, profile.totalRows)
+            let note = caption(String(localized: "Based on \(examined) of \(total) rows", bundle: .greeceKit,
+                                      comment: "Column profile of a large table, made from a sample of its rows"))
             stack.addArrangedSubview(note)
         }
     }

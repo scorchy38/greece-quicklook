@@ -52,14 +52,18 @@ struct HARCapture {
 
     static func load(_ url: URL) throws -> HARCapture {
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-        guard size <= readLimit else { throw ArchiveError.unsupported("This capture is too large to preview.") }
+        guard size <= readLimit else {
+            throw ArchiveError.unsupported(String(localized: "This capture is too large to preview.", bundle: .greeceKit, comment: "Error shown for a huge HTTP Archive (.har) file"))
+        }
         let data = try Data(contentsOf: url, options: .mappedIfSafe)
         return try parse(data)
     }
 
     static func parse(_ data: Data) throws -> HARCapture {
         guard let root = (try JSONSerialization.jsonObject(with: data)) as? [String: Any],
-              let log = root["log"] as? [String: Any] else { throw ArchiveError.unsupported("Not an HTTP Archive.") }
+              let log = root["log"] as? [String: Any] else {
+            throw ArchiveError.unsupported(String(localized: "Not an HTTP Archive.", bundle: .greeceKit, comment: "Error shown for a .har file that isn’t a network capture"))
+        }
         let all = (log["entries"] as? [[String: Any]]) ?? []
         let raw = Array(all.prefix(maxEntries))
         let creator = log["creator"] as? [String: Any]
@@ -219,11 +223,15 @@ enum HARPage {
     static func prepare(_ file: FileInfo, modified: String?) throws -> PreparedPreview {
         var capture = try HARCapture.load(file.url)
         let summary = capture.summary
-        var details = ["\(summary.total.formatted()) \(summary.total == 1 ? "request" : "requests")",
+        let requests = summary.total
+        var details = [String(localized: "\(requests) requests", bundle: .greeceKit, comment: "Info bar detail: network requests in an HTTP Archive"),
                        ByteCountFormatter.string(fromByteCount: Int64(summary.bytes), countStyle: .file),
                        duration(summary.duration)]
-        if summary.pages.count > 1 { details.insert("\(summary.pages.count) pages", at: 0) }
-        if summary.total > summary.entries.count { details.append("Showing first \(summary.entries.count.formatted())") }
+        if summary.pages.count > 1 {
+            let pages = summary.pages.count
+            details.insert(String(localized: "\(pages) pages", bundle: .greeceKit, comment: "Info bar detail: web pages loaded in an HTTP Archive"), at: 0)
+        }
+        if summary.total > summary.entries.count { details.append(DataModule.showingFirst(summary.entries.count)) }
         #if DEBUG
         if let state = ProcessInfo.processInfo.environment["GREECE_STATE"], state.hasPrefix("entry:") { capture.summary.select = Int(state.dropFirst(6)) }
         #endif
@@ -233,10 +241,17 @@ enum HARPage {
             guard path.hasPrefix("entry/"), let index = Int(path.dropFirst(6)), let data = entries.detail(index) else { return nil }
             return (data, "application/json")
         }
-        return .web(document, FileSummary(symbol: "network", title: "HTTP Archive", details: details, trailing: modified), NSSize(width: 1100, height: 760))
+        let title = String(localized: "HTTP Archive", bundle: .greeceKit, comment: "Info bar title: a .har network capture")
+        return .web(document, FileSummary(symbol: "network", title: title, details: details, trailing: modified), NSSize(width: 1100, height: 760))
     }
 
+    /// "340 ms", "2.45 s".
     static func duration(_ ms: Double) -> String {
-        ms >= 1000 ? String(format: "%.2f s", ms / 1000) : "\(Int(ms.rounded())) ms"
+        if ms >= 1000 {
+            let seconds = (ms / 1000).formatted(.number.precision(.fractionLength(2)))
+            return String(localized: "\(seconds) s", bundle: .greeceKit, comment: "A duration in seconds, abbreviated, such as “2.45 s”")
+        }
+        let milliseconds = Int(ms.rounded())
+        return String(localized: "\(milliseconds) ms", bundle: .greeceKit, comment: "A duration in milliseconds, abbreviated, such as “340 ms”")
     }
 }

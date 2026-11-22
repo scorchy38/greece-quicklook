@@ -80,9 +80,35 @@ final class DataToolbar: NSView {
 /// from a cell's context menu or a profile's common values and show as tokens in the toolbar, so
 /// the table can be narrowed by pointer alone (Quick Look has no typing).
 final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
+    /// What the table's rows are, for its count: "1,204 rows", "12 of 40 packages".
+    enum Unit {
+        case rows, records, packages, strings, rules
+
+        func count(_ n: Int) -> String {
+            switch self {
+            case .rows: return String(localized: "\(n) rows", bundle: .greeceKit, comment: "Rows in a table")
+            case .records: return String(localized: "\(n) records", bundle: .greeceKit, comment: "Records (rows) in a data file")
+            case .packages: return String(localized: "\(n) packages", bundle: .greeceKit, comment: "Packages a lock file pins")
+            case .strings: return String(localized: "\(n) strings", bundle: .greeceKit, comment: "Translatable strings in a strings file or string catalog")
+            case .rules: return String(localized: "\(n) rules", bundle: .greeceKit, comment: "Plural rules in a .stringsdict file")
+            }
+        }
+
+        /// "12 of 1,204 rows" while a filter hides the others.
+        func filtered(_ shown: Int, of total: Int) -> String {
+            switch self {
+            case .rows: return String(localized: "\(shown) of \(total) rows", bundle: .greeceKit, comment: "Rows a filter leaves in a table, of all its rows")
+            case .records: return String(localized: "\(shown) of \(total) records", bundle: .greeceKit, comment: "Records a filter leaves in a table, of all its records")
+            case .packages: return String(localized: "\(shown) of \(total) packages", bundle: .greeceKit, comment: "Packages a filter leaves in a lock file’s table, of all of them")
+            case .strings: return String(localized: "\(shown) of \(total) strings", bundle: .greeceKit, comment: "Strings a filter leaves in a string catalog’s table, of all of them")
+            case .rules: return String(localized: "\(shown) of \(total) rules", bundle: .greeceKit, comment: "Plural rules a filter leaves in a .stringsdict file’s table, of all of them")
+            }
+        }
+    }
+
     struct Options {
-        var unit = ("row", "rows")
-        var filterPlaceholder = "Filter"
+        var unit = Unit.rows
+        var filterPlaceholder = String(localized: "Filter", bundle: .greeceKit, comment: "Placeholder of a table’s filter field")
         /// Offer column profiles (a strip under each header, details on click).
         var profiles = true
         /// Strips that aren't profiles: field types, translation progress.
@@ -126,7 +152,8 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         tokens.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         toolbar.leading.addArrangedSubview(tokens)
         if profileable {
-            let button = DataToolbar.iconButton("chart.bar.xaxis", toolTip: "Column Profiles", target: self, action: #selector(toggleProfiles(_:)))
+            let button = DataToolbar.iconButton("chart.bar.xaxis", toolTip: String(localized: "Column Profiles", bundle: .greeceKit, comment: "Tooltip of a toolbar button that shows each column’s type and spread"),
+                                                target: self, action: #selector(toggleProfiles(_:)))
             button.state = .on
             toolbar.trailing.addArrangedSubview(button)
             profileButton = button
@@ -194,13 +221,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
 
     private func updateCount() {
         let total = source.totalRows
-        let unit = total == 1 ? options.unit.0 : options.unit.1
-        var text: String
-        if !source.isFiltered {
-            text = "\(total.formatted()) \(unit)"
-        } else {
-            text = "\(source.rowCount.formatted()) of \(total.formatted()) \(unit)"
-        }
+        var text = source.isFiltered ? options.unit.filtered(source.rowCount, of: total) : options.unit.count(total)
         if let note = options.note, !source.isFiltered { text += "  ·  " + note }
         countLabel.stringValue = text
     }
@@ -277,13 +298,14 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
         }
         if !finished {
             updateTokens()
-            countLabel.stringValue = "Filtering…"
+            countLabel.stringValue = String(localized: "Filtering…", bundle: .greeceKit, comment: "In a table’s toolbar while a filter is applied")
         }
     }
 
     private func columnName(_ column: Int) -> String {
         let title = source.title(ofColumn: column).trimmingCharacters(in: .whitespaces)
-        return title.isEmpty ? "Column \(DelimitedTable.columnLetter(column))" : title
+        let letter = DelimitedTable.columnLetter(column)
+        return title.isEmpty ? String(localized: "Column \(letter)", bundle: .greeceKit, comment: "A table column without a name. The argument is its letter, such as “C”") : title
     }
 
     private func updateTokens() {
