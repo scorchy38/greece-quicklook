@@ -83,18 +83,22 @@
     const imperial = data.units === 'imperial';
     const planar = !!data.planar;
 
+    const ui = {
+      map: esc(kit.t('Map')), layers: esc(kit.t('Layers')), showAll: esc(kit.t('Show All')),
+      zoomIn: esc(kit.t('Zoom In')), zoomOut: esc(kit.t('Zoom Out')),
+    };
     root.innerHTML = `
-      <div id="map" class="map" aria-label="Map"></div>
+      <div id="map" class="map" aria-label="${ui.map}"></div>
       <div class="graticule-labels" aria-hidden="true"></div>
       <div class="map-controls top">
-        <button class="glass round" id="layers-button" type="button" title="Layers" aria-label="Layers" aria-expanded="false">${ICONS.layers}</button>
-        <button class="glass round" id="fit-button" type="button" title="Show all (F)" aria-label="Show all">${ICONS.fit}</button>
+        <button class="glass round" id="layers-button" type="button" title="${ui.layers}" aria-label="${ui.layers}" aria-expanded="false">${ICONS.layers}</button>
+        <button class="glass round" id="fit-button" type="button" title="${ui.showAll} (F)" aria-label="${ui.showAll}">${ICONS.fit}</button>
       </div>
       <div class="map-controls bottom">
         <div class="glass stack">
-          <button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">${ICONS.plus}</button>
+          <button id="zoom-in" type="button" title="${ui.zoomIn}" aria-label="${ui.zoomIn}">${ICONS.plus}</button>
           <span class="divider"></span>
-          <button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">${ICONS.minus}</button>
+          <button id="zoom-out" type="button" title="${ui.zoomOut}" aria-label="${ui.zoomOut}">${ICONS.minus}</button>
         </div>
       </div>
       <div class="glass panel layers-panel" id="layers-panel" hidden></div>
@@ -104,7 +108,7 @@
       <div class="map-footer"><div class="scale-slot"></div><div class="attribution"></div></div>`;
 
     if (!window.maplibregl) {
-      root.innerHTML = `<div class="empty">${esc('The map couldn’t start.')}</div>`;
+      root.innerHTML = `<div class="empty">${esc(kit.t('The map couldn’t start.'))}</div>`;
       return;
     }
 
@@ -323,13 +327,18 @@
       return { step, data: { type: 'FeatureCollection', features } };
     }
 
+    /** Compass letters differ by language (German writes east as O). */
+    const DEGREES = {
+      N: (v) => kit.t('{0}°N', v), S: (v) => kit.t('{0}°S', v), E: (v) => kit.t('{0}°E', v), W: (v) => kit.t('{0}°W', v),
+    };
+
     /** "119.75°W" on a quarter-degree grid, "120°W" where the line is whole. */
     function formatDegree(value, positive, negative, step) {
       const digits = (String(step).split('.')[1] || '').length;
       let v = value;
       if (positive === 'E') { v = ((v + 540) % 360) - 180; }
       if (Math.abs(v) < step / 1000) return '0°';
-      return `${Number(Math.abs(v).toFixed(digits))}°${v < 0 ? negative : positive}`;
+      return DEGREES[v < 0 ? negative : positive](kit.number(Math.abs(v), { maximumFractionDigits: digits, useGrouping: false }));
     }
 
     let graticuleFrame = 0;
@@ -656,12 +665,16 @@
         }
       } else {
         const props = Object.keys(f.properties || {}).map((k) => [k, String(f.properties[k]), typeof f.properties[k] === 'number' ? 'n' : 's']);
-        showInspector({ layer: f.sourceLayer || 'Tile', geometry: f.geometry ? geometryName(f.geometry.type) : '', properties: props }, e.lngLat);
+        showInspector({ layer: f.sourceLayer || kit.t('Tile'), geometry: f.geometry ? geometryName(f.geometry.type) : '', properties: props }, e.lngLat);
       }
     });
 
+    const GEOMETRY_NAMES = {
+      Point: () => kit.t('Point'), MultiPoint: () => kit.t('Points'), LineString: () => kit.t('Line [shape]'),
+      MultiLineString: () => kit.t('Lines'), Polygon: () => kit.t('Polygon'), MultiPolygon: () => kit.t('Polygons'),
+    };
     function geometryName(type) {
-      return { Point: 'Point', MultiPoint: 'Points', LineString: 'Line', MultiLineString: 'Lines', Polygon: 'Polygon', MultiPolygon: 'Polygons' }[type] || type;
+      return Object.prototype.hasOwnProperty.call(GEOMETRY_NAMES, type) ? GEOMETRY_NAMES[type]() : type;
     }
 
     function titleOf(details) {
@@ -671,7 +684,7 @@
         const p = (details.properties || []).find((row) => row[0] === k && row[1]);
         if (p) return p[1];
       }
-      return details.geometry || 'Feature';
+      return details.geometry || kit.t('Feature');
     }
 
     function closeInspector() {
@@ -686,28 +699,29 @@
       if (old) old.remove();
       const card = document.createElement('section');
       card.className = 'glass card inspector' + (old ? '' : ' appearing');
-      card.setAttribute('aria-label', 'Feature');
+      card.setAttribute('aria-label', kit.t('Feature'));
       const subtitle = [details.layer, details.geometry, details.length, details.area].filter(Boolean).map(esc).join(' · ');
       const rows = (details.properties || []).filter((r) => r[0] !== 'name' || r[1] !== details.name).map(([key, value, kind]) => {
         let cell;
         if (kind === 'z') cell = '<span class="null">—</span>';
         else if (kind === 'j') cell = `<code>${esc(value)}</code>`;
         else if (kind === 'n') cell = `<span class="num">${esc(formatNumber(value))}</span>`;
-        else if (kind === 'b') cell = `<span class="bool">${value === 'true' ? 'Yes' : 'No'}</span>`;
+        else if (kind === 'b') cell = `<span class="bool">${esc(value === 'true' ? kit.t('Yes') : kit.t('No'))}</span>`;
         else if (/^https?:\/\/\S+$/.test(value)) cell = `<a href="${esc(value)}">${esc(value)}</a>`;
         else cell = esc(value);
         return `<tr><th scope="row">${esc(key)}</th><td>${cell}</td></tr>`;
       }).join('');
-      const position = details.position ? `<div class="position"><span>${esc(details.position)}</span><button class="link" type="button" data-copy="${esc(details.position)}">Copy</button></div>` : '';
+      const position = details.position ? `<div class="position"><span>${esc(details.position)}</span><button class="link" type="button" data-copy="${esc(details.position)}">${esc(kit.t('Copy'))}</button></div>` : '';
+      const close = esc(kit.t('Close'));
       card.innerHTML = `
         <header>
           <div class="titles"><h2>${esc(titleOf(details))}</h2>${subtitle ? `<p>${subtitle}</p>` : ''}</div>
-          <button class="close" type="button" aria-label="Close" title="Close">${ICONS.close}</button>
+          <button class="close" type="button" aria-label="${close}" title="${close}">${ICONS.close}</button>
         </header>
         <div class="body">
           ${position}
           <div class="detail" hidden></div>
-          ${rows ? `<table class="props">${rows}</table>` : (details.detail ? '' : '<p class="none">No attributes</p>')}
+          ${rows ? `<table class="props">${rows}</table>` : (details.detail ? '' : `<p class="none">${esc(kit.t('No attributes'))}</p>`)}
         </div>`;
       if (details.detail) {
         const detail = card.querySelector('.detail');
@@ -732,7 +746,7 @@
       const n = Number(value);
       if (!isFinite(n)) return value;
       if (Number.isInteger(n) && Math.abs(n) >= 1900 && Math.abs(n) <= 2100) return String(n);
-      return n.toLocaleString(undefined, { maximumFractionDigits: 6 });
+      return kit.number(n, { maximumFractionDigits: 6 });
     }
 
     // ---------------------------------------------------------------- Layers panel
@@ -742,13 +756,14 @@
       if (dataLayers.length) {
         const rows = dataLayers.map((d) => {
           const counts = [];
-          if (d.layer.polygons) counts.push(`${d.layer.polygons.toLocaleString()} ${d.layer.polygons === 1 ? 'area' : 'areas'}`);
-          if (d.layer.lines) counts.push(`${d.layer.lines.toLocaleString()} ${d.layer.lines === 1 ? 'line' : 'lines'}`);
-          if (d.layer.points) counts.push(`${d.layer.points.toLocaleString()} ${d.layer.points === 1 ? 'point' : 'points'}`);
+          if (d.layer.polygons) counts.push(kit.plural(d.layer.polygons, '{0} areas'));
+          if (d.layer.lines) counts.push(kit.plural(d.layer.lines, '{0} lines [shape]'));
+          if (d.layer.points) counts.push(kit.plural(d.layer.points, '{0} points'));
           const swatch = OSM_ROLES.has(d.layer.role) ? '' : `<span class="swatch" style="--swatch:${color(d.layer.color != null ? d.layer.color : d.index)}"></span>`;
-          return `<label class="row"><input type="checkbox" data-layer="${d.index}" ${d.layer.hidden ? '' : 'checked'}>${swatch}<span class="name">${esc(d.layer.name)}</span><span class="count">${esc(counts.join(', '))}</span></label>`;
+          return `<label class="row"><input type="checkbox" data-layer="${d.index}" ${d.layer.hidden ? '' : 'checked'}>${swatch}<span class="name">${esc(d.layer.name)}</span><span class="count">${esc(counts.length ? kit.list(counts, { type: 'unit', style: 'short' }) : '')}</span></label>`;
         }).join('');
-        sections.push(`<h3>${esc(data.format === 'geopackage' ? 'Tables' : data.format === 'topojson' ? 'Objects' : 'Layers')}</h3>${rows}`);
+        const heading = data.format === 'geopackage' ? kit.t('Tables') : data.format === 'topojson' ? kit.t('Objects') : kit.t('Layers');
+        sections.push(`<h3>${esc(heading)}</h3>${rows}`);
       }
       const vector = Object.keys(vectorLayerIDs);
       if (vector.length) {
@@ -756,17 +771,17 @@
           const v = vectorLayerIDs[key];
           return `<label class="row"><input type="checkbox" data-vector="${esc(key)}" ${v.hidden ? '' : 'checked'}><span class="swatch" style="--swatch:${v.color}"></span><span class="name">${esc(v.name)}</span></label>`;
         }).join('');
-        sections.push(`<h3>Tile Layers</h3>${rows}`);
+        sections.push(`<h3>${esc(kit.t('Tile Layers'))}</h3>${rows}`);
       }
       const mapRows = [];
       if (!planar) {
-        mapRows.push(`<label class="row"><input type="checkbox" data-toggle="basemap" ${state.basemap ? 'checked' : ''}><span class="name">Basemap</span></label>`);
-        mapRows.push(`<label class="row"><input type="checkbox" data-toggle="grid" ${state.grid ? 'checked' : ''}><span class="name">Grid</span></label>`);
+        mapRows.push(`<label class="row"><input type="checkbox" data-toggle="basemap" ${state.basemap ? 'checked' : ''}><span class="name">${esc(kit.t('Basemap'))}</span></label>`);
+        mapRows.push(`<label class="row"><input type="checkbox" data-toggle="grid" ${state.grid ? 'checked' : ''}><span class="name">${esc(kit.t('Grid'))}</span></label>`);
       }
-      if (labelMarkers.length) mapRows.push(`<label class="row"><input type="checkbox" data-toggle="labels" ${state.labels ? 'checked' : ''}><span class="name">Labels</span></label>`);
-      if (mapRows.length) sections.push(`<h3>Map</h3>${mapRows.join('')}`);
-      const crs = data.crs ? `<p class="crs">${esc(data.crs)}${data.reprojected ? '<br>Reprojected to WGS 84 for display' : ''}</p>` : '';
-      layersPanel.innerHTML = sections.join('') + crs + (planar ? '' : '<p class="credit">Basemap: Natural Earth</p>');
+      if (labelMarkers.length) mapRows.push(`<label class="row"><input type="checkbox" data-toggle="labels" ${state.labels ? 'checked' : ''}><span class="name">${esc(kit.t('Labels'))}</span></label>`);
+      if (mapRows.length) sections.push(`<h3>${esc(kit.t('Map'))}</h3>${mapRows.join('')}`);
+      const crs = data.crs ? `<p class="crs">${esc(data.crs)}${data.reprojected ? `<br>${esc(kit.t('Reprojected to WGS 84 for display'))}` : ''}</p>` : '';
+      layersPanel.innerHTML = sections.join('') + crs + (planar ? '' : `<p class="credit">${esc(kit.t('Basemap: {0}', 'Natural Earth'))}</p>`);
       layersPanel.querySelectorAll('input[data-layer]').forEach((input) => {
         input.onchange = () => { const d = dataLayers.find((x) => String(x.index) === input.dataset.layer); if (d) setLayerVisible(d, input.checked); };
       });
@@ -819,27 +834,29 @@
       const meta = {};
       (t.metadata || []).forEach(([k, v]) => { meta[k] = v; });
       const zoomRange = t.minzoom === t.maxzoom ? `${t.minzoom}` : `${t.minzoom}–${t.maxzoom}`;
+      // [label, value, value is markup]
       const rows = [
-        ['Format', t.kind === 'vector' ? 'Vector tiles (PBF)' : t.format.toUpperCase()],
-        ['Type', meta.type],
-        ['Zoom', zoomRange],
-        ['Showing', `<span class="current-zoom"></span>`],
-        ['Tile size', t.kind === 'raster' ? `${t.tileSize} px` : null],
-        ['Layers', t.kind === 'vector' ? String(t.vectorLayers.length) : null],
-        ['Bounds', t.bounds ? t.bounds.map((v) => Number(v).toFixed(3)).join(', ') : null],
-        ['Center', meta.center],
-        ['Version', meta.version],
-        ['Scheme', meta.scheme],
-        ['Generator', meta.generator],
+        [kit.t('Format'), t.kind === 'vector' ? kit.t('Vector tiles (PBF)') : t.format.toUpperCase()],
+        [kit.t('Type'), meta.type],
+        [kit.t('Zoom'), zoomRange],
+        [kit.t('Showing'), `<span class="current-zoom"></span>`, true],
+        [kit.t('Tile size'), t.kind === 'raster' ? `${t.tileSize} px` : null],
+        [kit.t('Layers'), t.kind === 'vector' ? kit.number(t.vectorLayers.length) : null],
+        [kit.t('Bounds'), t.bounds ? t.bounds.map((v) => Number(v).toFixed(3)).join(', ') : null],
+        [kit.t('Center'), meta.center],
+        [kit.t('Version'), meta.version],
+        [kit.t('Scheme'), meta.scheme],
+        [kit.t('Generator'), meta.generator],
       ].filter((r) => r[1] != null && r[1] !== '');
       const card = document.createElement('section');
       card.className = 'glass card tiles-card';
       const description = meta.description ? `<p class="description">${esc(stripTags(meta.description))}</p>` : '';
       const attribution = t.attribution ? `<p class="attribution-text">${esc(stripTags(t.attribution))}</p>` : '';
+      const kindName = t.kind === 'vector' ? kit.t('Vector') : kit.t('Raster');
       card.innerHTML = `
-        <header><div class="titles"><h2>${esc(t.name)}</h2><p>MBTiles · ${esc(t.kind === 'vector' ? 'Vector' : 'Raster')}</p></div>
-          <button class="collapse" type="button" aria-label="Collapse" aria-expanded="true">${ICONS.chevron}</button></header>
-        <div class="body">${description}<table class="props">${rows.map(([k, v]) => `<tr><th scope="row">${esc(k)}</th><td>${k === 'Showing' ? v : esc(v)}</td></tr>`).join('')}</table>${attribution}</div>`;
+        <header><div class="titles"><h2>${esc(t.name)}</h2><p>MBTiles · ${esc(kindName)}</p></div>
+          <button class="collapse" type="button" aria-label="${esc(kit.t('Collapse'))}" aria-expanded="true">${ICONS.chevron}</button></header>
+        <div class="body">${description}<table class="props">${rows.map(([k, v, markup]) => `<tr><th scope="row">${esc(k)}</th><td>${markup ? v : esc(v)}</td></tr>`).join('')}</table>${attribution}</div>`;
       const button = card.querySelector('.collapse');
       button.onclick = () => {
         const collapsed = card.classList.toggle('collapsed');
@@ -847,7 +864,10 @@
       };
       cards.appendChild(card);
       const zoomLabel = card.querySelector('.current-zoom');
-      const update = () => { zoomLabel.textContent = `Zoom ${map.getZoom().toFixed(1)}${map.getZoom() > t.maxzoom + 0.01 ? ' (overzoomed)' : ''}`; };
+      const update = () => {
+        const zoom = kit.number(map.getZoom(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+        zoomLabel.textContent = map.getZoom() > t.maxzoom + 0.01 ? kit.t('Zoom {0} (overzoomed)', zoom) : kit.t('Zoom {0}', zoom);
+      };
       map.on('zoom', update);
       update();
       if (t.attribution) $('.attribution').textContent = stripTags(t.attribution);
@@ -874,15 +894,17 @@
       return new maplibregl.Marker({ element });
     })();
 
+    /** A number with exactly `digits` decimals, in the page's locale. */
+    const fixed = (value, digits) => kit.number(value, { minimumFractionDigits: digits, maximumFractionDigits: digits });
     function speedText(metresPerSecond) {
       if (metresPerSecond == null) return null;
-      return imperial ? `${(metresPerSecond * 2.236936).toFixed(1)} mph` : `${(metresPerSecond * 3.6).toFixed(1)} km/h`;
+      return imperial ? `${fixed(metresPerSecond * 2.236936, 1)} mph` : `${fixed(metresPerSecond * 3.6, 1)} km/h`;
     }
     function distanceText(m) {
-      if (imperial) { const mi = m / 1609.344; return mi < 0.2 ? `${Math.round(m * 3.28084).toLocaleString()} ft` : `${mi.toFixed(mi < 100 ? 1 : 0)} mi`; }
-      return m < 1000 ? `${Math.round(m).toLocaleString()} m` : `${(m / 1000).toFixed(m < 100000 ? 1 : 0)} km`;
+      if (imperial) { const mi = m / 1609.344; return mi < 0.2 ? `${kit.number(Math.round(m * 3.28084))} ft` : `${fixed(mi, mi < 100 ? 1 : 0)} mi`; }
+      return m < 1000 ? `${kit.number(Math.round(m))} m` : `${fixed(m / 1000, m < 100000 ? 1 : 0)} km`;
     }
-    function elevationText(m) { return imperial ? `${Math.round(m * 3.28084).toLocaleString()} ft` : `${Math.round(m).toLocaleString()} m`; }
+    function elevationText(m) { return imperial ? `${kit.number(Math.round(m * 3.28084))} ft` : `${kit.number(Math.round(m))} m`; }
     function durationText(s) {
       if (s == null) return null;
       const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = Math.floor(s % 60);
@@ -902,17 +924,17 @@
       if (!showsProfile()) return;
       const t = tracks[index];
       const stats = [
-        ['Distance', distanceText(t.distance)],
-        ['Duration', durationText(t.duration)],
-        ['Moving', t.movingTime && t.duration && t.movingTime < t.duration - 60 ? durationText(t.movingTime) : null],
-        ['Elevation Gain', t.gain != null ? elevationText(t.gain) : null],
-        ['Highest', t.maxElevation != null ? elevationText(t.maxElevation) : null],
-        ['Max Speed', speedText(t.maxSpeed)],
-        ['Avg Speed', speedText(t.averageSpeed)],
-        ['Avg Heart Rate', t.averageHeartRate ? `${Math.round(t.averageHeartRate)} bpm` : null],
+        [kit.t('Distance'), distanceText(t.distance)],
+        [kit.t('Duration'), durationText(t.duration)],
+        [kit.t('Moving'), t.movingTime && t.duration && t.movingTime < t.duration - 60 ? durationText(t.movingTime) : null],
+        [kit.t('Elevation Gain'), t.gain != null ? elevationText(t.gain) : null],
+        [kit.t('Highest'), t.maxElevation != null ? elevationText(t.maxElevation) : null],
+        [kit.t('Max Speed'), speedText(t.maxSpeed)],
+        [kit.t('Avg Speed'), speedText(t.averageSpeed)],
+        [kit.t('Avg Heart Rate'), t.averageHeartRate ? kit.t('{0} bpm', Math.round(t.averageHeartRate)) : null],
       ].filter((s) => s[1]);
       const picker = tracks.length > 1
-        ? `<select class="track-picker" aria-label="Track">${tracks.map((x, i) => `<option value="${i}" ${i === index ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>`
+        ? `<select class="track-picker" aria-label="${esc(kit.t('Track'))}">${tracks.map((x, i) => `<option value="${i}" ${i === index ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>`
         : `<h2>${esc(t.name)}</h2>`;
       const hasElevation = t.samples.some((s) => s[1] != null);
       trackCard.innerHTML = `
@@ -967,7 +989,7 @@
           dot.setAttribute('cx', x(s[0])); dot.setAttribute('cy', y(s[1])); dot.removeAttribute('hidden');
           const parts = [distanceText(s[0]), elevationText(s[1])];
           if (s[2] != null) parts.push(durationText(s[2]));
-          if (s[5] != null) parts.push(`${Math.round(s[5])} bpm`);
+          if (s[5] != null) parts.push(kit.t('{0} bpm', Math.round(s[5])));
           tip.textContent = parts.join(' · ');
           tip.hidden = false;
           tip.style.left = `${Math.min(Math.max(x(s[0]) - tip.offsetWidth / 2, 0), width - tip.offsetWidth)}px`;
@@ -1033,7 +1055,7 @@
       await addDataLayers();
       addLabels();
       if (!dataLayers.length && !tiles.length && !(data.overlays || []).length) {
-        $('.notices').insertAdjacentHTML('beforeend', `<div class="glass notice-pill">${ICONS.info}<span>${esc('No features to draw')}</span></div>`);
+        $('.notices').insertAdjacentHTML('beforeend', `<div class="glass notice-pill">${ICONS.info}<span>${esc(kit.t('No features to draw'))}</span></div>`);
       }
     };
     // Small files appear complete; big ones show the map at once and stream their features in.
