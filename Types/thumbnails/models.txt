@@ -1,0 +1,14 @@
+# 3D model and point-cloud thumbnails, rendered natively with SceneKit (GreeceKit/Sources/Modules/Models).
+# macOS draws none for glTF, FBX or COLLADA, and draws STL edge-on in flat grey (it ignores Z-up).
+org.khronos.gltf
+org.khronos.glb
+com.autodesk.mac.fbx
+org.khronos.collada.digital-asset-exchange
+public.geometry-definition-format
+public.standard-tesselated-geometry-format
+public.polygon-file-format
+com.scorchy.greece.3mf
+com.scorchy.greece.off
+com.scorchy.greece.vox
+com.scorchy.greece.vrm
+com.scorchy.greece.las

@@ -160,6 +160,18 @@
 				<string>com.apple.ascii-property-list</string>
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xcode.app-privacy-property-list</string>
+				<string>org.khronos.gltf</string>
+				<string>org.khronos.glb</string>
+				<string>com.autodesk.mac.fbx</string>
+				<string>org.khronos.collada.digital-asset-exchange</string>
+				<string>public.geometry-definition-format</string>
+				<string>public.standard-tesselated-geometry-format</string>
+				<string>public.polygon-file-format</string>
+				<string>com.scorchy.greece.3mf</string>
+				<string>com.scorchy.greece.off</string>
+				<string>com.scorchy.greece.vox</string>
+				<string>com.scorchy.greece.vrm</string>
+				<string>com.scorchy.greece.las</string>
 			</array>
 			<key>QLThumbnailMinimumDimension</key>
 			<integer>0</integer>
