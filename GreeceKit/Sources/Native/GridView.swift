@@ -71,8 +71,9 @@ extension GridSource {
     func isDimmed(row: Int) -> Bool { false }
 }
 
-/// A spreadsheet-quality table: row numbers, numeric alignment, sorting, copy as TSV, and an
-/// optional strip under each header (column types, profiles, progress).
+/// A spreadsheet-quality table: row numbers, numeric alignment, sorting, copy as TSV, context
+/// menus on cells and titles, and an optional strip under each header (column types, profiles,
+/// progress).
 final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
     let scrollView = NSScrollView()
