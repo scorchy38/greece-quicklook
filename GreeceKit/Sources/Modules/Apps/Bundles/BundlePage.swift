@@ -20,7 +20,8 @@ enum BundlePage {
 
         let ticket = facts.source.url.flatMap { NotarizationTicket.stapled(inBundle: $0) }
         let signing = SigningSection.build(signature: facts.macho == nil ? nil : facts.signature, url: facts.source.url, subject: subject,
-                                           ticket: ticket, fileCount: facts.files.count, totalSize: facts.totalSize)
+                                           ticket: ticket, fileCount: facts.filesComplete ? facts.files.count : nil,
+                                           totalSize: facts.filesComplete ? facts.totalSize : nil)
         if facts.macho != nil || facts.executablePath != nil {
             page.badges += signing.badges
             page.sections.append(signing.section)
@@ -48,13 +49,26 @@ enum BundlePage {
         if let section = frameworks(facts) { page.sections.append(section) }
         if let section = libraries(facts) { page.sections.append(section) }
         if let profile = facts.profile { page.sections.append(ProfilePage.embeddedSection(profile)) }
-        if let section = size(facts) { page.sections.append(section) }
+        if facts.filesComplete {
+            if let section = size(facts) { page.sections.append(section) }
+        } else {
+            // Too many files to measure before first paint: measure in the background.
+            page.sections.append(InspectorSection("size", title: "Size", rows: [.pending(id: "size", title: "Measuring…")]))
+            page.checks.append(InspectorCheck(id: "size") {
+                let measured = facts.measured()
+                var rows = size(measured)?.rows ?? []
+                if !measured.filesComplete {
+                    rows.append(.note(InspectorNote(text: "Counted the first \(Format.count(measured.files.count, "file")).", tone: .neutral)))
+                }
+                return InspectorCheckResult(rows: rows)
+            })
+        }
         page.sections.append(info(facts))
 
         var details: [String] = []
         if let version = facts.shortVersion { details.append(version) }
         if let slices = facts.macho?.slices, !slices.isEmpty { details.append(facts.macho!.architectures.joined(separator: ", ")) }
-        if facts.totalSize > 0 { details.append(Format.bytes(facts.totalSize)) }
+        if facts.totalSize > 0, facts.filesComplete { details.append(Format.bytes(facts.totalSize)) }
         page.summary.details = details
 
         if let url = facts.source.url {
@@ -71,9 +85,11 @@ enum BundlePage {
         guard !entitlements.isEmpty else { return nil }
         var rows: [InspectorItem] = []
         var unknown: [InspectorItem] = []
+        var privateKeys: [String] = []
         for key in entitlements.keys.sorted() where !EntitlementCatalog.hidden.contains(key) {
             let value = entitlements[key]!
             if let flag = value as? Bool, flag == false { continue }
+            if EntitlementCatalog.isPrivate(key) { privateKeys.append(key); continue }
             let detail = describe(value)
             if let entry = EntitlementCatalog.describe(key, value: value) {
                 // Sandbox gets its own badge; listing it again adds nothing.
@@ -85,11 +101,20 @@ enum BundlePage {
             }
         }
         rows.sort { rank($0.tone) > rank($1.tone) }
+        if let group = privateGroup(privateKeys) { unknown.append(group) }
         let all = (rows + unknown).map(InspectorRow.item)
         guard !all.isEmpty else { return nil }
         let footer = facts.isSandboxed ? "What the App Sandbox lets it reach. Hover over an item for its entitlement." :
             "Entitlements granted by its signature. Hover over an item for its key."
         return InspectorSection("capabilities", title: "Capabilities", footer: footer, rows: all, visibleLimit: 14)
+    }
+
+    /// Apple's private entitlements matter only to Apple's own software: one row, expanding to the keys.
+    static func privateGroup(_ keys: [String]) -> InspectorItem? {
+        guard !keys.isEmpty else { return nil }
+        return InspectorItem(symbol: "lock.shield", tint: .gray, title: "Private Apple entitlements",
+                             subtitle: "Only Apple’s own software can be granted these.", value: keys.count.formatted(),
+                             details: keys.map { InspectorItem(title: $0, mono: true) })
     }
 
     static func rank(_ tone: InspectorTone) -> Int {
@@ -290,14 +315,17 @@ enum BundlePage {
         let embedded = facts.nested.filter { $0.role == .framework }
         guard !embedded.isEmpty else { return nil }
         let mainTeam = facts.signature?.teamID
-        let rows = embedded.sorted { $0.size > $1.size }.map { framework -> InspectorRow in
+        // Sizes only mean something once every file was counted.
+        let sized = facts.filesComplete
+        let ordered = sized ? embedded.sorted { $0.size > $1.size } : embedded.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        let rows = ordered.map { framework -> InspectorRow in
             var subtitle: String?
             var tone = InspectorTone.neutral
             if let team = framework.teamID, let main = mainTeam, !main.isEmpty, !team.isEmpty, team != main {
                 subtitle = "Signed by another team (\(team))"
                 tone = .caution
             }
-            let value = Format.joined([framework.version, framework.size > 0 ? Format.bytes(framework.size) : nil])
+            let value = Format.joined([framework.version, sized && framework.size > 0 ? Format.bytes(framework.size) : nil])
             return .item(InspectorItem(symbol: "shippingbox", title: framework.name, subtitle: subtitle, value: value.nilIfEmpty,
                                        tone: tone, help: framework.identifier ?? framework.path))
         }

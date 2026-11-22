@@ -87,13 +87,17 @@ enum ProfilePage {
 
     static func capabilitiesSection(_ entitlements: [String: Any]) -> InspectorSection? {
         var rows: [InspectorItem] = []
+        var privateKeys: [String] = []
         for key in entitlements.keys.sorted() where !EntitlementCatalog.hidden.contains(key) {
             let value = entitlements[key]!
             if let flag = value as? Bool, !flag { continue }
+            if EntitlementCatalog.isPrivate(key) { privateKeys.append(key); continue }
             let entry = EntitlementCatalog.describe(key, value: value) ?? CatalogEntry(title: key, symbol: "key", tint: .gray)
             rows.append(InspectorItem(symbol: entry.symbol, tint: entry.tint, title: entry.title, subtitle: BundlePage.describe(value),
                                       tone: entry.tone, help: key))
         }
+        rows.sort { BundlePage.rank($0.tone) > BundlePage.rank($1.tone) }
+        if let group = BundlePage.privateGroup(privateKeys) { rows.append(group) }
         guard !rows.isEmpty else { return nil }
         return InspectorSection("capabilities", title: "Capabilities", footer: "What apps signed with this profile may use.",
                                 rows: rows.map(InspectorRow.item), visibleLimit: 12)

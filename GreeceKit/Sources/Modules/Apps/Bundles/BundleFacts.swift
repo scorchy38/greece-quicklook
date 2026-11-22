@@ -120,7 +120,7 @@ struct BundleFacts {
     static let fileLimit = 150_000
     static let nestedLimit = 96
 
-    init?(source: BundleSource, deadline: Date = Date().addingTimeInterval(1.2)) {
+    init?(source: BundleSource, deadline: Date = Date().addingTimeInterval(0.25)) {
         if !source.exists("Contents/Info.plist"), !source.exists("Resources/Info.plist"), !source.exists("Info.plist"),
            source.isDirectory("Wrapper"), let inner = source.children("Wrapper").first(where: { $0.hasSuffix(".app") }),
            let url = source.url?.appendingPathComponent("Wrapper/" + inner) {
@@ -162,13 +162,27 @@ struct BundleFacts {
         let listing = source.files(limit: Self.fileLimit, deadline: deadline)
         files = listing.files
         filesComplete = listing.complete
-        localizations = Self.localizations(in: files, resources: layout == .macOS ? "Contents/Resources/" : layout == .framework ? "Resources/" : "")
+        // Localizations come from the Resources folder itself, so huge bundles don't need a full walk.
+        let resources = layout == .macOS ? "Contents/Resources" : layout == .framework ? "Resources" : ""
+        localizations = source.children(resources).filter { $0.hasSuffix(".lproj") && $0 != "Base.lproj" }
+            .map { String($0.dropLast(".lproj".count)) }.sorted()
         nested = readNested()
+        sizeNested()
         let profilePath = layout == .macOS ? "Contents/embedded.provisionprofile" : "embedded.mobileprovision"
         if let data = source.data(profilePath, limit: ProvisioningProfile.maxSize) { profile = ProvisioningProfile(data: data) }
         let privacyPath = layout == .macOS ? "Contents/Resources/PrivacyInfo.xcprivacy" : layout == .framework ? "Resources/PrivacyInfo.xcprivacy" : "PrivacyInfo.xcprivacy"
         privacyManifest = source.plist(privacyPath, limit: 1 << 20)
         technologies = detectTechnologies()
+    }
+
+    /// Walks every file with a generous budget (for the deferred Size section of very large bundles).
+    func measured(seconds: TimeInterval = 5) -> BundleFacts {
+        var copy = self
+        let listing = source.files(limit: 2_000_000, deadline: Date().addingTimeInterval(seconds))
+        copy.files = listing.files
+        copy.filesComplete = listing.complete
+        copy.sizeNested()
+        return copy
     }
 
     private static func localizations(in files: [(path: String, size: UInt64)], resources: String) -> [String] {
@@ -233,7 +247,6 @@ struct BundleFacts {
                         }
                     }
                 }
-                nested.size = files.lazy.filter { $0.path.hasPrefix(path + "/") }.reduce(0) { $0.saturatingAdd($1.size) }
                 if role == .loginItem || role == .helper, ext != "app" { nested.role = .helper }
                 result.append(nested)
             }
@@ -241,10 +254,31 @@ struct BundleFacts {
         return result
     }
 
+    /// The team that signed a nested executable ("" for ad hoc), reading only the start of its signature.
     private func teamID(executable path: String) -> String? {
         guard let bytes = source.bytes(path), let file = try? MachOFile.parse(bytes),
-              let signature = CodeSignature.read(from: bytes, macho: file, limit: 2 << 20) else { return nil }
-        return signature.teamID ?? (signature.isAdHoc ? "" : nil)
+              let range = file.preferredSlice?.codeSignature,
+              let data = bytes.read(range.lowerBound, Int(min(UInt64(64 * 1024), UInt64(range.count)))) else { return nil }
+        return CodeSignature.teamIdentity(in: data)
+    }
+
+    /// Each nested item's size, in one pass over the file list.
+    mutating func sizeNested() {
+        guard !nested.isEmpty else { return }
+        var index: [String: Int] = [:]
+        for (position, item) in nested.enumerated() { index[item.path] = position }
+        let depths = Set(nested.map { $0.path.split(separator: "/").count })
+        var totals = [UInt64](repeating: 0, count: nested.count)
+        for file in files {
+            let components = file.path.split(separator: "/", omittingEmptySubsequences: true)
+            for depth in depths where depth < components.count {
+                if let position = index[components.prefix(depth).joined(separator: "/")] {
+                    totals[position] = totals[position].saturatingAdd(file.size)
+                    break
+                }
+            }
+        }
+        for position in nested.indices { nested[position].size = totals[position] }
     }
 
     private func detectTechnologies() -> [String] {

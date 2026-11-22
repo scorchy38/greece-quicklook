@@ -20,14 +20,31 @@ enum EntitlementCatalog {
     static func describe(_ key: String, value: Any) -> CatalogEntry? {
         if let entry = entries[key] { return entry }
         if key.hasPrefix("com.apple.security.temporary-exception.") {
-            let kind = key.dropFirst("com.apple.security.temporary-exception.".count)
-            return CatalogEntry(title: "Sandbox exception: \(kind)", symbol: "exclamationmark.shield", tint: .orange, tone: .caution)
+            let kind = String(key.dropFirst("com.apple.security.temporary-exception.".count))
+            return CatalogEntry(title: sandboxExceptions[kind] ?? "Sandbox exception (\(kind))", symbol: "exclamationmark.shield.fill",
+                                tint: .orange, tone: .caution)
         }
-        if key.hasPrefix("com.apple.private.") {
-            return CatalogEntry(title: "Private Apple entitlement", symbol: "lock.shield", tint: .gray, detail: key)
-        }
+
         return nil
     }
+
+    /// Temporary exceptions punch specific holes in the App Sandbox.
+    static let sandboxExceptions: [String: String] = [
+        "files.home-relative-path.read-only": "Reads files in your home folder",
+        "files.home-relative-path.read-write": "Reads and writes files in your home folder",
+        "files.absolute-path.read-only": "Reads files outside its sandbox",
+        "files.absolute-path.read-write": "Reads and writes files outside its sandbox",
+        "mach-lookup.global-name": "Talks to services outside its sandbox",
+        "mach-register.global-name": "Offers services outside its sandbox",
+        "shared-preference.read-only": "Reads other apps’ settings",
+        "shared-preference.read-write": "Changes other apps’ settings",
+        "apple-events": "Sends Apple events to other apps",
+        "iokit-user-client-class": "Talks to hardware drivers",
+        "audio-unit-host": "Hosts audio units",
+        "sbpl": "Custom sandbox rules",
+    ]
+
+    static func isPrivate(_ key: String) -> Bool { key.hasPrefix("com.apple.private.") }
 
     static let entries: [String: CatalogEntry] = [
         // Sandbox

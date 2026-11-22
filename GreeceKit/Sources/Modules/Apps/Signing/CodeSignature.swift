@@ -184,6 +184,26 @@ struct CodeSignature {
         }
     }
 
+    /// The team ID from the start of a superblob ("" when ad hoc), without hashing or decoding CMS.
+    /// Works on a truncated signature as long as the primary code directory's header is inside it.
+    static func teamIdentity(in data: Data) -> String? {
+        let blob = data.startIndex == 0 ? data : Data(data)
+        let reader = BinaryReader(blob, bigEndian: true)
+        guard reader.u32(at: 0) == superBlobMagic, let count = reader.u32(at: 8).map(Int.init) else { return nil }
+        for index in 0..<min(count, maxBlobs) {
+            guard let type = reader.u32(at: 12 + index * 8), let offset = reader.u32(at: 16 + index * 8).map(Int.init) else { break }
+            guard type == 0, reader.u32(at: offset) == 0xFADE_0C02 else { continue }
+            let version = reader.u32(at: offset + 8) ?? 0
+            let flags = Flags(rawValue: reader.u32(at: offset + 12) ?? 0)
+            if version >= 0x20200, let teamOffset = reader.u32(at: offset + 48).map(Int.init), teamOffset > 0,
+               let team = reader.cString(at: offset + teamOffset, maxLength: 64), !team.isEmpty {
+                return team
+            }
+            return flags.contains(.adhoc) ? "" : nil
+        }
+        return nil
+    }
+
     /// Reads the signature of the preferred slice of a Mach-O file.
     static func read(from source: RandomAccessBytes, macho: MachOFile, limit: Int = 8 << 20) -> CodeSignature? {
         guard let slice = macho.preferredSlice, let range = slice.codeSignature else { return nil }

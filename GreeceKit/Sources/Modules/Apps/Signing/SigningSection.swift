@@ -84,8 +84,12 @@ enum SigningSection {
         // Integrity: only for code on disk, after first paint.
         if let url {
             rows.append(.pending(id: "integrity", title: "Checking the signature…"))
-            let large = (totalSize ?? 0) > 2_000_000_000 || (fileCount ?? 0) > 60_000
-            checks.append(InspectorCheck(id: "integrity") { integrityCheck(url: url, subject: subject, skipResources: large) })
+            let known: Bool? = fileCount.flatMap { count in totalSize.map { isLarge(count: count, bytes: $0) } }
+            checks.append(InspectorCheck(id: "integrity") {
+                // Hashing every resource of a multi-gigabyte bundle takes minutes: check only the code then.
+                let large = known ?? (subject == .bundle ? measureIsLarge(url) : false)
+                return integrityCheck(url: url, subject: subject, skipResources: large)
+            })
         }
 
         if let date = signature.timestamp ?? signature.signingTime {
@@ -136,6 +140,25 @@ enum SigningSection {
 
     static var notStapled: InspectorItem {
         InspectorItem(title: "Notarization", subtitle: "No ticket is stapled. Gatekeeper checks with Apple online the first time it opens.", value: "Not stapled")
+    }
+
+    static func isLarge(count: Int, bytes: UInt64) -> Bool { bytes > 2_000_000_000 || count > 60_000 }
+
+    /// A bounded walk: large if it passes either limit, or if it can't be measured within a second and a half.
+    static func measureIsLarge(_ url: URL) -> Bool {
+        let keys: [URLResourceKey] = [.fileSizeKey, .isRegularFileKey]
+        guard let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: keys, options: [], errorHandler: { _, _ in true }) else { return true }
+        let deadline = Date().addingTimeInterval(1.5)
+        var count = 0
+        var bytes: UInt64 = 0
+        while let item = enumerator.nextObject() as? URL {
+            guard let values = try? item.resourceValues(forKeys: Set(keys)), values.isRegularFile == true else { continue }
+            count += 1
+            bytes = bytes.saturatingAdd(UInt64(values.fileSize ?? 0))
+            if isLarge(count: count, bytes: bytes) { return true }
+            if count % 512 == 0, Date() > deadline { return true }
+        }
+        return false
     }
 
     // MARK: - Security framework checks
