@@ -1,0 +1,5 @@
+/* Greece — matching bracket pair on hover. */
+::highlight(greece-bracket) {
+  background-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--fg);
+}
