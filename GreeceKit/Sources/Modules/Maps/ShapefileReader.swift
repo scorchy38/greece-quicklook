@@ -33,7 +33,7 @@ enum ShapefileReader {
     }
 
     /// Every shapefile inside a ZIP, with its sidecars.
-    static func sources(in zip: ZipMembers, maxBytes: Int) -> [Sources] {
+    static func sources(in zip: MapZipMembers, maxBytes: Int) -> [Sources] {
         var result: [Sources] = []
         let shps = zip.members.filter { $0.name.lowercased().hasSuffix(".shp") && !$0.name.hasPrefix("__MACOSX") && !($0.name as NSString).lastPathComponent.hasPrefix("._") }
         var budget = maxBytes

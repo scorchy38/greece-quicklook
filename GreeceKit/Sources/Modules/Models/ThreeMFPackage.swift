@@ -120,7 +120,7 @@ enum XMLTagScanner {
 /// production extension's components that live in other parts, as Bambu and Prusa write them).
 enum ThreeMFPackage {
 
-    static func rootModelPath(in package: ZipMembers) -> String? {
+    static func rootModelPath(in package: ModelZipMembers) -> String? {
         guard let rels = package.entry(named: "_rels/.rels"), let data = package.contents(of: rels, limit: 1024 * 1024) else { return nil }
         var target: String?
         XMLTagScanner.scan(data) { tag in
@@ -177,7 +177,7 @@ enum ThreeMFPackage {
     }
 
     static func load(_ url: URL, budget: ModelBudget) -> ModelScene? {
-        guard let package = try? ZipMembers(url: url) else { return nil }
+        guard let package = try? ModelZipMembers(url: url) else { return nil }
         let rootPath = rootModelPath(in: package) ?? package.entries.first { $0.name.lowercased().hasSuffix(".model") }?.name
         guard let rootPath else { return nil }
         var parts: [String: Part] = [:]

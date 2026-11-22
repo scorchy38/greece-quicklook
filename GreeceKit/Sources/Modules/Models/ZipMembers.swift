@@ -3,7 +3,7 @@ import CArchive
 
 /// Reads single members out of a ZIP container (3MF packages, zipped AMF). Stored and deflated
 /// members only, with hard limits on entry counts and inflated sizes.
-struct ZipMembers {
+struct ModelZipMembers {
     struct Entry {
         let name: String
         let method: UInt16

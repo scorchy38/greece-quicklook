@@ -176,7 +176,7 @@ enum MapDetection {
     /// A ZIP made of one or more shapefiles (and their sidecars). Reads only the central directory.
     static func isZippedShapefile(_ url: URL) -> Bool {
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-        guard size > 0, size <= 1 << 30, let zip = try? ZipMembers(url: url, maxMembers: 400) else { return false }
+        guard size > 0, size <= 1 << 30, let zip = try? MapZipMembers(url: url, maxMembers: 400) else { return false }
         let files = zip.members.filter { !$0.name.hasSuffix("/") && !$0.name.hasPrefix("__MACOSX") && !($0.name as NSString).lastPathComponent.hasPrefix(".") }
         guard !files.isEmpty, files.count < 400 else { return false }
         let extensions = files.map { ($0.name as NSString).pathExtension.lowercased() }
@@ -256,7 +256,7 @@ enum MapLoader {
             return document
 
         case .kmz:
-            let zip = try ZipMembers(url: file.url)
+            let zip = try MapZipMembers(url: file.url)
             let kml = zip.member(named: "doc.kml") ?? zip.members.first { $0.name.lowercased().hasSuffix(".kml") && !$0.name.hasPrefix("__MACOSX") }
             guard let kml, let data = zip.data(kml, limit: limits.maxBytes) else { throw GeoError.invalid("This KMZ has no readable KML inside.") }
             let base = (kml.name as NSString).deletingLastPathComponent
@@ -324,7 +324,7 @@ enum MapLoader {
             return document
 
         case .zippedShapefile:
-            let zip = try ZipMembers(url: file.url)
+            let zip = try MapZipMembers(url: file.url)
             let all = ShapefileReader.sources(in: zip, maxBytes: limits.maxBytes)
             guard !all.isEmpty else { throw GeoError.invalid("No readable shapefile in this archive.") }
             var budget = GeoBudget(limits)

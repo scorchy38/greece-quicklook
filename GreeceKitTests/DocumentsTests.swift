@@ -547,9 +547,9 @@ final class EPUBTests: DocumentsTestCase {
         // 4 MB of zeros deflates to a few KB: a small bomb.
         let zeros = Data(count: 4 * 1024 * 1024)
         let compressed = try XCTUnwrap(deflate(zeros))
-        XCTAssertNil(ZipMembers.inflate(compressed, expected: 100, limit: 1024 * 1024))
-        XCTAssertEqual(ZipMembers.inflate(compressed, expected: zeros.count, limit: 8 * 1024 * 1024)?.count, zeros.count)
-        XCTAssertNil(ZipMembers.inflate(Data([1, 2, 3, 4, 5]), expected: 10, limit: 100))
+        XCTAssertNil(EPUBZipMembers.inflate(compressed, expected: 100, limit: 1024 * 1024))
+        XCTAssertEqual(EPUBZipMembers.inflate(compressed, expected: zeros.count, limit: 8 * 1024 * 1024)?.count, zeros.count)
+        XCTAssertNil(EPUBZipMembers.inflate(Data([1, 2, 3, 4, 5]), expected: 10, limit: 100))
     }
 
     func testCorruptBooksFailCleanly() throws {

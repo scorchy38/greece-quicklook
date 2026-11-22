@@ -46,7 +46,7 @@ enum Inflate {
 }
 
 /// Reads individual members of a ZIP (KMZ, zipped shapefiles) through its central directory.
-final class ZipMembers {
+final class MapZipMembers {
     struct Member {
         let name: String
         let method: UInt16

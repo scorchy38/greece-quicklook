@@ -248,7 +248,7 @@ struct ModelFacts: Encodable, Equatable {
 
     static func readThreeMF(_ url: URL, deadline: Date) -> ModelFacts {
         var facts = ModelFacts()
-        guard let package = try? ZipMembers(url: url) else { return facts }
+        guard let package = try? ModelZipMembers(url: url) else { return facts }
         let modelEntry = ThreeMFPackage.rootModelPath(in: package).flatMap { package.entry(named: $0) }
             ?? package.entries.first { $0.name.lowercased().hasSuffix(".model") }
         guard let modelEntry, let xml = package.contents(of: modelEntry, limit: scanLimit) else { return facts }

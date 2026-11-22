@@ -2,7 +2,7 @@ import AppKit
 import CArchive
 
 /// Reads members of a ZIP file (stored or deflated) with hard size limits.
-final class ZipMembers {
+final class EPUBZipMembers {
     struct Member {
         var name: String
         var method: UInt16
@@ -113,7 +113,7 @@ final class EPUBBook {
     struct TOCEntry: Encodable { var title: String; var href: String; var chapter: Int?; var anchor: String?; var children: [TOCEntry] }
     struct Person: Encodable { var name: String; var role: String?; var fileAs: String? }
 
-    let archive: ZipMembers
+    let archive: EPUBZipMembers
     var opfPath = ""
     var title = ""
     var subtitle: String?
@@ -142,7 +142,7 @@ final class EPUBBook {
 
     init(url: URL) throws {
         if let size = (try? url.resourceValues(forKeys: [.fileSizeKey]))?.fileSize, size > Self.fileLimit { throw PreviewError.unsupported }
-        archive = try ZipMembers(url: url)
+        archive = try EPUBZipMembers(url: url)
         guard let container = archive.read("META-INF/container.xml", limit: 1 << 20).map({ String(decoding: $0, as: UTF8.self) }) else { throw PreviewError.unsupported }
         for token in Markup.tokens(container) {
             if case .start(let name, let attributes, _) = token, name == "rootfile",
