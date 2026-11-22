@@ -1,0 +1,310 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "3D Studio Model" : {
+      "comment" : "Finder’s Kind for .3ds",
+      "extractionState" : "manual"
+    },
+    "3MF Model" : {
+      "comment" : "Finder’s Kind for .3mf",
+      "extractionState" : "manual"
+    },
+    "Additive Manufacturing File" : {
+      "comment" : "Finder’s Kind for .amf",
+      "extractionState" : "manual"
+    },
+    "Adobe Color Table" : {
+      "comment" : "Finder’s Kind for .act",
+      "extractionState" : "manual"
+    },
+    "Adobe Swatch Exchange" : {
+      "comment" : "Finder’s Kind for .ase",
+      "extractionState" : "manual"
+    },
+    "Agent Skill" : {
+      "comment" : "Finder’s Kind for .skill",
+      "extractionState" : "manual"
+    },
+    "Android App Bundle" : {
+      "comment" : "Finder’s Kind for .aab",
+      "extractionState" : "manual"
+    },
+    "Android Package" : {
+      "comment" : "Finder’s Kind for .apk",
+      "extractionState" : "manual"
+    },
+    "AsciiDoc Document" : {
+      "comment" : "Finder’s Kind for .adoc, .asciidoc",
+      "extractionState" : "manual"
+    },
+    "BibTeX Bibliography" : {
+      "comment" : "Finder’s Kind for .bib, .bibtex",
+      "extractionState" : "manual"
+    },
+    "Checksums" : {
+      "comment" : "Finder’s Kind for .sum",
+      "extractionState" : "manual"
+    },
+    "Comic Book Archive" : {
+      "comment" : "Finder’s Kind for .cbz, .cbr, .cb7, .cbt",
+      "extractionState" : "manual"
+    },
+    "Compressed Tar Archive" : {
+      "comment" : "Finder’s Kind for .taz",
+      "extractionState" : "manual"
+    },
+    "Enterprise Archive" : {
+      "comment" : "Finder’s Kind for .ear",
+      "extractionState" : "manual"
+    },
+    "Firefox Extension" : {
+      "comment" : "Finder’s Kind for .xpi",
+      "extractionState" : "manual"
+    },
+    "GIMP Palette" : {
+      "comment" : "Finder’s Kind for .gpl",
+      "extractionState" : "manual"
+    },
+    "GeoJSON Lines" : {
+      "comment" : "Finder’s Kind for .geojsonl, .geojsonseq, .geojsons, .ndgeojson",
+      "extractionState" : "manual"
+    },
+    "GeoPackage" : {
+      "comment" : "Finder’s Kind for .gpkg",
+      "extractionState" : "manual"
+    },
+    "Gradle Lock File" : {
+      "comment" : "Finder’s Kind for .lockfile",
+      "extractionState" : "manual"
+    },
+    "HTTP Archive" : {
+      "comment" : "Finder’s Kind for .har",
+      "extractionState" : "manual"
+    },
+    "JSON Document" : {
+      "comment" : "Finder’s Kind for .jsonc, .json5, .webmanifest, .jsonld",
+      "extractionState" : "manual"
+    },
+    "JSON Lines" : {
+      "comment" : "Finder’s Kind for .jsonl, .jsonlines",
+      "extractionState" : "manual"
+    },
+    "Jupyter Notebook" : {
+      "comment" : "Finder’s Kind for .ipynb",
+      "extractionState" : "manual"
+    },
+    "KML Document" : {
+      "comment" : "Finder’s Kind for .kml",
+      "extractionState" : "manual"
+    },
+    "KMZ Archive" : {
+      "comment" : "Finder’s Kind for .kmz",
+      "extractionState" : "manual"
+    },
+    "LAS Point Cloud" : {
+      "comment" : "Finder’s Kind for .las",
+      "extractionState" : "manual"
+    },
+    "LAZ Point Cloud" : {
+      "comment" : "Finder’s Kind for .laz",
+      "extractionState" : "manual"
+    },
+    "LRC Lyrics" : {
+      "comment" : "Finder’s Kind for .lrc",
+      "extractionState" : "manual"
+    },
+    "LZMA Compressed Tar Archive" : {
+      "comment" : "Finder’s Kind for .tlz",
+      "extractionState" : "manual"
+    },
+    "LaTeX Document" : {
+      "comment" : "Finder’s Kind for .tex, .ltx, .latex",
+      "extractionState" : "manual"
+    },
+    "MBTiles Map Tiles" : {
+      "comment" : "Finder’s Kind for .mbtiles",
+      "extractionState" : "manual"
+    },
+    "MagicaVoxel Model" : {
+      "comment" : "Finder’s Kind for .vox",
+      "extractionState" : "manual"
+    },
+    "Markdown Document" : {
+      "comment" : "Finder’s Kind for .mdx, .rmd, .qmd, .livemd, .mdown, .mkd",
+      "extractionState" : "manual"
+    },
+    "Mermaid Diagram" : {
+      "comment" : "Finder’s Kind for .mermaid, .mmd",
+      "extractionState" : "manual"
+    },
+    "MicroDVD Subtitles" : {
+      "comment" : "Finder’s Kind for .sub",
+      "extractionState" : "manual"
+    },
+    "NuGet Package" : {
+      "comment" : "Finder’s Kind for .nupkg, .snupkg",
+      "extractionState" : "manual"
+    },
+    "Object File Format Model" : {
+      "comment" : "Finder’s Kind for .off",
+      "extractionState" : "manual"
+    },
+    "OpenStreetMap Data" : {
+      "comment" : "Finder’s Kind for .osm",
+      "extractionState" : "manual"
+    },
+    "Org Document" : {
+      "comment" : "Finder’s Kind for .org",
+      "extractionState" : "manual"
+    },
+    "PCD Point Cloud" : {
+      "comment" : "Finder’s Kind for .pcd",
+      "extractionState" : "manual"
+    },
+    "PGF Figure" : {
+      "comment" : "Finder’s Kind for .pgf",
+      "extractionState" : "manual"
+    },
+    "Parquet Data" : {
+      "comment" : "Finder’s Kind for .parquet, .parq",
+      "extractionState" : "manual"
+    },
+    "Photoshop Swatches" : {
+      "comment" : "Finder’s Kind for .aco",
+      "extractionState" : "manual"
+    },
+    "Pipe-Separated Values" : {
+      "comment" : "Finder’s Kind for .psv",
+      "extractionState" : "manual"
+    },
+    "Procreate Swatches" : {
+      "comment" : "Finder’s Kind for .swatches",
+      "extractionState" : "manual"
+    },
+    "Python Wheel" : {
+      "comment" : "Finder’s Kind for .whl",
+      "extractionState" : "manual"
+    },
+    "Ruby Gem" : {
+      "comment" : "Finder’s Kind for .gem",
+      "extractionState" : "manual"
+    },
+    "SAMI Captions" : {
+      "comment" : "Finder’s Kind for .smi, .sami",
+      "extractionState" : "manual"
+    },
+    "SQLite Database" : {
+      "comment" : "Finder’s Kind for .sqlite, .sqlite3, .db3, .s3db, .sdb",
+      "extractionState" : "manual"
+    },
+    "Shapefile" : {
+      "comment" : "Finder’s Kind for .shp",
+      "extractionState" : "manual"
+    },
+    "Sketch Palette" : {
+      "comment" : "Finder’s Kind for .sketchpalette",
+      "extractionState" : "manual"
+    },
+    "Source Code" : {
+      "comment" : "Finder’s Kind for .cs, .csx, .fish, .ps1, .psm1, .psd1",
+      "extractionState" : "manual"
+    },
+    "Split Archive Part" : {
+      "comment" : "Finder’s Kind for .001",
+      "extractionState" : "manual"
+    },
+    "SubRip Subtitles" : {
+      "comment" : "Finder’s Kind for .srt",
+      "extractionState" : "manual"
+    },
+    "SubStation Alpha Subtitles" : {
+      "comment" : "Finder’s Kind for .ass, .ssa",
+      "extractionState" : "manual"
+    },
+    "Sweave Document" : {
+      "comment" : "Finder’s Kind for .rnw, .snw, .rtex",
+      "extractionState" : "manual"
+    },
+    "Swift Package Lock File" : {
+      "comment" : "Finder’s Kind for .resolved",
+      "extractionState" : "manual"
+    },
+    "TTML Captions" : {
+      "comment" : "Finder’s Kind for .ttml, .dfxp",
+      "extractionState" : "manual"
+    },
+    "TeX Support File" : {
+      "comment" : "Finder’s Kind for .sty, .cls, .dtx, .ins, .bst, .bbx",
+      "extractionState" : "manual"
+    },
+    "Text Document" : {
+      "comment" : "Finder’s Kind for .env, .lock, .properties, .gitignore, .gitattributes, .dockerignore",
+      "extractionState" : "manual"
+    },
+    "TopoJSON Document" : {
+      "comment" : "Finder’s Kind for .topojson",
+      "extractionState" : "manual"
+    },
+    "Typst Document" : {
+      "comment" : "Finder’s Kind for .typ",
+      "extractionState" : "manual"
+    },
+    "VRM Avatar" : {
+      "comment" : "Finder’s Kind for .vrm",
+      "extractionState" : "manual"
+    },
+    "VRML World" : {
+      "comment" : "Finder’s Kind for .wrl, .vrml",
+      "extractionState" : "manual"
+    },
+    "Visual Studio Extension" : {
+      "comment" : "Finder’s Kind for .vsix",
+      "extractionState" : "manual"
+    },
+    "Web Open Font Format" : {
+      "comment" : "Finder’s Kind for .woff",
+      "extractionState" : "manual"
+    },
+    "Web Open Font Format 2" : {
+      "comment" : "Finder’s Kind for .woff2",
+      "extractionState" : "manual"
+    },
+    "Well-Known Text Geometry" : {
+      "comment" : "Finder’s Kind for .wkt",
+      "extractionState" : "manual"
+    },
+    "YouTube Captions" : {
+      "comment" : "Finder’s Kind for .sbv",
+      "extractionState" : "manual"
+    },
+    "Zstandard Compressed File" : {
+      "comment" : "Finder’s Kind for .zst, .zstd",
+      "extractionState" : "manual"
+    },
+    "Zstandard Compressed Tar Archive" : {
+      "comment" : "Finder’s Kind for .tzst",
+      "extractionState" : "manual"
+    },
+    "bzip2 Compressed Tar Archive" : {
+      "comment" : "Finder’s Kind for .tb2",
+      "extractionState" : "manual"
+    },
+    "dBase Table" : {
+      "comment" : "Finder’s Kind for .dbf",
+      "extractionState" : "manual"
+    },
+    "dotLottie Animation" : {
+      "comment" : "Finder’s Kind for .lottie",
+      "extractionState" : "manual"
+    },
+    "lzip Compressed File" : {
+      "comment" : "Finder’s Kind for .lz",
+      "extractionState" : "manual"
+    },
+    "reStructuredText Document" : {
+      "comment" : "Finder’s Kind for .rst, .rest",
+      "extractionState" : "manual"
+    }
+  },
+  "version" : "1.0"
+}

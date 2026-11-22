@@ -1,0 +1,18 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "The name of Greece’s “Maps” preview extension, shown in System Settings › Extensions › Quick Look and in Greece’s Preview Kinds",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maps"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
