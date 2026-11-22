@@ -180,6 +180,12 @@ final class CodeFormatterTests: XCTestCase {
         XCTAssertEqual(tree["Tugs"] as? Int, 2)
     }
 
+    func testJSONWithCommentsIsNotReformatted() {
+        let jsonc = "// settings\n{\"a\":1,\"b\":[1,2,3],\"c\":\"x\"}"
+        XCTAssertNil(JSONFormatter.prettyPrinted(jsonc), "removing the line break would swallow the object into the comment")
+        XCTAssertNotNil(JSONFormatter.prettyPrinted(#"{"url":"https://example.com/a//b"}"#), "slashes inside strings are fine")
+    }
+
     func testTruncatedJSONIsFormattedAndServesTheWholeFile() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("GreeceCode-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

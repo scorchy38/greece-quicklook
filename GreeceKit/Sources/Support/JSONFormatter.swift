@@ -74,6 +74,9 @@ public enum JSONFormatter {
                 output.append(contentsOf: [0x3A, 0x20])
             case 0x20, 0x09, 0x0A, 0x0D:
                 break
+            case 0x2F: // /
+                // Comments (JSONC) end at line breaks this would remove: leave the file as it is.
+                return nil
             default:
                 output.append(byte)
             }
