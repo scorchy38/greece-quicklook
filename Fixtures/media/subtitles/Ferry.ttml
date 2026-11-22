@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xmlns:tts="http://www.w3.org/ns/ttml#styling"
+    xmlns:ttm="http://www.w3.org/ns/ttml#metadata" xmlns:ttp="http://www.w3.org/ns/ttml#parameter"
+    ttp:frameRate="25" xml:lang="en">
+  <head>
+    <metadata>
+      <ttm:title>The Morning Ferry</ttm:title>
+      <ttm:agent xml:id="eleni" type="character"><ttm:name type="full">Eleni</ttm:name></ttm:agent>
+      <ttm:agent xml:id="nikos" type="character"><ttm:name type="full">Nikos</ttm:name></ttm:agent>
+    </metadata>
+    <styling>
+      <style xml:id="italic" tts:fontStyle="italic"/>
+      <style xml:id="yellow" tts:color="#ffd60a"/>
+    </styling>
+    <layout>
+      <region xml:id="bottom" tts:origin="10% 80%" tts:extent="80% 15%"/>
+    </layout>
+  </head>
+  <body region="bottom">
+    <div>
+      <p begin="00:00:01.200" end="00:00:03.800">The morning ferry leaves Piraeus at seven.</p>
+      <p begin="00:00:04.100" end="00:00:06.900" ttm:agent="eleni"><span style="italic">Kalimera.</span> Two tickets to Naxos, please.</p>
+      <p begin="00:00:07:08" dur="2.2s">Deck or cabin?<br/>Deck. We want the sea air.</p>
+      <p begin="9.8s" end="10.6s" style="yellow">Twenty-four euros each, cash or card, and the boat is late.</p>
+      <p begin="00:00:12.000" end="00:00:15.400" ttm:agent="nikos">Look, <span tts:fontWeight="bold">dolphins</span>, right behind the stern.</p>
+    </div>
+  </body>
+</tt>

@@ -1,0 +1,35 @@
+WEBVTT - The Morning Ferry
+Kind: captions
+Language: en
+
+STYLE
+::cue(.loud) { color: orange; }
+
+NOTE
+Written for Greece's test fixtures.
+
+intro
+00:00:01.200 --> 00:00:03.800 align:center
+The morning ferry leaves Piraeus at seven.
+
+00:00:04.100 --> 00:00:06.900
+<v Eleni><i>Kalimera.</i> Two tickets to Naxos, please.
+
+00:00:07.300 --> 00:00:09.500 position:10%
+<v Ticket Clerk>Deck or cabin?
+
+00:00:09.500 --> 00:00:11.000
+<v Eleni>Deck. We want the sea air.
+
+00:00:11.200 --> 00:00:12.000
+<v Ticket Clerk>Twenty-four euros each, cash or card, the boat is late.
+
+00:00:12.500 --> 00:00:15.900
+<v.loud Nikos>Look! Dolphins, <c.blue>right behind the stern</c>!
+
+00:00:16.400 --> 00:00:19.800
+<v Eleni>By noon the islands rise out of the haze,
+one blue ridge after another.
+
+00:00:20.200 --> 00:00:23.000
+<v Nikos>Paros first, then Naxos <00:00:21.500>and the Portara.

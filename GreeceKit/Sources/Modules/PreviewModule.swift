@@ -77,6 +77,7 @@ enum PreviewModules {
         MapsModule.self,       // before archives: zipped shapefiles are maps
         ModelsModule.self,     // before archives: 3MF models are zip packages
         DocumentsModule.self,  // before archives: EPUB books are zip packages
+        MediaModule.self,      // before archives: dotLottie and Procreate swatches are zip packages
         ArchivesModule.self,
     ]
 

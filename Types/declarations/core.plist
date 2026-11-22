@@ -164,8 +164,6 @@
 				<string>npmrc</string>
 				<string>nvmrc</string>
 				<string>envrc</string>
-				<string>srt</string>
-				<string>vtt</string>
 				<string>nfo</string>
 			</array>
 		</dict>

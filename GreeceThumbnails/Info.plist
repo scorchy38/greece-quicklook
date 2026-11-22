@@ -234,6 +234,26 @@
 				<string>com.scorchy.greece.mbtiles</string>
 				<string>com.scorchy.greece.osm</string>
 				<string>com.scorchy.greece.wkt</string>
+				<string>com.scorchy.greece.woff</string>
+				<string>com.scorchy.greece.woff2</string>
+				<string>com.scorchy.greece.subrip</string>
+				<string>org.w3.webvtt</string>
+				<string>com.scorchy.greece.substation</string>
+				<string>com.scorchy.greece.sami</string>
+				<string>com.scorchy.greece.ttml</string>
+				<string>com.scorchy.greece.sbv</string>
+				<string>com.scorchy.greece.microdvd</string>
+				<string>com.scorchy.greece.lrc</string>
+				<string>public.svg-image</string>
+				<string>com.scorchy.greece.lottie</string>
+				<string>com.scorchy.greece.ase</string>
+				<string>org.aseprite.aseprite.sprite</string>
+				<string>com.scorchy.greece.aco</string>
+				<string>com.scorchy.greece.act</string>
+				<string>com.apple.color-file</string>
+				<string>com.scorchy.greece.gpl</string>
+				<string>com.scorchy.greece.procreate-swatches</string>
+				<string>com.scorchy.greece.sketchpalette</string>
 				<string>org.khronos.gltf</string>
 				<string>org.khronos.glb</string>
 				<string>com.autodesk.mac.fbx</string>
