@@ -180,14 +180,25 @@ public struct DiagramTheme: Identifiable, Hashable, Sendable {
         dark: p("#1E1E1E", "#2C2C2E", "#F5F5F7", "#5A5A5F", "#1E3350", "#262628", "#8E8E93", "#D1D1D6", "#3A3321", "#F5ECD0"),
         card: false))
 
-    public static let matchCode = DiagramTheme(id: "match-code", name: "Match Code Theme", style: .matchCode)
-    public static let matchReading = DiagramTheme(id: "match-reading", name: "Match Reading Theme", style: .matchReading)
+    public static let matchCode = DiagramTheme(
+        id: "match-code", name: String(localized: "Match Code Theme", bundle: .greeceKit, comment: "Diagram theme option: colours taken from the code theme"),
+        style: .matchCode)
+    public static let matchReading = DiagramTheme(
+        id: "match-reading", name: String(localized: "Match Reading Theme", bundle: .greeceKit, comment: "Diagram theme option: colours taken from the reading theme"),
+        style: .matchReading)
 
+    // Mermaid's built-in themes, under the names Mermaid gives them.
     public static let mermaid = DiagramTheme(id: "mermaid", name: "Mermaid", style: .builtIn(light: "default", dark: "dark"))
-    public static let neutral = DiagramTheme(id: "neutral", name: "Neutral", style: .builtIn(light: "neutral", dark: "dark"))
-    public static let forest = DiagramTheme(id: "forest", name: "Forest", style: .builtIn(light: "forest", dark: "forest"))
-    public static let dark = DiagramTheme(id: "dark", name: "Dark", style: .builtIn(light: "dark", dark: "dark"))
-    public static let base = DiagramTheme(id: "base", name: "Base", style: .builtIn(light: "base", dark: "base"))
+    public static let neutral = DiagramTheme(
+        id: "neutral", name: String(localized: "Neutral", bundle: .greeceKit, comment: "Diagram theme name: Mermaid’s grey “neutral” theme"),
+        style: .builtIn(light: "neutral", dark: "dark"))
+    public static let forest = DiagramTheme(
+        id: "forest", name: String(localized: "Forest", bundle: .greeceKit, comment: "Diagram theme name: Mermaid’s green “forest” theme"),
+        style: .builtIn(light: "forest", dark: "forest"))
+    public static let dark = DiagramTheme(id: "dark", name: PreviewSettings.Appearance.darkTitle, style: .builtIn(light: "dark", dark: "dark"))
+    public static let base = DiagramTheme(
+        id: "base", name: String(localized: "Base", bundle: .greeceKit, comment: "Diagram theme name: Mermaid’s plain “base” theme, the one others build on"),
+        style: .builtIn(light: "base", dark: "base"))
 
     public static let github = DiagramTheme(id: "github", name: "GitHub", style: .palette(
         light: p("#FFFFFF", "#DDF4FF", "#1F2328", "#54AEFF", "#FFF8C5", "#F6F8FA", "#59636E", "#1F2328", "#FFF8C5", "#1F2328"),
@@ -234,22 +245,22 @@ public struct DiagramTheme: Identifiable, Hashable, Sendable {
         dark: p("#282C34", "#323A49", "#ABB2BF", "#61AFEF", "#2C313A", "#21252B", "#9DA5B4", "#ABB2BF", "#3E4451", "#E5C07B"),
         card: true))
 
-    public static let blueprint = DiagramTheme(id: "blueprint", name: "Blueprint", style: .palette(
+    public static let blueprint = DiagramTheme(id: "blueprint", name: String(localized: "Blueprint", bundle: .greeceKit, comment: "Diagram theme name: white lines on blue"), style: .palette(
         light: p("#EAF2FB", "#FFFFFF", "#0B3A6F", "#1F5FA8", "#DCE9F8", "#F4F8FD", "#1F5FA8", "#0B3A6F", "#FFFFFF", "#0B3A6F"),
         dark: p("#0E2A4A", "#133A66", "#E8F1FC", "#9CC3F0", "#10345C", "#0B2440", "#9CC3F0", "#E8F1FC", "#133A66", "#E8F1FC"),
         card: true))
 
-    public static let monochrome = DiagramTheme(id: "monochrome", name: "Monochrome", style: .palette(
+    public static let monochrome = DiagramTheme(id: "monochrome", name: String(localized: "Monochrome", bundle: .greeceKit, comment: "Diagram theme name: black and white"), style: .palette(
         light: p("#FFFFFF", "#FFFFFF", "#111111", "#111111", "#F2F2F2", "#FAFAFA", "#333333", "#111111", "#F2F2F2", "#111111"),
         dark: p("#161616", "#161616", "#EDEDED", "#EDEDED", "#262626", "#1E1E1E", "#CFCFCF", "#EDEDED", "#262626", "#EDEDED"),
         card: false))
 
-    public static let pastel = DiagramTheme(id: "pastel", name: "Pastel", style: .palette(
+    public static let pastel = DiagramTheme(id: "pastel", name: String(localized: "Pastel", bundle: .greeceKit, comment: "Diagram theme name: soft, light colours"), style: .palette(
         light: p("#FFFFFF", "#E3F0FF", "#2E3440", "#8DB4E8", "#FFE9E3", "#EAF7EA", "#7A869A", "#2E3440", "#FFF6D6", "#4A4030"),
         dark: p("#1E1F24", "#2A3550", "#E6E8EE", "#7FA6DE", "#4A3330", "#2B3D2E", "#A3ACBD", "#E6E8EE", "#3E3826", "#F2E6C2"),
         card: false))
 
-    public static let sepia = DiagramTheme(id: "sepia", name: "Sepia", style: .palette(
+    public static let sepia = DiagramTheme(id: "sepia", name: String(localized: "Sepia", bundle: .greeceKit, comment: "Diagram theme name: warm brown tones, like an old photo"), style: .palette(
         light: p("#F5EDDA", "#EFE3C8", "#3A2E1F", "#8A6A3C", "#E8D9B8", "#F9F3E6", "#6B5840", "#3A2E1F", "#EAD7AE", "#3A2E1F"),
         dark: p("#1E1913", "#2B241B", "#DDCEB3", "#B08A55", "#332A1F", "#241E17", "#AA9A7F", "#DDCEB3", "#3A3022", "#EBD9B4"),
         card: true))

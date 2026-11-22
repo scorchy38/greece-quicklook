@@ -10,10 +10,18 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         public var id: String { rawValue }
         public var title: String {
             switch self {
-            case .system: return "Match System"
-            case .light: return "Light"
-            case .dark: return "Dark"
+            case .system: return String(localized: "Match System", bundle: .greeceKit, comment: "Appearance option: follow the Mac’s light or dark appearance")
+            case .light: return Self.lightTitle
+            case .dark: return Self.darkTitle
             }
+        }
+
+        /// Light or dark appearance: also a code theme's variant and group.
+        static var lightTitle: String {
+            String(localized: "Light", bundle: .greeceKit, comment: "Appearance, or a theme’s variant: light, as opposed to dark")
+        }
+        static var darkTitle: String {
+            String(localized: "Dark", bundle: .greeceKit, comment: "Appearance, or a theme’s variant: dark, as opposed to light")
         }
     }
 
@@ -24,7 +32,8 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         public var id: String { rawValue }
         public var title: String {
             switch self {
-            case .theme: return "Theme Default"
+            case .theme: return String(localized: "Theme Default", bundle: .greeceKit, comment: "Reading font option: the reading theme’s own typefaces")
+            // Typeface names.
             case .system: return "San Francisco"
             case .serif: return "New York"
             case .rounded: return "SF Rounded"
@@ -46,10 +55,10 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         public var id: String { rawValue }
         public var title: String {
             switch self {
-            case .narrow: return "Narrow"
-            case .comfortable: return "Comfortable"
-            case .wide: return "Wide"
-            case .full: return "Full Width"
+            case .narrow: return String(localized: "Narrow", bundle: .greeceKit, comment: "Line width option for reading Markdown")
+            case .comfortable: return String(localized: "Comfortable", bundle: .greeceKit, comment: "Line width option for reading Markdown")
+            case .wide: return String(localized: "Wide", bundle: .greeceKit, comment: "Line width option for reading Markdown")
+            case .full: return String(localized: "Full Width", bundle: .greeceKit, comment: "Line width option for reading Markdown: as wide as the window")
             }
         }
         var css: String {
@@ -68,9 +77,9 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         public var id: String { rawValue }
         public var title: String {
             switch self {
-            case .automatic: return "Automatic"
-            case .light: return "Light"
-            case .dark: return "Dark"
+            case .automatic: return String(localized: "Automatic", bundle: .greeceKit, comment: "Code theme variant: follow the Mac’s appearance")
+            case .light: return Appearance.lightTitle
+            case .dark: return Appearance.darkTitle
             }
         }
     }
@@ -80,10 +89,10 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         public var id: String { rawValue }
         public var title: String {
             switch self {
-            case .light: return "Light"
-            case .regular: return "Regular"
-            case .medium: return "Medium"
-            case .semibold: return "Semibold"
+            case .light: return String(localized: "Light [font weight]", defaultValue: "Light", bundle: .greeceKit, comment: "Code font weight: thinner than regular")
+            case .regular: return String(localized: "Regular", bundle: .greeceKit, comment: "Code font weight")
+            case .medium: return String(localized: "Medium", bundle: .greeceKit, comment: "Code font weight: a little bolder than regular")
+            case .semibold: return String(localized: "Semibold", bundle: .greeceKit, comment: "Code font weight")
             }
         }
         /// The CSS `font-weight`.
@@ -103,10 +112,14 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         public var id: String { rawValue }
         public var title: String {
             switch self {
-            case .off: return "Off"
-            case .session: return "Until Restart"
-            case .always: return "Always"
+            case .off: return Self.offTitle
+            case .session: return String(localized: "Until Restart", bundle: .greeceKit, comment: "Option for remembering scroll positions: until the Mac restarts")
+            case .always: return String(localized: "Always", bundle: .greeceKit, comment: "Option for remembering scroll positions")
             }
+        }
+
+        static var offTitle: String {
+            String(localized: "Off", bundle: .greeceKit, comment: "A setting or feature that is turned off")
         }
     }
 
@@ -116,9 +129,9 @@ public struct PreviewSettings: Codable, Equatable, Sendable {
         public var id: String { rawValue }
         public var title: String {
             switch self {
-            case .off: return "Off"
-            case .allFiles: return "For All Files"
-            case .perKind: return "For Each Kind of File"
+            case .off: return Memory.offTitle
+            case .allFiles: return String(localized: "For All Files", bundle: .greeceKit, comment: "Option for remembering the window size: one size for every file")
+            case .perKind: return String(localized: "For Each Kind of File", bundle: .greeceKit, comment: "Option for remembering the window size: a size per kind of file")
             }
         }
     }
