@@ -11,6 +11,15 @@ struct SignedContainer {
     /// The signature checked out cryptographically against the signer certificate (trust is separate).
     var signatureIntact: Bool?
 
+    /// Evaluates the chain against this Mac's trust settings, offline. False when it can't be evaluated.
+    static func isTrusted(_ certificates: [SecCertificate]) -> Bool {
+        guard !certificates.isEmpty else { return false }
+        var trust: SecTrust?
+        guard SecTrustCreateWithCertificates(certificates as CFArray, SecPolicyCreateBasicX509(), &trust) == errSecSuccess, let trust else { return false }
+        SecTrustSetNetworkFetchAllowed(trust, false)
+        return SecTrustEvaluateWithError(trust, nil)
+    }
+
     /// True when the bytes look like DER (SEQUENCE with definite or indefinite length).
     static func looksSigned(_ bytes: [UInt8]) -> Bool {
         bytes.count >= 2 && bytes[0] == 0x30 && (bytes[1] == 0x80 || (0x81...0x84).contains(bytes[1]))

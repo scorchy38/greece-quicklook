@@ -148,8 +148,16 @@ enum ProfilePage {
                                  details: [Format.count(profile.payloads.count, "payload"), container == nil ? "Unsigned" : "Signed"], trailing: modified))
         if let container, !container.certificates.isEmpty {
             let leaf = CertificateSummary(certificate: container.certificates[0])
-            page.badges.append(InspectorBadge("signed", symbol: "checkmark.seal", title: "Signed", tone: container.signatureIntact == false ? .critical : .positive,
-                                              help: "Signed by " + leaf.commonName))
+            if container.signatureIntact == false {
+                page.badges.append(InspectorBadge("signed", symbol: "exclamationmark.octagon.fill", title: "Modified", tone: .critical,
+                                                  help: "The signature doesn’t match the contents."))
+            } else if SignedContainer.isTrusted(container.certificates) {
+                page.badges.append(InspectorBadge("signed", symbol: "checkmark.seal.fill", title: "Verified", tone: .positive,
+                                                  help: "Signed by \(leaf.commonName), a certificate this Mac trusts."))
+            } else {
+                page.badges.append(InspectorBadge("signed", symbol: "checkmark.seal", title: "Signed", tone: .neutral,
+                                                  help: "Signed by \(leaf.commonName), but this Mac doesn’t trust that certificate, so System Settings will call it unverified."))
+            }
         } else {
             page.badges.append(InspectorBadge("signed", symbol: "seal", title: "Unsigned", tone: .caution, help: "Nothing vouches for who made this profile."))
         }
