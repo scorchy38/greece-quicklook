@@ -118,6 +118,7 @@
     if (lines.length > 1 && lines[lines.length - 1] === '') lines.pop();
     const n = lines.length;
     const level = new Uint8Array(n);
+    const own = new Uint8Array(n);  // 1 where a line starts an entry with its own level
     const lvStart = new Uint32Array(n);
     const lvEnd = new Uint32Array(n);
     const tsEnd = new Uint16Array(n);
@@ -133,7 +134,7 @@
       if (ts) tsEnd[i] = Math.min(ts[0].length, 65535);
       const [lv, s, e] = line ? classify(line) : [NONE, 0, 0];
       if (lv) {
-        level[i] = lv; lvStart[i] = s; lvEnd[i] = e; previous = lv;
+        level[i] = lv; own[i] = 1; lvStart[i] = s; lvEnd[i] = e; previous = lv;
       } else if (line && (CONTINUATION.test(line) || (timestamped && !ts))) {
         level[i] = previous;  // stack traces and wrapped messages belong to their entry
       } else {
@@ -165,7 +166,8 @@
     }
 
     const counts = [0, 0, 0, 0, 0, 0];
-    for (let r = 0; r < rows; r++) counts[level[rowStart[r]]] += rowCount[r];
+    // Entries, not lines: a stack trace belongs to the error above it.
+    for (let r = 0; r < rows; r++) if (own[rowStart[r]] || level[rowStart[r]] === NONE) counts[level[rowStart[r]]] += rowCount[r];
 
     // The most frequent error messages, with numbers and ids folded together.
     const groups = new Map();
@@ -200,7 +202,7 @@
     for (let i = 0; i < Math.min(n, 5000) && !first; i++) first = stampOf(i);
     for (let i = n - 1; i >= Math.max(0, n - 5000) && !last; i--) last = stampOf(i);
 
-    return { lines, level, lvStart, lvEnd, tsEnd, rows, rowStart, rowCount, collapsed, counts, topErrors, first, last, format: formatName(lines), timestamped };
+    return { lines, level, own, lvStart, lvEnd, tsEnd, rows, rowStart, rowCount, collapsed, counts, topErrors, first, last, format: formatName(lines), timestamped };
   }
 
   // ----------------------------------------------------------------------------- View
@@ -224,7 +226,7 @@
   async function enhance({ root, kit, Smart }) {
     const esc = Smart.esc;
     const data = analyse(kit.payload.text);
-    const { lines, level, lvStart, lvEnd, tsEnd, rows, rowStart, rowCount, counts } = data;
+    const { lines, level, own, lvStart, lvEnd, tsEnd, rows, rowStart, rowCount, counts } = data;
 
     const rowHTML = (r) => {
       const i = rowStart[r];
@@ -326,7 +328,7 @@
 
     // Rows to step through: every row at the target level.
     const targets = [];
-    if (target) for (let r = 0; r < rows; r++) if (level[rowStart[r]] === target) targets.push(r);
+    if (target) for (let r = 0; r < rows; r++) if (level[rowStart[r]] === target && own[rowStart[r]]) targets.push(r);
     let position = -1;
     const pos = bar.querySelector('.log-pos');
 

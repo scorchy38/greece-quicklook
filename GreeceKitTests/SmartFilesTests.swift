@@ -275,14 +275,18 @@ final class SmartFilesTests: XCTestCase {
             document.querySelector('.log-chip[data-level="3"]').click();
             const hiddenInfo = getComputedStyle(document.querySelector('.log-view .lg-i')).display;
             document.querySelector('.log-step.next').click();
-            const focused = document.querySelector('.lg-focus');
-            return { chips, rows, repeat, hiddenInfo, focused: focused && focused.dataset.n, payload: document.getElementById('payload') !== null };
+            const focused = document.querySelector('.lg-focus').dataset.n;
+            document.querySelector('.log-step.next').click();
+            const second = document.querySelector('.lg-focus').dataset.n;
+            return { chips, rows, repeat, hiddenInfo, focused, second, position: document.querySelector('.log-pos').textContent };
             """) as? [String: Any] ?? [:]
-        XCTAssertEqual(result["chips"] as? [String], ["Errors8", "Warnings3", "Info16", "Debug2", "Trace1"])
+        XCTAssertEqual(result["chips"] as? [String], ["Errors4", "Warnings3", "Info16", "Debug2", "Trace1"], "entries, not lines")
         XCTAssertEqual(result["rows"] as? Int, 23, "eight heartbeats fold into one row")
         XCTAssertEqual(result["repeat"] as? String, "×8")
         XCTAssertEqual(result["hiddenInfo"] as? String, "none")
         XCTAssertEqual(result["focused"] as? String, "8")
+        XCTAssertEqual(result["second"] as? String, "21", "the stack trace under line 8 is part of that error")
+        XCTAssertEqual(result["position"] as? String, "2 of 4")
     }
 
     @MainActor
@@ -561,7 +565,7 @@ final class SmartFilesTests: XCTestCase {
             """, input: try fixture("server.log")).toDictionary() ?? [:]
         XCTAssertEqual(result["rows"] as? Int, 23)
         XCTAssertEqual(result["collapsed"] as? Int, 7)
-        XCTAssertEqual(result["counts"] as? [Int], [0, 1, 2, 16, 3, 8])
+        XCTAssertEqual(result["counts"] as? [Int], [0, 1, 2, 16, 3, 4])
         XCTAssertEqual((result["top"] as? [String])?.first, "2x Failed to render preview for 9f2c: connection refused (redis:6379)")
     }
 
