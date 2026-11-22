@@ -1,8 +1,10 @@
 import AppKit
 import QuickLookThumbnailing
 
-/// Finder's own thumbnails for files in a folder, asked of Quick Look a few at a time (the ones on
-/// screen), cancelled when they scroll away, and cached by file, modification date and size.
+/// Thumbnails for files in a folder, made a few at a time (the ones on screen), cancelled when they
+/// scroll away, and cached by file, modification date and size. Greece draws them itself first
+/// (`LocalThumbnails`); Quick Look's generator covers the rest where it's reachable, which is the
+/// app but not a Quick Look extension.
 @MainActor
 final class ThumbnailLoader {
     static let shared = ThumbnailLoader()
@@ -16,6 +18,7 @@ final class ThumbnailLoader {
         let request: QLThumbnailGenerator.Request
         var waiters: [Int: (NSImage?, Bool) -> Void] = [:]
         var best = -1
+        var local: Task<Void, Never>?
         init(request: QLThumbnailGenerator.Request) { self.request = request }
     }
 
@@ -69,7 +72,24 @@ final class ThumbnailLoader {
         let job = Job(request: request)
         job.waiters[ticket.id] = update
         jobs[key] = job
-        generator.generateRepresentations(for: request) { [weak self] representation, type, error in
+        job.local = Task.detached(priority: .userInitiated) { [weak self] in
+            let image = await LocalThumbnails.image(for: url, side: side, scale: scale)
+            await MainActor.run {
+                guard let self, self.jobs[key] === job else { return }
+                if let image {
+                    self.receive(image, type: .thumbnail, failed: false, key: key, job: job)
+                } else if PreviewHost.isAppExtension {
+                    self.receive(nil, type: .thumbnail, failed: true, key: key, job: job)
+                } else {
+                    self.askQuickLook(job, key: key)
+                }
+            }
+        }
+        return ticket
+    }
+
+    private func askQuickLook(_ job: Job, key: String) {
+        generator.generateRepresentations(for: job.request) { [weak self] representation, type, error in
             let image = representation?.nsImage
             DispatchQueue.main.async {
                 MainActor.assumeIsolated {
@@ -77,7 +97,6 @@ final class ThumbnailLoader {
                 }
             }
         }
-        return ticket
     }
 
     /// Stops waiting; the request itself is cancelled once nobody is waiting for it.
@@ -86,6 +105,7 @@ final class ThumbnailLoader {
         job.waiters[ticket.id] = nil
         guard job.waiters.isEmpty else { return }
         jobs[ticket.key] = nil
+        job.local?.cancel()
         generator.cancel(job.request)
     }
 
