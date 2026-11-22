@@ -1,0 +1,29 @@
+# Media and design files (GreeceKit/Sources/Modules/Media).
+# Fonts: Apple's previewer draws only the alphabet in black on white; Greece shows a full specimen.
+public.truetype-ttf-font
+public.opentype-font
+public.truetype-collection-font
+public.opentype-collection-font
+com.scorchy.greece.woff
+com.scorchy.greece.woff2
+# Subtitles, captions and lyrics. JSON Lottie and XML TTML arrive as public.json and public.xml.
+com.scorchy.greece.subrip
+org.w3.webvtt
+com.scorchy.greece.substation
+com.scorchy.greece.sami
+com.scorchy.greece.ttml
+com.scorchy.greece.sbv
+com.scorchy.greece.microdvd
+com.scorchy.greece.lrc
+# SVG and SVGZ share one type; Quick Look may keep it for its web previewer.
+public.svg-image
+com.scorchy.greece.lottie
+# Colour palettes.
+com.scorchy.greece.ase
+org.aseprite.aseprite.sprite  # .ase when Aseprite is installed; Greece only reads swatch files
+com.scorchy.greece.aco
+com.scorchy.greece.act
+com.apple.color-file
+com.scorchy.greece.gpl
+com.scorchy.greece.procreate-swatches
+com.scorchy.greece.sketchpalette
