@@ -112,6 +112,15 @@ final class FileNode {
         itemCount = children?.count
     }
 
+    /// How many items a folder on disk holds, for Get Info. Counted by name alone, which stays
+    /// quick for thousands of files.
+    func countItems(showHidden: Bool) {
+        guard isDirectory, itemCount == nil, let url else { return }
+        if let children { itemCount = children.count; return }
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: url.path)) ?? []
+        itemCount = showHidden ? names.count : names.filter { !$0.hasPrefix(".") }.count
+    }
+
     private static func labelColor(_ number: Int?) -> NSColor? {
         switch number {
         case 1: return .systemGray
@@ -202,7 +211,17 @@ final class ArchiveTreeBuilder {
     }
 }
 
-/// Finder-style list: icons, sizes, dates, disclosure triangles, sortable and optional columns.
+/// A heading row in a grouped list. Kept from one reload to the next, so the outline keeps the
+/// folders inside it open.
+final class FileGroupItem {
+    let id: String
+    var title = ""
+    var nodes: [FileNode] = []
+    init(id: String) { self.id = id }
+}
+
+/// Finder-style list: icons, sizes, dates, disclosure triangles, sortable and optional columns,
+/// and Finder's groups.
 final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate, NSMenuDelegate {
     let scrollView = NSScrollView()
     let outline = TreeOutlineView()
@@ -221,6 +240,17 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     var onSelectionChange: (([FileNode]) -> Void)?
     /// Get Info (⌘I or the context menu) on a node.
     var onGetInfo: ((FileNode) -> Void)?
+    /// Opens a folder in the browser around the list (the context menu's Open).
+    var onOpen: ((FileNode) -> Void)?
+    /// The reader sorted by clicking a column header: the column's key and direction.
+    var onSortChange: ((String, Bool) -> Void)?
+    /// Groups at the top level, as Finder's Use Groups; `.none` lists files plainly.
+    private(set) var grouping = BrowserViewState.GroupKey.none
+    private var groupItems: [FileGroupItem] = []
+    private var groupCache: [String: FileGroupItem] = [:]
+    var isGrouped: Bool { grouping != .none }
+    /// While true, a sort change comes from the browser (its Sort By menu), not a header click.
+    private var applyingSort = false
 
     private let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -233,8 +263,11 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     /// - Parameters:
     ///   - showsKind: a real folder, whose Kind column comes from the file system and is shown.
     ///   - compressedSizes: the archive records compressed sizes, so the Compressed column is offered.
-    init(root: FileNode, settings: PreviewSettings, showsKind: Bool, compressedSizes: Bool = false) {
+    ///   - sort, ascending, grouping: how to arrange the files to begin with.
+    init(root: FileNode, settings: PreviewSettings, showsKind: Bool, compressedSizes: Bool = false,
+         sort: BrowserViewState.SortKey = .name, ascending: Bool = true, grouping: BrowserViewState.GroupKey = .none) {
         self.root = root
+        self.grouping = grouping
         foldersFirst = settings.foldersFirst
         showHidden = settings.showHiddenFiles
         self.showsKind = showsKind
@@ -265,7 +298,8 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         }
         addColumn("kind", title: "Kind", width: 130, min: 70)
         outline.outlineTableColumn = outline.tableColumns.first
-        outline.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+        let initialSort = sort == .compressed && !(isArchive && compressedSizes) ? .name : sort
+        outline.sortDescriptors = [NSSortDescriptor(key: initialSort.rawValue, ascending: ascending)]
         columnsKey = isArchive ? "GreeceArchiveColumns" : "GreeceFolderColumns"
         chosenColumns = Set(UserDefaults.standard.stringArray(forKey: columnsKey) ?? (showsKind ? ["modified", "size", "kind"] : ["modified", "size"]))
         applyColumns()
@@ -294,7 +328,9 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         // apply it once, now that the outline sits in its scroll view.
         configuring = false
         sortTree(root)
+        rebuildGroups()
         outline.reloadData()
+        expandGroups()
         expandLoneFolder()
     }
 
@@ -376,10 +412,56 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         let selected = selectedNodes
         if let newRoot { root = newRoot }
         sortTree(root)
+        rebuildGroups()
         outline.reloadData()
+        expandGroups()
         expandLoneFolder()
         let rows = IndexSet(selected.map { outline.row(forItem: $0) }.filter { $0 >= 0 })
         if !rows.isEmpty { outline.selectRowIndexes(rows, byExtendingSelection: false) }
+    }
+
+    /// Selects these files (those showing), without opening folders to reach others.
+    func select(_ nodes: [FileNode], scroll: Bool = false) {
+        let rows = IndexSet(nodes.map { outline.row(forItem: $0) }.filter { $0 >= 0 })
+        outline.selectRowIndexes(rows, byExtendingSelection: false)
+        if scroll, let first = rows.first { outline.scrollRowToVisible(first) }
+    }
+
+    // MARK: - Sort and groups from the browser
+
+    /// Sorts as the browser's Sort By menu says, showing it in the column headers.
+    func setSort(_ key: BrowserViewState.SortKey, ascending: Bool) {
+        guard key.rawValue != sortKey || ascending != self.ascending else { return }
+        applyingSort = true
+        outline.sortDescriptors = [NSSortDescriptor(key: key.rawValue, ascending: ascending)]
+        applyingSort = false
+    }
+
+    func setGrouping(_ key: BrowserViewState.GroupKey) {
+        guard key != grouping else { return }
+        grouping = key
+        reload()
+    }
+
+    private func rebuildGroups() {
+        guard isGrouped else { groupItems = []; return }
+        if root.children == nil, root.url != nil {
+            root.loadChildren(showHidden: showHidden)
+            sortTree(root)
+        }
+        let groups = FileArrangement.groups(root.children ?? [], by: grouping, sort: BrowserViewState.SortKey(rawValue: sortKey) ?? .name,
+                                            ascending: ascending, foldersFirst: foldersFirst)
+        groupItems = groups.map { group in
+            let item = groupCache[group.id] ?? FileGroupItem(id: group.id)
+            item.title = group.title
+            item.nodes = group.nodes
+            groupCache[group.id] = item
+            return item
+        }
+    }
+
+    private func expandGroups() {
+        for group in groupItems where !outline.isItemExpanded(group) { outline.expandItem(group) }
     }
 
     @discardableResult
@@ -396,7 +478,7 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
 
     @objc private func toggle(_ sender: Any?) {
         let row = outline.clickedRow
-        guard row >= 0, let item = outline.item(atRow: row) else { return }
+        guard row >= 0, let item = outline.item(atRow: row) as? FileNode else { return }
         if outline.isItemExpanded(item) { outline.collapseItem(item) } else { outline.expandItem(item) }
     }
 
@@ -424,34 +506,21 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     func rowMenuItems(forRow row: Int) -> [NSMenuItem] {
         guard row >= 0, let node = outline.item(atRow: row) as? FileNode else { return [] }
         if !outline.selectedRowIndexes.contains(row) { outline.selectRowIndexes([row], byExtendingSelection: false) }
-        var items: [NSMenuItem] = []
-        if onGetInfo != nil {
-            let info = ActionMenuItem("Get Info") { [weak self] in self?.onGetInfo?(node) }
-            // Shown only where ⌘I reaches the preview: in Quick Look, Finder would take it.
-            if PreviewHost.acceptsTyping { info.keyEquivalent = "i" }
-            items += [info, .separator()]
-        }
+        var folder: [NSMenuItem] = []
         if node.isExpandable {
             let expanded = outline.isItemExpanded(node)
-            items.append(ActionMenuItem(expanded ? "Collapse" : "Expand") { [weak self] in
+            folder.append(ActionMenuItem(expanded ? "Collapse" : "Expand") { [weak self] in
                 guard let self else { return }
                 if expanded { self.outline.collapseItem(node) } else { self.outline.expandItem(node) }
             })
-            items.append(ActionMenuItem(expanded ? "Collapse All" : "Expand All") { [weak self] in
+            folder.append(ActionMenuItem(expanded ? "Collapse All" : "Expand All") { [weak self] in
                 guard let self else { return }
                 if expanded { self.outline.collapseItem(node, collapseChildren: true) } else { self.expandAll(node) }
             })
-            items.append(.separator())
         }
-        let nodes = selectedNodes.count > 1 ? selectedNodes : [node]
-        let several = nodes.count > 1
-        let names = nodes.map(\.name)
-        items.append(ActionMenuItem(several ? "Copy Names" : "Copy Name") { Clipboard.copy(names.joined(separator: "\n")) })
-        let paths = nodes.map { $0.url?.path ?? $0.path }
-        if !paths.contains(where: \.isEmpty), paths != names {
-            items.append(ActionMenuItem(several ? "Copy Paths" : "Copy Path") { Clipboard.copy(paths.joined(separator: "\n")) })
-        }
-        return items
+        let getInfo: ((FileNode) -> Void)? = onGetInfo == nil ? nil : { [weak self] in self?.onGetInfo?($0) }
+        let open: ((FileNode) -> Void)? = onOpen == nil ? nil : { [weak self] in self?.onOpen?($0) }
+        return FileMenus.items(for: node, selection: selectedNodes, getInfo: getInfo, open: open, folderItems: folder)
     }
 
     /// Expands a folder and the folders inside it, breadth first, stopping after a few thousand
@@ -499,26 +568,8 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     /// Sorts a tree in place. Also used off the main thread to hand the view an already-sorted tree.
     static func sort(_ node: FileNode, key: String = "name", ascending up: Bool = true, foldersFirst folders: Bool) {
         guard var children = node.children else { return }
-        children.sort { a, b in
-            if folders && a.isDirectory != b.isDirectory && !(a.isPackage || b.isPackage) { return a.isDirectory }
-            switch key {
-            case "size":
-                let x = a.size ?? 0, y = b.size ?? 0
-                if x != y { return up ? x < y : x > y }
-            case "compressed":
-                let x = a.compressedSize ?? 0, y = b.compressedSize ?? 0
-                if x != y { return up ? x < y : x > y }
-            case "modified":
-                let x = a.modified ?? .distantPast, y = b.modified ?? .distantPast
-                if x != y { return up ? x < y : x > y }
-            case "kind":
-                let x = FileTreeView.kindName(of: a), y = FileTreeView.kindName(of: b)
-                if x != y { return up ? x.localizedStandardCompare(y) == .orderedAscending : x.localizedStandardCompare(y) == .orderedDescending }
-            default: break
-            }
-            let order = FileTreeView.finderOrder(a.name, b.name)
-            return (key == "name" && !up) ? order == .orderedDescending : order == .orderedAscending
-        }
+        let sortKey = BrowserViewState.SortKey(rawValue: key) ?? .name
+        children.sort { FileArrangement.precedes($0, $1, by: sortKey, ascending: up, foldersFirst: folders) }
         node.children = children
         children.forEach { if $0.children != nil { sort($0, key: key, ascending: up, foldersFirst: folders) } }
     }
@@ -587,7 +638,9 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         guard let descriptor = outlineView.sortDescriptors.first, let key = descriptor.key else { return }
         sortKey = key
         ascending = descriptor.ascending
-        if !configuring { reload() }
+        guard !configuring else { return }
+        reload()
+        if !applyingSort { onSortChange?(key, descriptor.ascending) }
     }
 
     // MARK: - Data source
@@ -595,6 +648,8 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     private func node(_ item: Any?) -> FileNode { (item as? FileNode) ?? root }
 
     func outlineView(_ outlineView: NSOutlineView, numberOfChildrenOfItem item: Any?) -> Int {
+        if let group = item as? FileGroupItem { return group.nodes.count }
+        if item == nil, isGrouped { return groupItems.count }
         let parent = node(item)
         if parent.children == nil, parent.url != nil {
             parent.loadChildren(showHidden: showHidden)
@@ -604,11 +659,25 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     }
 
     func outlineView(_ outlineView: NSOutlineView, child index: Int, ofItem item: Any?) -> Any {
-        node(item).children![index]
+        if let group = item as? FileGroupItem { return group.nodes[index] }
+        if item == nil, isGrouped { return groupItems[index] }
+        return node(item).children![index]
     }
 
     func outlineView(_ outlineView: NSOutlineView, isItemExpandable item: Any) -> Bool {
-        node(item).isExpandable
+        if item is FileGroupItem { return true }
+        return node(item).isExpandable
+    }
+
+    // Group headings: full width, never selected, never closed.
+
+    func outlineView(_ outlineView: NSOutlineView, isGroupItem item: Any) -> Bool { item is FileGroupItem }
+    func outlineView(_ outlineView: NSOutlineView, shouldSelectItem item: Any) -> Bool { !(item is FileGroupItem) }
+    func outlineView(_ outlineView: NSOutlineView, shouldShowOutlineCellForItem item: Any) -> Bool { !(item is FileGroupItem) }
+    func outlineView(_ outlineView: NSOutlineView, shouldCollapseItem item: Any) -> Bool { !(item is FileGroupItem) }
+
+    func outlineView(_ outlineView: NSOutlineView, heightOfRowByItem item: Any) -> CGFloat {
+        item is FileGroupItem ? 28 : outlineView.rowHeight
     }
 
     func outlineViewSelectionDidChange(_ notification: Notification) {
@@ -616,6 +685,12 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     }
 
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
+        if let group = item as? FileGroupItem {
+            guard tableColumn == nil else { return nil }
+            let cell = (outlineView.makeView(withIdentifier: GroupRowCell.reuseID, owner: nil) as? GroupRowCell) ?? GroupRowCell()
+            cell.configure(title: group.title, count: group.nodes.count)
+            return cell
+        }
         let file = node(item)
         let id = tableColumn?.identifier.rawValue ?? "name"
         if id == "name" {
@@ -672,9 +747,24 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         return name
     }
 
-    private func icon(for file: FileNode) -> NSImage {
+    private func icon(for file: FileNode) -> NSImage { FileTreeView.displayIcon(for: file) }
+
+    private static let fileIconCache = NSCache<NSString, NSImage>()
+
+    /// Names the icon `displayIcon` gives a file: files of one kind share theirs.
+    static func displayIconKey(for file: FileNode) -> String {
+        if let url = file.url, file.isPackage || (file.isDirectory && FileTreeView.hasCustomIcon(url)) { return url.path }
+        return file.isDirectory ? "/folder" : (file.name as NSString).pathExtension.lowercased()
+    }
+
+    /// What a file looks like before (or without) a thumbnail: its own icon for packages and
+    /// folders with custom icons, its type's icon otherwise.
+    static func displayIcon(for file: FileNode) -> NSImage {
         if let url = file.url, file.isPackage || (file.isDirectory && FileTreeView.hasCustomIcon(url)) {
-            return NSWorkspace.shared.icon(forFile: url.path)
+            if let cached = fileIconCache.object(forKey: url.path as NSString) { return cached }
+            let image = NSWorkspace.shared.icon(forFile: url.path)
+            fileIconCache.setObject(image, forKey: url.path as NSString)
+            return image
         }
         return FileTreeView.icon(forName: file.name, isDirectory: file.isDirectory)
     }
@@ -718,6 +808,63 @@ final class TreeOutlineView: NSOutlineView {
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if window?.firstResponder === self, owner?.handleKey(event) == true { return true }
         return super.performKeyEquivalent(with: event)
+    }
+
+    // Grouped, files sit under their heading at the list's left edge, as in Finder, rather than
+    // one level in.
+
+    private func outdents(_ row: Int) -> Bool { owner?.isGrouped == true && level(forRow: row) > 0 }
+
+    override func frameOfOutlineCell(atRow row: Int) -> NSRect {
+        var frame = super.frameOfOutlineCell(atRow: row)
+        if outdents(row) { frame.origin.x -= indentationPerLevel }
+        return frame
+    }
+
+    override func frameOfCell(atColumn column: Int, row: Int) -> NSRect {
+        var frame = super.frameOfCell(atColumn: column, row: row)
+        if column >= 0, column < tableColumns.count, tableColumns[column] === outlineTableColumn, outdents(row) {
+            frame.origin.x -= indentationPerLevel
+            frame.size.width += indentationPerLevel
+        }
+        return frame
+    }
+}
+
+/// A group's heading in the list: its name and count.
+private final class GroupRowCell: NSTableCellView {
+    static let reuseID = NSUserInterfaceItemIdentifier("GroupRowCell")
+    private let title = NSTextField(labelWithString: "")
+    private let count = NSTextField(labelWithString: "")
+
+    init() {
+        super.init(frame: .zero)
+        identifier = Self.reuseID
+        title.font = .systemFont(ofSize: 12, weight: .semibold)
+        title.textColor = .labelColor
+        title.lineBreakMode = .byTruncatingTail
+        title.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        count.font = .monospacedDigitSystemFont(ofSize: 11.5, weight: .regular)
+        count.textColor = .secondaryLabelColor
+        textField = title
+        for view in [title, count] {
+            view.translatesAutoresizingMaskIntoConstraints = false
+            addSubview(view)
+        }
+        NSLayoutConstraint.activate([
+            title.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            title.centerYAnchor.constraint(equalTo: centerYAnchor, constant: 1),
+            count.leadingAnchor.constraint(equalTo: title.trailingAnchor, constant: 6),
+            count.firstBaselineAnchor.constraint(equalTo: title.firstBaselineAnchor),
+            count.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -8),
+        ])
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
+
+    func configure(title text: String, count number: Int) {
+        title.stringValue = text
+        count.stringValue = number.formatted()
     }
 }
 
