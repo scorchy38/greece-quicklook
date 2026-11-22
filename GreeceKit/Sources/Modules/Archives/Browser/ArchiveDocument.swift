@@ -85,23 +85,39 @@ final class ArchiveDocument: @unchecked Sendable {
         }
         let files = listing.fileCount
         if listing.headerEncrypted && listing.entries.isEmpty {
-            details.append("File list encrypted")
+            details.append(String(localized: "File list encrypted", bundle: .greeceKit, comment: "Info bar detail: an archive whose list of files needs its password"))
         } else if listing.entries.isEmpty && !loading {
-            details.append(listing.damage == nil ? "Empty" : "Nothing readable")
+            details.append(listing.damage == nil
+                ? String(localized: "Empty [archive]", defaultValue: "Empty", bundle: .greeceKit, comment: "Info bar detail: an archive with nothing inside")
+                : String(localized: "Nothing readable", bundle: .greeceKit, comment: "Info bar detail: a damaged archive with nothing that can be read"))
         } else {
-            details.append("\(files.formatted()) \(files == 1 ? "file" : "files")")
+            details.append(String(localized: "\(files) files", bundle: .greeceKit, comment: "A count of files"))
             details.append(FileTreeView.bytes(listing.totalSize))
         }
         if listing.totalSize > 0, listing.archiveSize > 0, listing.archiveSize < listing.totalSize, !loading {
             let saved = 100 - Int((Double(listing.archiveSize) / Double(listing.totalSize) * 100).rounded())
-            if saved > 0 { details.append("\(saved)% smaller") }
+            if saved > 0 {
+                let percent = (Double(saved) / 100).formatted(.percent)
+                details.append(String(localized: "\(percent) smaller", bundle: .greeceKit,
+                                      comment: "Info bar detail: how much smaller an archive is than what it holds; the argument is a percentage, such as “42%”"))
+            }
         }
-        if listing.volumes > 1 { details.append("\(listing.volumes) parts") }
-        if listing.isEncrypted && !listing.entries.isEmpty { details.append("Encrypted") }
-        if let encoding = listing.nameEncoding { details.append("\(encoding) names") }
-        if loading { details.append("Loading…") }
-        else if listing.truncated { details.append("Showing first \(listing.entries.count.formatted())") }
-        if listing.damage != nil { details.append("Damaged") }
+        let volumes = listing.volumes
+        if volumes > 1 {
+            details.append(String(localized: "\(volumes) parts", bundle: .greeceKit, comment: "Info bar detail: how many files a multi-part archive is split into"))
+        }
+        if listing.isEncrypted && !listing.entries.isEmpty { details.append(String(localized: "Encrypted", bundle: .greeceKit, comment: "State of an archive or a file in it")) }
+        if let encoding = listing.nameEncoding {
+            details.append(String(localized: "\(encoding) names", bundle: .greeceKit,
+                                  comment: "Info bar detail: the legacy text encoding an archive’s file names were read in, such as “Shift JIS names”"))
+        }
+        let listed = listing.entries.count
+        if loading { details.append(String(localized: "Loading…", bundle: .greeceKit)) }
+        else if listing.truncated {
+            details.append(String(localized: "Showing first \(listed)", bundle: .greeceKit,
+                                  comment: "Info bar detail: a huge archive lists only its first entries; the argument is how many, such as “200,000”"))
+        }
+        if listing.damage != nil { details.append(String(localized: "Damaged", bundle: .greeceKit, comment: "Info bar detail: the archive is damaged")) }
         let symbol: String
         if listing.isEncrypted { symbol = "lock.doc" }
         else if package != nil { symbol = "shippingbox" }

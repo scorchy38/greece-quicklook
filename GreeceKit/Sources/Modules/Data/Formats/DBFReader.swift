@@ -181,7 +181,9 @@ struct DBFTable {
         case "N", "F":
             let value = text()
             if value.isEmpty { return .null }
-            if value.allSatisfy({ $0 == "*" }) { return .placeholder("Overflow") }
+            if value.allSatisfy({ $0 == "*" }) {
+                return .placeholder(String(localized: "Overflow", bundle: .greeceKit, comment: "A dBase number cell too large for its field (stored as asterisks)"))
+            }
             return .text(value)
         case "D":
             let value = text()
@@ -236,16 +238,24 @@ struct DBFTable {
             if bytes.count == 4 { block = Int(UInt32(bitPattern: int32())) }
             else { block = Int(text()) ?? 0 }
             guard block > 0 else { return .null }
-            guard let memo else { return .placeholder("Memo \(block)") }
+            guard let memo else {
+                let number = String(block)
+                return .placeholder(String(localized: "Memo \(number)", bundle: .greeceKit,
+                                           comment: "A dBase memo cell whose memo file is missing. The argument is the memo’s block number"))
+            }
             switch memo.read(block: block) {
             case .text(let data):
                 let string = (String(data: data, encoding: encoding) ?? String(decoding: data, as: UTF8.self))
                     .trimmingCharacters(in: CharacterSet(charactersIn: "\u{1A}\0").union(.whitespacesAndNewlines))
-                return field.type == "M" ? (string.isEmpty ? .placeholder("") : .text(string)) : .secondary("Binary · \(ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))")
+                return field.type == "M" ? (string.isEmpty ? .placeholder("") : .text(string))
+                    : .secondary(Self.binaryText + " · " + ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))
             case .binary(let size):
-                return .secondary((field.type == "G" ? "OLE object" : field.type == "P" ? "Picture" : "Binary") + " · " + ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file))
+                let kind = field.type == "G" ? String(localized: "OLE object", bundle: .greeceKit, comment: "A dBase cell holding an embedded OLE object")
+                    : field.type == "P" ? String(localized: "Picture", bundle: .greeceKit, comment: "A dBase cell holding a picture")
+                    : Self.binaryText
+                return .secondary(kind + " · " + ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file))
             case .missing:
-                return .placeholder("Unreadable memo")
+                return .placeholder(String(localized: "Unreadable memo", bundle: .greeceKit, comment: "A dBase memo cell that couldn’t be read"))
             }
         default:
             let value = text()
@@ -260,14 +270,16 @@ struct DBFTable {
         return formatter.string(from: Date(timeIntervalSince1970: seconds))
     }
 
+    private static var binaryText: String { String(localized: "Binary", bundle: .greeceKit, comment: "A dBase cell holding binary data") }
+
     static func versionName(_ version: UInt8, level7: Bool) -> String {
         if level7 { return "dBase 7" }
         switch version {
         case 0x02, 0xFB: return "FoxBASE"
         case 0x03: return "dBase III"
-        case 0x83: return "dBase III with memo"
+        case 0x83: return String(localized: "dBase III with memo", bundle: .greeceKit, comment: "Info bar title: a dBase III table with a memo file; dBase is a name")
         case 0x04: return "dBase IV"
-        case 0x8B, 0x8E, 0xCB, 0x43, 0x63: return "dBase IV with memo"
+        case 0x8B, 0x8E, 0xCB, 0x43, 0x63: return String(localized: "dBase IV with memo", bundle: .greeceKit, comment: "Info bar title: a dBase IV table with a memo file; dBase is a name")
         case 0x05: return "dBase V"
         case 0x07, 0x87: return "Visual Objects"
         case 0x30, 0x31, 0x32: return "Visual FoxPro"
@@ -281,7 +293,10 @@ struct DBFTable {
     static func codePage(_ ldid: UInt8, hint: String?) -> (String.Encoding, String) {
         if ldid == 0, let hint = hint?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased(), !hint.isEmpty {
             if hint.contains("UTF") && hint.contains("8") { return (.utf8, "UTF-8") }
-            if let number = Int(hint.filter(\.isNumber)), let encoding = windows(number) { return (encoding, "Code page \(number)") }
+            if let number = Int(hint.filter(\.isNumber)), let encoding = windows(number) {
+                let page = String(number)
+                return (encoding, String(localized: "Code page \(page)", bundle: .greeceKit, comment: "Info bar detail: a text encoding by its Windows code page number, such as “Code page 1252”"))
+            }
         }
         let table: [UInt8: (Int, String)] = [
             0x01: (437, "DOS USA"), 0x02: (850, "DOS Multilingual"), 0x03: (1252, "Windows ANSI"), 0x04: (10000, "Mac Roman"),

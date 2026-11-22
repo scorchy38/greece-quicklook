@@ -39,7 +39,7 @@ final class ArchiveSession: @unchecked Sendable {
         let ext = url.pathExtension.lowercased()
         guard let detected = ArchiveSniffer.format(of: probe.bytes, ext: ext) ?? (volumes.kind == .spannedZIP ? .zip : nil)
                 ?? (ArchiveSniffer.isISO9660(url) ? .iso : nil) ?? hint else {
-            throw ArchiveError.unsupported("Greece doesn’t recognise this archive’s format.")
+            throw ArchiveError.unsupported(String(localized: "Greece doesn’t recognise this archive’s format.", bundle: .greeceKit))
         }
         format = detected
         archiveSize = volumes.urls.reduce(UInt64(0)) { total, part in
@@ -144,7 +144,7 @@ final class ArchiveSession: @unchecked Sendable {
     @discardableResult
     func extract(_ entry: ArchiveEntry, limit: UInt64, cancel: CancelToken? = nil,
                  deliver: (UnsafeRawBufferPointer) throws -> Void) throws -> (UInt64, Bool) {
-        if entry.isDirectory { throw ArchiveError.unsupported("Folders have no contents to extract.") }
+        if entry.isDirectory { throw ArchiveError.unsupported(String(localized: "Folders have no contents to extract.", bundle: .greeceKit)) }
         if entry.isEncrypted { throw ArchiveError.encrypted }
         switch layout {
         case .zip(let file, _):
@@ -165,7 +165,8 @@ final class ArchiveSession: @unchecked Sendable {
                     return try reader.readData(limit: limit, cancel: cancel, deliver)
                 }
             }
-            throw ArchiveError.corrupt("“\((entry.path as NSString).lastPathComponent)” isn’t in the payload")
+            throw ArchiveError.corrupt(String(localized: "“\((entry.path as NSString).lastPathComponent)” isn’t in the payload", bundle: .greeceKit,
+                                              comment: "Why an RPM package is damaged, shown inside “This archive appears to be damaged (…)”; the argument is a file name, the payload is the package’s compressed contents"))
         }
     }
 
@@ -177,7 +178,8 @@ final class ArchiveSession: @unchecked Sendable {
             if reader.headerIndex == entry.index { return try reader.readData(limit: limit, cancel: cancel, deliver) }
             if reader.headerIndex > entry.index { break }
         }
-        throw ArchiveError.corrupt("“\((entry.path as NSString).lastPathComponent)” couldn’t be found again")
+        throw ArchiveError.corrupt(String(localized: "“\((entry.path as NSString).lastPathComponent)” couldn’t be found again", bundle: .greeceKit,
+                                          comment: "Why an archive is damaged, shown inside “This archive appears to be damaged (…)”; the argument is the name of a file listed in it"))
     }
 
     /// Extracts many entries in archive order with one reader, so a solid archive decodes once.

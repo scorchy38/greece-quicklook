@@ -36,6 +36,14 @@ extension CodeTheme {
         mariana, zenburn, xcodeMidnight, xcodeDusk, xcodeCivic,
     ]
 
+    // Names of themes and their variants are the authors' own: proper names stay as they are
+    // (Dracula, Latte, Mocha, One Dark); plain words that only say which version it is are localized.
+    private static var lightVariant: String { PreviewSettings.Appearance.lightTitle }
+    private static var darkVariant: String { PreviewSettings.Appearance.darkTitle }
+    private static var dayName: String {
+        String(localized: "Day", bundle: .greeceKit, comment: "Code theme variant name: Tokyo Night’s light version")
+    }
+
     // MARK: - Pairs
 
     // Readability, lightness only: light: added #34C759 → #2CA94B
@@ -49,11 +57,15 @@ extension CodeTheme {
                       string: "#FC6A5D", number: "#D0BF69", function: "#41A1C0", type: "#D0A8FF",
                       tag: "#FC5FA3", attribute: "#BF8555", variable: "#67B7A4", builtIn: "#A167E6",
                       regexp: "#FC6A5D", meta: "#FD8F3F", added: "#30D158", removed: "#FF453A", selection: "#515B70"),
-        boldKeywords: true, lightName: "Default Light", darkName: "Default Dark", keywords: "apple default")
+        boldKeywords: true,
+        lightName: String(localized: "Default Light", bundle: .greeceKit, comment: "Code theme variant name: Xcode’s default light theme"),
+        darkName: String(localized: "Default Dark", bundle: .greeceKit, comment: "Code theme variant name: Xcode’s default dark theme"),
+        keywords: "apple default")
 
     // Readability, lightness only: light: added #34C759 → #2CA94B
     public static let xcodePresentation = CodeTheme(
-        id: "xcode-presentation", name: "Xcode Presentation",
+        id: "xcode-presentation",
+        name: String(localized: "Xcode Presentation", bundle: .greeceKit, comment: "Code theme name: Xcode’s large, high-contrast theme for presenting"),
         light: Palette(background: "#FFFFFF", foreground: "#000000", comment: "#56606B", keyword: "#C33381",
                        string: "#BA0011", number: "#000BFF", function: "#0F68A0", type: "#2E0D6E",
                        tag: "#C33381", attribute: "#836C28", variable: "#3B7F89", builtIn: "#5C2699",
@@ -62,7 +74,9 @@ extension CodeTheme {
                       string: "#FC4651", number: "#FFE76D", function: "#35B0D8", type: "#D0A8FF",
                       tag: "#F2248C", attribute: "#E09D65", variable: "#56D0B3", builtIn: "#AB64FF",
                       regexp: "#FC4651", meta: "#FD8F3F", added: "#30D158", removed: "#FF453A", selection: "#515B70"),
-        boldKeywords: true, lightName: "Presentation Light", darkName: "Presentation Dark",
+        boldKeywords: true,
+        lightName: String(localized: "Presentation Light", bundle: .greeceKit, comment: "Code theme variant name: the light version of Xcode’s Presentation theme"),
+        darkName: String(localized: "Presentation Dark", bundle: .greeceKit, comment: "Code theme variant name: the dark version of Xcode’s Presentation theme"),
         keywords: "apple presentation large")
 
     public static let vscode = CodeTheme(
@@ -151,7 +165,9 @@ extension CodeTheme {
                       string: "#9ECE6A", number: "#FF9E64", function: "#7AA2F7", type: "#0DB9D7",
                       tag: "#F7768E", attribute: "#BB9AF7", variable: "#F7768E", builtIn: "#2AC3DE",
                       regexp: "#B4F9F8", meta: "#73DACA", added: "#449DAB", removed: "#9C525A", selection: "#283457"),
-        italicComments: true, lightName: "Day", darkName: "Night", keywords: "folke tokyonight tokyo night day")
+        italicComments: true, lightName: dayName,
+        darkName: String(localized: "Night", bundle: .greeceKit, comment: "Code theme variant name: Tokyo Night’s dark version"),
+        keywords: "folke tokyonight tokyo night day")
 
     // Readability, lightness only: light: added #4197A4 → #3C8B97, removed #C47981 → #BC6770; dark: removed #914C54 → #AA5C65
     public static let tokyoNightStorm = CodeTheme(
@@ -164,7 +180,7 @@ extension CodeTheme {
                       string: "#9ECE6A", number: "#FF9E64", function: "#7AA2F7", type: "#0DB9D7",
                       tag: "#F7768E", attribute: "#BB9AF7", variable: "#F7768E", builtIn: "#2AC3DE",
                       regexp: "#B4F9F8", meta: "#73DACA", added: "#449DAB", removed: "#AA5C65", selection: "#2E3C64"),
-        italicComments: true, lightName: "Day", darkName: "Storm", keywords: "folke tokyonight tokyo night day storm")
+        italicComments: true, lightName: dayName, darkName: "Storm", keywords: "folke tokyonight tokyo night day storm")
 
     // Readability, lightness only: light: foreground #657B83 → #5F747C, keyword #859900 → #839600, string #2AA198 → #299E95, attribute #93A1A1 → #819191, meta #B58900 → #B28700, added #859900 → #839600
     public static let solarized = CodeTheme(
@@ -177,7 +193,7 @@ extension CodeTheme {
                       string: "#2AA198", number: "#D33682", function: "#268BD2", type: "#CB4B16",
                       tag: "#268BD2", attribute: "#93A1A1", variable: "#268BD2", builtIn: "#268BD2",
                       regexp: "#DC322F", meta: "#B58900", added: "#859900", removed: "#DC322F", selection: "#274642"),
-        italicComments: true, lightName: "Light", darkName: "Dark", keywords: "ethan schoonover solarized")
+        italicComments: true, lightName: lightVariant, darkName: darkVariant, keywords: "ethan schoonover solarized")
 
     public static let gruvbox = CodeTheme(
         id: "gruvbox", name: "Gruvbox",
@@ -189,7 +205,7 @@ extension CodeTheme {
                       string: "#B8BB26", number: "#D3869B", function: "#B8BB26", type: "#FABD2F",
                       tag: "#8EC07C", attribute: "#8EC07C", variable: "#83A598", builtIn: "#FE8019",
                       regexp: "#FE8019", meta: "#8EC07C", added: "#B8BB26", removed: "#FB4934", selection: "#665C54"),
-        italicComments: true, lightName: "Light", darkName: "Dark", keywords: "morhetz gruvbox retro medium")
+        italicComments: true, lightName: lightVariant, darkName: darkVariant, keywords: "morhetz gruvbox retro medium")
 
     // Readability, lightness only: light: string #EA9D34 → #C77C15, number #D7827E → #D2716C, function #D7827E → #D2716C, variable #D7827E → #D2716C, regexp #EA9D34 → #C77C15, meta #D7827E → #D2716C
     public static let rosePine = CodeTheme(
@@ -202,7 +218,9 @@ extension CodeTheme {
                       string: "#F6C177", number: "#EBBCBA", function: "#EBBCBA", type: "#9CCFD8",
                       tag: "#9CCFD8", attribute: "#C4A7E7", variable: "#EBBCBA", builtIn: "#EB6F92",
                       regexp: "#F6C177", meta: "#EBBCBA", added: "#9CCFD8", removed: "#EB6F92", selection: "#2A2838"),
-        italicComments: true, lightName: "Dawn", darkName: "Main", keywords: "rose pine rosepine dawn main")
+        italicComments: true, lightName: "Dawn",
+        darkName: String(localized: "Main", bundle: .greeceKit, comment: "Code theme variant name: Rosé Pine’s main version, as opposed to Dawn and Moon"),
+        keywords: "rose pine rosepine dawn main")
 
     // Readability, lightness only: light: string #EA9D34 → #C77C15, number #D7827E → #D2716C, function #D7827E → #D2716C, variable #D7827E → #D2716C, regexp #EA9D34 → #C77C15, meta #D7827E → #D2716C
     public static let rosePineMoon = CodeTheme(
@@ -228,7 +246,9 @@ extension CodeTheme {
                       string: "#C3E88D", number: "#F78C6C", function: "#82AAFF", type: "#FFCB6B",
                       tag: "#F07178", attribute: "#C792EA", variable: "#89DDFF", builtIn: "#82AAFF",
                       regexp: "#C3E88D", meta: "#82AAFF", added: "#C3E88D", removed: "#F07178", selection: "#31454A"),
-        italicComments: true, lightName: "Lighter", darkName: "Default",
+        italicComments: true,
+        lightName: String(localized: "Lighter", bundle: .greeceKit, comment: "Code theme variant name: Material Theme’s light version, “Material Lighter”"),
+        darkName: String(localized: "Default", bundle: .greeceKit, comment: "Code theme variant name: Material Theme’s default (dark) version"),
         keywords: "material theme mattia astorino equinusocio lighter")
 
     // Readability, lightness only: light: regexp #5CA7E4 → #3E97DF, added #49D0C5 → #29A197, removed #F76E6E → #F65E5E
@@ -256,7 +276,7 @@ extension CodeTheme {
                       string: "#AAD94C", number: "#D2A6FF", function: "#FFB454", type: "#59C2FF",
                       tag: "#39BAE6", attribute: "#FFB454", variable: "#39BAE6", builtIn: "#F07178",
                       regexp: "#95E6CB", meta: "#E6C08A", added: "#70BF56", removed: "#F26D78", selection: "#193155"),
-        italicComments: true, lightName: "Light", darkName: "Dark", keywords: "ayu")
+        italicComments: true, lightName: lightVariant, darkName: darkVariant, keywords: "ayu")
 
     // Readability, lightness only: light: comment #ADAEB1 → #AAABAF, keyword #FA8532 → #F16706, string #86B300 → #779F00, function #EBA400 → #C18700, type #22A4E6 → #199ADC, tag #55B4D4 → #319DC1, attribute #EBA400 → #C18700, variable #55B4D4 → #319DC1, builtIn #F07171 → #EF6565, regexp #4CBF99 → #3AA380, meta #E59645 → #D67B1E, added #6CBF43 → #5BA337, removed #FF7383 → #FF5468
     public static let ayuMirage = CodeTheme(
@@ -269,7 +289,7 @@ extension CodeTheme {
                       string: "#D5FF80", number: "#DFBFFF", function: "#FFCD66", type: "#73D0FF",
                       tag: "#5CCFE6", attribute: "#FFCD66", variable: "#5CCFE6", builtIn: "#F28779",
                       regexp: "#95E6CB", meta: "#D9BE98", added: "#87D96C", removed: "#F27983", selection: "#2B4768"),
-        italicComments: true, lightName: "Light", darkName: "Mirage", keywords: "ayu mirage")
+        italicComments: true, lightName: lightVariant, darkName: "Mirage", keywords: "ayu mirage")
 
     public static let monokaiPro = CodeTheme(
         id: "monokai-pro", name: "Monokai Pro",
@@ -281,7 +301,7 @@ extension CodeTheme {
                       string: "#FFD866", number: "#AB9DF2", function: "#A9DC76", type: "#78DCE8",
                       tag: "#FF6188", attribute: "#78DCE8", variable: "#FC9867", builtIn: "#A9DC76",
                       regexp: "#FFD866", meta: "#AB9DF2", added: "#A9DC76", removed: "#FF6188", selection: "#434044"),
-        italicComments: true, lightName: "Light", darkName: "Pro", keywords: "monokai pro light filter wimer hazenberg")
+        italicComments: true, lightName: lightVariant, darkName: "Pro", keywords: "monokai pro light filter wimer hazenberg")
 
     // Readability, lightness only: dark: removed #6C6C6C → #757575
     public static let intelliJ = CodeTheme(
@@ -319,7 +339,7 @@ extension CodeTheme {
                       string: "#DBBC7F", number: "#D699B6", function: "#A7C080", type: "#7FBBB3",
                       tag: "#E69875", attribute: "#DBBC7F", variable: "#D699B6", builtIn: "#A7C080",
                       regexp: "#DBBC7F", meta: "#A7C080", added: "#A7C080", removed: "#E67E80", selection: "#414B51"),
-        italicComments: true, lightName: "Light", darkName: "Dark", keywords: "sainnhe everforest green forest medium")
+        italicComments: true, lightName: lightVariant, darkName: darkVariant, keywords: "sainnhe everforest green forest medium")
 
     // Readability, lightness only: light: tag #6693BF → #598ABA, builtIn #6693BF → #598ABA, added #6E915F → #6D8F5E
     public static let kanagawa = CodeTheme(
@@ -344,7 +364,7 @@ extension CodeTheme {
                       string: "#C98A7D", number: "#4C9A91", function: "#80A665", type: "#5DA994",
                       tag: "#4D9375", attribute: "#BD976A", variable: "#BD976A", builtIn: "#B8A965",
                       regexp: "#C4704F", meta: "#80A665", added: "#85E89D", removed: "#FDAEB7", selection: "#272727"),
-        lightName: "Light", darkName: "Dark", keywords: "antfu anthony fu vitesse")
+        lightName: lightVariant, darkName: darkVariant, keywords: "antfu anthony fu vitesse")
 
     // Readability, lightness only: light: number #F5871F → #E6750A, type #C99E00 → #B68F00
     public static let tomorrow = CodeTheme(
@@ -370,7 +390,9 @@ extension CodeTheme {
                       string: "#E4A88A", number: "#DB887A", function: "#24A2AD", type: "#E4B28F",
                       tag: "#D55170", attribute: "#DB887A", variable: "#D55170", builtIn: "#24A2AD",
                       regexp: "#DB887A", meta: "#24A2AD", added: "#24A075", removed: "#F43E5C", selection: "#292B37"),
-        italicComments: true, lightName: "Bright", darkName: "Dark", keywords: "jolaleye horizon bright")
+        italicComments: true,
+        lightName: String(localized: "Bright", bundle: .greeceKit, comment: "Code theme variant name: Horizon’s light version"),
+        darkName: darkVariant, keywords: "jolaleye horizon bright")
 
     // Readability, lightness only: light: keyword #FF5792 → #FF4888, string #00B368 → #00A560, attribute #00BDD6 → #009DB2, variable #FA8900 → #D87600, builtIn #00BDD6 → #009DB2, regexp #00B368 → #00A560, added #00B368 → #00A560
     public static let noctis = CodeTheme(
@@ -409,7 +431,7 @@ extension CodeTheme {
                       string: "#3AA99F", number: "#8B7EC8", function: "#DA702C", type: "#DA702C",
                       tag: "#4385BE", attribute: "#DA702C", variable: "#4385BE", builtIn: "#879A39",
                       regexp: "#3AA99F", meta: "#D0A215", added: "#879A39", removed: "#D14D41", selection: "#1C1B1A"),
-        lightName: "Light", darkName: "Dark", keywords: "steph ango kepano flexoki paper ink")
+        lightName: lightVariant, darkName: darkVariant, keywords: "steph ango kepano flexoki paper ink")
 
     public static let modus = CodeTheme(
         id: "modus", name: "Modus",
@@ -427,7 +449,7 @@ extension CodeTheme {
 
     // Readability, lightness only: only: comment #AAAAAA → #A6A6A6, attribute #8190A0 → #808F9F
     public static let quietLight = CodeTheme(
-        id: "quiet-light", name: "Quiet Light",
+        id: "quiet-light", name: String(localized: "Quiet Light", bundle: .greeceKit, comment: "Code theme name: Visual Studio Code’s soft light theme"),
         only: Palette(background: "#F5F5F5", foreground: "#333333", comment: "#A6A6A6", keyword: "#4B69C6",
                       string: "#448C27", number: "#9C5D27", function: "#AA3731", type: "#7A3E9D",
                       tag: "#4B69C6", attribute: "#808F9F", variable: "#7A3E9D", builtIn: "#AA3731",
@@ -436,7 +458,7 @@ extension CodeTheme {
 
     // Readability, lightness only: only: added #34C759 → #2BA64A
     public static let xcodeSunset = CodeTheme(
-        id: "xcode-sunset", name: "Sunset",
+        id: "xcode-sunset", name: String(localized: "Sunset", bundle: .greeceKit, comment: "Code theme name: one of Xcode’s built-in themes"),
         only: Palette(background: "#FFFCE5", foreground: "#000000", comment: "#C3741C", keyword: "#294277",
                       string: "#DF0700", number: "#294277", function: "#0F68A0", type: "#B44500",
                       tag: "#294277", attribute: "#2C329D", variable: "#476A97", builtIn: "#476A97",
@@ -445,7 +467,7 @@ extension CodeTheme {
 
     // Readability, lightness only: only: added #34C759 → #2CA94B
     public static let xcodeLowKey = CodeTheme(
-        id: "xcode-low-key", name: "Low Key",
+        id: "xcode-low-key", name: String(localized: "Low Key", bundle: .greeceKit, comment: "Code theme name: one of Xcode’s built-in themes, in muted colours"),
         only: Palette(background: "#FFFFFF", foreground: "#000000", comment: "#435138", keyword: "#262C6A",
                       string: "#702C51", number: "#262C6A", function: "#0F68A0", type: "#476A97",
                       tag: "#262C6A", attribute: "#1E4D1A", variable: "#476A97", builtIn: "#476A97",
@@ -454,7 +476,7 @@ extension CodeTheme {
 
     // Readability, lightness only: only: added #34C759 → #2CA94B
     public static let xcodeBasic = CodeTheme(
-        id: "xcode-basic", name: "Basic",
+        id: "xcode-basic", name: String(localized: "Basic", bundle: .greeceKit, comment: "Code theme name: one of Xcode’s built-in themes, plain black on white"),
         only: Palette(background: "#FFFFFF", foreground: "#000000", comment: "#008000", keyword: "#0000FF",
                       string: "#A31515", number: "#000000", function: "#0F68A0", type: "#2B839F",
                       tag: "#0000FF", attribute: "#000000", variable: "#2B839F", builtIn: "#2B839F",
@@ -561,7 +583,7 @@ extension CodeTheme {
 
     // Readability, lightness only: only: attribute #2D449B → #3651B9
     public static let xcodeMidnight = CodeTheme(
-        id: "xcode-midnight", name: "Midnight",
+        id: "xcode-midnight", name: String(localized: "Midnight", bundle: .greeceKit, comment: "Code theme name: one of Xcode’s built-in themes, on black"),
         only: Palette(background: "#000000", foreground: "#FFFFFF", comment: "#41CC45", keyword: "#D31895",
                       string: "#FF2C38", number: "#786DFF", function: "#41A1C0", type: "#00A0FF",
                       tag: "#D31895", attribute: "#3651B9", variable: "#23FF83", builtIn: "#00A0FF",
@@ -570,7 +592,7 @@ extension CodeTheme {
 
     // Readability, lightness only: only: keyword #B21889 → #C41A97, tag #B21889 → #C41A97
     public static let xcodeDusk = CodeTheme(
-        id: "xcode-dusk", name: "Dusk",
+        id: "xcode-dusk", name: String(localized: "Dusk", bundle: .greeceKit, comment: "Code theme name: one of Xcode’s built-in themes, on dark grey"),
         only: Palette(background: "#1E2028", foreground: "#FFFFFF", comment: "#41B645", keyword: "#C41A97",
                       string: "#DB2C38", number: "#786DC4", function: "#41A1C0", type: "#00A0BE",
                       tag: "#C41A97", attribute: "#55747C", variable: "#83C057", builtIn: "#00A0BE",
@@ -578,7 +600,7 @@ extension CodeTheme {
         keywords: "apple xcode dusk")
 
     public static let xcodeCivic = CodeTheme(
-        id: "xcode-civic", name: "Civic",
+        id: "xcode-civic", name: String(localized: "Civic", bundle: .greeceKit, comment: "Code theme name: one of Xcode’s built-in themes"),
         only: Palette(background: "#1F2029", foreground: "#E1E2E7", comment: "#45BB3E", keyword: "#D7008F",
                       string: "#D3232E", number: "#149C92", function: "#41A1C0", type: "#25908D",
                       tag: "#D7008F", attribute: "#55747C", variable: "#1DA9A2", builtIn: "#25908D",

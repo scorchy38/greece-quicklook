@@ -74,13 +74,16 @@ enum FontPreview {
         let first = faces[0].0
         var details: [String] = []
         if info.faces.count > 1 {
-            details.append(MediaText.plural(info.faces.count, "face"))
+            details.append(String(localized: "%lld faces [font collection]", defaultValue: "\(info.faces.count) faces", bundle: .greeceKit,
+                                          comment: "Info bar detail: how many fonts (typefaces) a font collection holds"))
             details.append(first.family)
         } else {
             details.append(first.fullName)
         }
-        details.append(MediaText.plural(first.glyphs, "glyph"))
-        if !first.axes.isEmpty { details.append(MediaText.plural(first.axes.count, "axis", "axes")) }
+        details.append(String(localized: "\(first.glyphs) glyphs", bundle: .greeceKit, comment: "Info bar detail: how many glyphs (drawn characters) a font has"))
+        if !first.axes.isEmpty {
+            details.append(String(localized: "\(first.axes.count) axes", bundle: .greeceKit, comment: "Info bar detail: how many variation axes (weight, width…) a variable font has"))
+        }
         if let size = file.sizeText { details.append(size) }
         let summary = FileSummary(symbol: "textformat", title: info.title, details: details, trailing: file.modifiedText)
         return .web(document, summary, NSSize(width: 1000, height: 800))
@@ -236,21 +239,68 @@ enum FontPreview {
         "vpal", "vhal", "valt", "vkna", "lfbd", "rtbd", "opbd", "abrv", "rtlm", "ltra", "ltrm", "rtla", "aalt",
     ]
 
+    /// The OpenType registry's names for the features a person can turn on and off.
     static let featureNames: [String: String] = [
-        "afrc": "Alternative Fractions", "c2pc": "Petite Capitals from Capitals", "c2sc": "Small Capitals from Capitals",
-        "calt": "Contextual Alternates", "case": "Case-Sensitive Forms", "clig": "Contextual Ligatures", "cpct": "Centered CJK Punctuation",
-        "cpsp": "Capital Spacing", "cswh": "Contextual Swash", "dlig": "Discretionary Ligatures", "dnom": "Denominators",
-        "expt": "Expert Forms", "falt": "Final Glyph on Line Alternates", "frac": "Fractions", "fwid": "Full Widths",
-        "halt": "Alternate Half Widths", "hist": "Historical Forms", "hkna": "Horizontal Kana Alternates", "hlig": "Historical Ligatures",
-        "hngl": "Hangul", "hojo": "Hojo Kanji Forms", "hwid": "Half Widths", "ital": "Italics", "jalt": "Justification Alternates",
-        "jp78": "JIS78 Forms", "jp83": "JIS83 Forms", "jp90": "JIS90 Forms", "jp04": "JIS2004 Forms", "kern": "Kerning",
-        "liga": "Standard Ligatures", "lnum": "Lining Figures", "mgrk": "Mathematical Greek", "nalt": "Alternate Annotation Forms",
-        "nlck": "NLC Kanji Forms", "numr": "Numerators", "onum": "Oldstyle Figures", "ordn": "Ordinals", "ornm": "Ornaments",
-        "palt": "Proportional Alternate Widths", "pcap": "Petite Capitals", "pkna": "Proportional Kana", "pnum": "Proportional Figures",
-        "pwid": "Proportional Widths", "qwid": "Quarter Widths", "rand": "Randomize", "ruby": "Ruby Notation Forms",
-        "salt": "Stylistic Alternates", "sinf": "Scientific Inferiors", "smcp": "Small Capitals", "smpl": "Simplified Forms",
-        "subs": "Subscript", "sups": "Superscript", "swsh": "Swash", "titl": "Titling", "tnam": "Traditional Name Forms",
-        "tnum": "Tabular Figures", "trad": "Traditional Forms", "twid": "Third Widths", "unic": "Unicase", "zero": "Slashed Zero",
+        "afrc": String(localized: "Alternative Fractions", bundle: .greeceKit, comment: "OpenType font feature"),
+        "c2pc": String(localized: "Petite Capitals from Capitals", bundle: .greeceKit, comment: "OpenType font feature"),
+        "c2sc": String(localized: "Small Capitals from Capitals", bundle: .greeceKit, comment: "OpenType font feature"),
+        "calt": String(localized: "Contextual Alternates", bundle: .greeceKit, comment: "OpenType font feature"),
+        "case": String(localized: "Case-Sensitive Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "clig": String(localized: "Contextual Ligatures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "cpct": String(localized: "Centered CJK Punctuation", bundle: .greeceKit, comment: "OpenType font feature"),
+        "cpsp": String(localized: "Capital Spacing", bundle: .greeceKit, comment: "OpenType font feature"),
+        "cswh": String(localized: "Contextual Swash", bundle: .greeceKit, comment: "OpenType font feature"),
+        "dlig": String(localized: "Discretionary Ligatures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "dnom": String(localized: "Denominators", bundle: .greeceKit, comment: "OpenType font feature"),
+        "expt": String(localized: "Expert Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "falt": String(localized: "Final Glyph on Line Alternates", bundle: .greeceKit, comment: "OpenType font feature"),
+        "frac": String(localized: "Fractions", bundle: .greeceKit, comment: "OpenType font feature"),
+        "fwid": String(localized: "Full Widths", bundle: .greeceKit, comment: "OpenType font feature"),
+        "halt": String(localized: "Alternate Half Widths", bundle: .greeceKit, comment: "OpenType font feature"),
+        "hist": String(localized: "Historical Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "hkna": String(localized: "Horizontal Kana Alternates", bundle: .greeceKit, comment: "OpenType font feature"),
+        "hlig": String(localized: "Historical Ligatures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "hngl": String(localized: "Hangul", bundle: .greeceKit, comment: "OpenType font feature: Hanja shown as Hangul"),
+        "hojo": String(localized: "Hojo Kanji Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "hwid": String(localized: "Half Widths", bundle: .greeceKit, comment: "OpenType font feature"),
+        "ital": String(localized: "Italics", bundle: .greeceKit, comment: "OpenType font feature"),
+        "jalt": String(localized: "Justification Alternates", bundle: .greeceKit, comment: "OpenType font feature"),
+        "jp78": String(localized: "JIS78 Forms", bundle: .greeceKit, comment: "OpenType font feature. JIS78 is a Japanese standard"),
+        "jp83": String(localized: "JIS83 Forms", bundle: .greeceKit, comment: "OpenType font feature. JIS83 is a Japanese standard"),
+        "jp90": String(localized: "JIS90 Forms", bundle: .greeceKit, comment: "OpenType font feature. JIS90 is a Japanese standard"),
+        "jp04": String(localized: "JIS2004 Forms", bundle: .greeceKit, comment: "OpenType font feature. JIS2004 is a Japanese standard"),
+        "kern": String(localized: "Kerning", bundle: .greeceKit, comment: "OpenType font feature"),
+        "liga": String(localized: "Standard Ligatures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "lnum": String(localized: "Lining Figures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "mgrk": String(localized: "Mathematical Greek", bundle: .greeceKit, comment: "OpenType font feature"),
+        "nalt": String(localized: "Alternate Annotation Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "nlck": String(localized: "NLC Kanji Forms", bundle: .greeceKit, comment: "OpenType font feature. NLC is a Japanese standard"),
+        "numr": String(localized: "Numerators", bundle: .greeceKit, comment: "OpenType font feature"),
+        "onum": String(localized: "Oldstyle Figures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "ordn": String(localized: "Ordinals", bundle: .greeceKit, comment: "OpenType font feature"),
+        "ornm": String(localized: "Ornaments", bundle: .greeceKit, comment: "OpenType font feature"),
+        "palt": String(localized: "Proportional Alternate Widths", bundle: .greeceKit, comment: "OpenType font feature"),
+        "pcap": String(localized: "Petite Capitals", bundle: .greeceKit, comment: "OpenType font feature"),
+        "pkna": String(localized: "Proportional Kana", bundle: .greeceKit, comment: "OpenType font feature"),
+        "pnum": String(localized: "Proportional Figures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "pwid": String(localized: "Proportional Widths", bundle: .greeceKit, comment: "OpenType font feature"),
+        "qwid": String(localized: "Quarter Widths", bundle: .greeceKit, comment: "OpenType font feature"),
+        "rand": String(localized: "Randomize", bundle: .greeceKit, comment: "OpenType font feature"),
+        "ruby": String(localized: "Ruby Notation Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "salt": String(localized: "Stylistic Alternates", bundle: .greeceKit, comment: "OpenType font feature"),
+        "sinf": String(localized: "Scientific Inferiors", bundle: .greeceKit, comment: "OpenType font feature"),
+        "smcp": String(localized: "Small Capitals", bundle: .greeceKit, comment: "OpenType font feature"),
+        "smpl": String(localized: "Simplified Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "subs": String(localized: "Subscript", bundle: .greeceKit, comment: "OpenType font feature"),
+        "sups": String(localized: "Superscript", bundle: .greeceKit, comment: "OpenType font feature"),
+        "swsh": String(localized: "Swash", bundle: .greeceKit, comment: "OpenType font feature"),
+        "titl": String(localized: "Titling", bundle: .greeceKit, comment: "OpenType font feature"),
+        "tnam": String(localized: "Traditional Name Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "tnum": String(localized: "Tabular Figures", bundle: .greeceKit, comment: "OpenType font feature"),
+        "trad": String(localized: "Traditional Forms", bundle: .greeceKit, comment: "OpenType font feature"),
+        "twid": String(localized: "Third Widths", bundle: .greeceKit, comment: "OpenType font feature"),
+        "unic": String(localized: "Unicase", bundle: .greeceKit, comment: "OpenType font feature"),
+        "zero": String(localized: "Slashed Zero", bundle: .greeceKit, comment: "OpenType font feature"),
     ]
 
     /// Text that shows a feature off: what it changes is visible at a glance.
@@ -264,8 +314,12 @@ enum FontPreview {
 
     static func featureName(_ tag: String, face: FontFaceInfo, uiNameID: Int?) -> String {
         if let id = uiNameID, let name = face.names[id] { return name }
-        if tag.count == 4, tag.hasPrefix("ss"), let number = Int(tag.dropFirst(2)) { return "Stylistic Set \(number)" }
-        if tag.count == 4, tag.hasPrefix("cv"), let number = Int(tag.dropFirst(2)) { return "Character Variant \(number)" }
+        if tag.count == 4, tag.hasPrefix("ss"), let number = Int(tag.dropFirst(2)) {
+            return String(localized: "Stylistic Set \(String(number))", bundle: .greeceKit, comment: "OpenType font feature. The argument is the set’s number, 1 to 20")
+        }
+        if tag.count == 4, tag.hasPrefix("cv"), let number = Int(tag.dropFirst(2)) {
+            return String(localized: "Character Variant \(String(number))", bundle: .greeceKit, comment: "OpenType font feature. The argument is the variant’s number, 1 to 99")
+        }
         return featureNames[tag] ?? tag
     }
 

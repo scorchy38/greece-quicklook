@@ -6,6 +6,19 @@ struct LockedPackage: Equatable {
         case direct = "Direct", dev = "Dev", directDev = "Direct · Dev", optional = "Optional", transitive = "Transitive"
         case workspace = "Workspace", unknown = ""
 
+        /// How the Dependency column shows it.
+        var title: String {
+            switch self {
+            case .direct: return String(localized: "Direct", bundle: .greeceKit, comment: "Lock file dependency kind: the project asks for this package itself")
+            case .dev: return String(localized: "Dev", bundle: .greeceKit, comment: "Lock file dependency kind: needed only to develop the project (short for development)")
+            case .directDev: return String(localized: "Direct · Dev", bundle: .greeceKit, comment: "Lock file dependency kind: a direct dependency needed only for development")
+            case .optional: return String(localized: "Optional", bundle: .greeceKit, comment: "Lock file dependency kind")
+            case .transitive: return String(localized: "Transitive", bundle: .greeceKit, comment: "Lock file dependency kind: needed by another package, not the project itself")
+            case .workspace: return String(localized: "Workspace", bundle: .greeceKit, comment: "Lock file dependency kind: a package of the project’s own workspace")
+            case .unknown: return ""
+            }
+        }
+
         var tint: GridTint {
             switch self {
             case .direct: return .accent
@@ -65,6 +78,21 @@ struct LockFile {
     var knowsDirect: Bool { packages.contains { $0.kind != .unknown } }
 
     static func format(forName name: String) -> Format? { Format(rawValue: name.lowercased()) }
+
+    /// The source of a package that comes from a folder on disk rather than a registry.
+    static let localSource = "local"
+
+    /// "Lockfile v3": the format version a lock file records.
+    static func lockfileVersion(_ version: Any) -> String {
+        let version = "\(version)"
+        return String(localized: "Lockfile v\(version)", bundle: .greeceKit, comment: "Info bar detail: the format version of a lock file, such as “Lockfile v3”")
+    }
+
+    /// "Format v2": the format version of a lock file that doesn't call itself a lockfile.
+    static func formatVersion(_ version: Any) -> String {
+        let version = "\(version)"
+        return String(localized: "Format v\(version)", bundle: .greeceKit, comment: "Info bar detail: the format version of a lock file, such as “Format v2”")
+    }
 
     static let readLimit = 48 * 1024 * 1024
     static let maxPackages = 50_000
@@ -159,7 +187,7 @@ struct LockFile {
 
     private static func npm(_ data: Data, format: Format) -> LockFile? {
         guard let json = json(data) else { return nil }
-        let version = json["lockfileVersion"].map { "Lockfile v\($0)" }
+        let version = json["lockfileVersion"].map(lockfileVersion)
         var packages: [LockedPackage] = []
         if let entries = json["packages"] as? [String: Any] {
             let root = entries[""] as? [String: Any] ?? [:]
@@ -252,7 +280,7 @@ struct LockFile {
         flush()
         guard !packages.isEmpty || text.contains("yarn lockfile") || berry else { return nil }
         if let (prod, dev) = manifests.packageJSON() { mark(&packages, prod: prod, dev: dev) }
-        let detail = berry ? (text.range(of: #"version: (\d+)"#, options: .regularExpression).map { "Lockfile v" + text[$0].dropFirst(9) }) : "Lockfile v1"
+        let detail = berry ? (text.range(of: #"version: (\d+)"#, options: .regularExpression).map { lockfileVersion(text[$0].dropFirst(9)) }) : lockfileVersion(1)
         return LockFile(format: .yarn, packages: packages, detail: detail)
     }
 
@@ -297,7 +325,7 @@ struct LockFile {
             if line.hasPrefix("#") || line.isEmpty { continue }
             if level == 0 {
                 section = String(line.prefix { $0 != ":" })
-                if section == "lockfileVersion" { version = "Lockfile v" + unquote(line.dropFirst(16)) }
+                if section == "lockfileVersion" { version = lockfileVersion(unquote(line.dropFirst(16))) }
                 currentKey = nil
                 continue
             }
@@ -370,7 +398,7 @@ struct LockFile {
             if !nested, prod.contains(name) { package.kind = .direct } else if !nested, dev.contains(name) { package.kind = .directDev } else { package.kind = .transitive }
             packages.append(package)
         }
-        return LockFile(format: .bun, packages: packages, detail: json["lockfileVersion"].map { "Lockfile v\($0)" })
+        return LockFile(format: .bun, packages: packages, detail: json["lockfileVersion"].map(lockfileVersion))
     }
 
     // MARK: - TOML lock files (Cargo, Poetry, uv)
@@ -461,7 +489,7 @@ struct LockFile {
             let kind: LockedPackage.Kind = raw.isEmpty ? .workspace : direct.contains(name) ? .direct : .transitive
             return LockedPackage(name: name, version: tomlString(table["version"]), source: source, kind: kind)
         }
-        let version = text.range(of: #"(?m)^version = (\d+)"#, options: .regularExpression).map { "Lockfile v" + text[$0].split(separator: " ").last! }
+        let version = text.range(of: #"(?m)^version = (\d+)"#, options: .regularExpression).map { lockfileVersion(text[$0].split(separator: " ").last!) }
         return LockFile(format: .cargo, packages: packages, detail: version)
     }
 
@@ -674,7 +702,7 @@ struct LockFile {
             let kind = pin["kind"] as? String
             return LockedPackage(name: name, version: version, source: kind == "localSourceControl" || kind == "fileSystem" ? "local" : source(fromURL: location))
         }
-        return LockFile(format: .swiftpm, packages: packages, detail: json["version"].map { "Format v\($0)" })
+        return LockFile(format: .swiftpm, packages: packages, detail: json["version"].map(formatVersion))
     }
 
     // MARK: - Composer
@@ -812,7 +840,7 @@ struct LockFile {
             let version = (locked["rev"] as? String).map { String($0.prefix(7)) } ?? (locked["narHash"] as? String).map { String($0.prefix(12)) } ?? ""
             packages.append(LockedPackage(name: name, version: version, source: source, kind: direct.contains(name) ? .direct : .transitive))
         }
-        return LockFile(format: .flake, packages: packages, detail: json["version"].map { "Format v\($0)" })
+        return LockFile(format: .flake, packages: packages, detail: json["version"].map(formatVersion))
     }
 
     // MARK: - Gradle
@@ -848,6 +876,6 @@ struct LockFile {
                 packages.append(LockedPackage(name: name, version: version, source: type == "Project" ? "local" : "NuGet", kind: kind))
             }
         }
-        return LockFile(format: .nuget, packages: packages, detail: json["version"].map { "Format v\($0)" })
+        return LockFile(format: .nuget, packages: packages, detail: json["version"].map(formatVersion))
     }
 }

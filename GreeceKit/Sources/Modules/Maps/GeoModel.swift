@@ -229,19 +229,38 @@ struct GeoStats: Equatable {
         }
     }
 
-    /// "812 polygons, 392 points" or "1 feature".
+    /// "812 polygons, 392 points" or "1 feature without geometry".
     var text: String {
         var parts: [String] = []
-        func add(_ n: Int, _ one: String, _ many: String) {
-            if n > 0 { parts.append("\(n.formatted()) \(n == 1 ? one : many)") }
+        if polygons > 0 { parts.append(Self.polygons(polygons)) }
+        if lines > 0 { parts.append(Self.lines(lines)) }
+        if points > 0 { parts.append(Self.points(points)) }
+        if mixed > 0 { parts.append(String(localized: "\(mixed) collections", bundle: .greeceKit, comment: "Info bar detail: map features that are geometry collections")) }
+        if parts.isEmpty {
+            if features == 0 { return String(localized: "No features", bundle: .greeceKit, comment: "Info bar detail: a map file with nothing in it") }
+            return String(localized: "\(features) features without geometry", bundle: .greeceKit, comment: "Info bar detail: map features that have no shape to draw")
         }
-        add(polygons, "polygon", "polygons")
-        add(lines, "line", "lines")
-        add(points, "point", "points")
-        add(mixed, "collection", "collections")
-        if parts.isEmpty { return features == 0 ? "No features" : "\(features.formatted()) \(features == 1 ? "feature" : "features") without geometry" }
-        if empty > 0 { add(empty, "without geometry", "without geometry") }
+        if empty > 0 {
+            parts.append(String(localized: "\(empty) without geometry", bundle: .greeceKit,
+                                comment: "Info bar detail, after counts such as “812 polygons”: how many more features have no shape to draw"))
+        }
         return parts.joined(separator: ", ")
+    }
+
+    /// "812 polygons", also the feature inspector's name for a multi-polygon.
+    static func polygons(_ count: Int) -> String {
+        String(localized: "\(count) polygons", bundle: .greeceKit, comment: "Map features or parts of one that are polygons")
+    }
+
+    /// "3 lines" (map geometry, not lines of text).
+    static func lines(_ count: Int) -> String {
+        String(localized: "%lld lines [map geometry]", defaultValue: "\(count) lines", bundle: .greeceKit,
+               comment: "Map features or parts of one that are lines (shapes, not lines of text)")
+    }
+
+    /// "392 points".
+    static func points(_ count: Int) -> String {
+        String(localized: "\(count) points", bundle: .greeceKit, comment: "Map features or parts of one that are points; also points in a 3D point cloud")
     }
 }
 

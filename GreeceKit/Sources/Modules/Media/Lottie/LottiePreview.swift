@@ -56,7 +56,8 @@ enum LottiePreview {
         let assets = root["assets"] as? [[String: Any]] ?? []
         let markers = (root["markers"] as? [[String: Any]] ?? []).prefix(64).compactMap { marker -> Marker? in
             guard let start = number(marker["tm"]) else { return nil }
-            let name = (marker["cm"] as? String).map { $0.count > 80 ? String($0.prefix(80)) : $0 } ?? "Marker"
+            let name = (marker["cm"] as? String).map { $0.count > 80 ? String($0.prefix(80)) : $0 }
+                ?? String(localized: "Marker", bundle: .greeceKit, comment: "A Lottie animation’s marker (a named point in its timeline) that has no name of its own")
             return Marker(name: name, start: start, duration: number(marker["dr"]) ?? 0)
         }
         let sample = String(decoding: json.prefix(8 * 1024 * 1024), as: UTF8.self)
@@ -89,8 +90,12 @@ enum LottiePreview {
         var themes: Int
     }
 
+    private static var noAnimations: String {
+        String(localized: "This dotLottie file has no animations Greece can read.", bundle: .greeceKit)
+    }
+
     static func unpack(_ data: Data) throws -> Package {
-        guard let zip = ZIPArchive.media(data) else { throw MediaError.unreadable("This dotLottie file is damaged.") }
+        guard let zip = ZIPArchive.media(data) else { throw MediaError.unreadable(String(localized: "This dotLottie file is damaged.", bundle: .greeceKit)) }
         var package = Package(animations: [], generator: nil, author: nil, themes: 0)
         var ids: [String] = []
         if let entry = zip.member(named: "manifest.json"), let manifest = try? zip.contents(of: entry, limit: 1024 * 1024),
@@ -116,7 +121,7 @@ enum LottiePreview {
             package.animations.append((id, json))
             if budget <= 0 { break }
         }
-        guard !package.animations.isEmpty else { throw MediaError.unreadable("This dotLottie file has no animations Greece can read.") }
+        guard !package.animations.isEmpty else { throw MediaError.unreadable(noAnimations) }
         return package
     }
 
@@ -157,13 +162,13 @@ enum LottiePreview {
         if packaged {
             let package = try unpack(try file.mediaData(limit: 64 * 1024 * 1024))
             let described = package.animations.compactMap { item in describe(item.json, id: item.id).map { ($0, item.json) } }
-            guard !described.isEmpty else { throw MediaError.unreadable("This dotLottie file has no animations Greece can read.") }
+            guard !described.isEmpty else { throw MediaError.unreadable(noAnimations) }
             return (Payload(packaged: true, animations: described.map(\.0), generator: package.generator, author: package.author, themes: package.themes),
                     described.map(\.1))
         }
         let json = try file.mediaData(limit: jsonLimit)
         guard let animation = describe(json, id: file.url.deletingPathExtension().lastPathComponent) else {
-            throw MediaError.unreadable("This JSON file isn’t a Lottie animation Greece can play.")
+            throw MediaError.unreadable(String(localized: "This JSON file isn’t a Lottie animation Greece can play.", bundle: .greeceKit))
         }
         var generator: String?
         if let root = try? JSONSerialization.jsonObject(with: json) as? [String: Any], let meta = root["meta"] as? [String: Any] {
@@ -188,13 +193,19 @@ enum LottiePreview {
 
         let first = payload.animations[0]
         var details: [String] = []
-        if payload.animations.count > 1 { details.append(MediaText.plural(payload.animations.count, "animation")) }
+        if payload.animations.count > 1 {
+            details.append(String(localized: "\(payload.animations.count) animations", bundle: .greeceKit, comment: "Info bar detail: how many animations a dotLottie file holds"))
+        }
         details.append("\(SVGPreview.format(first.width)) × \(SVGPreview.format(first.height))")
-        details.append("\(first.frameRate.formatted(.number.precision(.fractionLength(0...2)))) fps")
-        details.append(first.duration.formatted(.number.precision(.fractionLength(1))) + " s")
-        details.append(MediaText.plural(first.layers, "layer"))
+        let frameRate = first.frameRate.formatted(.number.precision(.fractionLength(0...2)))
+        details.append(String(localized: "\(frameRate) fps", bundle: .greeceKit, comment: "Info bar detail: an animation’s frame rate, such as “30 fps” (frames per second)"))
+        details.append(MediaText.seconds(first.duration))
+        details.append(String(localized: "\(first.layers) layers", bundle: .greeceKit, comment: "Info bar detail: how many layers an animation has"))
         if let size = file.sizeText { details.append(size) }
-        let summary = FileSummary(symbol: "wand.and.rays", title: packaged ? "dotLottie Animation" : "Lottie Animation", details: details, trailing: file.modifiedText)
+        let title = packaged
+            ? String(localized: "dotLottie Animation", bundle: .greeceKit, comment: "Info bar title. dotLottie is a file format")
+            : String(localized: "Lottie Animation", bundle: .greeceKit, comment: "Info bar title. Lottie is a file format")
+        let summary = FileSummary(symbol: "wand.and.rays", title: title, details: details, trailing: file.modifiedText)
         return .web(document, summary, NSSize(width: 900, height: 760))
     }
 }

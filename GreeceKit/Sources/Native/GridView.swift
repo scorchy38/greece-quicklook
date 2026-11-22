@@ -210,6 +210,18 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
     func refreshHeader() { header.needsDisplay = true }
 
+    /// Widens columns whose strip wouldn't fit (a profile's kind and its detail side by side), so a
+    /// longer word in another language ("Ganzzahl", "Целое число") doesn't hide the detail. Never
+    /// narrows a column, and stops at `limit`, so one long caption can't push the others away.
+    func widenColumnsToFitStrips(limit: CGFloat = 220) {
+        guard stripHeight > 0 else { return }
+        for column in tableView.tableColumns {
+            guard let index = Int(column.identifier.rawValue), let strip = strip(forColumn: index) else { continue }
+            let needed = (GridStripRenderer.width(of: strip) + 18).rounded(.up)
+            if needed > column.width, column.width < limit { column.width = min(needed, limit) }
+        }
+    }
+
     private func rowNumberWidth() -> CGFloat {
         CGFloat(max(2, String(source.rowCount).count)) * 7.5 + 18
     }
@@ -417,21 +429,27 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
         var items: [NSMenuItem] = []
         if let row, row < source.rowCount {
             if let column, let text = Self.copyableText(source.value(row: row, column: column)) {
-                items.append(ActionMenuItem("Copy \(MenuText.quoted(text))") { Clipboard.copy(text) })
+                items.append(ActionMenuItem(Self.copyTitle(text)) { Clipboard.copy(text) })
             }
-            items.append(ActionMenuItem("Copy Row") { [weak self] in
+            items.append(ActionMenuItem(String(localized: "Copy Row", bundle: .greeceKit)) { [weak self] in
                 guard let self else { return }
                 Clipboard.copy(self.tsv(rows: IndexSet(integer: row)))
             })
             let selected = tableView.selectedRowIndexes
             if selected.count > 1, selected.contains(row) {
-                items.append(ActionMenuItem("Copy Selected Rows") { [weak self] in self?.copySelection() })
+                items.append(ActionMenuItem(String(localized: "Copy Selected Rows", bundle: .greeceKit)) { [weak self] in self?.copySelection() })
             }
         }
         let extra = cellMenuItems?(row, column) ?? []
         if !items.isEmpty, !extra.isEmpty, !extra[0].isSeparatorItem { items.append(.separator()) }
         items += extra
         return .context(items)
+    }
+
+    /// "Copy “Paros”": a value, shortened to one line, in the item's title.
+    private static func copyTitle(_ value: String) -> String {
+        let shown = MenuText.short(value)
+        return String(localized: "Copy “\(shown)”", bundle: .greeceKit, comment: "Menu item; the argument is the value it copies, such as a table cell’s text")
     }
 
     /// The text a "Copy “…”" item copies, or nil when the cell holds nothing worth copying.
@@ -449,16 +467,19 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
         let sorted = sort?.key == String(column)
         let title = source.title(ofColumn: column)
         var items: [NSMenuItem] = [
-            ActionMenuItem("Sort Ascending", state: sorted && sort?.ascending == true ? .on : .off) { [weak self] in
+            ActionMenuItem(String(localized: "Sort Ascending", bundle: .greeceKit, comment: "Menu item on a table column’s title"),
+                           state: sorted && sort?.ascending == true ? .on : .off) { [weak self] in
                 self?.tableView.sortDescriptors = [NSSortDescriptor(key: String(column), ascending: true)]
             },
-            ActionMenuItem("Sort Descending", state: sorted && sort?.ascending == false ? .on : .off) { [weak self] in
+            ActionMenuItem(String(localized: "Sort Descending", bundle: .greeceKit, comment: "Menu item on a table column’s title"),
+                           state: sorted && sort?.ascending == false ? .on : .off) { [weak self] in
                 self?.tableView.sortDescriptors = [NSSortDescriptor(key: String(column), ascending: false)]
             },
             .separator(),
         ]
-        if !title.isEmpty { items.append(ActionMenuItem("Copy \(MenuText.quoted(title))") { Clipboard.copy(title) }) }
-        items.append(ActionMenuItem("Copy Column", enabled: source.rowCount > 0) { [weak self] in
+        if !title.isEmpty { items.append(ActionMenuItem(Self.copyTitle(title)) { Clipboard.copy(title) }) }
+        items.append(ActionMenuItem(String(localized: "Copy Column", bundle: .greeceKit, comment: "Menu item: copies every value in a table column"),
+                                    enabled: source.rowCount > 0) { [weak self] in
             guard let self else { return }
             Clipboard.copy(self.columnText(column))
         })
@@ -727,9 +748,27 @@ final class GridHeaderBar: NSView, NSViewToolTipOwner {
 }
 
 enum GridStripRenderer {
+    private static let small = NSFont.systemFont(ofSize: 10, weight: .medium)
+    private static let detailFont = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
+    /// A profile's detail shows only on strips wider than this.
+    private static let detailMinimumWidth: CGFloat = 90
+
+    /// The width a strip's text needs on one line: a profile's kind and detail, or a caption.
+    static func width(of strip: GridHeaderStrip) -> CGFloat {
+        func measure(_ string: String, _ font: NSFont) -> CGFloat { (string as NSString).size(withAttributes: [.font: font]).width }
+        switch strip {
+        case .profile(let kind, let detail, _, _, _):
+            return detail.map { max(detailMinimumWidth + 1, measure(kind, small) + 6 + measure($0, detailFont)) } ?? measure(kind, small)
+        case .caption(let caption, let symbol):
+            return measure(caption, small) + (symbol == nil ? 0 : 12)
+        case .progress(_, let caption):
+            return measure(caption, detailFont)
+        case .pending:
+            return 0
+        }
+    }
+
     static func draw(_ strip: GridHeaderStrip, in rect: NSRect, alignRight: Bool) {
-        let small = NSFont.systemFont(ofSize: 10, weight: .medium)
-        let detailFont = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
         func text(_ string: String, font: NSFont, color: NSColor, in frame: NSRect, align: NSTextAlignment) {
             let style = NSMutableParagraphStyle()
             style.alignment = align
@@ -765,7 +804,7 @@ enum GridStripRenderer {
         case .profile(let kind, let detail, let bars, let segments, let warning):
             let line = NSRect(x: rect.minX, y: rect.minY, width: rect.width, height: 13)
             text(kind, font: small, color: .tertiaryLabelColor, in: line, align: .left)
-            if let detail, rect.width > 90 {
+            if let detail, rect.width > detailMinimumWidth {
                 let kindWidth = (kind as NSString).size(withAttributes: [.font: small]).width + 6
                 text(detail, font: detailFont, color: warning ? .systemOrange : .tertiaryLabelColor,
                      in: NSRect(x: line.minX + kindWidth, y: line.minY, width: line.width - kindWidth, height: 13), align: .right)

@@ -109,7 +109,10 @@ final class ZIPArchive {
         let limit = UInt64(max(limit, 0))
         guard member.size <= limit else { throw ArchiveError.tooLarge }
         let range = try ZIPReader.locate(localHeader: member.localHeaderOffset, compressedSize: member.compressedSize, in: source)
-        guard !range.pastEnd else { throw ArchiveError.corrupt("“\((member.path as NSString).lastPathComponent)” runs past the end") }
+        guard !range.pastEnd else {
+            throw ArchiveError.corrupt(String(localized: "“\((member.path as NSString).lastPathComponent)” runs past the end", bundle: .greeceKit,
+                                              comment: "Why an archive is damaged (shown inside “This archive appears to be damaged (…)”); the argument is a file name"))
+        }
 
         if member.method == 0 {
             guard range.length <= limit else { throw ArchiveError.tooLarge }
@@ -130,7 +133,10 @@ final class ZIPArchive {
         }
         guard complete else { throw ArchiveError.tooLarge }
         // A cut-off stream keeps what decoded; one that decoded nothing at all is damaged.
-        if endedEarly, output.isEmpty, range.length > 0 { throw ArchiveError.corrupt("damaged member") }
+        if endedEarly, output.isEmpty, range.length > 0 {
+            throw ArchiveError.corrupt(String(localized: "damaged member", bundle: .greeceKit,
+                                              comment: "Why an archive is damaged (shown inside “This archive appears to be damaged (…)”): one file in it can’t be read"))
+        }
         return output
     }
 

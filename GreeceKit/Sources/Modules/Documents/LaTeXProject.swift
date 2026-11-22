@@ -153,9 +153,16 @@ struct LaTeXProject {
             return figure
         }
         if ext == "pgf" {
-            return Self.pgfFigure(found) ?? Figure(kind: "unsupported", note: "PGF figure")
+            return Self.pgfFigure(found) ?? Figure(kind: "unsupported", note: Self.pgfNote)
         }
-        return Figure(kind: "unsupported", note: ext == "eps" || ext == "ps" ? "PostScript figure" : "Figure")
+        let note = ext == "eps" || ext == "ps"
+            ? String(localized: "PostScript figure", bundle: .greeceKit, comment: "Placeholder for a LaTeX figure in a format Greece can’t draw")
+            : String(localized: "Figure", bundle: .greeceKit, comment: "Cross reference in a document, or a placeholder for a figure that can’t be shown")
+        return Figure(kind: "unsupported", note: note)
+    }
+
+    static var pgfNote: String {
+        String(localized: "PGF figure", bundle: .greeceKit, comment: "Placeholder for a LaTeX figure in PGF that Greece can’t draw")
     }
 
     static func pgfFigure(_ url: URL) -> Figure? {
@@ -339,8 +346,18 @@ private struct IncludeResolver {
     private mutating func include(name: String, file: String, directoryArg: String?, directory: URL, depth: Int) -> String {
         let shown = (directoryArg ?? "") + file
         let escapedShown = shown.replacingOccurrences(of: "}", with: "").replacingOccurrences(of: "{", with: "")
-        guard depth < LaTeXProject.depthLimit else { truncated = true; return "\\greecemissing{\(escapedShown) (nested too deeply)}" }
-        guard files.count < LaTeXProject.includeLimit else { truncated = true; return "\\greecemissing{\(escapedShown)}" }
+        // The page shows a placeholder for an include it can’t follow, with the reason after the path.
+        func missingFile(_ reason: String? = nil) -> String {
+            guard let reason else { return "\\greecemissing{\(escapedShown)}" }
+            let shownReason = reason.filter { !"{}\\%".contains($0) }
+            return "\\greecemissing{\(shownReason)}"
+        }
+        guard depth < LaTeXProject.depthLimit else {
+            truncated = true
+            return missingFile(String(localized: "\(escapedShown) (nested too deeply)", bundle: .greeceKit,
+                                      comment: "Placeholder for a LaTeX file that wasn’t included because includes are nested too deeply. The argument is its path, such as “chapters/intro.tex”"))
+        }
+        guard files.count < LaTeXProject.includeLimit else { truncated = true; return missingFile() }
         var bases: [URL] = []
         if let directoryArg {
             let sub = directoryArg.hasPrefix("/") ? URL(fileURLWithPath: directoryArg) : (name.hasPrefix("sub") ? directory : mainDirectory).appendingPathComponent(directoryArg)
@@ -356,26 +373,28 @@ private struct IncludeResolver {
         }
         guard let found = candidates.first(where: { isInside($0) && FileManager.default.isReadableFile(atPath: $0.path) && !isDirectory($0) }) else {
             missing.append(shown)
-            return "\\greecemissing{\(escapedShown)}"
+            return missingFile()
         }
         let resolved = found.resolvingSymlinksInPath().standardizedFileURL
         if found.pathExtension.lowercased() == "pgf" {
             pgfCount += 1
             let key = "greece-pgf-\(pgfCount)"
-            pgfFigures[key] = LaTeXProject.pgfFigure(resolved) ?? LaTeXProject.Figure(kind: "unsupported", note: "PGF figure")
+            pgfFigures[key] = LaTeXProject.pgfFigure(resolved) ?? LaTeXProject.Figure(kind: "unsupported", note: LaTeXProject.pgfNote)
             files.append(resolved)
             return "\\includegraphics{\(key)}"
         }
         guard !visiting.contains(resolved.path) else {
-            return "\\greecemissing{\(escapedShown) (includes itself)}"
+            return missingFile(String(localized: "\(escapedShown) (includes itself)", bundle: .greeceKit,
+                                      comment: "Placeholder for a LaTeX file that wasn’t included because it includes itself. The argument is its path, such as “chapters/intro.tex”"))
         }
         guard let text = try? TextFile(url: resolved, limit: LaTeXProject.fileLimit) else {
             missing.append(shown)
-            return "\\greecemissing{\(escapedShown)}"
+            return missingFile()
         }
         guard total + text.text.utf8.count <= LaTeXProject.totalLimit else {
             truncated = true
-            return "\\greecemissing{\(escapedShown) (project too large)}"
+            return missingFile(String(localized: "\(escapedShown) (project too large)", bundle: .greeceKit,
+                                      comment: "Placeholder for a LaTeX file that wasn’t included because the project is too large to show. The argument is its path"))
         }
         total += text.text.utf8.count
         files.append(resolved)

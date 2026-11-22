@@ -19,6 +19,24 @@ struct BundleFacts {
             case plugin = "Plug-in"
             case watchApp = "Watch App"
             case appClip = "App Clip"
+
+            /// What people read: "Extension", "Login Item".
+            var title: String {
+                switch self {
+                case .appExtension: return String(localized: "Extension", bundle: .greeceKit, comment: "A kind of item inside an app: an app extension")
+                case .systemExtension: return String(localized: "System Extension", bundle: .greeceKit)
+                case .framework: return String(localized: "Framework", bundle: .greeceKit, comment: "A kind of bundle: a code library")
+                case .loginItem: return String(localized: "Login Item", bundle: .greeceKit)
+                case .helper: return String(localized: "Helper", bundle: .greeceKit, comment: "Inspector row subtitle: a helper app inside an app")
+                case .xpcService: return String(localized: "XPC Service", bundle: .greeceKit)
+                case .privilegedHelper: return String(localized: "Privileged Helper", bundle: .greeceKit)
+                case .launchAgent: return String(localized: "Launch Agent", bundle: .greeceKit)
+                case .launchDaemon: return String(localized: "Launch Daemon", bundle: .greeceKit)
+                case .plugin: return String(localized: "Plug-in", bundle: .greeceKit, comment: "A kind of bundle")
+                case .watchApp: return String(localized: "Watch App", bundle: .greeceKit, comment: "An Apple Watch app inside an iOS app")
+                case .appClip: return "App Clip"
+                }
+            }
         }
         var path: String
         var role: Role
@@ -78,20 +96,26 @@ struct BundleFacts {
 
     var kindTitle: String {
         switch extensionName {
-        case "app": return isWrappedIOSApp ? "iPhone and iPad App" : isIOS ? "iOS App" : "Application"
-        case "appex": return "App Extension"
-        case "framework": return "Framework"
-        case "kext": return "Kernel Extension"
-        case "systemextension": return "System Extension"
-        case "xpc": return "XPC Service"
-        case "plugin": return "Plug-in"
-        case "qlgenerator": return "Quick Look Generator"
-        case "saver": return "Screen Saver"
-        case "prefpane": return "Preference Pane"
-        case "mdimporter": return "Spotlight Importer"
-        case "dext": return "Driver Extension"
-        default: return "Bundle"
+        case "app":
+            if isWrappedIOSApp { return String(localized: "iPhone and iPad App", bundle: .greeceKit) }
+            return isIOS ? BundleFacts.iOSAppTitle : String(localized: "Application", bundle: .greeceKit, comment: "Info bar title and inspector row value: a kind of bundle")
+        case "appex": return String(localized: "App Extension", bundle: .greeceKit)
+        case "framework": return String(localized: "Framework", bundle: .greeceKit, comment: "A kind of bundle: a code library")
+        case "kext": return String(localized: "Kernel Extension", bundle: .greeceKit)
+        case "systemextension": return String(localized: "System Extension", bundle: .greeceKit)
+        case "xpc": return String(localized: "XPC Service", bundle: .greeceKit)
+        case "plugin": return String(localized: "Plug-in", bundle: .greeceKit, comment: "A kind of bundle")
+        case "qlgenerator": return String(localized: "Quick Look Generator", bundle: .greeceKit)
+        case "saver": return String(localized: "Screen Saver", bundle: .greeceKit)
+        case "prefpane": return String(localized: "Preference Pane", bundle: .greeceKit)
+        case "mdimporter": return String(localized: "Spotlight Importer", bundle: .greeceKit)
+        case "dext": return String(localized: "Driver Extension", bundle: .greeceKit)
+        default: return String(localized: "Bundle", bundle: .greeceKit, comment: "Info bar title and inspector row value: a kind of file (a macOS bundle)")
         }
+    }
+
+    static var iOSAppTitle: String {
+        String(localized: "iOS App", bundle: .greeceKit, comment: "Info bar title and inspector row value: a kind of app")
     }
 
     var symbol: String {
@@ -297,7 +321,7 @@ struct BundleFacts {
         if has("React") || has("hermes") || has("hermesvm") { found.append("React Native") }
         if has("libmonosgen-2.0") || has("Xamarin.Mac") || files.contains(where: { $0.path.hasSuffix("libmonosgen-2.0.dylib") }) { found.append(".NET") }
         if has("Sparkle") {
-            found.append("Sparkle updates")
+            found.append(String(localized: "Sparkle updates", bundle: .greeceKit, comment: "In a list of technologies an app uses: the Sparkle update framework"))
         }
         if files.contains(where: { $0.path.hasSuffix("libjli.dylib") }) { found.append("Java") }
         if files.contains(where: { $0.path.contains("/lib/python3") }) || has("Python") { found.append("Python") }

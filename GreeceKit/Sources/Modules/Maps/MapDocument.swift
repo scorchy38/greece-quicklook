@@ -12,7 +12,7 @@ enum MapFormat: String, Encodable {
         case .kmz: return "KMZ"
         case .gpx: return "GPX"
         case .shapefile: return "Shapefile"
-        case .zippedShapefile: return "Shapefile Archive"
+        case .zippedShapefile: return String(localized: "Shapefile Archive", bundle: .greeceKit, comment: "File kind: a ZIP archive of shapefiles")
         case .geopackage: return "GeoPackage"
         case .mbtiles: return "MBTiles"
         case .osm: return "OpenStreetMap"
@@ -137,7 +137,7 @@ final class MapDocument {
         case .wgs84: return crs?.name ?? "WGS 84"
         case .assumedWGS84: return "WGS 84"
         case .reprojected(let name): return name
-        case .planar: return "No coordinate system"
+        case .planar: return String(localized: "No coordinate system", bundle: .greeceKit, comment: "Info bar detail and map layers panel: the file’s data has no known coordinate system")
         }
     }
 
@@ -158,7 +158,9 @@ final class MapDocument {
                 return
             }
             if case .unsupported(let method) = crs.kind {
-                layOutPlanar(reason: "Greece can’t reproject \(crs.name) (\(method)), so it’s drawn in its own coordinates without a basemap.")
+                layOutPlanar(reason: String(localized: "Greece can’t reproject \(crs.name) (\(method)), so it’s drawn in its own coordinates without a basemap.",
+                                            bundle: .greeceKit,
+                                            comment: "Notice on a map. The arguments are a coordinate system and its projection, such as “World Robinson” and “Robinson”"))
                 return
             }
         }
@@ -168,7 +170,7 @@ final class MapDocument {
             projection = crs == nil ? .assumedWGS84 : .wgs84
             return
         }
-        layOutPlanar(reason: "This file has no coordinate system and isn’t in longitude and latitude, so it’s drawn in its own coordinates without a basemap.")
+        layOutPlanar(reason: String(localized: "This file has no coordinate system and isn’t in longitude and latitude, so it’s drawn in its own coordinates without a basemap.", bundle: .greeceKit, comment: "Notice on a map"))
     }
 
     private func layOutPlanar(reason: String) {

@@ -5,13 +5,14 @@ enum PaletteFormat: String, Codable {
 
     var title: String {
         switch self {
+        // Adobe's own names for its formats.
         case .ase: return "Adobe Swatch Exchange"
-        case .aco: return "Photoshop Swatches"
+        case .aco: return String(localized: "Photoshop Swatches", bundle: .greeceKit, comment: "Info bar title: a Photoshop swatch file (.aco)")
         case .act: return "Adobe Color Table"
-        case .clr: return "Color List"
-        case .gpl: return "GIMP Palette"
-        case .procreate: return "Procreate Swatches"
-        case .sketch: return "Sketch Palette"
+        case .clr: return String(localized: "Color List", bundle: .greeceKit, comment: "Info bar title: a macOS colour list (.clr), as made in the colour picker")
+        case .gpl: return String(localized: "GIMP Palette", bundle: .greeceKit, comment: "Info bar title. GIMP is an app")
+        case .procreate: return String(localized: "Procreate Swatches", bundle: .greeceKit, comment: "Info bar title. Procreate is an app")
+        case .sketch: return String(localized: "Sketch Palette", bundle: .greeceKit, comment: "Info bar title. Sketch is an app")
         }
     }
 
@@ -88,7 +89,7 @@ enum PaletteParser {
         case .procreate: palette = try procreate(data)
         case .sketch: palette = try sketch(data)
         }
-        guard palette.count > 0 else { throw MediaError.unreadable("This palette has no colors.") }
+        guard palette.count > 0 else { throw MediaError.unreadable(String(localized: "This palette has no colors.", bundle: .greeceKit)) }
         return palette
     }
 
@@ -166,7 +167,7 @@ enum PaletteParser {
 
     static func ase(_ data: Data) throws -> Palette {
         let reader = MediaReader(data)
-        guard reader.tag(0) == "ASEF", let blocks = reader.u32(8) else { throw MediaError.unreadable("This swatch file is damaged.") }
+        guard reader.tag(0) == "ASEF", let blocks = reader.u32(8) else { throw MediaError.unreadable(String(localized: "This swatch file is damaged.", bundle: .greeceKit)) }
         var groups: [PaletteGroup] = []
         var current: PaletteGroup?
         var offset = 12
@@ -253,7 +254,7 @@ enum PaletteParser {
             }
             return (colors, offset)
         }
-        guard let (first, end) = section(at: 0, named: reader.u16(0) == 2) else { throw MediaError.unreadable("This swatch file is damaged.") }
+        guard let (first, end) = section(at: 0, named: reader.u16(0) == 2) else { throw MediaError.unreadable(String(localized: "This swatch file is damaged.", bundle: .greeceKit)) }
         // Version 1 is usually followed by version 2, which repeats the colours with their names.
         if reader.u16(0) == 1, let (named, _) = section(at: end, named: true), named.count == first.count {
             return Palette(name: nil, groups: [PaletteGroup(name: nil, colors: named)])
@@ -283,7 +284,7 @@ enum PaletteParser {
         defer { unarchiver.finishDecoding() }
         let keys = unarchiver.decodeObject(of: [NSArray.self, NSString.self], forKey: "NSKeys") as? [String] ?? []
         let colors = unarchiver.decodeObject(of: [NSArray.self, NSColor.self], forKey: "NSColors") as? [NSColor] ?? []
-        guard !colors.isEmpty else { throw MediaError.unreadable("This color list is damaged or uses an old format.") }
+        guard !colors.isEmpty else { throw MediaError.unreadable(String(localized: "This color list is damaged or uses an old format.", bundle: .greeceKit)) }
         var result: [PaletteColor] = []
         for (index, color) in colors.prefix(colorLimit).enumerated() {
             let name = index < keys.count ? keys[index] : nil
@@ -341,7 +342,7 @@ enum PaletteParser {
     static func procreate(_ data: Data) throws -> Palette {
         guard let zip = ZIPArchive.media(data), let entry = zip.member(named: "Swatches.json") ?? zip.members.first(where: { $0.path.hasSuffix(".json") }),
               let json = try? zip.contents(of: entry, limit: 8 * 1024 * 1024),
-              let object = try? JSONSerialization.jsonObject(with: json) else { throw MediaError.unreadable("These swatches are damaged.") }
+              let object = try? JSONSerialization.jsonObject(with: json) else { throw MediaError.unreadable(String(localized: "These swatches are damaged.", bundle: .greeceKit)) }
         let palettes = (object as? [[String: Any]]) ?? [(object as? [String: Any]) ?? [:]]
         var groups: [PaletteGroup] = []
         for palette in palettes.prefix(64) {
@@ -363,7 +364,7 @@ enum PaletteParser {
 
     static func sketch(_ data: Data) throws -> Palette {
         guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any], let items = object["colors"] as? [Any] else {
-            throw MediaError.unreadable("This palette is damaged.")
+            throw MediaError.unreadable(String(localized: "This palette is damaged.", bundle: .greeceKit))
         }
         let colors = items.prefix(colorLimit).compactMap { item -> PaletteColor? in
             if let hex = item as? String { return hexColor(hex, name: nil) }

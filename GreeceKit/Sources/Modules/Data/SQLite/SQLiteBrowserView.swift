@@ -16,7 +16,7 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
     private let sidebar = FirstClickTableView()
     private let content = NSView()
     private let toolbar = DataToolbar()
-    private let modes = NSSegmentedControl(labels: ["Data", "Schema"], trackingMode: .selectOne, target: nil, action: nil)
+    private let modes = NSSegmentedControl(labels: [SchemaPageView.dataMode, SchemaPageView.schemaMode], trackingMode: .selectOne, target: nil, action: nil)
     private let titleLabel = DataToolbar.label()
     private let countLabel = DataToolbar.label()
     /// The grid's active filters, each removable.
@@ -127,7 +127,7 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
             sidebar.selectRowIndexes([first], byExtendingSelection: false)
         } else {
             toolbar.isHidden = true
-            let empty = NSTextField(labelWithString: "No tables")
+            let empty = NSTextField(labelWithString: String(localized: "No tables", bundle: .greeceKit, comment: "Empty state of a database without tables"))
             empty.font = .systemFont(ofSize: 13)
             empty.textColor = .tertiaryLabelColor
             empty.translatesAutoresizingMaskIntoConstraints = false
@@ -176,11 +176,12 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         let views = database.objects.indices.filter { database.objects[$0].isView }
         if database.objects.contains(where: { !$0.foreignKeys.isEmpty }) { items.append(.diagram) }
         if !tables.isEmpty {
-            items.append(.header("Tables"))
+            items.append(.header(String(localized: "Tables", bundle: .greeceKit, comment: "Sidebar heading: a database’s tables")))
             items += tables.map(Item.object)
         }
         if !views.isEmpty {
-            items.append(.header("Views"))
+            items.append(.header(String(localized: "Views [database]", defaultValue: "Views", bundle: .greeceKit,
+                                        comment: "Sidebar heading: a database’s views (stored queries that read like tables)")))
             items += views.map(Item.object)
         }
     }
@@ -210,7 +211,7 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
             return cell
         case .diagram:
             let cell = (tableView.makeView(withIdentifier: .init("objectCell"), owner: nil) as? SidebarCell) ?? SidebarCell()
-            cell.configure(name: "Relationships", symbol: "point.3.connected.trianglepath.dotted", count: nil)
+            cell.configure(name: Self.relationshipsTitle, symbol: "point.3.connected.trianglepath.dotted", count: nil)
             return cell
         case .object(let index):
             let object = database.objects[index]
@@ -242,9 +243,10 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
     func sidebarMenuItems(forRow row: Int) -> [NSMenuItem] {
         guard row >= 0, row < items.count, case .object(let index) = items[row] else { return [] }
         let object = database.objects[index]
-        var items: [NSMenuItem] = [ActionMenuItem("Copy Name") { Clipboard.copy(object.name) }]
+        var items: [NSMenuItem] = [ActionMenuItem(Self.copyName) { Clipboard.copy(object.name) }]
         if let sql = object.sql {
-            items.append(ActionMenuItem("Copy CREATE Statement") { Clipboard.copy(SQLFormatter.format(sql)) })
+            items.append(ActionMenuItem(String(localized: "Copy CREATE Statement", bundle: .greeceKit,
+                                               comment: "Menu item: copies the SQL that creates a table; CREATE is the SQL keyword, as is")) { Clipboard.copy(SQLFormatter.format(sql)) })
         }
         return items
     }
@@ -304,11 +306,16 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
                 grid.headerStrip = { [weak source] column in source?.strip(forColumn: column) }
                 grid.onBusy = { [weak self] busy in
                     guard let self else { return }
-                    if busy { self.spinner.startAnimation(nil); self.status.stringValue = "Sorting…" }
+                    if busy {
+                        self.spinner.startAnimation(nil)
+                        self.status.stringValue = String(localized: "Sorting…", bundle: .greeceKit, comment: "In a table’s toolbar while its rows are sorted")
+                    }
                     else { self.spinner.stopAnimation(nil); self.status.stringValue = "" }
                     self.updateToolbar()
                 }
-                grid.onSortFailed = { [weak self] in self?.status.stringValue = "Too large to sort here" }
+                grid.onSortFailed = { [weak self] in
+                    self?.status.stringValue = String(localized: "Too large to sort here", bundle: .greeceKit, comment: "In a database table’s toolbar: sorting was given up")
+                }
                 grid.cellMenuItems = { [weak self] row, column in self?.filterMenuItems(row: row, column: column) ?? [] }
                 self.grid = grid
                 self.source = source
@@ -350,13 +357,13 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
     func applyFilters(_ filters: [ColumnFilter]) {
         guard let source, let grid else { return }
         spinner.startAnimation(nil)
-        status.stringValue = "Filtering…"
+        status.stringValue = String(localized: "Filtering…", bundle: .greeceKit, comment: "In a table’s toolbar while a filter is applied")
         var finished = false
         source.setFilters(filters) { [weak self, weak source] ok in
             finished = true
             guard let self, let source, self.source === source else { return }
             self.spinner.stopAnimation(nil)
-            self.status.stringValue = ok ? "" : "Too large to filter here"
+            self.status.stringValue = ok ? "" : String(localized: "Too large to filter here", bundle: .greeceKit, comment: "In a database table’s toolbar: filtering was given up")
             // The selection was of rows by position; after filtering those are other rows.
             grid.tableView.deselectAll(nil)
             grid.reloadRows()
@@ -378,11 +385,14 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
         case .diagram:
             modes.isHidden = true
             titleLabel.isHidden = false
-            titleLabel.stringValue = "Relationships"
-            let tables = diagram.cards.count, links = diagram.edges.count
-            var text = "\(tables) \(tables == 1 ? "table" : "tables")  ·  \(links) \(links == 1 ? "foreign key" : "foreign keys")"
-            if diagram.omitted > 0 { text += "  ·  \(diagram.omitted) more not shown" }
-            countLabel.stringValue = text
+            titleLabel.stringValue = Self.relationshipsTitle
+            let tables = diagram.cards.count, links = diagram.edges.count, omitted = diagram.omitted
+            var facts = [String(localized: "\(tables) tables", bundle: .greeceKit, comment: "Tables in a database"),
+                         String(localized: "\(links) foreign keys", bundle: .greeceKit, comment: "Foreign keys (links between tables) in a database")]
+            if omitted > 0 {
+                facts.append(String(localized: "\(omitted) more not shown", bundle: .greeceKit, comment: "Tables left out of a database’s relationship diagram"))
+            }
+            countLabel.stringValue = facts.joined(separator: "  ·  ")
         case .object(let index):
             modes.isHidden = false
             titleLabel.isHidden = true
@@ -390,19 +400,34 @@ final class SQLiteBrowserView: NSView, NSTableViewDataSource, NSTableViewDelegat
             if mode == .schema {
                 countLabel.stringValue = ""
             } else if let source {
-                let about = object.rowCount != nil ? "" : "about "
+                let estimated = object.rowCount == nil
                 let rows = source.rowCount
                 if source.filters.isEmpty {
-                    countLabel.stringValue = about + "\(rows.formatted()) \(rows == 1 ? "row" : "rows")"
-                        + (database.hasPendingLog ? "  ·  Unsaved changes in the write-ahead log aren’t shown" : "")
+                    var text = estimated
+                        ? String(localized: "about \(rows) rows", bundle: .greeceKit, comment: "Rows in a database table, estimated")
+                        : String(localized: "\(rows) rows", bundle: .greeceKit, comment: "Rows in a table")
+                    if database.hasPendingLog {
+                        text += "  ·  " + String(localized: "Unsaved changes in the write-ahead log aren’t shown", bundle: .greeceKit,
+                                                 comment: "After a database table’s row count: changes still in SQLite’s -wal file are left out")
+                    }
+                    countLabel.stringValue = text
                 } else {
-                    countLabel.stringValue = "\(rows.formatted()) of \(about)\(source.tableRows.formatted()) rows"
+                    let total = source.tableRows
+                    countLabel.stringValue = estimated
+                        ? String(localized: "\(rows) of about \(total) rows", bundle: .greeceKit, comment: "Rows a filter leaves in a database table, of all its rows (estimated)")
+                        : String(localized: "\(rows) of \(total) rows", bundle: .greeceKit, comment: "Rows a filter leaves in a table, of all its rows")
                 }
             }
         default:
             break
         }
     }
+
+    static var relationshipsTitle: String {
+        String(localized: "Relationships", bundle: .greeceKit, comment: "Sidebar item and title: a diagram of how a database’s tables link to each other")
+    }
+
+    static var copyName: String { String(localized: "Copy Name", bundle: .greeceKit, comment: "Menu item: copies a table’s name") }
 
     /// Opens a table by name (from the diagram), in the data view or its schema.
     private func open(_ name: String, mode: Mode = .data) {

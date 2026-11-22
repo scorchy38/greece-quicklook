@@ -33,6 +33,19 @@ struct CRS {
 
     static let wgs84 = CRS(name: "WGS 84", kind: .geographic, epsg: 4326)
 
+    /// The names of a definition that names none; a GeoPackage replaces them with its own `srs_name`.
+    static var unnamedGeographic: String {
+        String(localized: "Geographic [coordinate system]", defaultValue: "Geographic", bundle: .greeceKit,
+               comment: "Info bar detail: an unnamed coordinate system in longitude and latitude")
+    }
+    static var unnamedProjected: String {
+        String(localized: "Projected [coordinate system]", defaultValue: "Projected", bundle: .greeceKit,
+               comment: "Info bar detail: an unnamed projected (planar) coordinate system")
+    }
+
+    /// True for a CRS named only by its kind, because its definition gives no name.
+    var isUnnamed: Bool { name == Self.unnamedGeographic || name == Self.unnamedProjected }
+
     /// Source coordinates to WGS 84 longitude and latitude in degrees, or nil if out of range.
     func transform(_ p: GeoPoint) -> GeoPoint? {
         guard p.isFinite else { return nil }
@@ -413,7 +426,7 @@ extension CRS {
     }
 
     private static func geographic(_ node: WKTNode) -> CRS? {
-        var crs = CRS(name: prettyName(node.firstString ?? "Geographic"), kind: .geographic)
+        var crs = CRS(name: node.firstString.map(prettyName) ?? unnamedGeographic, kind: .geographic)
         applyDatum(node, to: &crs)
         if let unit = node.nodes.last(where: { ["UNIT", "ANGLEUNIT"].contains($0.keyword) }),
            let radians = unit.firstNumber, radians > 0 {
@@ -452,7 +465,7 @@ extension CRS {
 
     private static func projected(_ node: WKTNode) -> CRS? {
         let base = node.nodes.first { ["GEOGCS", "GEOGCRS", "BASEGEOGCRS", "BASEGEODCRS", "GEODCRS"].contains($0.keyword) }
-        var crs = CRS(name: prettyName(node.firstString ?? "Projected"), kind: .unsupported(method: "unknown"))
+        var crs = CRS(name: node.firstString.map(prettyName) ?? unnamedProjected, kind: .unsupported(method: "unknown"))
         if let base { applyDatum(base, to: &crs) }
         crs.epsg = node.authorityCode
 

@@ -45,6 +45,79 @@ final class RepositoryTests: XCTestCase {
         XCTAssertEqual(try supportedTypes("GreeceThumbnails/Info.plist"), try listed("thumbnails"), "Run scripts/sync-types.py")
     }
 
+    // MARK: - Localization
+
+    private func plist(_ path: String) throws -> [String: Any] {
+        let data = try Data(contentsOf: repo.appendingPathComponent(path))
+        return try XCTUnwrap(PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any], path)
+    }
+
+    private func catalogStrings(_ path: String) throws -> [String: [String: Any]] {
+        let data = try Data(contentsOf: repo.appendingPathComponent(path))
+        let catalog = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any], path)
+        return try XCTUnwrap(catalog["strings"] as? [String: [String: Any]], path)
+    }
+
+    private func families() throws -> [[String: Any]] {
+        let data = try Data(contentsOf: repo.appendingPathComponent("Types/families.json"))
+        return (try JSONSerialization.jsonObject(with: data) as? [String: Any])?["families"] as? [[String: Any]] ?? []
+    }
+
+    /// Each Quick Look extension's Info.plist, and the catalog that translates its display name.
+    private func extensions() throws -> [(plist: String, catalog: String)] {
+        try families().map { family in
+            let target = family["target"] as? String ?? ""
+            return (target == "GreeceQuickLook" ? "GreeceQuickLook/Info.plist" : "GreeceQuickLook/Families/\(target)/Info.plist",
+                    "GreeceQuickLook/Families/\(target)/InfoPlist.xcstrings")
+        } + [("GreeceThumbnails/Info.plist", "GreeceThumbnails/InfoPlist.xcstrings")]
+    }
+
+    /// The translation of `key` into `language`, when it's done.
+    private func translation(_ entry: [String: Any]?, _ language: String) -> String? {
+        let unit = ((entry?["localizations"] as? [String: Any])?[language] as? [String: Any])?["stringUnit"] as? [String: Any]
+        guard unit?["state"] as? String == "translated", let value = unit?["value"] as? String,
+              !value.trimmingCharacters(in: .whitespaces).isEmpty else { return nil }
+        return value
+    }
+
+    func testExtensionsSpeakGreecesLanguages() throws {
+        // An extension has no strings of its own: without these, its Locale.current, Launch Services' kinds
+        // and the system's strings stay English around GreeceKit's translations ("Geändert 1 hour ago").
+        for (path, _) in try extensions() {
+            let root = try plist(path)
+            XCTAssertEqual(root["CFBundleLocalizations"] as? [String], ["en"] + LocalizationTests.languages, "\(path): run scripts/sync-types.py")
+            XCTAssertEqual(root["CFBundleAllowMixedLocalizations"] as? Bool, true, "\(path): run scripts/sync-types.py")
+        }
+    }
+
+    func testExtensionNamesAreTranslated() throws {
+        // Their names show in System Settings › Extensions and on the app's Preview Kinds list.
+        for (path, catalog) in try extensions() {
+            let name = try XCTUnwrap(try plist(path)["CFBundleDisplayName"] as? String)
+            let entry = try catalogStrings(catalog)["CFBundleDisplayName"]
+            XCTAssertEqual(translation(entry, "en"), name, "\(catalog): run scripts/sync-types.py")
+            for language in LocalizationTests.languages {
+                XCTAssertNotNil(translation(entry, language), "\(catalog): “\(name)” isn’t translated into \(language)")
+            }
+        }
+    }
+
+    func testTypeDescriptionsAreTranslated() throws {
+        // Finder's Kind for each type Greece declares: Launch Services looks the English description up
+        // in the app's InfoPlist.strings, so the catalog is keyed by it.
+        let declarations = try XCTUnwrap(try plist("Greece/App/Info.plist")["UTImportedTypeDeclarations"] as? [[String: Any]])
+        let descriptions = Set(declarations.compactMap { $0["UTTypeDescription"] as? String })
+        XCTAssertGreaterThan(descriptions.count, 50)
+        let strings = try catalogStrings("Greece/App/InfoPlist.xcstrings")
+        let keys = Set(strings.keys.filter { $0.range(of: #"^(CF|NS|LS|UI|UT|QL)[A-Za-z]+$"#, options: .regularExpression) == nil })
+        XCTAssertEqual(keys, descriptions, "Greece/App/InfoPlist.xcstrings: run scripts/sync-types.py")
+        for description in descriptions.sorted() {
+            for language in LocalizationTests.languages {
+                XCTAssertNotNil(translation(strings[description], language), "“\(description)” isn’t translated into \(language)")
+            }
+        }
+    }
+
     private func types(in path: String) throws -> [String] {
         try String(contentsOf: repo.appendingPathComponent(path), encoding: .utf8).split(separator: "\n").compactMap {
             let type = $0.split(separator: "#", maxSplits: 1, omittingEmptySubsequences: false)[0].trimmingCharacters(in: .whitespaces)

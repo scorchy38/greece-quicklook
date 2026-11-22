@@ -105,10 +105,10 @@ final class InfoBarView: NSView {
     override func menu(for event: NSEvent) -> NSMenu? {
         guard let url = fileURL else { return nil }
         return NSMenu.context([
-            ActionMenuItem("Copy Path") { Clipboard.copy(url.path) },
-            ActionMenuItem("Copy Name") { Clipboard.copy(url.lastPathComponent) },
+            ActionMenuItem(String(localized: "Copy Path", bundle: .greeceKit)) { Clipboard.copy(url.path) },
+            ActionMenuItem(String(localized: "Copy Name", bundle: .greeceKit)) { Clipboard.copy(url.lastPathComponent) },
             .separator(),
-            ActionMenuItem("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) },
+            ActionMenuItem(String(localized: "Show in Finder", bundle: .greeceKit)) { NSWorkspace.shared.activateFileViewerSelecting([url]) },
         ])
     }
 

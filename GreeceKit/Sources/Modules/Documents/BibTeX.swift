@@ -246,18 +246,45 @@ enum BibTeX {
         let author: String
         switch names.count {
         case 0: author = entry.plain("organization") ?? entry.plain("publisher") ?? entry.key
-        case 1: author = names[0] + (entry.authorSurnames.contains("et al.") ? " et al." : "")
-        case 2: author = "\(names[0]) and \(names[1])"
-        default: author = "\(names[0]) et al."
+        case 1: author = entry.authorSurnames.contains("et al.") ? etAl(names[0]) : names[0]
+        case 2:
+            let (first, second) = (names[0], names[1])
+            author = String(localized: "\(first) and \(second)", bundle: .greeceKit,
+                            comment: "A reference’s two authors on a BibTeX thumbnail. The arguments are surnames, such as “Knuth and Plass”")
+        default: author = etAl(names[0])
         }
         return [author, entry.year].compactMap { $0 }.joined(separator: ", ")
     }
 
-    static let typeNames: [String: String] = [
-        "article": "Article", "book": "Book", "booklet": "Booklet", "inbook": "Chapter", "incollection": "In Collection",
-        "inproceedings": "Conference Paper", "conference": "Conference Paper", "manual": "Manual", "mastersthesis": "Master’s Thesis",
-        "misc": "Misc", "phdthesis": "PhD Thesis", "proceedings": "Proceedings", "techreport": "Report", "unpublished": "Unpublished",
-        "online": "Online", "electronic": "Online", "www": "Online", "thesis": "Thesis", "report": "Report", "software": "Software",
-        "dataset": "Dataset", "patent": "Patent", "collection": "Collection", "preprint": "Preprint",
-    ]
+    private static func etAl(_ name: String) -> String {
+        String(localized: "\(name) et al.", bundle: .greeceKit,
+               comment: "A reference with several authors on a BibTeX thumbnail. The argument is the first author’s surname, such as “Vaswani et al.”")
+    }
+
+    /// BibTeX entry types by name, as a reference's label shows them ("Article", "PhD Thesis").
+    static func typeName(_ type: String) -> String? {
+        switch type {
+        case "article": return String(localized: "Article", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "book": return String(localized: "Book", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "booklet": return String(localized: "Booklet", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "inbook": return String(localized: "Chapter", bundle: .greeceKit, comment: "BibTeX entry type: a chapter of a book")
+        case "incollection": return String(localized: "In Collection", bundle: .greeceKit, comment: "BibTeX entry type: a part of a book with its own title")
+        case "inproceedings", "conference": return String(localized: "Conference Paper", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "manual": return String(localized: "Manual [BibTeX entry type]", defaultValue: "Manual", bundle: .greeceKit, comment: "BibTeX entry type: technical documentation")
+        case "mastersthesis": return String(localized: "Master’s Thesis", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "misc": return String(localized: "Misc", bundle: .greeceKit, comment: "BibTeX entry type: miscellaneous")
+        case "phdthesis": return String(localized: "PhD Thesis", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "proceedings": return String(localized: "Proceedings", bundle: .greeceKit, comment: "BibTeX entry type: the proceedings of a conference")
+        case "techreport", "report": return String(localized: "Report [BibTeX entry type]", defaultValue: "Report", bundle: .greeceKit, comment: "BibTeX entry type: a technical report")
+        case "unpublished": return String(localized: "Unpublished", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "online", "electronic", "www": return String(localized: "Online [BibTeX entry type]", defaultValue: "Online", bundle: .greeceKit, comment: "BibTeX entry type: a web page or online resource")
+        case "thesis": return String(localized: "Thesis", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "software": return String(localized: "Software", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "dataset": return String(localized: "Dataset", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "patent": return String(localized: "Patent", bundle: .greeceKit, comment: "BibTeX entry type")
+        case "collection": return String(localized: "Collection", bundle: .greeceKit, comment: "BibTeX entry type: a book of parts by several authors")
+        case "preprint": return String(localized: "Preprint", bundle: .greeceKit, comment: "BibTeX entry type")
+        default: return nil
+        }
+    }
 }

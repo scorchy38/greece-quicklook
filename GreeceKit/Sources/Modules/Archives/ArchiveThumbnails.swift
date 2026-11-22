@@ -67,7 +67,11 @@ enum ArchiveCard {
             return String(compound.dropFirst()).uppercased()
         }
         let ext = url.pathExtension.uppercased()
-        return ext.isEmpty ? "ARCHIVE" : String(ext.prefix(7))
+        guard !ext.isEmpty else {
+            return String(localized: "ARCHIVE", bundle: .greeceKit,
+                          comment: "Thumbnail badge on an archive without a file extension, in capitals like the extensions shown there")
+        }
+        return String(ext.prefix(7))
     }
 
     // MARK: - File list
@@ -95,8 +99,12 @@ enum ArchiveCard {
             rows = children.prefix(40).map { Row(name: $0.name, isDirectory: $0.isDirectory, size: $0.size.map(FileTreeView.bytes) ?? "") }
             more = max(children.count - rows.count, 0)
             let files = listing.fileCount
-            subtitle = listing.headerEncrypted && listing.entries.isEmpty ? "Encrypted"
-                : "\(files.formatted()) \(files == 1 ? "file" : "files") · \(FileTreeView.bytes(listing.totalSize))" + (listing.truncated ? "+" : "")
+            if listing.headerEncrypted && listing.entries.isEmpty {
+                subtitle = String(localized: "Encrypted", bundle: .greeceKit, comment: "State of an archive or a file in it")
+            } else {
+                let count = String(localized: "\(files) files", bundle: .greeceKit, comment: "A count of files")
+                subtitle = count + " · " + FileTreeView.bytes(listing.totalSize) + (listing.truncated ? "+" : "")
+            }
             locked = listing.isEncrypted
         }
     }
@@ -164,7 +172,8 @@ enum ArchiveCard {
         if showMore {
             let remaining = content.more + content.rows.count - count
             y -= rowHeight
-            NSAttributedString(string: "and \(remaining.formatted()) more", attributes: [.font: nameFont, .foregroundColor: tertiary])
+            let more = String(localized: "and \(remaining) more", bundle: .greeceKit, comment: "Ends a list that was cut short; the argument is how many items are left out")
+            NSAttributedString(string: more, attributes: [.font: nameFont, .foregroundColor: tertiary])
                 .draw(at: CGPoint(x: rect.minX + padding + iconSize + width * 0.025, y: y + (rowHeight - nameFont.boundingRectForFont.height) / 2))
         }
     }
@@ -212,7 +221,7 @@ enum ArchiveCard {
             CGRect(x: rect.midX - width * 0.2, y: top, width: width * 0.4, height: max(width / 400, 0.5)).fill()
             top -= width * 0.05
             for (label, value) in facts where top > rect.minY + width * 0.2 {
-                line(label.uppercased(), font: .systemFont(ofSize: max(width / 34, 1), weight: .semibold), color: tertiary)
+                line(label.localizedUppercase, font: .systemFont(ofSize: max(width / 34, 1), weight: .semibold), color: tertiary)
                 top -= width * 0.008
                 line(value, font: .systemFont(ofSize: max(width / 26, 1)), color: ink)
                 top -= width * 0.03

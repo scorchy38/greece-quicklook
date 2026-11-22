@@ -11,18 +11,20 @@ enum DataThumbnails {
         switch kind {
         case .jsonLines:
             guard let lines = try? JSONLinesTable.load(file.url, maxRows: 40) else { return nil }
+            let fields = lines.table.columns.count
             return table(lines.table, title: file.url.deletingPathExtension().lastPathComponent,
-                         subtitle: "\(lines.table.columns.count) fields", size: page, badge: badge)
+                         subtitle: String(localized: "\(fields) fields", bundle: .greeceKit, comment: "Thumbnail caption: fields (columns) of a data file’s records"),
+                         size: page, badge: badge)
         case .dbf:
             guard let dbf = try? DBFTable.load(file.url, maxRecords: 40) else { return nil }
             return table(dbf.store(), title: file.url.deletingPathExtension().lastPathComponent,
-                         subtitle: "\(ColumnProfile.short(Double(dbf.recordCount))) records", size: page, badge: badge)
+                         subtitle: records(dbf.recordCount), size: page, badge: badge)
         case .parquet:
             guard let parquet = try? ParquetFile.open(file.url) else { return nil }
             let (values, reasons) = parquet.firstRows(file.url, limit: 40)
             let store = ParquetPage.table(parquet, values: values, reasons: reasons)
             return table(store, title: file.url.deletingPathExtension().lastPathComponent,
-                         subtitle: "\(ColumnProfile.short(Double(parquet.rows))) rows", size: page, badge: "PARQUET")
+                         subtitle: rows(Int(clamping: parquet.rows)), size: page, badge: "PARQUET")
         case .lockFile(let format):
             guard let lock = try? LockFile.load(file.url) else { return nil }
             return ThumbnailPage(size: page, badge: "LOCK") { rect in drawLock(lock, format: format, in: rect) }
@@ -36,13 +38,31 @@ enum DataThumbnails {
         case .strings:
             guard let table = try? StringTable.strings(file.url) else { return nil }
             if table.languages.count > 1 { return ThumbnailPage(size: page, badge: "STRINGS") { rect in drawLanguages(table, in: rect) } }
+            let strings = table.rows.count
             return self.table(table.store(), title: file.url.deletingPathExtension().lastPathComponent,
-                              subtitle: "\(table.rows.count) strings", size: page, badge: "STRINGS")
+                              subtitle: String(localized: "\(strings) strings", bundle: .greeceKit, comment: "Thumbnail caption: translatable strings in a strings file"),
+                              size: page, badge: "STRINGS")
         case .stringsdict:
             guard let data = try? Data(contentsOf: file.url, options: .mappedIfSafe), let rules = StringTable.stringsdict(data) else { return nil }
+            let count = rules.count
             return table(StringTable.stringsdictStore(rules), title: file.url.deletingPathExtension().lastPathComponent,
-                         subtitle: "\(rules.count) rules", size: page, badge: "STRINGSDICT")
+                         subtitle: String(localized: "\(count) rules", bundle: .greeceKit, comment: "Thumbnail caption: plural rules in a .stringsdict file"),
+                         size: page, badge: "STRINGSDICT")
         }
+    }
+
+    /// "1.2K rows" under a thumbnail's title: compact once it's in the thousands.
+    static func rows(_ count: Int) -> String {
+        guard count >= 1_000 else { return String(localized: "\(count) rows", bundle: .greeceKit, comment: "Rows in a table") }
+        let compact = ColumnProfile.short(Double(count))
+        return String(localized: "\(compact) rows", bundle: .greeceKit, comment: "Thumbnail caption: rows in a table. The argument is a compact number, such as “1.2K”")
+    }
+
+    /// "1.2K records" under a thumbnail's title: compact once it's in the thousands.
+    static func records(_ count: Int) -> String {
+        guard count >= 1_000 else { return String(localized: "\(count) records", bundle: .greeceKit, comment: "Records (rows) in a data file") }
+        let compact = ColumnProfile.short(Double(count))
+        return String(localized: "\(compact) records", bundle: .greeceKit, comment: "Thumbnail caption: records in a data file. The argument is a compact number, such as “1.2K”")
     }
 
     // MARK: - Shared drawing
@@ -145,7 +165,7 @@ enum DataThumbnails {
     static func delimited(_ table: DelimitedTable, title: String, badge: String, size: CGSize) -> ThumbnailPage? {
         guard table.columnCount > 0 else { return nil }
         let rows = table.totalRows
-        return self.table(DelimitedStore(table: table), title: title, subtitle: "\(ColumnProfile.short(Double(rows))) rows", size: size, badge: badge)
+        return self.table(DelimitedStore(table: table), title: title, subtitle: self.rows(rows), size: size, badge: badge)
     }
 
     // MARK: - SQLite
@@ -154,15 +174,19 @@ enum DataThumbnails {
         guard let sample = SQLiteDatabase.thumbnailSample(url) else { return nil }
         let page = Thumbnailer.pageSize(fitting: size)
         let ext = url.pathExtension.uppercased()
-        var subtitle = sample.rows.map { "\(ColumnProfile.short(Double($0))) rows" }
-        if sample.tables > 1 { subtitle = "\(sample.tables) tables" }
+        var subtitle = sample.rows.map(rows)
+        if sample.tables > 1 {
+            let tables = sample.tables
+            subtitle = String(localized: "\(tables) tables", bundle: .greeceKit, comment: "Tables in a database")
+        }
         return table(sample.store, title: sample.name, subtitle: subtitle, size: page, badge: ext.isEmpty ? "SQLITE" : ext)
     }
 
     // MARK: - Lock files
 
     static func drawLock(_ lock: LockFile, format: LockFile.Format, in rect: CGRect) {
-        let area = frame(rect, title: format.ecosystem, subtitle: "\(lock.packages.count.formatted()) packages")
+        let packageCount = lock.packages.count
+        let area = frame(rect, title: format.ecosystem, subtitle: String(localized: "\(packageCount) packages", bundle: .greeceKit, comment: "Packages a lock file pins"))
         let fontSize = max(rect.width / 36, 1)
         let rowHeight = fontSize * 1.75
         // Direct dependencies first: they're what the project asks for.
@@ -193,8 +217,10 @@ enum DataThumbnails {
     // MARK: - HAR
 
     static func drawWaterfall(_ summary: HARCapture.Summary, in rect: CGRect) {
-        let title = summary.pages.first?.title.isEmpty == false ? summary.pages.first!.title : "Network"
-        let area = frame(rect, title: title, subtitle: "\(summary.entries.count) requests")
+        let title = summary.pages.first?.title.isEmpty == false ? summary.pages.first!.title
+            : String(localized: "Network", bundle: .greeceKit, comment: "Thumbnail title of a network capture (.har) without a page title")
+        let requests = summary.entries.count
+        let area = frame(rect, title: title, subtitle: String(localized: "\(requests) requests", bundle: .greeceKit, comment: "Network requests in an HTTP Archive"))
         let fontSize = max(rect.width / 44, 1)
         let rowHeight = fontSize * 1.7
         let nameWidth = area.width * 0.42
@@ -241,7 +267,8 @@ enum DataThumbnails {
 
     static func drawLanguages(_ table: StringTable, in rect: CGRect) {
         let others = table.languages.filter { $0 != table.sourceLanguage }
-        let area = frame(rect, title: table.title, subtitle: "\(table.languages.count) languages")
+        let languages = table.languages.count
+        let area = frame(rect, title: table.title, subtitle: String(localized: "\(languages) languages", bundle: .greeceKit, comment: "Languages a string catalog holds"))
         let fontSize = max(rect.width / 34, 1)
         let rowHeight = fontSize * 2.1
         var top = area.maxY
@@ -259,7 +286,7 @@ enum DataThumbnails {
             (fraction >= 0.999 ? NSColor.systemGreen : accent).setFill()
             NSBezierPath(roundedRect: CGRect(x: track.minX, y: track.minY, width: max(track.height, track.width * CGFloat(fraction)), height: track.height),
                          xRadius: track.height / 2, yRadius: track.height / 2).fill()
-            text(isSource ? "source" : ColumnProfile.percent(fraction), size: fontSize * 0.9, color: secondary, mono: true, align: .right,
+            text(isSource ? String(localized: "source", bundle: .greeceKit, comment: "Thumbnail of a string catalog: beside the language strings are written in") : ColumnProfile.percent(fraction), size: fontSize * 0.9, color: secondary, mono: true, align: .right,
                  in: CGRect(x: row.maxX - row.width * 0.16, y: row.minY, width: row.width * 0.16, height: rowHeight))
             top -= rowHeight
         }

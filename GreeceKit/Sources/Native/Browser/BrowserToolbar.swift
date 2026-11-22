@@ -25,7 +25,8 @@ final class BrowserToolbar: NSObject {
         self.sortKeys = sortKeys
         super.init()
 
-        back.image = NSImage(systemSymbolName: "chevron.left", accessibilityDescription: "Back")
+        back.image = NSImage(systemSymbolName: "chevron.left",
+                             accessibilityDescription: String(localized: "Back", bundle: .greeceKit, comment: "Accessibility label: goes up to the folder above"))
         back.title = ""
         back.target = self
         back.action = #selector(goBack)
@@ -45,23 +46,24 @@ final class BrowserToolbar: NSObject {
         path.action = #selector(jump)
         path.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         path.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        path.setAccessibilityLabel("Path")
+        path.setAccessibilityLabel(String(localized: "Path", bundle: .greeceKit, comment: "Accessibility label of the path bar: the folders from the one previewed down to the one showing"))
 
+        let list = BrowserViewState.Layout.list.title, icons = BrowserViewState.Layout.icons.title
         layoutSwitch.segmentCount = 2
-        layoutSwitch.setImage(NSImage(systemSymbolName: "list.bullet", accessibilityDescription: "as List"), forSegment: 0)
-        layoutSwitch.setImage(NSImage(systemSymbolName: "square.grid.2x2", accessibilityDescription: "as Icons"), forSegment: 1)
+        layoutSwitch.setImage(NSImage(systemSymbolName: "list.bullet", accessibilityDescription: list), forSegment: 0)
+        layoutSwitch.setImage(NSImage(systemSymbolName: "square.grid.2x2", accessibilityDescription: icons), forSegment: 1)
         layoutSwitch.trackingMode = .selectOne
         layoutSwitch.controlSize = .small
         layoutSwitch.segmentStyle = .automatic
-        layoutSwitch.setToolTip("as List", forSegment: 0)
-        layoutSwitch.setToolTip("as Icons", forSegment: 1)
+        layoutSwitch.setToolTip(list, forSegment: 0)
+        layoutSwitch.setToolTip(icons, forSegment: 1)
         layoutSwitch.target = self
         layoutSwitch.action = #selector(switchLayout)
-        layoutSwitch.setAccessibilityLabel("View")
+        layoutSwitch.setAccessibilityLabel(String(localized: "View", bundle: .greeceKit, comment: "Noun. Accessibility label of the switch between the list and icons (as Finder’s View menu)"))
         layoutSwitch.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-        configure(sortButton, symbol: "arrow.up.arrow.down", title: "Sort By")
-        configure(groupButton, symbol: "square.grid.3x1.below.line.grid.1x2", title: "Group By")
+        configure(sortButton, symbol: "arrow.up.arrow.down", title: ViewOptionMenus.sortByTitle)
+        configure(groupButton, symbol: "square.grid.3x1.below.line.grid.1x2", title: ViewOptionMenus.groupByTitle)
 
         view.leading.spacing = 2
         view.leading.addArrangedSubview(back)
@@ -101,12 +103,16 @@ final class BrowserToolbar: NSObject {
     func update(_ state: BrowserViewState) {
         self.state = state
         layoutSwitch.selectedSegment = state.layout == .icons ? 1 : 0
-        setMenu(sortButton, symbol: "arrow.up.arrow.down", header: "Sort By",
+        setMenu(sortButton, symbol: "arrow.up.arrow.down", header: ViewOptionMenus.sortByTitle,
                 items: ViewOptionMenus.sortItems(state, keys: sortKeys) { [weak self] key, ascending in self?.onSort?(key, ascending) })
-        setMenu(groupButton, symbol: "square.grid.3x1.below.line.grid.1x2", header: "Group By",
+        setMenu(groupButton, symbol: "square.grid.3x1.below.line.grid.1x2", header: ViewOptionMenus.groupByTitle,
                 items: ViewOptionMenus.groupItems(state) { [weak self] key in self?.onGroup?(key) })
-        groupButton.toolTip = state.group == .none ? "Group By" : "Grouped by \(state.group.title)"
-        sortButton.toolTip = "Sorted by \(state.sort.title), \(state.ascending ? "ascending" : "descending")"
+        let group = state.group.title, sort = state.sort.title
+        groupButton.toolTip = state.group == .none ? ViewOptionMenus.groupByTitle
+            : String(localized: "Grouped by \(group)", bundle: .greeceKit, comment: "Tooltip; the argument is a Group By menu item, such as “Kind” or “Date Modified”")
+        sortButton.toolTip = state.ascending
+            ? String(localized: "Sorted by \(sort), ascending", bundle: .greeceKit, comment: "Tooltip; the argument is a Sort By menu item, such as “Name” or “Date Modified”")
+            : String(localized: "Sorted by \(sort), descending", bundle: .greeceKit, comment: "Tooltip; the argument is a Sort By menu item, such as “Name” or “Date Modified”")
     }
 
     /// The folders from the one previewed down to the one showing.
@@ -121,7 +127,7 @@ final class BrowserToolbar: NSObject {
         }
         back.isHidden = trail.count < 2
         if trail.count >= 2 {
-            back.toolTip = "Back to “\(trail[trail.count - 2].title)”"
+            back.toolTip = ViewOptionMenus.backTitle(trail[trail.count - 2].title)
             back.setAccessibilityLabel(back.toolTip)
         }
     }

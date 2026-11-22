@@ -108,17 +108,22 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware {
         let listing = document.listing
         var replacement: ArchiveStateView?
         if listing.headerEncrypted && listing.entries.isEmpty {
-            replacement = ArchiveStateView(symbol: "lock", title: "Encrypted Archive",
-                                           message: "Even the list of files is protected by a password.")
+            replacement = ArchiveStateView(symbol: "lock", title: String(localized: "Encrypted Archive", bundle: .greeceKit),
+                                           message: String(localized: "Even the list of files is protected by a password.", bundle: .greeceKit))
         } else if listing.entries.isEmpty && !document.isLoading {
             if let damage = listing.damage {
-                replacement = ArchiveStateView(symbol: "exclamationmark.triangle", title: "Damaged Archive", message: damage.prefix(1).uppercased() + damage.dropFirst() + ".")
+                // The reason may come from the archive library, in English and lower case.
+                replacement = ArchiveStateView(symbol: "exclamationmark.triangle", title: String(localized: "Damaged Archive", bundle: .greeceKit),
+                                               message: damage.prefix(1).uppercased() + damage.dropFirst() + ".")
             } else {
-                replacement = ArchiveStateView(symbol: "archivebox", title: "Empty Archive", message: "There’s nothing inside.")
+                replacement = ArchiveStateView(symbol: "archivebox", title: String(localized: "Empty Archive", bundle: .greeceKit),
+                                               message: String(localized: "There’s nothing inside.", bundle: .greeceKit, comment: "Message under “Empty Archive”"))
             }
         } else if document.builder.root.children?.isEmpty == true && document.builder.hiddenCount > 0 && !document.isLoading {
-            replacement = ArchiveStateView(symbol: "eye.slash", title: "Only Hidden Files",
-                                           message: "\(document.builder.hiddenCount.formatted()) hidden \(document.builder.hiddenCount == 1 ? "item" : "items"). Show hidden files in Greece’s settings to see them.")
+            let hidden = document.builder.hiddenCount
+            replacement = ArchiveStateView(symbol: "eye.slash", title: String(localized: "Only Hidden Files", bundle: .greeceKit),
+                                           message: String(localized: "\(hidden) hidden items. Show hidden files in Greece’s settings to see them.", bundle: .greeceKit,
+                                                           comment: "Message under “Only Hidden Files” in an archive; the argument is how many files and folders are hidden"))
         }
         state?.removeFromSuperview()
         state = nil

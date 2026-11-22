@@ -6,6 +6,14 @@ import UniformTypeIdentifiers
 struct BrowserViewState: Codable, Equatable {
     enum Layout: String, Codable, CaseIterable {
         case list, icons
+
+        /// As Finder's View menu names them.
+        var title: String {
+            switch self {
+            case .list: return String(localized: "as List", bundle: .greeceKit, comment: "View menu item, tooltip and accessibility label: show files in a list (as in Finder)")
+            case .icons: return String(localized: "as Icons", bundle: .greeceKit, comment: "View menu item, tooltip and accessibility label: show files as icons (as in Finder)")
+            }
+        }
     }
 
     /// The raw values are the list's column identifiers, so a column header and the Sort By menu
@@ -13,13 +21,15 @@ struct BrowserViewState: Codable, Equatable {
     enum SortKey: String, Codable, CaseIterable {
         case name, kind, modified, size, compressed
 
+        /// The same words as the list's column headers.
         var title: String {
             switch self {
-            case .name: return "Name"
-            case .kind: return "Kind"
-            case .modified: return "Date Modified"
-            case .size: return "Size"
-            case .compressed: return "Compressed Size"
+            case .name: return FileColumnTitles.name
+            case .kind: return FileColumnTitles.kind
+            case .modified: return FileColumnTitles.modified
+            case .size: return FileColumnTitles.size
+            case .compressed:
+                return String(localized: "Compressed Size", bundle: .greeceKit, comment: "Sort By menu item: an archived file’s compressed size")
             }
         }
 
@@ -33,10 +43,10 @@ struct BrowserViewState: Codable, Equatable {
 
         var title: String {
             switch self {
-            case .none: return "None"
-            case .kind: return "Kind"
-            case .modified: return "Date Modified"
-            case .size: return "Size"
+            case .none: return String(localized: "None [group by]", defaultValue: "None", bundle: .greeceKit, comment: "Group By menu item: don’t group files (as in Finder)")
+            case .kind: return FileColumnTitles.kind
+            case .modified: return FileColumnTitles.modified
+            case .size: return FileColumnTitles.size
             }
         }
 
@@ -73,6 +83,26 @@ struct BrowserViewState: Codable, Equatable {
     }
 }
 
+/// Finder's words for a file's columns, shared by the list's headers, the Sort By and Group By
+/// menus and Get Info, so each is translated once, as Finder has it.
+enum FileColumnTitles {
+    static var name: String {
+        String(localized: "Name", bundle: .greeceKit, comment: "Column header and Sort By menu item: a file’s name (as in Finder)")
+    }
+    static var kind: String {
+        String(localized: "Kind", bundle: .greeceKit, comment: "Column header, Sort By and Group By menu item: a file’s type (as in Finder)")
+    }
+    static var modified: String {
+        String(localized: "Date Modified", bundle: .greeceKit, comment: "Column header, Sort By and Group By menu item (as in Finder)")
+    }
+    static var size: String {
+        String(localized: "Size", bundle: .greeceKit, comment: "Column header, Sort By and Group By menu item, Get Info row: a file’s size (as in Finder)")
+    }
+    static var compressed: String {
+        String(localized: "Compressed", bundle: .greeceKit, comment: "Column header and Get Info row: an archived file’s compressed size")
+    }
+}
+
 /// A run of files under one heading ("Images", "Yesterday", "1 MB to 10 MB").
 struct FileGroup {
     /// Stable across rebuilds, so views can keep what they know about a group.
@@ -81,28 +111,46 @@ struct FileGroup {
     var nodes: [FileNode]
 }
 
+/// Finder's group headings other than kinds' and months', looked up once: grouping asks for one
+/// per file.
+enum FileGroupTitles {
+    static let folders = String(localized: "Folders", bundle: .greeceKit, comment: "Group By Kind or Size heading (as in Finder)")
+    static let unknownSize = String(localized: "Unknown Size", bundle: .greeceKit, comment: "Group By Size heading: files whose size isn’t known")
+    static let zeroKB = String(localized: "Zero KB", bundle: .greeceKit, comment: "Group By Size heading: empty files (as in Finder)")
+    static let noDate = String(localized: "No Date", bundle: .greeceKit, comment: "Group By Date Modified heading: files without a date")
+    static let today = String(localized: "Today", bundle: .greeceKit, comment: "Group By Date Modified heading (as in Finder)")
+    static let yesterday = String(localized: "Yesterday", bundle: .greeceKit, comment: "Group By Date Modified heading (as in Finder)")
+    static let previousWeek = String(localized: "Previous 7 Days", bundle: .greeceKit, comment: "Group By Date Modified heading (as in Finder)")
+    static let previousMonth = String(localized: "Previous 30 Days", bundle: .greeceKit, comment: "Group By Date Modified heading (as in Finder)")
+}
+
 /// Finder's broad kinds, as its Group By Kind headings name them.
 enum KindGroup: String, CaseIterable {
     case folders, applications, archives, developer, diskImages, documents, fonts, images, movies, music,
          pdf, presentations, spreadsheets, text, other
 
-    var title: String {
+    /// Looked up once: grouping asks for every file's.
+    var title: String { KindGroup.titles[self] ?? rawValue }
+
+    private static let titles = Dictionary(uniqueKeysWithValues: allCases.map { ($0, $0.localizedTitle) })
+
+    private var localizedTitle: String {
         switch self {
-        case .folders: return "Folders"
-        case .applications: return "Applications"
-        case .archives: return "Archives"
-        case .developer: return "Developer"
-        case .diskImages: return "Disk Images"
-        case .documents: return "Documents"
-        case .fonts: return "Fonts"
-        case .images: return "Images"
-        case .movies: return "Movies"
-        case .music: return "Music"
-        case .pdf: return "PDF Documents"
-        case .presentations: return "Presentations"
-        case .spreadsheets: return "Spreadsheets"
-        case .text: return "Text"
-        case .other: return "Other"
+        case .folders: return FileGroupTitles.folders
+        case .applications: return String(localized: "Applications", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .archives: return String(localized: "Archives", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .developer: return String(localized: "Developer", bundle: .greeceKit, comment: "Group By Kind heading: source code and other developer files (as in Finder)")
+        case .diskImages: return String(localized: "Disk Images", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .documents: return String(localized: "Documents", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .fonts: return String(localized: "Fonts", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .images: return String(localized: "Images", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .movies: return String(localized: "Movies", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .music: return String(localized: "Music", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .pdf: return String(localized: "PDF Documents", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .presentations: return String(localized: "Presentations", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .spreadsheets: return String(localized: "Spreadsheets", bundle: .greeceKit, comment: "Group By Kind heading (as in Finder)")
+        case .text: return String(localized: "Text", bundle: .greeceKit, comment: "Group By Kind heading: plain text files (as in Finder)")
+        case .other: return String(localized: "Other", bundle: .greeceKit, comment: "Group By Kind heading: files of any other kind (as in Finder)")
         }
     }
 
@@ -265,14 +313,14 @@ enum FileArrangement {
 
     /// Finder's size bands, a factor of ten apart (decimal units, as the Size column counts).
     static let sizeBands: [(limit: UInt64, title: String)] = [
-        (10_000, "Less than 10 KB"),
-        (100_000, "10 KB to 100 KB"),
-        (1_000_000, "100 KB to 1 MB"),
-        (10_000_000, "1 MB to 10 MB"),
-        (100_000_000, "10 MB to 100 MB"),
-        (1_000_000_000, "100 MB to 1 GB"),
-        (10_000_000_000, "1 GB to 10 GB"),
-        (UInt64.max, "More than 10 GB"),
+        (10_000, String(localized: "Less than 10 KB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
+        (100_000, String(localized: "10 KB to 100 KB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
+        (1_000_000, String(localized: "100 KB to 1 MB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
+        (10_000_000, String(localized: "1 MB to 10 MB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
+        (100_000_000, String(localized: "10 MB to 100 MB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
+        (1_000_000_000, String(localized: "100 MB to 1 GB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
+        (10_000_000_000, String(localized: "1 GB to 10 GB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
+        (UInt64.max, String(localized: "More than 10 GB", bundle: .greeceKit, comment: "Group By Size heading (as in Finder)")),
     ]
 
     /// A size rounded as the Size column shows it (whole kilobytes, tenths of megabytes,
@@ -290,11 +338,11 @@ enum FileArrangement {
     private static func sizeBucket(_ node: FileNode, foldersFirst: Bool) -> Bucket {
         guard let size = node.size else {
             if node.isDirectory && !node.isPackage {
-                return Bucket(id: "size.folders", title: "Folders", rank: 0, pin: foldersFirst ? .first : .last)
+                return Bucket(id: "size.folders", title: FileGroupTitles.folders, rank: 0, pin: foldersFirst ? .first : .last)
             }
-            return Bucket(id: "size.unknown", title: "Unknown Size", rank: 0, pin: .last)
+            return Bucket(id: "size.unknown", title: FileGroupTitles.unknownSize, rank: 0, pin: .last)
         }
-        if size == 0 { return Bucket(id: "size.zero", title: "Zero KB", rank: sizeBands.count, pin: .middle) }
+        if size == 0 { return Bucket(id: "size.zero", title: FileGroupTitles.zeroKB, rank: sizeBands.count, pin: .middle) }
         let shown = displayedSize(size)
         let band = sizeBands.firstIndex { shown < $0.limit } ?? sizeBands.count - 1
         // Largest first: the top band has the smallest rank.
@@ -328,12 +376,12 @@ enum FileArrangement {
         }
 
         func bucket(_ date: Date?) -> Bucket {
-            guard let date else { return Bucket(id: "date.none", title: "No Date", rank: 0, pin: .last) }
+            guard let date else { return Bucket(id: "date.none", title: FileGroupTitles.noDate, rank: 0, pin: .last) }
             // Dates in the future (a clock set ahead, a file from elsewhere) count as today.
-            if date >= today { return Bucket(id: "date.today", title: "Today", rank: 0, pin: .middle) }
-            if date >= yesterday { return Bucket(id: "date.yesterday", title: "Yesterday", rank: 1, pin: .middle) }
-            if date >= week { return Bucket(id: "date.week", title: "Previous 7 Days", rank: 2, pin: .middle) }
-            if date >= month { return Bucket(id: "date.month", title: "Previous 30 Days", rank: 3, pin: .middle) }
+            if date >= today { return Bucket(id: "date.today", title: FileGroupTitles.today, rank: 0, pin: .middle) }
+            if date >= yesterday { return Bucket(id: "date.yesterday", title: FileGroupTitles.yesterday, rank: 1, pin: .middle) }
+            if date >= week { return Bucket(id: "date.week", title: FileGroupTitles.previousWeek, rank: 2, pin: .middle) }
+            if date >= month { return Bucket(id: "date.month", title: FileGroupTitles.previousMonth, rank: 3, pin: .middle) }
             let parts = calendar.dateComponents([.year, .month], from: date)
             let itsYear = parts.year ?? year
             if itsYear == year, let number = parts.month, number >= 1, number <= months.count {

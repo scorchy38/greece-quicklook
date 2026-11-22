@@ -29,9 +29,12 @@ enum AsciiDocConverter {
                 } else if headerLine == 1 {
                     let parts = line.components(separatedBy: ":")
                     let revision = parts[0].components(separatedBy: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-                    if let version = revision.first, !version.isEmpty { doc.meta.append(["Version", version.hasPrefix("v") ? String(version.dropFirst()) : version]) }
+                    if let version = revision.first, !version.isEmpty { doc.meta.append([versionLabel, version.hasPrefix("v") ? String(version.dropFirst()) : version]) }
                     if revision.count > 1 { doc.date = revision[1] }
-                    if parts.count > 1 { doc.meta.append(["Revision", parts.dropFirst().joined(separator: ":").trimmingCharacters(in: .whitespaces)]) }
+                    if parts.count > 1 {
+                        let label = String(localized: "Revision", bundle: .greeceKit, comment: "Label in a document’s title block: notes on the document’s latest revision")
+                        doc.meta.append([label, parts.dropFirst().joined(separator: ":").trimmingCharacters(in: .whitespaces)])
+                    }
                     headerLine += 1
                 }
                 i += 1
@@ -160,7 +163,7 @@ enum AsciiDocConverter {
             }
             if line.hasPrefix("toc::[]") || line == "<<<" { i += 1; continue }
             if line == "'''" || line == "---" || line == "***" { out.append("\n---\n"); i += 1; continue }
-            if line.hasPrefix("include::") { out.append(MD.chips(["Included: " + String(line.dropFirst(9).prefix { $0 != "[" })])); out.append(""); i += 1; continue }
+            if line.hasPrefix("include::") { out.append(MD.chips([MD.included(String(line.dropFirst(9).prefix { $0 != "[" }))])); out.append(""); i += 1; continue }
 
             // Lists.
             if let item = listItem(line) {
@@ -232,11 +235,15 @@ enum AsciiDocConverter {
         return doc
     }
 
+    private static var versionLabel: String {
+        String(localized: "Version", bundle: .greeceKit, comment: "Label in a document’s title block: the document’s version number")
+    }
+
     private static func apply(_ attribute: (String, String), to doc: inout ProseDocument) {
         switch attribute.0 {
         case "description": doc.abstract = attribute.1
-        case "keywords": doc.meta.append(["Keywords", attribute.1])
-        case "revnumber": doc.meta.append(["Version", attribute.1])
+        case "keywords": doc.meta.append([String(localized: "Keywords", bundle: .greeceKit, comment: "Label in a document’s title block"), attribute.1])
+        case "revnumber": doc.meta.append([versionLabel, attribute.1])
         case "revdate": doc.date = attribute.1
         case "author": if doc.authors.isEmpty { doc.authors = [attribute.1] }
         default: break
@@ -600,7 +607,7 @@ enum RSTConverter {
                     switch name {
                     case "code-block", "code", "sourcecode", "highlight", "literalinclude":
                         if name == "highlight" { break }
-                        if name == "literalinclude" { out.append(MD.chips(["Included: " + argument])); break }
+                        if name == "literalinclude" { out.append(MD.chips([MD.included(argument)])); break }
                         out.append(MD.fence(text, language: argument))
                     case "math":
                         let tex = argument.isEmpty ? text : argument + (text.isEmpty ? "" : "\n" + text)
@@ -614,7 +621,11 @@ enum RSTConverter {
                     case "topic", "sidebar", "rubric":
                         out.append("<aside class=\"sidebar\">\n\n**\(inline(argument))**\n\n\(convertNested(text))\n\n</aside>")
                     case "versionadded", "versionchanged", "deprecated":
-                        let label = name == "deprecated" ? "Deprecated since \(argument)" : name == "versionadded" ? "New in version \(argument)" : "Changed in version \(argument)"
+                        let label = name == "deprecated"
+                            ? String(localized: "Deprecated since \(argument)", bundle: .greeceKit, comment: "Note title in Python documentation. The argument is a version, such as “3.12”")
+                            : name == "versionadded"
+                            ? String(localized: "New in version \(argument)", bundle: .greeceKit, comment: "Note title in Python documentation. The argument is a version, such as “3.12”")
+                            : String(localized: "Changed in version \(argument)", bundle: .greeceKit, comment: "Note title in Python documentation. The argument is a version, such as “3.12”")
                         out.append(MD.alert(name == "deprecated" ? "warning" : "note", title: label, body: convertNested(text)))
                     case "list-table":
                         out.append(listTable(Array(content), headerRows: Int(option("header-rows") ?? "0") ?? 0, inline: inline))

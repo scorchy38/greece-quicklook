@@ -97,7 +97,10 @@ enum ZIPReader {
         listing.comment = directory.comment
         listing.headerEncrypted = directory.headerEncrypted
         listing.nameEncoding = directory.nameEncoding
-        if directory.endsEarly { listing.damage = "the file list ends early" }
+        if directory.endsEarly {
+            listing.damage = String(localized: "the file list ends early", bundle: .greeceKit,
+                                    comment: "Why an archive is damaged, shown inside “This archive appears to be damaged (…)” and, capitalised, as a sentence of its own")
+        }
         return listing
     }
 
@@ -105,13 +108,17 @@ enum ZIPReader {
     /// pass. `rename` fixes up names that turn out to be in a legacy encoding once all are seen.
     private static func scan<Entry>(_ file: any RandomAccessSource, spanned: Bool, limit: Int, into result: inout Directory,
                                     make: (ZIPMember, Int) -> Entry, rename: (inout Entry, String) -> Void) throws -> [Entry] {
-        guard file.size >= 22 else { throw ArchiveError.corrupt("too small") }
+        guard file.size >= 22 else {
+            throw ArchiveError.corrupt(String(localized: "too small", bundle: .greeceKit,
+                                              comment: "Why an archive is damaged, shown inside “This archive appears to be damaged (…)”"))
+        }
 
         // The end record sits in the last 64 KB (its comment can be up to 65,535 bytes).
         let tailStart = file.size > 65_557 ? file.size - 65_557 : 0
         let tail = Data(file.read(at: tailStart, count: Int(file.size - tailStart)))
         guard let eocdInTail = lastSignature(0x06054B50, in: tail) else {
-            throw ArchiveError.corrupt("no end of central directory")
+            throw ArchiveError.corrupt(String(localized: "no end of central directory", bundle: .greeceKit,
+                                              comment: "Why a ZIP archive is damaged, shown inside “This archive appears to be damaged (…)”; the central directory is the ZIP format’s file list"))
         }
         let eocd = tailStart + UInt64(eocdInTail)
         var directoryDisk = UInt64(tail.u16(eocdInTail + 6))
@@ -149,7 +156,8 @@ enum ZIPReader {
             }
         }
         guard directorySize <= maxDirectorySize, start < file.size else {
-            throw ArchiveError.corrupt("invalid central directory")
+            throw ArchiveError.corrupt(String(localized: "invalid central directory", bundle: .greeceKit,
+                                              comment: "Why a ZIP archive is damaged, shown inside “This archive appears to be damaged (…)”; the central directory is the ZIP format’s file list"))
         }
 
         result.declaredCount = entryCount
@@ -192,7 +200,10 @@ enum ZIPReader {
             result.nameEncoding = encoding.name
         }
 
-        if entries.isEmpty && entryCount > 0 { throw ArchiveError.corrupt("unreadable central directory") }
+        if entries.isEmpty && entryCount > 0 {
+            throw ArchiveError.corrupt(String(localized: "unreadable central directory", bundle: .greeceKit,
+                                              comment: "Why a ZIP archive is damaged, shown inside “This archive appears to be damaged (…)”; the central directory is the ZIP format’s file list"))
+        }
         result.endsEarly = UInt64(entries.count) < min(entryCount, UInt64(max(limit, 0))) && !result.truncated
         return entries
     }
@@ -266,7 +277,7 @@ enum ZIPReader {
 
     static func methodName(_ code: Int) -> String {
         switch code {
-        case 0: return "Stored"
+        case 0: return stored
         case 8: return "Deflate"
         case 9: return "Deflate64"
         case 12: return "bzip2"
@@ -275,9 +286,13 @@ enum ZIPReader {
         case 95: return "xz"
         case 98: return "PPMd"
         case 99: return "AES"
-        default: return "Method \(code)"
+        default: return String(localized: "Method \(String(code))", bundle: .greeceKit, comment: "An unknown ZIP compression method; the argument is its number, such as “Method 6”")
         }
     }
+
+    /// Looked up once: every member of a big archive names its method.
+    private static let stored = String(localized: "Stored", bundle: .greeceKit,
+                                       comment: "ZIP compression method: kept as is, without compression (Get Info row value)")
 
     // MARK: - Extraction
 
@@ -299,7 +314,10 @@ enum ZIPReader {
     /// from it: the central directory is the authority on sizes, method and encryption.
     static func locate(localHeader offset: UInt64, compressedSize: UInt64, in file: any RandomAccessSource) throws -> DataRange {
         let header = file.read(at: offset, count: 30)
-        guard header.count == 30, header.u32(0) == 0x04034B50 else { throw ArchiveError.corrupt("missing local header") }
+        guard header.count == 30, header.u32(0) == 0x04034B50 else {
+            throw ArchiveError.corrupt(String(localized: "missing local header", bundle: .greeceKit,
+                                              comment: "Why a ZIP archive is damaged, shown inside “This archive appears to be damaged (…)”; the local header is the ZIP record before each file’s data"))
+        }
         let start = offset.saturatingAdd(30 + UInt64(header.u16(26)) + UInt64(header.u16(28)))
         let available = start < file.size ? file.size - start : 0
         return DataRange(start: start, length: min(compressedSize, available), pastEnd: compressedSize > available)
@@ -482,7 +500,10 @@ enum ZIPReader {
                     let produced = Int(offered - stream.avail_out)
                     if produced > 0, try !wrote(produced) { stopped = true; return }
                     if status == Z_STREAM_END { ended = true; return }
-                    if status != Z_OK && status != Z_BUF_ERROR { throw ArchiveError.corrupt("deflate data error") }
+                    if status != Z_OK && status != Z_BUF_ERROR {
+                        throw ArchiveError.corrupt(String(localized: "deflate data error", bundle: .greeceKit,
+                                                          comment: "Why an archive is damaged, shown inside “This archive appears to be damaged (…)”; Deflate is a compression method"))
+                    }
                     if stream.avail_in == 0 && stream.avail_out > 0 { return }
                     if status == Z_BUF_ERROR && produced == 0 { return }
                 }

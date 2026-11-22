@@ -17,7 +17,10 @@ struct RPMHeader {
 
     init(_ file: RandomAccessFile) throws {
         let lead = file.read(at: 0, count: 96)
-        guard lead.count == 96, lead.starts(with: [0xED, 0xAB, 0xEE, 0xDB]) else { throw ArchiveError.corrupt("not an RPM") }
+        guard lead.count == 96, lead.starts(with: [0xED, 0xAB, 0xEE, 0xDB]) else {
+            throw ArchiveError.corrupt(String(localized: "not an RPM", bundle: .greeceKit,
+                                              comment: "Why an RPM package is damaged, shown inside “This archive appears to be damaged (…)”"))
+        }
         isSource = lead.u16be(6) == 1
         let signature = try RPMHeader.section(file, at: 96)
         var main = signature.end
@@ -31,12 +34,21 @@ struct RPMHeader {
 
     private static func section(_ file: RandomAccessFile, at offset: UInt64) throws -> (index: [(Int, Int, Int, Int)], store: Data, end: UInt64) {
         let intro = file.read(at: offset, count: 16)
-        guard intro.count == 16, intro.starts(with: [0x8E, 0xAD, 0xE8]) else { throw ArchiveError.corrupt("RPM header missing") }
+        guard intro.count == 16, intro.starts(with: [0x8E, 0xAD, 0xE8]) else {
+            throw ArchiveError.corrupt(String(localized: "RPM header missing", bundle: .greeceKit,
+                                              comment: "Why an RPM package is damaged, shown inside “This archive appears to be damaged (…)”"))
+        }
         let count = Int(intro.u32be(8)), size = Int(intro.u32be(12))
-        guard count <= 100_000, size <= 64 * 1024 * 1024 else { throw ArchiveError.corrupt("RPM header too large") }
+        guard count <= 100_000, size <= 64 * 1024 * 1024 else {
+            throw ArchiveError.corrupt(String(localized: "RPM header too large", bundle: .greeceKit,
+                                              comment: "Why an RPM package is damaged, shown inside “This archive appears to be damaged (…)”"))
+        }
         let indexData = file.read(at: offset + 16, count: count * 16)
         let store = file.read(at: offset + 16 + UInt64(count * 16), count: size)
-        guard indexData.count == count * 16, store.count == size else { throw ArchiveError.corrupt("RPM header truncated") }
+        guard indexData.count == count * 16, store.count == size else {
+            throw ArchiveError.corrupt(String(localized: "RPM header truncated", bundle: .greeceKit,
+                                              comment: "Why an RPM package is damaged, shown inside “This archive appears to be damaged (…)”"))
+        }
         var index: [(Int, Int, Int, Int)] = []
         index.reserveCapacity(count)
         for i in 0..<count {

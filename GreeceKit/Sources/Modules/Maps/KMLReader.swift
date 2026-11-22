@@ -259,7 +259,8 @@ enum KMLReader {
                                              elevation: i < p.trackAltitudes.count ? p.trackAltitudes[i] : nil,
                                              time: i < p.trackTimes.count ? p.trackTimes[i] : nil))
                     }
-                    profiles.append((p.name ?? "Track", samples))
+                    profiles.append((p.name ?? String(localized: "Track [GPS]", defaultValue: "Track", bundle: .greeceKit,
+                                                              comment: "Name of an unnamed GPS track on a map (a recorded path, not a music track)"), samples))
                 }
             case "MultiGeometry", "MultiTrack":
                 if var p = placemark, p.frames.count > 1 {
@@ -315,7 +316,7 @@ enum KMLReader {
 
         let parsed = stream.parse(data)
         guard sawKML || !pendingPlacemarks.isEmpty, parsed, !(stream.failed && pendingPlacemarks.isEmpty && document.overlays.isEmpty) else {
-            throw GeoError.invalid("This KML file is damaged.")
+            throw GeoError.invalid(String(localized: "This KML file is damaged.", bundle: .greeceKit))
         }
         if stream.timedOut || budget.exhausted { document.truncated = true }
 
@@ -330,7 +331,8 @@ enum KMLReader {
         var iconIndex: [String: Int?] = [:]
         var layersByName: [String: GeoLayer] = [:]
         var order: [GeoLayer] = []
-        let defaultName = documentName.flatMap { $0.isEmpty ? nil : $0 } ?? "Placemarks"
+        let defaultName = documentName.flatMap { $0.isEmpty ? nil : $0 }
+            ?? String(localized: "Placemarks", bundle: .greeceKit, comment: "Map layer of a KML file: its places and shapes outside any folder")
         for p in pendingPlacemarks {
             let geometry = p.frames.first.map(simplify)
             var feature = GeoFeature(geometry: geometry)
@@ -374,7 +376,8 @@ enum KMLReader {
             document.tracks.append(TrackProfile(name: name, segments: [samples]))
         }
         if networkLinks > 0 {
-            document.notices.append("\(networkLinks) network \(networkLinks == 1 ? "link isn’t" : "links aren’t") loaded: previews never go online.")
+            document.notices.append(String(localized: "\(networkLinks) network links aren’t loaded: previews never go online.", bundle: .greeceKit,
+                                           comment: "Notice on a map: links in a KML file to data on the internet"))
         }
         return document
     }

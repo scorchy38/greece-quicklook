@@ -138,7 +138,7 @@ enum NotebookMarkdown {
                 }
                 if language == "dot" || language == "graphviz" { language = "text" }
                 if pendingOutput {
-                    chips = ["Output"]
+                    chips = [String(localized: "Output", bundle: .greeceKit, comment: "Label above a notebook cell’s output")]
                     language = language.isEmpty || language == "elixir" ? "text" : language
                     pendingOutput = false
                 }
@@ -208,12 +208,26 @@ enum NotebookMarkdown {
             guard let r = Range(match.range, in: result), let labelRange = Range(match.range(at: 1), in: line) else { continue }
             let label = String(line[labelRange])
             let kind = String(label.prefix { $0 != "-" })
-            let word = ["fig": "Figure", "tbl": "Table", "eq": "Equation", "sec": "Section", "lst": "Listing"][kind] ?? ""
-            let number = references[label]
-            let text = kind == "sec" ? "Section" : number.map { kind == "eq" ? "\(word) (\($0))" : "\(word) \($0)" } ?? word
-            result.replaceSubrange(r, with: "<span class=\"xref\">\(text)</span>")
+            let text = crossReference(kind: kind, number: references[label])
+            result.replaceSubrange(r, with: "<span class=\"xref\">\(MD.html(text))</span>")
         }
         return result
+    }
+
+    /// "Figure 2", "Table 1", "Equation (3)", "Section": the text a Quarto @reference shows.
+    static func crossReference(kind: String, number: String?) -> String {
+        switch (kind, number) {
+        case ("fig", let n?): return String(localized: "Figure \(n)", bundle: .greeceKit, comment: "Cross reference in a document. The argument is the figure’s number")
+        case ("fig", nil): return String(localized: "Figure", bundle: .greeceKit, comment: "Cross reference in a document, or a placeholder for a figure that can’t be shown")
+        case ("tbl", let n?): return String(localized: "Table \(n)", bundle: .greeceKit, comment: "Cross reference in a document. The argument is the table’s number")
+        case ("tbl", nil): return String(localized: "Table [cross reference]", defaultValue: "Table", bundle: .greeceKit, comment: "Cross reference to a table in a document")
+        case ("eq", let n?): return String(localized: "Equation (\(n))", bundle: .greeceKit, comment: "Cross reference in a document. The argument is the equation’s number")
+        case ("eq", nil): return String(localized: "Equation", bundle: .greeceKit, comment: "Cross reference to an equation in a document")
+        case ("lst", let n?): return String(localized: "Listing \(n)", bundle: .greeceKit, comment: "Cross reference to a code listing in a document. The argument is its number")
+        case ("lst", nil): return String(localized: "Listing", bundle: .greeceKit, comment: "Cross reference to a code listing in a document")
+        case ("sec", _): return String(localized: "Section", bundle: .greeceKit, comment: "Cross reference to a section in a document")
+        default: return ""
+        }
     }
 
     /// `r label, echo=FALSE, fig.cap="A, B"` split at top-level commas (or spaces before the first).

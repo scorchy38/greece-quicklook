@@ -18,9 +18,10 @@ enum DiskImageSigning {
             section = output.section
         } else {
             // Unsigned disk images are common and harmless: the apps inside carry their own signatures.
-            section = InspectorSection("signature", title: "Signature", rows: [
-                .item(InspectorItem(title: "Disk Image", subtitle: "Most disk images aren’t signed. The apps inside carry their own signatures.",
-                                    value: "Not signed")),
+            section = InspectorSection("signature", title: SigningSection.signatureTitle, rows: [
+                .item(InspectorItem(title: String(localized: "Disk Image", bundle: .greeceKit, comment: "Inspector row title: the disk image file itself"),
+                                    subtitle: String(localized: "Most disk images aren’t signed. The apps inside carry their own signatures.", bundle: .greeceKit),
+                                    value: String(localized: "Not signed", bundle: .greeceKit, comment: "Inspector row value: the code has no signature"))),
             ])
         }
         let position = page.sections.firstIndex { $0.id == "apps" }.map { $0 + 1 } ?? 0

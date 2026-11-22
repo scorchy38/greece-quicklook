@@ -528,11 +528,15 @@ enum EPUBPreview {
             return nil
         }
         var details: [String] = []
-        if let author = book.creators.first?.name { details.append(book.creators.count > 1 ? "\(author) and others" : author) }
+        if let author = book.creators.first?.name {
+            details.append(book.creators.count > 1
+                ? String(localized: "\(author) and others", bundle: .greeceKit, comment: "Info bar detail: a book’s first author when it has several. The argument is a name")
+                : author)
+        }
         let chapters = book.spine.filter(\.linear).count
-        details.append(DocumentsModule.count(chapters, "section"))
+        details.append(String(localized: "\(chapters) sections", bundle: .greeceKit, comment: "Info bar detail: sections (chapters and other parts) in an EPUB book"))
         details += DocumentsModule.readingFacts(words: count.words)
-        if book.encrypted { details.append("Protected") }
+        if book.encrypted { details.append(String(localized: "Protected", bundle: .greeceKit, comment: "Info bar detail: an EPUB book protected by DRM")) }
         return .web(document, FileSummary(symbol: "book.closed", title: "EPUB", details: details, trailing: file.modifiedText), NSSize(width: 1000, height: 800))
     }
 }

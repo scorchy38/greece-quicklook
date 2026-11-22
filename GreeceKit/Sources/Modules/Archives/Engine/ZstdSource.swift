@@ -16,7 +16,9 @@ final class ZstdSource: ByteSource {
     private var finished = false
 
     init(_ input: ByteSource) throws {
-        guard let stream = ZSTD_createDStream() else { throw ArchiveError.unsupported("The Zstandard decoder couldn’t start.") }
+        guard let stream = ZSTD_createDStream() else {
+            throw ArchiveError.unsupported(String(localized: "The Zstandard decoder couldn’t start.", bundle: .greeceKit))
+        }
         self.input = input
         self.stream = stream
         _ = ZSTD_DCtx_setParameter(stream, ZSTD_d_windowLogMax, ZstdSource.windowLogMax)
@@ -49,7 +51,8 @@ final class ZstdSource: ByteSource {
             if failure {
                 // Anything already decoded is still good; a later read reports the damage.
                 if produced > 0 { inputEnded = true; break }
-                throw ArchiveError.corrupt("Zstandard data error")
+                throw ArchiveError.corrupt(String(localized: "Zstandard data error", bundle: .greeceKit,
+                                                  comment: "Why an archive is damaged, shown inside “This archive appears to be damaged (…)”; Zstandard is a compression format"))
             }
             if (produced, inputPosition) == before && inputEnded {
                 finished = true

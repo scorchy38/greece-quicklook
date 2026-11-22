@@ -49,8 +49,8 @@ public enum Thumbnailer {
                 MarkdownPage.draw(file.text, in: rect, palette: palette, reading: settings.markdownTheme)
             }
         case .code(let language):
-            let short = ["Dockerfile": "DOCKER", "Makefile": "MAKE", "Git Ignore": "GIT", "Shell": "SH", "Plain Text": "TXT"]
-            var badge = ext.isEmpty ? (short[language.name] ?? String(language.name.split(separator: " ").first ?? "").uppercased().prefix(6).description) : ext
+            // A file without an extension (Makefile, .bashrc, LICENSE) gets its language's tag, in English like any extension.
+            var badge = ext.isEmpty ? language.badge : ext
             // .env files never show their values, not even as a picture in Finder.
             let secret = EnvMask.applies(to: url.lastPathComponent, text: file.text)
             if secret { badge = "ENV" }

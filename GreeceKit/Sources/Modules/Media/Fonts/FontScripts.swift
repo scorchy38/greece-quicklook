@@ -152,11 +152,13 @@ enum FontScripts {
         return nil
     }
 
-    /// Characters grouped by Unicode block, in code point order.
+    /// Characters grouped by Unicode block, in code point order. Blocks go by their names in the
+    /// Unicode standard, which stay in English as Unicode names them.
     static func group(_ codepoints: [Int]) -> [(String, [Int])] {
         var result: [(String, [Int])] = []
+        let other = String(localized: "Other Characters", bundle: .greeceKit, comment: "Heading in a font’s character grid: characters outside the Unicode blocks Greece names")
         for codepoint in codepoints {
-            let name = block(for: codepoint)?.name ?? "Other Characters"
+            let name = block(for: codepoint)?.name ?? other
             if result.last?.0 == name { result[result.count - 1].1.append(codepoint) } else { result.append((name, [codepoint])) }
         }
         // "Other Characters" can be split by gaps between known blocks: merge each name once.

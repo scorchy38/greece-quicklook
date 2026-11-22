@@ -6,22 +6,22 @@ enum PackageKind: String, Sendable {
 
     var title: String {
         switch self {
-        case .wheel: return "Python Wheel"
-        case .sdist: return "Python Source Package"
-        case .jar: return "Java Archive"
-        case .war: return "Web Application Archive"
-        case .ear: return "Enterprise Archive"
-        case .apk: return "Android Package"
-        case .aab: return "Android App Bundle"
-        case .nuget: return "NuGet Package"
-        case .vsix: return "Visual Studio Extension"
-        case .xpi: return "Firefox Extension"
-        case .crx: return "Chrome Extension"
-        case .gem: return "Ruby Gem"
-        case .deb: return "Debian Package"
-        case .rpm: return "RPM Package"
-        case .npm: return "npm Package"
-        case .skill: return "Agent Skill"
+        case .wheel: return String(localized: "Python Wheel", bundle: .greeceKit, comment: "Kind of software package (a .whl file)")
+        case .sdist: return String(localized: "Python Source Package", bundle: .greeceKit, comment: "Kind of software package")
+        case .jar: return String(localized: "Java Archive", bundle: .greeceKit, comment: "Kind of software package (a .jar file)")
+        case .war: return String(localized: "Web Application Archive", bundle: .greeceKit, comment: "Kind of software package (a Java .war file)")
+        case .ear: return String(localized: "Enterprise Archive", bundle: .greeceKit, comment: "Kind of software package (a Java .ear file)")
+        case .apk: return String(localized: "Android Package", bundle: .greeceKit, comment: "Kind of software package (an .apk file)")
+        case .aab: return String(localized: "Android App Bundle", bundle: .greeceKit, comment: "Kind of software package (an .aab file)")
+        case .nuget: return String(localized: "NuGet Package", bundle: .greeceKit, comment: "Kind of software package")
+        case .vsix: return String(localized: "Visual Studio Extension", bundle: .greeceKit, comment: "Kind of software package (a .vsix file)")
+        case .xpi: return String(localized: "Firefox Extension", bundle: .greeceKit, comment: "Kind of software package")
+        case .crx: return String(localized: "Chrome Extension", bundle: .greeceKit, comment: "Kind of software package")
+        case .gem: return String(localized: "Ruby Gem", bundle: .greeceKit, comment: "Kind of software package")
+        case .deb: return String(localized: "Debian Package", bundle: .greeceKit)
+        case .rpm: return String(localized: "RPM Package", bundle: .greeceKit)
+        case .npm: return String(localized: "npm Package", bundle: .greeceKit, comment: "Kind of software package")
+        case .skill: return String(localized: "Agent Skill", bundle: .greeceKit, comment: "Kind of package: instructions and tools for an AI agent, such as Claude")
         }
     }
 

@@ -228,10 +228,12 @@ final class DiagramCanvas: NSView {
 
     func menuItems(forTable name: String) -> [NSMenuItem] {
         [
-            ActionMenuItem("Show Data") { [weak self] in self?.onOpen?(name) },
-            ActionMenuItem("Show Schema") { [weak self] in self?.onShowSchema?(name) },
+            ActionMenuItem(String(localized: "Show Data", bundle: .greeceKit, comment: "Menu item on a table in a database diagram: shows its rows")) { [weak self] in self?.onOpen?(name) },
+            ActionMenuItem(String(localized: "Show Schema", bundle: .greeceKit, comment: "Menu item on a table in a database diagram: shows its structure")) { [weak self] in
+                self?.onShowSchema?(name)
+            },
             .separator(),
-            ActionMenuItem("Copy Name") { Clipboard.copy(name) },
+            ActionMenuItem(SQLiteBrowserView.copyName) { Clipboard.copy(name) },
         ]
     }
 
@@ -379,7 +381,8 @@ final class DiagramCanvas: NSView {
             y += RelationshipDiagram.rowHeight
         }
         if card.hidden > 0 {
-            text("\(card.hidden) more", font: .systemFont(ofSize: 11), color: .tertiaryLabelColor,
+            let hidden = card.hidden
+            text(String(localized: "\(hidden) more", bundle: .greeceKit, comment: "Last line of a table in a database diagram: columns not shown"), font: .systemFont(ofSize: 11), color: .tertiaryLabelColor,
                  in: NSRect(x: frame.minX + 26, y: y, width: frame.width - 36, height: RelationshipDiagram.rowHeight), align: .left)
         }
     }
@@ -433,11 +436,11 @@ final class SQLiteDiagramView: NSView {
     func zoomMenuItems() -> [NSMenuItem] {
         let scale = scroll.magnification
         return [
-            ActionMenuItem("Zoom In", enabled: scale < scroll.maxMagnification - 0.01) { [weak self] in self?.zoom(by: 1.25) },
-            ActionMenuItem("Zoom Out", enabled: scale > scroll.minMagnification + 0.01) { [weak self] in self?.zoom(by: 0.8) },
+            ActionMenuItem(String(localized: "Zoom In", bundle: .greeceKit, comment: "Menu item"), enabled: scale < scroll.maxMagnification - 0.01) { [weak self] in self?.zoom(by: 1.25) },
+            ActionMenuItem(String(localized: "Zoom Out", bundle: .greeceKit, comment: "Menu item"), enabled: scale > scroll.minMagnification + 0.01) { [weak self] in self?.zoom(by: 0.8) },
             .separator(),
-            ActionMenuItem("Zoom to Fit") { [weak self] in self?.zoomToFit() },
-            ActionMenuItem("Actual Size", enabled: abs(scale - 1) > 0.01) { [weak self] in self?.zoom(by: 1 / scale) },
+            ActionMenuItem(String(localized: "Zoom to Fit", bundle: .greeceKit, comment: "Menu item")) { [weak self] in self?.zoomToFit() },
+            ActionMenuItem(String(localized: "Actual Size", bundle: .greeceKit, comment: "Menu item: zoom to 100%"), enabled: abs(scale - 1) > 0.01) { [weak self] in self?.zoom(by: 1 / scale) },
         ]
     }
 

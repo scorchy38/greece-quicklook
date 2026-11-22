@@ -125,14 +125,24 @@ enum SubtitlePreview {
                               scripts: ["modules/media.common.js", "modules/media.subtitles.js"], styles: ["modules/media.css"])
         web.resources = { path in path == "cues.json" ? (cues, "application/json; charset=utf-8") : nil }
 
-        var details = [MediaText.plural(stats.cues, format == .lrc ? "line" : "cue")]
+        var details = [format == .lrc
+            ? String(localized: "\(stats.cues) lines", bundle: .greeceKit, comment: "Info bar detail: how many lines a text file, or a song’s lyrics, has")
+            : String(localized: "\(stats.cues) cues", bundle: .greeceKit, comment: "Info bar detail: how many cues (subtitles shown at once) a subtitle file has")]
         if stats.end > 0 { details.append(MediaText.clock(stats.end)) }
         if SubtitleChecks.appliesChecks(format), let cps = stats.averageCPS {
-            details.append("\(cps.formatted(.number.precision(.fractionLength(0...1)))) cps average")
-            if stats.fast > 0 { details.append("\(stats.fast.formatted()) too fast") }
+            let speed = cps.formatted(.number.precision(.fractionLength(0...1)))
+            details.append(String(localized: "\(speed) cps average", bundle: .greeceKit,
+                                  comment: "Info bar detail: subtitles’ average reading speed in characters per second, such as “14.2 cps average”"))
+            if stats.fast > 0 {
+                details.append(String(localized: "\(stats.fast) too fast", bundle: .greeceKit,
+                                      comment: "Info bar detail: how many subtitles go by too fast to read, such as “2 too fast”"))
+            }
         }
         if let language = document.languages.first { details.append(Locale.current.localizedString(forIdentifier: language) ?? language) }
-        if document.truncated { details.append("Showing first \(document.cues.count.formatted())") }
+        if document.truncated {
+            details.append(String(localized: "Showing first %lld [cues]", defaultValue: "Showing first \(document.cues.count)", bundle: .greeceKit,
+                                  comment: "Info bar detail: only the first subtitles of a very long file are shown. The argument is how many"))
+        }
         let summary = FileSummary(symbol: format == .lrc ? "music.note.list" : "captions.bubble", title: format.title, details: details, trailing: file.modifiedText)
         return .web(web, summary, NSSize(width: 960, height: 760))
     }

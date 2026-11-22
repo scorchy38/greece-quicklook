@@ -7,19 +7,21 @@ enum OSMReader {
     enum Class: Int, CaseIterable {
         case landuse, green, water, waterway, building, railway, road, path, boundary, other, poi
 
+        /// Shown in the map's layers panel.
         var layerName: String {
             switch self {
-            case .landuse: return "Land Use"
-            case .green: return "Parks and Nature"
-            case .water: return "Water"
-            case .waterway: return "Rivers and Canals"
-            case .building: return "Buildings"
-            case .railway: return "Railways"
-            case .road: return "Roads"
-            case .path: return "Paths"
-            case .boundary: return "Boundaries"
-            case .other: return "Other"
-            case .poi: return "Places"
+            case .landuse: return String(localized: "Land Use", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file")
+            case .green: return String(localized: "Parks and Nature", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file")
+            case .water: return String(localized: "Water", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file: lakes, ponds, reservoirs")
+            case .waterway: return String(localized: "Rivers and Canals", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file")
+            case .building: return String(localized: "Buildings", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file")
+            case .railway: return String(localized: "Railways", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file")
+            case .road: return String(localized: "Roads", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file")
+            case .path: return String(localized: "Paths", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file: footpaths, cycleways, steps")
+            case .boundary: return String(localized: "Boundaries", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file: administrative borders")
+            case .other: return String(localized: "Other [map layer]", defaultValue: "Other", bundle: .greeceKit,
+                                       comment: "Map layer of an OpenStreetMap file: features that fit no other layer")
+            case .poi: return String(localized: "Places", bundle: .greeceKit, comment: "Map layer of an OpenStreetMap file: shops, cafés, sights and other points of interest")
             }
         }
     }
@@ -97,7 +99,7 @@ enum OSMReader {
             }
         }
         let parsed = stream.parse(data)
-        guard sawOSM, parsed, !(stream.failed && nodes.isEmpty) else { throw GeoError.invalid("This OpenStreetMap file is damaged.") }
+        guard sawOSM, parsed, !(stream.failed && nodes.isEmpty) else { throw GeoError.invalid(String(localized: "This OpenStreetMap file is damaged.", bundle: .greeceKit)) }
         if stream.timedOut || budget.exhausted { document.truncated = true }
 
         var layers: [Class: GeoLayer] = [:]
@@ -175,8 +177,15 @@ enum OSMReader {
             }
         }
         document.layers = Class.allCases.compactMap { layers[$0] }
-        if let bounds, document.bounds.isEmpty { document.facts.append("Empty extract of \(String(format: "%.3f", bounds.width))° × \(String(format: "%.3f", bounds.height))°") }
-        document.facts.append("\(nodes.count.formatted()) nodes, \(ways.count.formatted()) ways")
+        if let bounds, document.bounds.isEmpty {
+            let width = bounds.width.formatted(.number.precision(.fractionLength(3)))
+            let height = bounds.height.formatted(.number.precision(.fractionLength(3)))
+            document.facts.append(String(localized: "Empty extract of \(width)° × \(height)°", bundle: .greeceKit,
+                                         comment: "Info bar detail: an OpenStreetMap extract with no features. The arguments are its width and height in degrees"))
+        }
+        let nodeCount = nodes.count, wayCount = ways.count
+        document.facts.append(String(localized: "\(nodeCount) nodes", bundle: .greeceKit, comment: "Info bar detail: OpenStreetMap nodes (points) in the file")
+                              + ", " + String(localized: "\(wayCount) ways", bundle: .greeceKit, comment: "Info bar detail: OpenStreetMap ways (lines and outlines) in the file"))
         return document
     }
 

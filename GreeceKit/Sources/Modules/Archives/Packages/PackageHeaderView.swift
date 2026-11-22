@@ -77,13 +77,20 @@ final class PackageHeaderView: NSView {
     /// Copying without ⌘C (Quick Look sends keys to Finder): the name, version and dependencies.
     static func menuItems(_ info: PackageInfo) -> [NSMenuItem] {
         var items: [NSMenuItem] = []
-        if let name = info.name { items.append(ActionMenuItem("Copy Name") { Clipboard.copy(name) }) }
-        if let version = info.version { items.append(ActionMenuItem("Copy Version") { Clipboard.copy(version) }) }
+        if let name = info.name { items.append(ActionMenuItem(String(localized: "Copy Name", bundle: .greeceKit)) { Clipboard.copy(name) }) }
+        if let version = info.version {
+            items.append(ActionMenuItem(String(localized: "Copy Version", bundle: .greeceKit)) { Clipboard.copy(version) })
+        }
         if !info.dependencies.isEmpty {
-            let title = info.kind == .apk || info.kind == .aab ? "Copy Permissions" : "Copy Dependencies"
+            let title = info.kind == .apk || info.kind == .aab
+                ? String(localized: "Copy Permissions", bundle: .greeceKit) : String(localized: "Copy Dependencies", bundle: .greeceKit)
             items.append(ActionMenuItem(title) { Clipboard.copy(info.dependencies.joined(separator: "\n")) })
         }
-        if let homepage = info.homepage { items.append(ActionMenuItem("Copy Homepage") { Clipboard.copy(homepage) }) }
+        if let homepage = info.homepage {
+            items.append(ActionMenuItem(String(localized: "Copy Homepage", bundle: .greeceKit, comment: "Menu item: copies a package’s website address")) {
+                Clipboard.copy(homepage)
+            })
+        }
         return items
     }
 
@@ -110,13 +117,19 @@ final class PackageHeaderView: NSView {
     }
 
     private static func dependencies(_ items: [String], kind: PackageKind) -> NSView {
-        let label = NSTextField(labelWithString: kind == .apk || kind == .aab ? "Permissions" : "Depends on")
+        let label = NSTextField(labelWithString: kind == .apk || kind == .aab
+            ? String(localized: "Permissions", bundle: .greeceKit, comment: "Package fact label: what an app or extension is allowed to do")
+            : String(localized: "Depends on", bundle: .greeceKit, comment: "Label before the list of packages a package needs"))
         label.font = .systemFont(ofSize: 11.5, weight: .semibold)
         label.textColor = .secondaryLabelColor
         label.setContentHuggingPriority(.required, for: .horizontal)
         label.setContentCompressionResistancePriority(.required, for: .horizontal)
-        let shown = items.prefix(40).joined(separator: "  ·  ")
-        let list = NSTextField(wrappingLabelWithString: shown + (items.count > 40 ? "  ·  and \(items.count - 40) more" : ""))
+        var shown = Array(items.prefix(40))
+        if items.count > 40 {
+            let more = items.count - 40
+            shown.append(String(localized: "and \(more) more", bundle: .greeceKit, comment: "Ends a list that was cut short; the argument is how many items are left out"))
+        }
+        let list = NSTextField(wrappingLabelWithString: shown.joined(separator: "  ·  "))
         list.font = .systemFont(ofSize: 12)
         list.textColor = .secondaryLabelColor
         list.maximumNumberOfLines = 2
@@ -146,7 +159,7 @@ private final class FactStrip: NSStackView {
                 line.heightAnchor.constraint(equalToConstant: 30).isActive = true
                 addArrangedSubview(line)
             }
-            let label = NSTextField(labelWithString: fact.0.uppercased())
+            let label = NSTextField(labelWithString: fact.0.localizedUppercase)
             label.font = .systemFont(ofSize: 10, weight: .semibold)
             label.textColor = .tertiaryLabelColor
             let value = NSTextField(labelWithString: fact.1)

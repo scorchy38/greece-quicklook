@@ -4,12 +4,20 @@ import Foundation
 public struct Language: Hashable, Sendable {
     /// highlight.js grammar id (always one that ships in `Web/vendor/highlight`).
     public let grammar: String
-    /// Human name shown in the info bar.
+    /// Human name shown in the info bar: a language's own name ("Swift"), or a description in the
+    /// person's language for generic kinds of text ("Plain Text", "Log").
     public let name: String
     /// SF Symbol used in the info bar.
     public let symbol: String
+    /// Finder's thumbnail badge for a file of this language with no extension ("SH", "TXT").
+    /// Never localized: it stands in for an extension.
+    let badge: String
 
-    public static let plainText = Language(grammar: "plaintext", name: "Plain Text", symbol: "doc.plaintext")
+    public static let plainText = Language(grammar: "plaintext", name: plainTextName, symbol: "doc.plaintext", badge: "TXT")
+
+    static var plainTextName: String {
+        String(localized: "Plain Text", bundle: .greeceKit, comment: "Language name in the info bar: a text file with no particular format")
+    }
 
     public var isPlainText: Bool { grammar == "plaintext" }
 }
@@ -64,29 +72,44 @@ public enum LanguageCatalog {
         let grammar: String
         let name: String
         let symbol: String
+        let badge: String
         let extensions: [String]
         let fileNames: [String]
+
+        var language: Language { Language(grammar: grammar, name: name, symbol: symbol, badge: badge) }
     }
 
+    /// `badge` is Finder's badge for a file with no extension; by default the first word of the name
+    /// ("DOCKER" for Dockerfile, "PYTHON"). A localized name always gives its own, in English.
     private static func e(_ grammar: String, _ name: String, _ exts: [String], files: [String] = [],
-                          symbol: String = "chevron.left.forwardslash.chevron.right") -> Entry {
-        Entry(grammar: grammar, name: name, symbol: symbol, extensions: exts, fileNames: files)
+                          symbol: String = "chevron.left.forwardslash.chevron.right", badge: String? = nil) -> Entry {
+        Entry(grammar: grammar, name: name, symbol: symbol, badge: badge ?? String(name.split(separator: " ").first ?? "").uppercased().prefix(6).description,
+              extensions: exts, fileNames: files)
     }
 
     /// Each extension and file name appears once. Where a language has no grammar of its own, it borrows the
     /// closest one under its own name (Zig reads well as Rust, Terraform as INI).
+    ///
+    /// Proper names of languages and formats stay as they are; generic descriptions ("Log", "Shell",
+    /// "Property List") are localized, and give their thumbnail badge themselves.
     private static let entries: [Entry] = [
         // Apple
         e("swift", "Swift", ["swift", "swiftinterface"], files: ["package.swift"], symbol: "swift"),
         e("objectivec", "Objective-C", ["m", "mm", "objc", "pch"]),
         e("applescript", "AppleScript", ["applescript"], symbol: "applescript"),
-        e("xml", "Property List", ["plist", "entitlements", "xcprivacy", "stringsdict", "intentdefinition", "tmlanguage", "tmtheme", "tmpreferences", "tmsnippet"], symbol: "list.bullet.indent"),
+        e("xml", String(localized: "Property List", bundle: .greeceKit, comment: "Info bar title and language name: an Apple property list (.plist)"),
+          ["plist", "entitlements", "xcprivacy", "stringsdict", "intentdefinition", "tmlanguage", "tmtheme", "tmpreferences", "tmsnippet"],
+          symbol: "list.bullet.indent", badge: "PLIST"),
         e("xml", "Interface Builder", ["storyboard", "xib"], symbol: "chevron.left.slash.chevron.right"),
-        e("c", "Strings", ["strings"], symbol: "character.bubble"),
-        e("json", "String Catalog", ["xcstrings"], symbol: "character.bubble"),
-        e("json", "Test Plan", ["xctestplan"], symbol: "curlybraces.square"),
-        e("ini", "Xcode Config", ["xcconfig"], symbol: "gearshape"),
-        e("cpp", "Module Map", ["modulemap"]),
+        e("c", String(localized: "Strings", bundle: .greeceKit, comment: "Language name in the info bar: Apple’s .strings localization files"),
+          ["strings"], symbol: "character.bubble", badge: "STRINGS"),
+        e("json", String(localized: "String Catalog", bundle: .greeceKit, comment: "Language name in the info bar: Xcode’s .xcstrings localization files"),
+          ["xcstrings"], symbol: "character.bubble", badge: "XCSTRINGS"),
+        e("json", String(localized: "Test Plan", bundle: .greeceKit, comment: "Language name in the info bar: an Xcode test plan"),
+          ["xctestplan"], symbol: "curlybraces.square", badge: "XCTESTPLAN"),
+        e("ini", String(localized: "Xcode Config", bundle: .greeceKit, comment: "Language name in the info bar: an Xcode build settings file (.xcconfig)"),
+          ["xcconfig"], symbol: "gearshape", badge: "XCCONFIG"),
+        e("cpp", String(localized: "Module Map", bundle: .greeceKit, comment: "Language name in the info bar: a Clang module map"), ["modulemap"], badge: "MODULEMAP"),
         e("c", "MIG", ["defs", "mig"]),
         e("cpp", "Lex", ["l", "lm", "lmm", "lpp", "lxx"]),
         e("cpp", "Yacc", ["y", "ym", "ymm", "ypp", "yxx", "yy"]),
@@ -152,9 +175,10 @@ public enum LanguageCatalog {
         e("typescript", "Prisma", ["prisma"]),
         e("typescript", "Bicep", ["bicep", "bicepparam"]),
         e("php", "PHP", ["php", "php3", "php4", "php5", "php7", "phps", "ph3", "ph4"]),
-        e("wasm", "WebAssembly Text", ["wat", "wast"]),
+        e("wasm", String(localized: "WebAssembly Text", bundle: .greeceKit, comment: "Language name in the info bar: WebAssembly’s text format"),
+          ["wat", "wast"], badge: "WAT"),
         // Templates
-        e("php-template", "PHP Template", ["phtml"]),
+        e("php-template", String(localized: "PHP Template", bundle: .greeceKit, comment: "Language name in the info bar"), ["phtml"], badge: "PHTML"),
         e("handlebars", "Handlebars", ["hbs", "handlebars", "mustache"]),
         e("twig", "Twig", ["twig"]),
         e("erb", "ERB", ["erb", "rhtml"]),
@@ -164,7 +188,8 @@ public enum LanguageCatalog {
         e("django", "Nunjucks", ["njk"]),
         e("django", "Liquid", ["liquid"]),
         e("django", "Tera", ["tera"]),
-        e("django", "Go Template", ["gohtml", "gotmpl"]),
+        e("django", String(localized: "Go Template", bundle: .greeceKit, comment: "Language name in the info bar: a template for the Go language"),
+          ["gohtml", "gotmpl"], badge: "GOHTML"),
         e("dust", "Dust", ["dust"]),
         e("leaf", "Leaf", ["leaf"]),
         e("mojolicious", "Mojolicious", ["ep"]),
@@ -213,20 +238,24 @@ public enum LanguageCatalog {
         e("tcl", "Tcl", ["tcl", "tk", "exp", "tm", "xdc"]),
         e("awk", "Awk", ["awk", "gawk"]),
         e("powershell", "PowerShell", ["ps1", "psm1", "psd1"], symbol: "terminal"),
-        e("dos", "Batch", ["bat", "cmd"], symbol: "terminal"),
+        e("dos", String(localized: "Batch", bundle: .greeceKit, comment: "Language name in the info bar: a Windows batch file (.bat)"),
+          ["bat", "cmd"], symbol: "terminal", badge: "BAT"),
         e("vbscript", "VBScript", ["vbs"], symbol: "terminal"),
         e("autohotkey", "AutoHotkey", ["ahk"]),
         e("autoit", "AutoIt", ["au3"]),
         e("nsis", "NSIS", ["nsi", "nsh"]),
         // Shell & dotfiles
-        e("bash", "Shell", ["sh", "bash", "zsh", "ksh", "csh", "tcsh", "command", "tool", "bats", "ebuild", "eclass", "env", "envrc", "zsh-theme",
-                            "zshrc", "bashrc", "zprofile", "zshenv", "profile", "bash_profile", "bash_aliases"],
+        e("bash", String(localized: "Shell", bundle: .greeceKit, comment: "Language name in the info bar: a shell script (sh, bash, zsh)"),
+          ["sh", "bash", "zsh", "ksh", "csh", "tcsh", "command", "tool", "bats", "ebuild", "eclass", "env", "envrc", "zsh-theme",
+           "zshrc", "bashrc", "zprofile", "zshenv", "profile", "bash_profile", "bash_aliases"],
           files: [".env", ".envrc", ".profile", ".bashrc", ".bash_profile", ".bash_login", ".bash_logout", ".bash_aliases", ".zshrc", ".zshenv", ".zprofile",
                   ".zlogin", ".zlogout", ".kshrc", ".cshrc", ".tcshrc", ".login", ".logout", ".xinitrc", ".xprofile", ".xsession", ".xsessionrc",
-                  ".aliases", ".functions", ".exports", ".renviron", "bashrc", "bash_profile", "zshrc", "zprofile", "pkgbuild", "apkbuild"], symbol: "terminal"),
+                  ".aliases", ".functions", ".exports", ".renviron", "bashrc", "bash_profile", "zshrc", "zprofile", "pkgbuild", "apkbuild"],
+          symbol: "terminal", badge: "SH"),
         e("bash", "Fish", ["fish"], symbol: "terminal"),
         e("bash", "Nushell", ["nu"], symbol: "terminal"),
-        e("shell", "Shell Session", ["sh-session"], symbol: "terminal"),
+        e("shell", String(localized: "Shell Session", bundle: .greeceKit, comment: "Language name in the info bar: a transcript of commands typed in a terminal and their output"),
+          ["sh-session"], symbol: "terminal", badge: "SH-SESSION"),
         e("bash", "tmux", [], files: [".tmux.conf", "tmux.conf"], symbol: "terminal"),
         e("bash", "Crontab", [], files: ["crontab"], symbol: "clock"),
         e("bash", "SwiftFormat", [], files: [".swiftformat"], symbol: "gearshape"),
@@ -250,11 +279,16 @@ public enum LanguageCatalog {
         e("ini", "Godot", ["tscn", "tres", "godot", "gdextension"], symbol: "gearshape"),
         e("ini", "Inno Setup", ["iss"], symbol: "gearshape"),
         e("ini", "Doxyfile", [], files: ["doxyfile"], symbol: "gearshape"),
-        e("properties", "Properties", ["properties"], symbol: "gearshape"),
-        e("properties", "SSH Config", [], files: ["ssh_config", "sshd_config"], symbol: "gearshape"),
-        e("properties", "Tool Versions", [], files: [".tool-versions"], symbol: "gearshape"),
-        e("properties", "X Resources", [], files: [".xresources", ".xdefaults"], symbol: "gearshape"),
-        e("properties", "Hosts", [], files: ["hosts"], symbol: "network"),
+        e("properties", String(localized: "Properties", bundle: .greeceKit, comment: "Language name in the info bar: a Java .properties settings file"),
+          ["properties"], symbol: "gearshape", badge: "PROPERTIES"),
+        e("properties", String(localized: "SSH Config", bundle: .greeceKit, comment: "Language name in the info bar: an SSH configuration file"),
+          [], files: ["ssh_config", "sshd_config"], symbol: "gearshape", badge: "SSH"),
+        e("properties", String(localized: "Tool Versions", bundle: .greeceKit, comment: "Language name in the info bar: a .tool-versions file, which pins the versions of developer tools"),
+          [], files: [".tool-versions"], symbol: "gearshape", badge: "TOOL"),
+        e("properties", String(localized: "X Resources", bundle: .greeceKit, comment: "Language name in the info bar: settings for X11 apps (.Xresources)"),
+          [], files: [".xresources", ".xdefaults"], symbol: "gearshape", badge: "X"),
+        e("properties", String(localized: "Hosts", bundle: .greeceKit, comment: "Language name in the info bar: the hosts file, which maps host names to addresses"),
+          [], files: ["hosts"], symbol: "network", badge: "HOSTS"),
         e("sql", "SQL", ["sql", "ddl", "dml", "hql", "psql", "mysql", "sqlite-sql"], symbol: "cylinder"),
         e("sql", "PL/SQL", ["plsql", "pkb", "pks", "pck"], symbol: "cylinder"),
         e("sql", "CQL", ["cql"], symbol: "cylinder"),
@@ -270,7 +304,7 @@ public enum LanguageCatalog {
         e("dockerfile", "Dockerfile", ["dockerfile", "containerfile"], files: ["dockerfile", "containerfile"], symbol: "shippingbox"),
         e("dockerfile", "Earthfile", [], files: ["earthfile"], symbol: "shippingbox"),
         e("dockerfile", "Modelfile", [], files: ["modelfile"], symbol: "shippingbox"),
-        e("makefile", "Makefile", ["mk", "mak", "make", "gmk", "am"], files: ["makefile", "gnumakefile", "bsdmakefile"], symbol: "hammer"),
+        e("makefile", "Makefile", ["mk", "mak", "make", "gmk", "am"], files: ["makefile", "gnumakefile", "bsdmakefile"], symbol: "hammer", badge: "MAKE"),
         e("makefile", "Justfile", ["just"], files: ["justfile", ".justfile"], symbol: "hammer"),
         e("makefile", "Kbuild", [], files: ["kbuild"], symbol: "hammer"),
         e("makefile", "Ninja", ["ninja"], symbol: "hammer"),
@@ -282,23 +316,30 @@ public enum LanguageCatalog {
         e("apache", "Apache", ["htaccess", "vhost", "apacheconf"], files: [".htaccess", "httpd.conf", "apache2.conf"], symbol: "server.rack"),
         e("pf", "Packet Filter", [], files: ["pf.conf"], symbol: "server.rack"),
         e("routeros", "RouterOS Script", ["rsc"], symbol: "server.rack"),
-        e("accesslog", "Access Log", [], files: ["access.log", "access_log"], symbol: "list.bullet.rectangle"),
+        e("accesslog", String(localized: "Access Log", bundle: .greeceKit, comment: "Language name in the info bar: a web server’s log of requests"),
+          [], files: ["access.log", "access_log"], symbol: "list.bullet.rectangle", badge: "ACCESS"),
         e("nix", "Nix", ["nix"]),
         e("puppet", "Puppet", ["pp"]),
-        e("dts", "Device Tree", ["dts", "dtsi", "dtso"]),
+        e("dts", String(localized: "Device Tree", bundle: .greeceKit, comment: "Language name in the info bar: a Linux devicetree source file, which describes hardware"),
+          ["dts", "dtsi", "dtso"], badge: "DTS"),
         e("http", "HTTP", ["http", "rest"]),
-        e("dns", "DNS Zone", ["zone"]),
+        e("dns", String(localized: "DNS Zone", bundle: .greeceKit, comment: "Language name in the info bar: a DNS zone file"), ["zone"], badge: "ZONE"),
         e("jboss-cli", "JBoss CLI", ["cli"], symbol: "terminal"),
         // Git
-        e("properties", "Git Attributes", ["gitattributes"], files: [".gitattributes"], symbol: "arrow.triangle.branch"),
-        e("properties", "Code Owners", [], files: ["codeowners"], symbol: "person.2"),
-        e("ini", "Commit Message", [], files: ["commit_editmsg", "merge_msg", "tag_editmsg", "squash_msg"], symbol: "arrow.triangle.branch"),
-        e("ini", "Rebase Plan", [], files: ["git-rebase-todo"], symbol: "arrow.triangle.branch"),
+        e("properties", String(localized: "Git Attributes", bundle: .greeceKit, comment: "Language name in the info bar: a .gitattributes file"),
+          ["gitattributes"], files: [".gitattributes"], symbol: "arrow.triangle.branch", badge: "GIT"),
+        e("properties", String(localized: "Code Owners", bundle: .greeceKit, comment: "Language name in the info bar: a CODEOWNERS file, which says who reviews which code"),
+          [], files: ["codeowners"], symbol: "person.2", badge: "CODE"),
+        e("ini", String(localized: "Commit Message", bundle: .greeceKit, comment: "Language name in the info bar: a Git commit message being written"),
+          [], files: ["commit_editmsg", "merge_msg", "tag_editmsg", "squash_msg"], symbol: "arrow.triangle.branch", badge: "COMMIT"),
+        e("ini", String(localized: "Rebase Plan", bundle: .greeceKit, comment: "Language name in the info bar: the list of commits an interactive Git rebase will apply"),
+          [], files: ["git-rebase-todo"], symbol: "arrow.triangle.branch", badge: "REBASE"),
         e("plaintext", "Git Mailmap", [], files: [".mailmap"], symbol: "arrow.triangle.branch"),
-        e("plaintext", "Git Ignore", ["gitignore", "dockerignore", "npmignore", "prettierignore", "eslintignore"],
+        e("plaintext", String(localized: "Git Ignore", bundle: .greeceKit, comment: "Language name in the info bar: a .gitignore file, which lists files Git leaves out"),
+          ["gitignore", "dockerignore", "npmignore", "prettierignore", "eslintignore"],
           files: [".gitignore", ".dockerignore", ".npmignore", ".prettierignore", ".eslintignore", ".gcloudignore", ".slugignore", ".hgignore",
                   ".vscodeignore", ".helmignore", ".stylelintignore", ".ignore", ".rgignore", ".fdignore", ".cvsignore", ".bzrignore",
-                  ".terraformignore", ".vercelignore", ".funcignore", ".cfignore"], symbol: "eye.slash"),
+                  ".terraformignore", ".vercelignore", ".funcignore", ".cfignore"], symbol: "eye.slash", badge: "GIT"),
         // Science, hardware & graphics
         e("latex", "LaTeX", ["tex", "ltx", "sty", "cls", "dtx", "ins", "bib", "bbx", "cbx"], symbol: "function"),
         e("matlab", "MATLAB", ["matlab"], symbol: "function"),
@@ -323,14 +364,18 @@ public enum LanguageCatalog {
         e("flix", "Flix", ["flix"]),
         e("verilog", "Verilog", ["v", "vh", "sv", "svh"]),
         e("vhdl", "VHDL", ["vhd", "vhdl"]),
-        e("x86asm", "Assembly", ["asm", "nasm", "s", "inc"]),
-        e("armasm", "ARM Assembly", ["arm"]),
+        e("x86asm", String(localized: "Assembly", bundle: .greeceKit, comment: "Language name in the info bar: assembly language"),
+          ["asm", "nasm", "s", "inc"], badge: "ASM"),
+        e("armasm", String(localized: "ARM Assembly", bundle: .greeceKit, comment: "Language name in the info bar: assembly language for ARM processors"),
+          ["arm"], badge: "ARM"),
         e("llvm", "LLVM IR", ["ll"]),
         e("smali", "Smali", ["smali"]),
         e("glsl", "GLSL", ["glsl", "vert", "frag", "geom", "tesc", "tese", "comp", "vsh", "fsh", "gsh", "vs", "fragsh", "vertex", "fragment", "geometry",
                            "rgen", "rchit", "rmiss", "rahit", "rint", "rcall", "shader"]),
-        e("glsl", "Godot Shader", ["gdshader"]),
-        e("rsl", "RenderMan Shader", ["rsl", "sl"]),
+        e("glsl", String(localized: "Godot Shader", bundle: .greeceKit, comment: "Language name in the info bar: a shader for the Godot game engine"),
+          ["gdshader"], badge: "GDSHADER"),
+        e("rsl", String(localized: "RenderMan Shader", bundle: .greeceKit, comment: "Language name in the info bar: a shader for Pixar’s RenderMan"),
+          ["rsl", "sl"], badge: "RSL"),
         e("rib", "RenderMan RIB", ["rib"]),
         e("mel", "MEL", ["mel"]),
         e("cpp", "Graphviz", ["gv"]),
@@ -364,12 +409,17 @@ public enum LanguageCatalog {
         e("asciidoc", "AsciiDoc", ["adoc", "asciidoc"], symbol: "doc.richtext"),
         e("plaintext", "reStructuredText", ["rst"], symbol: "doc.richtext"),
         e("plaintext", "Org", ["org"], symbol: "doc.richtext"),
-        e("plaintext", "ASCII Armor", ["asc"], symbol: "lock.doc"),
-        e("diff", "Diff", ["diff", "patch", "rej"], symbol: "plus.forwardslash.minus"),
-        e("plaintext", "Log", ["log", "out", "err"], symbol: "list.bullet.rectangle"),
-        e("plaintext", "Crash Report", ["crash"], symbol: "exclamationmark.triangle"),
-        e("plaintext", "Plain Text", ["txt", "text", "me", "1st", "nfo", "srt", "vtt", "license", "lic"],
-          files: ["license", "licence", "copying", "authors", "contributors", "notice", "readme", "changelog", "changes", "todo", "version"], symbol: "doc.plaintext"),
+        e("plaintext", String(localized: "ASCII Armor", bundle: .greeceKit, comment: "Language name in the info bar: a PGP key or message written out as text (.asc)"),
+          ["asc"], symbol: "lock.doc", badge: "ASC"),
+        e("diff", String(localized: "Diff", bundle: .greeceKit, comment: "Info bar title and language name for a .diff file"),
+          ["diff", "patch", "rej"], symbol: "plus.forwardslash.minus", badge: "DIFF"),
+        e("plaintext", String(localized: "Log", bundle: .greeceKit, comment: "Language name in the info bar: a log file"),
+          ["log", "out", "err"], symbol: "list.bullet.rectangle", badge: "LOG"),
+        e("plaintext", String(localized: "Crash Report", bundle: .greeceKit, comment: "Language name in the info bar: a macOS crash report (.crash)"),
+          ["crash"], symbol: "exclamationmark.triangle", badge: "CRASH"),
+        e("plaintext", Language.plainTextName, ["txt", "text", "me", "1st", "nfo", "srt", "vtt", "license", "lic"],
+          files: ["license", "licence", "copying", "authors", "contributors", "notice", "readme", "changelog", "changes", "todo", "version"],
+          symbol: "doc.plaintext", badge: "TXT"),
     ]
 
     /// Grammars that need an extra highlight.js file (not in the bundled "common" build).
@@ -383,7 +433,7 @@ public enum LanguageCatalog {
     static let byExtension: [String: Language] = {
         var map: [String: Language] = [:]
         for entry in entries {
-            let language = Language(grammar: entry.grammar, name: entry.name, symbol: entry.symbol)
+            let language = entry.language
             for ext in entry.extensions where map[ext.lowercased()] == nil { map[ext.lowercased()] = language }
         }
         return map
@@ -392,7 +442,7 @@ public enum LanguageCatalog {
     static let byFileName: [String: Language] = {
         var map: [String: Language] = [:]
         for entry in entries {
-            let language = Language(grammar: entry.grammar, name: entry.name, symbol: entry.symbol)
+            let language = entry.language
             for name in entry.fileNames where map[name] == nil { map[name] = language }
         }
         return map

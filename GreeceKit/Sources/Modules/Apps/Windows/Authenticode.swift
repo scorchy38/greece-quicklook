@@ -134,9 +134,16 @@ struct AuthenticodeSignature {
     /// Recomputes the Authenticode digest: the whole file except the checksum, the certificate
     /// table's directory entry and the table itself.
     func integrity(of file: PEFile) -> Integrity {
-        guard let algorithm = digestAlgorithm, let expected = digest else { return .notChecked("The signature has no file digest.") }
-        guard file.fileSize <= Self.maxHashedSize else { return .notChecked("Files over \(Format.bytes(Self.maxHashedSize)) aren’t checked.") }
-        guard let computed = Self.digest(of: file, algorithm: algorithm) else { return .notChecked("The file’s layout couldn’t be hashed.") }
+        guard let algorithm = digestAlgorithm, let expected = digest else {
+            return .notChecked(String(localized: "The signature has no file digest.", bundle: .greeceKit))
+        }
+        guard file.fileSize <= Self.maxHashedSize else {
+            let limit = Format.bytes(Self.maxHashedSize)
+            return .notChecked(String(localized: "Files over \(limit) aren’t checked.", bundle: .greeceKit, comment: "Why a signature wasn’t checked. The argument is a size, such as “1 GB”"))
+        }
+        guard let computed = Self.digest(of: file, algorithm: algorithm) else {
+            return .notChecked(String(localized: "The file’s layout couldn’t be hashed.", bundle: .greeceKit))
+        }
         return computed == expected ? .matches : .modified
     }
 

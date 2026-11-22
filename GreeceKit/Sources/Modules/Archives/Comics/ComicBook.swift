@@ -177,12 +177,14 @@ final class ComicBook: @unchecked Sendable {
         if let number = info.number, info.series != nil { title += " #" + number }
         let subtitle = info.series != nil ? info.title : nil
         var facts: [String] = []
-        facts.append("\(pages.count) \(pages.count == 1 ? "page" : "pages")")
+        let count = pages.count
+        facts.append(String(localized: "\(count) pages", bundle: .greeceKit, comment: "A count of pages"))
         if let writer = info.writer { facts.append(writer) }
         if let artist = info.artist, artist != info.writer { facts.append(artist) }
         if let publisher = info.publisher { facts.append(publisher) }
         if let year = info.year { facts.append(year) }
-        return Payload(title: title, subtitle: subtitle, eyebrow: "Comic Book · \(format)", facts: facts, summary: info.summary,
+        let eyebrow = String(localized: "Comic Book", bundle: .greeceKit) + " · " + format
+        return Payload(title: title, subtitle: subtitle, eyebrow: eyebrow, facts: facts, summary: info.summary,
                        rightToLeft: info.rightToLeft, pages: pages.map { Page(name: ($0.path as NSString).lastPathComponent) })
     }
 }

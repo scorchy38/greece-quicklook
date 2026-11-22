@@ -118,7 +118,7 @@ final class SQLiteDatabase {
         let uri = components.string ?? "file:\(url.path)?immutable=1"
         guard sqlite3_open_v2(uri, &db, SQLITE_OPEN_READONLY | SQLITE_OPEN_URI | SQLITE_OPEN_NOMUTEX, nil) == SQLITE_OK, let db else {
             if let db { sqlite3_close(db) }
-            throw ArchiveError.unsupported("This database can’t be opened.")
+            throw ArchiveError.unsupported(String(localized: "This database can’t be opened.", bundle: .greeceKit))
         }
         handle = db
         // Every statement runs against a deadline, so a hostile view (an endless recursive CTE,
@@ -242,11 +242,13 @@ final class SQLiteDatabase {
 
     private func indexes(of table: String, sql: [String: String?]) -> [Index] {
         guard let rows = try? query("SELECT name, \"unique\", origin, partial FROM pragma_index_list(?) LIMIT 500", bindings: [.text(table)]) else { return [] }
+        let expression = String(localized: "expression", bundle: .greeceKit,
+                                comment: "Stands in for a column name in a database index’s list of columns when the index is on a computed expression")
         return rows.compactMap { row in
             guard row.count == 4 else { return nil }
             let name = row[0].plainText
             let columns = ((try? query("SELECT name FROM pragma_index_info(?) ORDER BY seqno LIMIT 200", bindings: [.text(name)])) ?? [])
-                .map { $0.first.map { value -> String in if case .null = value { return "expression" } else { return value.plainText } } ?? "" }
+                .map { $0.first.map { value -> String in if case .null = value { return expression } else { return value.plainText } } ?? "" }
             return Index(name: name, unique: row[1].plainText == "1", origin: row[2].plainText, partial: row[3].plainText == "1",
                          columns: columns, sql: sql[name] ?? nil)
         }
@@ -382,16 +384,29 @@ final class SQLiteDatabase {
     /// Recognisable payloads in blobs: images, archives, property lists.
     static func blobKind(_ head: [UInt8]) -> String? {
         func starts(_ prefix: [UInt8]) -> Bool { head.count >= prefix.count && Array(head.prefix(prefix.count)) == prefix }
-        if starts([0x89, 0x50, 0x4E, 0x47]) { return "PNG image" }
-        if starts([0xFF, 0xD8, 0xFF]) { return "JPEG image" }
-        if starts(Array("GIF8".utf8)) { return "GIF image" }
-        if starts(Array("RIFF".utf8)), head.count >= 12, Array(head[8..<12]) == Array("WEBP".utf8) { return "WebP image" }
-        if head.count >= 12, Array(head[4..<8]) == Array("ftyp".utf8) { return "HEIF image" }
+        if starts([0x89, 0x50, 0x4E, 0x47]) { return BlobKinds.png }
+        if starts([0xFF, 0xD8, 0xFF]) { return BlobKinds.jpeg }
+        if starts(Array("GIF8".utf8)) { return BlobKinds.gif }
+        if starts(Array("RIFF".utf8)), head.count >= 12, Array(head[8..<12]) == Array("WEBP".utf8) { return BlobKinds.webP }
+        if head.count >= 12, Array(head[4..<8]) == Array("ftyp".utf8) { return BlobKinds.heif }
         if starts(Array("%PDF".utf8)) { return "PDF" }
-        if starts(Array("bplist".utf8)) { return "Property list" }
-        if starts([0x50, 0x4B, 0x03, 0x04]) { return "ZIP archive" }
-        if starts([0x1F, 0x8B]) { return "Gzip data" }
+        if starts(Array("bplist".utf8)) { return BlobKinds.propertyList }
+        if starts([0x50, 0x4B, 0x03, 0x04]) { return BlobKinds.zip }
+        if starts([0x1F, 0x8B]) { return BlobKinds.gzip }
         return nil
+    }
+
+    /// What a database cell's binary data holds, shown before its size ("PNG image · 4 KB").
+    /// Looked up once: a page of rows can hold hundreds.
+    private enum BlobKinds {
+        static let png = String(localized: "PNG image", bundle: .greeceKit, comment: "What binary data in a database cell is")
+        static let jpeg = String(localized: "JPEG image", bundle: .greeceKit, comment: "What binary data in a database cell is")
+        static let gif = String(localized: "GIF image", bundle: .greeceKit, comment: "What binary data in a database cell is")
+        static let webP = String(localized: "WebP image", bundle: .greeceKit, comment: "What binary data in a database cell is")
+        static let heif = String(localized: "HEIF image", bundle: .greeceKit, comment: "What binary data in a database cell is")
+        static let propertyList = String(localized: "Property list", bundle: .greeceKit, comment: "What binary data in a database cell is")
+        static let zip = String(localized: "ZIP archive", bundle: .greeceKit, comment: "What binary data in a database cell is")
+        static let gzip = String(localized: "Gzip data", bundle: .greeceKit, comment: "What binary data in a database cell is")
     }
 
     private final class DeadlineBox {
@@ -631,7 +646,9 @@ final class SQLiteGridSource: GridSource {
         if let value = info.defaultValue { parts.append("DEFAULT \(value)") }
         if info.generated { parts.append("GENERATED") }
         if let key = object.foreignKey(for: info.name), let index = key.from.firstIndex(where: { $0.caseInsensitiveCompare(info.name) == .orderedSame }) {
-            let target = index < key.to.count && !key.to[index].isEmpty ? key.to[index] : "primary key"
+            let target = index < key.to.count && !key.to[index].isEmpty ? key.to[index]
+                : String(localized: "primary key", bundle: .greeceKit,
+                         comment: "In a database column’s tooltip, after the table a foreign key points to, such as “→ ferries.primary key”")
             parts.append("→ \(key.table).\(target)")
         }
         return parts.joined(separator: " · ")

@@ -11,45 +11,61 @@ enum ProfilePage {
         let expiry = profile.expires.map { Format.expiry($0) }
         var page = InspectorPage(
             header: InspectorHeader(icon: .symbol("person.text.rectangle.fill", expiry?.tone == .critical ? .gray : .blue), title: profile.name,
-                                    subtitle: Format.joined([profile.kind.rawValue + " Profile", profile.platformNames.nilIfEmpty]),
+                                    subtitle: Format.joined([profile.kind.profileTitle, profile.platformNames.nilIfEmpty]),
                                     identifier: profile.applicationIdentifier),
-            summary: FileSummary(symbol: "person.text.rectangle", title: "Provisioning Profile",
-                                 details: [profile.kind.rawValue, expiry?.text].compactMap { $0 }, trailing: modified))
-        page.badges.append(InspectorBadge("kind", symbol: kindSymbol(profile.kind), title: profile.kind.rawValue, tone: .accent))
+            summary: FileSummary(symbol: "person.text.rectangle",
+                                 title: String(localized: "Provisioning Profile", bundle: .greeceKit, comment: "A kind of file; also the name of one that has none"),
+                                 details: [profile.kind.title, expiry?.text].compactMap { $0 }, trailing: modified))
+        page.badges.append(InspectorBadge("kind", symbol: kindSymbol(profile.kind), title: profile.kind.title, tone: .accent))
         if let expiry {
             page.badges.append(InspectorBadge("expiry", symbol: expiry.tone == .critical ? "clock.badge.xmark" : "clock",
-                                              title: expiry.tone == .critical ? "Expired" : expiry.text, tone: expiry.tone == .neutral ? .positive : expiry.tone,
-                                              help: profile.expires.map { "Valid until " + Format.dateTime($0) }))
+                                              title: expiry.tone == .critical ? String(localized: "Expired", bundle: .greeceKit, comment: "Badge: a profile or certificate that has expired")
+                                                                              : expiry.text,
+                                              tone: expiry.tone == .neutral ? .positive : expiry.tone,
+                                              help: profile.expires.map { date in
+                                                  let when = Format.dateTime(date)
+                                                  return String(localized: "Valid until \(when)", bundle: .greeceKit, comment: "Badge tooltip. The argument is a date and time")
+                                              }))
         }
         if profile.isXcodeManaged {
-            page.badges.append(InspectorBadge("managed", symbol: "hammer", title: "Xcode Managed", tone: .neutral, help: "Created and renewed automatically by Xcode."))
+            page.badges.append(InspectorBadge("managed", symbol: "hammer", title: String(localized: "Xcode Managed", bundle: .greeceKit, comment: "Badge on a provisioning profile"),
+                                              tone: .neutral, help: String(localized: "Created and renewed automatically by Xcode.", bundle: .greeceKit)))
         }
 
         var overview: [InspectorItem] = []
-        if let team = profile.teamName { overview.append(.field("Team", profile.teamIDs.first.map { "\(team) (\($0))" } ?? team)) }
-        if let app = profile.appIDName { overview.append(.field("App ID", app)) }
-        if let identifier = profile.applicationIdentifier { overview.append(.field("Application Identifier", identifier, mono: true)) }
-        if let created = profile.created { overview.append(.field("Created", Format.dateTime(created))) }
+        if let team = profile.teamName { overview.append(.field(teamTitle, profile.teamIDs.first.map { "\(team) (\($0))" } ?? team)) }
+        if let app = profile.appIDName { overview.append(.field(String(localized: "App ID", bundle: .greeceKit, comment: "Inspector row title: the name of an Apple App ID"), app)) }
+        if let identifier = profile.applicationIdentifier {
+            overview.append(.field(String(localized: "Application Identifier", bundle: .greeceKit, comment: "Inspector row title"), identifier, mono: true))
+        }
+        if let created = profile.created {
+            overview.append(.field(String(localized: "Created", bundle: .greeceKit, comment: "Inspector row title; its value is a date"), Format.dateTime(created)))
+        }
         if let expires = profile.expires, let expiry {
-            overview.append(InspectorItem(title: "Expires", subtitle: expiry.text, value: Format.dateTime(expires), tone: expiry.tone))
+            overview.append(InspectorItem(title: expiresTitle, subtitle: expiry.text, value: Format.dateTime(expires), tone: expiry.tone))
         }
         if let uuid = profile.uuid { overview.append(.field("UUID", uuid, mono: true)) }
-        page.sections.append(InspectorSection("profile", title: "Profile", rows: overview.map(InspectorRow.item)))
+        page.sections.append(InspectorSection("profile", title: profileTitle, rows: overview.map(InspectorRow.item)))
 
         page.sections.append(devicesSection(profile))
         if let capabilities = capabilitiesSection(profile.entitlements) { page.sections.append(capabilities) }
         if !profile.certificates.isEmpty {
             let rows = profile.certificates.map { certificate -> InspectorRow in
                 var details: [InspectorItem] = []
-                if let unit = certificate.organizationalUnit { details.append(.field("Team ID", unit, mono: true)) }
-                if let issuer = certificate.issuer { details.append(.field("Issued By", issuer)) }
+                if let unit = certificate.organizationalUnit {
+                    details.append(.field(String(localized: "Team ID", bundle: .greeceKit, comment: "Inspector row title: an Apple developer team’s identifier"), unit, mono: true))
+                }
+                if let issuer = certificate.issuer {
+                    details.append(.field(String(localized: "Issued By", bundle: .greeceKit, comment: "Inspector row title; its value names a certificate authority"), issuer))
+                }
                 details.append(.field("SHA-1", Format.grouped(hex: certificate.sha1), mono: true))
                 let expiry = certificate.notAfter.map { Format.expiry($0) }
                 return .item(InspectorItem(symbol: "person.text.rectangle", title: certificate.commonName, subtitle: expiry?.text,
                                            tone: expiry?.tone ?? .neutral, help: "SHA-1 " + certificate.sha1, details: details))
             }
-            page.sections.append(InspectorSection("certificates", title: "Developer Certificates",
-                                                  footer: "Code signed with one of these certificates can use this profile.", rows: rows, visibleLimit: 6))
+            page.sections.append(InspectorSection("certificates", title: String(localized: "Developer Certificates", bundle: .greeceKit, comment: "Section title"),
+                                                  footer: String(localized: "Code signed with one of these certificates can use this profile.", bundle: .greeceKit),
+                                                  rows: rows, visibleLimit: 6))
         }
         page.sections.append(signerSection(certificates: profile.signer.map(CertificateSummary.init(certificate:)), intact: profile.signatureIntact))
         return page
@@ -58,31 +74,59 @@ enum ProfilePage {
     /// The summary shown inside an app's page for its embedded profile.
     static func embeddedSection(_ profile: ProvisioningProfile) -> InspectorSection {
         var rows: [InspectorItem] = []
-        rows.append(InspectorItem(symbol: kindSymbol(profile.kind), title: profile.name, value: profile.kind.rawValue))
-        if let team = profile.teamName { rows.append(.field("Team", profile.teamIDs.first.map { "\(team) (\($0))" } ?? team)) }
+        rows.append(InspectorItem(symbol: kindSymbol(profile.kind), title: profile.name, value: profile.kind.title))
+        if let team = profile.teamName { rows.append(.field(teamTitle, profile.teamIDs.first.map { "\(team) (\($0))" } ?? team)) }
         if let expires = profile.expires {
             let expiry = Format.expiry(expires)
-            rows.append(InspectorItem(title: "Expires", subtitle: expiry.text, value: Format.date(expires), tone: expiry.tone))
+            rows.append(InspectorItem(title: expiresTitle, subtitle: expiry.text, value: Format.date(expires), tone: expiry.tone))
         }
         if profile.provisionsAllDevices {
-            rows.append(.field("Devices", "Any device"))
+            rows.append(.field(devicesTitle, anyDeviceText))
         } else if !profile.devices.isEmpty {
-            rows.append(.field("Devices", Format.count(profile.devices.count, "device")))
+            rows.append(.field(devicesTitle, String(localized: "\(profile.devices.count) devices", bundle: .greeceKit,
+                                                    comment: "Devices a provisioning profile lets an app run on. The argument is a count")))
         }
-        return InspectorSection("embeddedProfile", title: "Provisioning Profile", rows: rows.map(InspectorRow.item))
+        return InspectorSection("embeddedProfile", title: String(localized: "Provisioning Profile", bundle: .greeceKit, comment: "A kind of file; also the name of one that has none"),
+                                rows: rows.map(InspectorRow.item))
+    }
+
+    private static var teamTitle: String {
+        String(localized: "Team", bundle: .greeceKit, comment: "Inspector row title: an Apple developer team")
+    }
+
+    private static var expiresTitle: String {
+        String(localized: "Expires", bundle: .greeceKit, comment: "Inspector row title; its value is a date")
+    }
+
+    private static var profileTitle: String {
+        String(localized: "Profile", bundle: .greeceKit, comment: "Section title: facts about a provisioning or configuration profile")
+    }
+
+    private static var devicesTitle: String {
+        String(localized: "Devices", bundle: .greeceKit, comment: "Section or row title: the devices a provisioning profile covers")
+    }
+
+    private static var anyDeviceText: String {
+        String(localized: "Any device", bundle: .greeceKit, comment: "A provisioning profile that isn’t limited to registered devices")
     }
 
     private static func devicesSection(_ profile: ProvisioningProfile) -> InspectorSection {
         if profile.provisionsAllDevices {
-            return InspectorSection("devices", title: "Devices", rows: [.item(InspectorItem(symbol: "iphone.gen3", title: "Any device",
-                                                                                             subtitle: "Enterprise and Developer ID profiles aren’t limited to registered devices."))])
+            return InspectorSection("devices", title: devicesTitle, rows: [
+                .item(InspectorItem(symbol: "iphone.gen3", title: anyDeviceText,
+                                    subtitle: String(localized: "Enterprise and Developer ID profiles aren’t limited to registered devices.", bundle: .greeceKit))),
+            ])
         }
         if profile.devices.isEmpty {
-            let text = profile.kind == .appStore || profile.kind == .macAppStore ? "App Store profiles don’t list devices." : "No devices are registered."
-            return InspectorSection("devices", title: "Devices", rows: [.item(InspectorItem(symbol: "iphone.gen3", title: text))])
+            let text = profile.kind == .appStore || profile.kind == .macAppStore
+                ? String(localized: "App Store profiles don’t list devices.", bundle: .greeceKit)
+                : String(localized: "No devices are registered.", bundle: .greeceKit)
+            return InspectorSection("devices", title: devicesTitle, rows: [.item(InspectorItem(symbol: "iphone.gen3", title: text))])
         }
         let rows = profile.devices.map { InspectorRow.item(InspectorItem(symbol: "iphone.gen3", title: $0, mono: true)) }
-        return InspectorSection("devices", title: "Devices (\(profile.devices.count.formatted()))", rows: rows, visibleLimit: 5)
+        return InspectorSection("devices", title: String(localized: "Devices (\(profile.devices.count))", bundle: .greeceKit,
+                                                         comment: "Section title: the devices a provisioning profile covers. The argument is a count"),
+                                rows: rows, visibleLimit: 5)
     }
 
     static func capabilitiesSection(_ entitlements: [String: Any]) -> InspectorSection? {
@@ -99,21 +143,24 @@ enum ProfilePage {
         rows.sort { BundlePage.rank($0.tone) > BundlePage.rank($1.tone) }
         if let group = BundlePage.privateGroup(privateKeys) { rows.append(group) }
         guard !rows.isEmpty else { return nil }
-        return InspectorSection("capabilities", title: "Capabilities", footer: "What apps signed with this profile may use.",
+        return InspectorSection("capabilities", title: String(localized: "Capabilities", bundle: .greeceKit, comment: "Section title: what an app’s entitlements let it use"),
+                                footer: String(localized: "What apps signed with this profile may use.", bundle: .greeceKit),
                                 rows: rows.map(InspectorRow.item), visibleLimit: 12)
     }
 
     private static func signerSection(certificates: [CertificateSummary], intact: Bool?) -> InspectorSection {
         var rows: [InspectorRow] = []
         if certificates.isEmpty {
-            rows.append(.note(InspectorNote(symbol: "xmark.seal", text: "Not signed.", tone: .caution)))
+            rows.append(.note(InspectorNote(symbol: "xmark.seal", text: String(localized: "Not signed.", bundle: .greeceKit), tone: .caution)))
         } else {
             if intact == false {
-                rows.append(.note(InspectorNote(symbol: "exclamationmark.octagon.fill", text: "The signature doesn’t match the contents. The profile was modified.", tone: .critical)))
+                rows.append(.note(InspectorNote(symbol: "exclamationmark.octagon.fill",
+                                                text: String(localized: "The signature doesn’t match the contents. The profile was modified.", bundle: .greeceKit),
+                                                tone: .critical)))
             }
             rows += CertificateRows.chain(certificates).map(InspectorRow.item)
         }
-        return InspectorSection("signer", title: "Signed By", rows: rows)
+        return InspectorSection("signer", title: String(localized: "Signed By", bundle: .greeceKit, comment: "Section title: who signed the file"), rows: rows)
     }
 
     private static func kindSymbol(_ kind: ProvisioningProfile.Kind) -> String {
@@ -141,65 +188,92 @@ enum ProfilePage {
             throw PreviewError.unsupported
         }
         let profile = ConfigurationProfile(plist: plist)
+        let signed = String(localized: "Signed", bundle: .greeceKit, comment: "Badge")
+        let unsigned = String(localized: "Unsigned", bundle: .greeceKit, comment: "Badge")
         var page = InspectorPage(
             header: InspectorHeader(icon: .symbol("gearshape.2.fill", .gray), title: profile.name,
                                     subtitle: profile.organization, identifier: profile.identifier),
-            summary: FileSummary(symbol: "gearshape.2", title: "Configuration Profile",
-                                 details: [Format.count(profile.payloads.count, "payload"), container == nil ? "Unsigned" : "Signed"], trailing: modified))
+            summary: FileSummary(symbol: "gearshape.2",
+                                 title: String(localized: "Configuration Profile", bundle: .greeceKit, comment: "A kind of file; also the name of one that has none"),
+                                 details: [String(localized: "\(profile.payloads.count) payloads", bundle: .greeceKit,
+                                                  comment: "Info bar detail: the settings a configuration profile installs. The argument is a count"),
+                                           container == nil ? unsigned : signed],
+                                 trailing: modified))
         if let container, !container.certificates.isEmpty {
             let leaf = CertificateSummary(certificate: container.certificates[0])
             if container.signatureIntact == false {
-                page.badges.append(InspectorBadge("signed", symbol: "exclamationmark.octagon.fill", title: "Modified", tone: .critical,
-                                                  help: "The signature doesn’t match the contents."))
+                page.badges.append(InspectorBadge("signed", symbol: "exclamationmark.octagon.fill",
+                                                  title: String(localized: "Modified", bundle: .greeceKit, comment: "Badge: a signed profile was changed after signing"), tone: .critical,
+                                                  help: String(localized: "The signature doesn’t match the contents.", bundle: .greeceKit)))
             } else if SignedContainer.isTrusted(container.certificates) {
-                page.badges.append(InspectorBadge("signed", symbol: "checkmark.seal.fill", title: "Verified", tone: .positive,
-                                                  help: "Signed by \(leaf.commonName), a certificate this Mac trusts."))
+                page.badges.append(InspectorBadge("signed", symbol: "checkmark.seal.fill",
+                                                  title: String(localized: "Verified", bundle: .greeceKit, comment: "Badge: signed by a certificate this Mac trusts"), tone: .positive,
+                                                  help: String(localized: "Signed by \(leaf.commonName), a certificate this Mac trusts.", bundle: .greeceKit,
+                                                               comment: "Badge tooltip. The argument is the certificate’s name")))
             } else {
-                page.badges.append(InspectorBadge("signed", symbol: "checkmark.seal", title: "Signed", tone: .neutral,
-                                                  help: "Signed by \(leaf.commonName), but this Mac doesn’t trust that certificate, so System Settings will call it unverified."))
+                page.badges.append(InspectorBadge("signed", symbol: "checkmark.seal", title: signed, tone: .neutral,
+                                                  help: String(localized: "Signed by \(leaf.commonName), but this Mac doesn’t trust that certificate, so System Settings will call it unverified.",
+                                                               bundle: .greeceKit, comment: "Badge tooltip. The argument is the certificate’s name")))
             }
         } else {
-            page.badges.append(InspectorBadge("signed", symbol: "seal", title: "Unsigned", tone: .caution, help: "Nothing vouches for who made this profile."))
+            page.badges.append(InspectorBadge("signed", symbol: "seal", title: unsigned, tone: .caution,
+                                              help: String(localized: "Nothing vouches for who made this profile.", bundle: .greeceKit)))
         }
         if profile.payloads.contains(where: { $0.type == "com.apple.mdm" }) {
-            page.badges.append(InspectorBadge("mdm", symbol: "building.2.fill", title: "Device Management", tone: .caution,
-                                              help: "Enrolls the Mac in remote management: the organization can install apps, change settings and erase it."))
+            page.badges.append(InspectorBadge("mdm", symbol: "building.2.fill", title: String(localized: "Device Management", bundle: .greeceKit, comment: "Badge: a profile that enrolls the Mac in MDM"),
+                                              tone: .caution,
+                                              help: String(localized: "Enrolls the Mac in remote management: the organization can install apps, change settings and erase it.", bundle: .greeceKit)))
         }
         if profile.payloads.contains(where: { $0.type == "com.apple.security.root" }) {
-            page.badges.append(InspectorBadge("root", symbol: "exclamationmark.shield.fill", title: "Root Certificate", tone: .caution,
-                                              help: "Installs a certificate authority. If trusted, it can intercept encrypted connections."))
+            page.badges.append(InspectorBadge("root", symbol: "exclamationmark.shield.fill",
+                                              title: String(localized: "Root Certificate", bundle: .greeceKit, comment: "Badge: a profile that installs a certificate authority"), tone: .caution,
+                                              help: String(localized: "Installs a certificate authority. If trusted, it can intercept encrypted connections.", bundle: .greeceKit)))
         }
         if profile.removalDisallowed {
-            page.badges.append(InspectorBadge("removal", symbol: "lock.fill", title: "Can’t Be Removed", tone: .caution, help: "PayloadRemovalDisallowed is set."))
+            page.badges.append(InspectorBadge("removal", symbol: "lock.fill", title: String(localized: "Can’t Be Removed", bundle: .greeceKit, comment: "Badge on a configuration profile"),
+                                              tone: .caution,
+                                              help: String(localized: "PayloadRemovalDisallowed is set.", bundle: .greeceKit, comment: "Badge tooltip. PayloadRemovalDisallowed is a setting’s name: keep it as is")))
         }
         if profile.isEncrypted {
-            page.badges.append(InspectorBadge("encrypted", symbol: "lock.doc", title: "Encrypted Payloads", tone: .neutral))
+            page.badges.append(InspectorBadge("encrypted", symbol: "lock.doc", title: String(localized: "Encrypted Payloads", bundle: .greeceKit, comment: "Badge on a configuration profile"),
+                                              tone: .neutral))
         }
 
         var overview: [InspectorItem] = []
         if let description = profile.description { overview.append(InspectorItem(title: Format.clean(description, limit: 600))) }
-        if let organization = profile.organization { overview.append(.field("Organization", organization)) }
-        if let identifier = profile.identifier { overview.append(.field("Identifier", identifier, mono: true)) }
-        if let scope = profile.scope { overview.append(.field("Installs For", scope == "System" ? "All users" : "Current user")) }
+        if let organization = profile.organization {
+            overview.append(.field(String(localized: "Organization", bundle: .greeceKit, comment: "Inspector row title"), organization))
+        }
+        if let identifier = profile.identifier {
+            overview.append(.field(String(localized: "Identifier", bundle: .greeceKit, comment: "Inspector row title"), identifier, mono: true))
+        }
+        if let scope = profile.scope {
+            overview.append(.field(String(localized: "Installs For", bundle: .greeceKit, comment: "Inspector row title; its value says who a profile installs for"),
+                                   scope == "System" ? String(localized: "All users", bundle: .greeceKit, comment: "Who a package or profile installs for")
+                                                     : String(localized: "Current user", bundle: .greeceKit, comment: "A package or profile installs only for the person using the Mac")))
+        }
         if let expiry = profile.expires {
             let text = Format.expiry(expiry)
-            overview.append(InspectorItem(title: "Expires", subtitle: text.text, value: Format.date(expiry), tone: text.tone))
+            overview.append(InspectorItem(title: expiresTitle, subtitle: text.text, value: Format.date(expiry), tone: text.tone))
         }
         if let uuid = profile.uuid { overview.append(.field("UUID", uuid, mono: true)) }
-        if !overview.isEmpty { page.sections.append(InspectorSection("overview", title: "Profile", rows: overview.map(InspectorRow.item))) }
+        if !overview.isEmpty { page.sections.append(InspectorSection("overview", title: profileTitle, rows: overview.map(InspectorRow.item))) }
 
+        let yes = String(localized: "Yes", bundle: .greeceKit), no = String(localized: "No", bundle: .greeceKit)
         let payloadRows = profile.payloads.map { payload -> InspectorRow in
             let entry = PayloadCatalog.describe(payload.type)
             var details: [InspectorItem] = []
             for (key, value) in payload.settings.prefix(30) {
-                details.append(.field(key, BundlePage.describe(value) ?? (value is Bool ? ((value as? Bool) == true ? "Yes" : "No") : "…"), help: key))
+                details.append(.field(key, BundlePage.describe(value) ?? (value is Bool ? ((value as? Bool) == true ? yes : no) : "…"), help: key))
             }
             return .item(InspectorItem(symbol: entry.symbol, tint: entry.tint, title: payload.displayName ?? entry.title,
                                        subtitle: payload.displayName == nil ? payload.summary : Format.joined([entry.title, payload.summary]),
                                        tone: entry.tone, help: payload.type, details: details))
         }
         if !payloadRows.isEmpty {
-            page.sections.append(InspectorSection("payloads", title: "Payloads", footer: "What installing this profile changes.", rows: payloadRows, visibleLimit: 12))
+            page.sections.append(InspectorSection("payloads", title: String(localized: "Payloads", bundle: .greeceKit, comment: "Section title: the settings a configuration profile installs"),
+                                                  footer: String(localized: "What installing this profile changes.", bundle: .greeceKit),
+                                                  rows: payloadRows, visibleLimit: 12))
         }
         if let container, !container.certificates.isEmpty {
             page.sections.append(signerSection(certificates: container.certificates.map(CertificateSummary.init(certificate:)), intact: container.signatureIntact))
@@ -236,7 +310,8 @@ struct ConfigurationProfile {
     var payloads: [Payload]
 
     init(plist: [String: Any]) {
-        name = Format.clean((plist["PayloadDisplayName"] as? String) ?? "Configuration Profile", limit: 200)
+        name = Format.clean((plist["PayloadDisplayName"] as? String)
+                            ?? String(localized: "Configuration Profile", bundle: .greeceKit, comment: "A kind of file; also the name of one that has none"), limit: 200)
         organization = (plist["PayloadOrganization"] as? String).map { Format.clean($0, limit: 200) }
         identifier = (plist["PayloadIdentifier"] as? String).map { Format.clean($0, limit: 200) }
         description = (plist["PayloadDescription"] as? String).map { Format.clean($0, limit: 600) }
@@ -261,7 +336,10 @@ struct ConfigurationProfile {
     static func summary(type: String, item: [String: Any]) -> String? {
         func string(_ key: String) -> String? { (item[key] as? String).map { Format.clean($0, limit: 120) } }
         switch type {
-        case "com.apple.wifi.managed": return string("SSID_STR").map { "Network “\($0)”" }
+        case "com.apple.wifi.managed":
+            return string("SSID_STR").map { network in
+                String(localized: "Network “\(network)”", bundle: .greeceKit, comment: "A Wi-Fi setting in a configuration profile. The argument is the network’s name")
+            }
         case "com.apple.vpn.managed": return string("UserDefinedName") ?? string("VPNType")
         case "com.apple.mdm": return string("ServerURL")
         case "com.apple.webClip.managed": return string("URL")
@@ -285,47 +363,47 @@ enum PayloadCatalog {
     }
 
     static let entries: [String: CatalogEntry] = [
-        "com.apple.wifi.managed": .init(title: "Wi-Fi", symbol: "wifi", tint: .blue),
-        "com.apple.vpn.managed": .init(title: "VPN", symbol: "lock.shield.fill", tint: .blue, tone: .caution),
-        "com.apple.vpn.managed.applayer": .init(title: "Per-app VPN", symbol: "lock.shield.fill", tint: .blue, tone: .caution),
-        "com.apple.mdm": .init(title: "Device management", symbol: "building.2.fill", tint: .gray, tone: .caution),
-        "com.apple.security.root": .init(title: "Root certificate", symbol: "exclamationmark.shield.fill", tint: .orange, tone: .caution),
-        "com.apple.security.pkcs1": .init(title: "Certificate", symbol: "checkmark.seal.fill", tint: .gray),
-        "com.apple.security.pem": .init(title: "Certificate", symbol: "checkmark.seal.fill", tint: .gray),
-        "com.apple.security.pkcs12": .init(title: "Identity", symbol: "person.badge.key.fill", tint: .gray),
-        "com.apple.security.scep": .init(title: "Certificate request (SCEP)", symbol: "person.badge.key", tint: .gray),
-        "com.apple.security.acme": .init(title: "Certificate request (ACME)", symbol: "person.badge.key", tint: .gray),
-        "com.apple.webClip.managed": .init(title: "Web clip", symbol: "safari.fill", tint: .blue),
-        "com.apple.mail.managed": .init(title: "Mail account", symbol: "envelope.fill", tint: .blue),
-        "com.apple.eas.account": .init(title: "Exchange account", symbol: "envelope.badge.shield.half.filled", tint: .blue),
-        "com.apple.caldav.account": .init(title: "Calendar account", symbol: "calendar", tint: .red),
-        "com.apple.carddav.account": .init(title: "Contacts account", symbol: "person.crop.circle.fill", tint: .brown),
-        "com.apple.ldap.account": .init(title: "Directory account", symbol: "person.3.fill", tint: .gray),
-        "com.apple.dnsSettings.managed": .init(title: "Encrypted DNS", symbol: "network", tint: .blue, tone: .caution),
-        "com.apple.dnsProxy.managed": .init(title: "DNS proxy", symbol: "network", tint: .blue, tone: .caution),
-        "com.apple.webcontent-filter": .init(title: "Content filter", symbol: "line.3.horizontal.decrease.circle.fill", tint: .orange, tone: .caution),
-        "com.apple.proxy.http.global": .init(title: "Global HTTP proxy", symbol: "arrow.triangle.branch", tint: .orange, tone: .caution),
-        "com.apple.applicationaccess": .init(title: "Restrictions", symbol: "hand.raised.fill", tint: .red),
-        "com.apple.applicationaccess.new": .init(title: "Restrictions", symbol: "hand.raised.fill", tint: .red),
-        "com.apple.TCC.configuration-profile-policy": .init(title: "Privacy permissions", symbol: "hand.raised.square.fill", tint: .blue, tone: .caution),
-        "com.apple.system-extension-policy": .init(title: "Allowed system extensions", symbol: "puzzlepiece.extension.fill", tint: .orange, tone: .caution),
-        "com.apple.syspolicy.kernel-extension-policy": .init(title: "Allowed kernel extensions", symbol: "cpu", tint: .orange, tone: .caution),
-        "com.apple.servicemanagement": .init(title: "Managed login items", symbol: "power", tint: .gray),
-        "com.apple.notificationsettings": .init(title: "Notifications", symbol: "bell.badge.fill", tint: .red),
-        "com.apple.loginwindow": .init(title: "Login window", symbol: "person.crop.square", tint: .gray),
-        "com.apple.ManagedClient.preferences": .init(title: "App settings", symbol: "slider.horizontal.3", tint: .gray),
-        "com.apple.extensiblesso": .init(title: "Single sign-on", symbol: "person.badge.key.fill", tint: .blue),
-        "com.apple.relay.managed": .init(title: "Network relay", symbol: "arrow.triangle.swap", tint: .blue, tone: .caution),
-        "com.apple.security.firewall": .init(title: "Firewall", symbol: "flame.fill", tint: .orange),
+        "com.apple.wifi.managed": .init(title: String(localized: "Wi-Fi", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "wifi", tint: .blue),
+        "com.apple.vpn.managed": .init(title: String(localized: "VPN", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "lock.shield.fill", tint: .blue, tone: .caution),
+        "com.apple.vpn.managed.applayer": .init(title: String(localized: "Per-app VPN", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "lock.shield.fill", tint: .blue, tone: .caution),
+        "com.apple.mdm": .init(title: String(localized: "Device management", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "building.2.fill", tint: .gray, tone: .caution),
+        "com.apple.security.root": .init(title: String(localized: "Root certificate", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "exclamationmark.shield.fill", tint: .orange, tone: .caution),
+        "com.apple.security.pkcs1": .init(title: String(localized: "Certificate", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "checkmark.seal.fill", tint: .gray),
+        "com.apple.security.pem": .init(title: String(localized: "Certificate", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "checkmark.seal.fill", tint: .gray),
+        "com.apple.security.pkcs12": .init(title: String(localized: "Identity", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.badge.key.fill", tint: .gray),
+        "com.apple.security.scep": .init(title: String(localized: "Certificate request (SCEP)", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.badge.key", tint: .gray),
+        "com.apple.security.acme": .init(title: String(localized: "Certificate request (ACME)", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.badge.key", tint: .gray),
+        "com.apple.webClip.managed": .init(title: String(localized: "Web clip", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "safari.fill", tint: .blue),
+        "com.apple.mail.managed": .init(title: String(localized: "Mail account", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "envelope.fill", tint: .blue),
+        "com.apple.eas.account": .init(title: String(localized: "Exchange account", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "envelope.badge.shield.half.filled", tint: .blue),
+        "com.apple.caldav.account": .init(title: String(localized: "Calendar account", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "calendar", tint: .red),
+        "com.apple.carddav.account": .init(title: String(localized: "Contacts account", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.crop.circle.fill", tint: .brown),
+        "com.apple.ldap.account": .init(title: String(localized: "Directory account", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.3.fill", tint: .gray),
+        "com.apple.dnsSettings.managed": .init(title: String(localized: "Encrypted DNS", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "network", tint: .blue, tone: .caution),
+        "com.apple.dnsProxy.managed": .init(title: String(localized: "DNS proxy", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "network", tint: .blue, tone: .caution),
+        "com.apple.webcontent-filter": .init(title: String(localized: "Content filter", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "line.3.horizontal.decrease.circle.fill", tint: .orange, tone: .caution),
+        "com.apple.proxy.http.global": .init(title: String(localized: "Global HTTP proxy", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "arrow.triangle.branch", tint: .orange, tone: .caution),
+        "com.apple.applicationaccess": .init(title: String(localized: "Restrictions", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "hand.raised.fill", tint: .red),
+        "com.apple.applicationaccess.new": .init(title: String(localized: "Restrictions", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "hand.raised.fill", tint: .red),
+        "com.apple.TCC.configuration-profile-policy": .init(title: String(localized: "Privacy permissions", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "hand.raised.square.fill", tint: .blue, tone: .caution),
+        "com.apple.system-extension-policy": .init(title: String(localized: "Allowed system extensions", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "puzzlepiece.extension.fill", tint: .orange, tone: .caution),
+        "com.apple.syspolicy.kernel-extension-policy": .init(title: String(localized: "Allowed kernel extensions", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "cpu", tint: .orange, tone: .caution),
+        "com.apple.servicemanagement": .init(title: String(localized: "Managed login items", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "power", tint: .gray),
+        "com.apple.notificationsettings": .init(title: String(localized: "Notifications", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "bell.badge.fill", tint: .red),
+        "com.apple.loginwindow": .init(title: String(localized: "Login window", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.crop.square", tint: .gray),
+        "com.apple.ManagedClient.preferences": .init(title: String(localized: "App settings", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "slider.horizontal.3", tint: .gray),
+        "com.apple.extensiblesso": .init(title: String(localized: "Single sign-on", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.badge.key.fill", tint: .blue),
+        "com.apple.relay.managed": .init(title: String(localized: "Network relay", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "arrow.triangle.swap", tint: .blue, tone: .caution),
+        "com.apple.security.firewall": .init(title: String(localized: "Firewall", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "flame.fill", tint: .orange),
         "com.apple.MCX.FileVault2": .init(title: "FileVault", symbol: "lock.fill", tint: .gray),
-        "com.apple.mobiledevice.passwordpolicy": .init(title: "Passcode policy", symbol: "lock.rectangle.stack.fill", tint: .gray),
-        "com.apple.screensaver": .init(title: "Screen saver", symbol: "sparkles.tv", tint: .indigo),
-        "com.apple.SoftwareUpdate": .init(title: "Software Update", symbol: "arrow.triangle.2.circlepath", tint: .gray),
+        "com.apple.mobiledevice.passwordpolicy": .init(title: String(localized: "Passcode policy", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "lock.rectangle.stack.fill", tint: .gray),
+        "com.apple.screensaver": .init(title: String(localized: "Screen saver", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "sparkles.tv", tint: .indigo),
+        "com.apple.SoftwareUpdate": .init(title: String(localized: "Software Update", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "arrow.triangle.2.circlepath", tint: .gray),
         "com.apple.dock": .init(title: "Dock", symbol: "dock.rectangle", tint: .gray),
-        "com.apple.font": .init(title: "Font", symbol: "textformat", tint: .gray),
+        "com.apple.font": .init(title: String(localized: "Font", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "textformat", tint: .gray),
         "com.apple.airprint": .init(title: "AirPrint", symbol: "printer.fill", tint: .gray),
-        "com.apple.cellular": .init(title: "Cellular", symbol: "antenna.radiowaves.left.and.right", tint: .green),
-        "com.apple.google-oauth": .init(title: "Google account", symbol: "person.crop.circle", tint: .blue),
-        "com.apple.associated-domains": .init(title: "Associated domains", symbol: "link", tint: .blue),
+        "com.apple.cellular": .init(title: String(localized: "Cellular", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "antenna.radiowaves.left.and.right", tint: .green),
+        "com.apple.google-oauth": .init(title: String(localized: "Google account", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "person.crop.circle", tint: .blue),
+        "com.apple.associated-domains": .init(title: String(localized: "Associated domains", bundle: .greeceKit, comment: "A kind of setting a configuration profile installs"), symbol: "link", tint: .blue),
     ]
 }

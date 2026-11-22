@@ -52,7 +52,8 @@ enum AndroidPage {
             infoSection(package),
         ].compactMap { $0 }
         if let listing = package.listing {
-            page.contents = .tree(FileNode.tree(from: listing, showHidden: settings.showHiddenFiles), title: "Files", count: listing.fileCount,
+            page.contents = .tree(FileNode.tree(from: listing, showHidden: settings.showHiddenFiles),
+                                  title: String(localized: "Files", bundle: .greeceKit, comment: "Tab title: the files inside the app, package or disk image being previewed"), count: listing.fileCount,
                                   members: ZIPMembers(url: url))
         }
         return page
@@ -66,8 +67,9 @@ enum AndroidPage {
         if let minSdk = package.minSdk { details.append(AndroidVersions.short(minSdk)) }
         details.append(Format.bytes(package.fileSize))
         let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate.map(PreviewFactory.modifiedText)
-        return FileSummary(symbol: "shippingbox", title: package.kind == .apk ? "Android App" : "Android App Bundle",
-                           details: details, trailing: modified)
+        let title = package.kind == .apk ? String(localized: "Android App", bundle: .greeceKit, comment: "Info bar title for an .apk file")
+                                         : String(localized: "Android App Bundle", bundle: .greeceKit, comment: "Info bar title for an .aab file")
+        return FileSummary(symbol: "shippingbox", title: title, details: details, trailing: modified)
     }
 
     static func shortABI(_ abi: String) -> String {
@@ -84,57 +86,67 @@ enum AndroidPage {
         var badges: [InspectorBadge] = []
         let toolkits = ["Flutter", "React Native", "Unity", "Xamarin", ".NET MAUI", "Godot", "Unreal Engine", "Qt", "Capacitor", "Cordova"]
         if let toolkit = package.frameworks.first(where: { name in toolkits.contains { name.hasPrefix($0) } }) {
-            badges.append(InspectorBadge("framework", symbol: "square.stack.3d.up", title: toolkit, help: "Built with \(toolkit)."))
+            badges.append(InspectorBadge("framework", symbol: "square.stack.3d.up", title: toolkit,
+                                         help: String(localized: "Built with \(toolkit).", bundle: .greeceKit,
+                                                      comment: "Badge tooltip. The argument is a toolkit such as Flutter or Unity")))
         }
 
         let abis = package.abis.map(\.name)
         if abis.isEmpty {
-            badges.append(InspectorBadge("architectures", symbol: "cpu", title: "Any Architecture",
-                                         help: "No native code: it runs on every Android processor."))
+            badges.append(InspectorBadge("architectures", symbol: "cpu",
+                                         title: String(localized: "Any Architecture", bundle: .greeceKit, comment: "Badge: an Android app without native code"),
+                                         help: String(localized: "No native code: it runs on every Android processor.", bundle: .greeceKit)))
         } else {
             let hasARM = abis.contains { $0.hasPrefix("arm") }
             let hasX86 = abis.contains { $0.hasPrefix("x86") }
             let title: String
             if abis.count >= 4 || (hasARM && hasX86 && abis.count >= 3) {
-                title = "Universal"
+                title = String(localized: "Universal", bundle: .greeceKit, comment: "Badge: runs on every processor architecture")
+            } else if abis.count == 1 {
+                title = String(localized: "\(shortABI(abis[0])) only", bundle: .greeceKit,
+                               comment: "Badge: an Android app’s only processor architecture. The argument is a name such as “arm64”")
             } else {
-                title = abis.map(shortABI).joined(separator: ", ") + (abis.count == 1 ? " only" : "")
+                title = abis.map(shortABI).joined(separator: ", ")
             }
             let tone: InspectorTone = hasARM ? .neutral : .caution
-            let help = hasARM ? "Native code for " + abis.joined(separator: ", ") + "."
-                              : "Native code only for x86. Most Android phones use ARM processors and can’t run it."
+            let list = abis.joined(separator: ", ")
+            let help = hasARM
+                ? String(localized: "Native code for \(list).", bundle: .greeceKit,
+                         comment: "Badge tooltip. The argument lists Android architectures, such as “arm64-v8a, armeabi-v7a”")
+                : String(localized: "Native code only for x86. Most Android phones use ARM processors and can’t run it.", bundle: .greeceKit)
             badges.append(InspectorBadge("architectures", symbol: "cpu", title: title, tone: tone, help: help))
         }
 
         let signature = package.signature
         if !signature.isSigned {
-            badges.append(InspectorBadge("signer", symbol: "xmark.seal", title: "Unsigned", tone: .critical,
-                                         help: "Not signed. Android refuses to install unsigned packages."))
+            badges.append(InspectorBadge("signer", symbol: "xmark.seal", title: String(localized: "Unsigned", bundle: .greeceKit, comment: "Badge"), tone: .critical,
+                                         help: String(localized: "Not signed. Android refuses to install unsigned packages.", bundle: .greeceKit)))
         } else if signature.isDebugCertificate {
-            badges.append(InspectorBadge("signer", symbol: "hammer", title: "Debug Certificate", tone: .caution,
-                                         help: "Signed with Android Studio’s debug key. Google Play doesn’t accept it."))
+            badges.append(InspectorBadge("signer", symbol: "hammer", title: String(localized: "Debug Certificate", bundle: .greeceKit, comment: "Badge"), tone: .caution,
+                                         help: String(localized: "Signed with Android Studio’s debug key. Google Play doesn’t accept it.", bundle: .greeceKit)))
         } else {
-            badges.append(InspectorBadge("signer", symbol: "checkmark.seal", title: "Signed", tone: .positive,
-                                         help: "Signed with " + schemeList(signature.schemes) + "."))
+            badges.append(InspectorBadge("signer", symbol: "checkmark.seal", title: String(localized: "Signed", bundle: .greeceKit, comment: "Badge"), tone: .positive,
+                                         help: String(localized: "Signed with \(schemeList(signature.schemes)).", bundle: .greeceKit,
+                                                      comment: "Badge tooltip. The argument lists signature schemes, such as “JAR signing (v1) and APK Signature Scheme v2”")))
         }
         if signature.hasPlayMetadata {
             badges.append(InspectorBadge("store", symbol: "bag", title: "Google Play", tone: .positive,
-                                         help: "Includes the metadata Google Play adds to the apps it delivers."))
+                                         help: String(localized: "Includes the metadata Google Play adds to the apps it delivers.", bundle: .greeceKit)))
         }
         if package.debuggable {
-            badges.append(InspectorBadge("debuggable", symbol: "ant", title: "Debuggable", tone: .caution,
-                                         help: "Any debugger can attach to it and read its data."))
+            badges.append(InspectorBadge("debuggable", symbol: "ant", title: String(localized: "Debuggable", bundle: .greeceKit, comment: "Badge"), tone: .caution,
+                                         help: String(localized: "Any debugger can attach to it and read its data.", bundle: .greeceKit)))
         }
         if package.testOnly {
-            badges.append(InspectorBadge("testOnly", symbol: "testtube.2", title: "Test Only", tone: .caution,
-                                         help: "Marked for testing: it installs only through developer tools."))
+            badges.append(InspectorBadge("testOnly", symbol: "testtube.2", title: String(localized: "Test Only", bundle: .greeceKit, comment: "Badge"), tone: .caution,
+                                         help: String(localized: "Marked for testing: it installs only through developer tools.", bundle: .greeceKit)))
         }
         return badges
     }
 
     private static func schemeList(_ schemes: [String]) -> String {
         let names = schemes.map { scheme -> String in
-            scheme.hasPrefix("v1") ? "JAR signing (v1)" : "APK Signature Scheme \(scheme)"
+            scheme.hasPrefix("v1") ? String(localized: "JAR signing (v1)", bundle: .greeceKit, comment: "An Android signature scheme") : "APK Signature Scheme \(scheme)"
         }
         return ListFormatter.localizedString(byJoining: names)
     }
@@ -167,16 +179,17 @@ enum AndroidPage {
             let value: String?
             switch permission.level {
             case .normal: value = nil
-            case .runtime: value = "Asks first"
-            case .special: value = "Special access"
-            case .system: value = "System only"
+            case .runtime: value = String(localized: "Asks first", bundle: .greeceKit, comment: "Android permission that the person is asked to grant")
+            case .special: value = String(localized: "Special access", bundle: .greeceKit, comment: "Android permission that the person turns on in Settings")
+            case .system: value = String(localized: "System only", bundle: .greeceKit, comment: "Android permission that only system apps get")
             }
             return .item(InspectorItem(symbol: permission.symbol, tint: permission.tint, title: permission.title, value: value,
                                        tone: permission.sensitive ? .caution : .neutral, help: permission.name))
         }
         if !custom.isEmpty {
-            rows.append(.item(InspectorItem(symbol: "key", tint: .gray, title: "Custom permissions", value: custom.count.formatted(),
-                                            help: "Permissions defined by apps rather than by Android.",
+            rows.append(.item(InspectorItem(symbol: "key", tint: .gray, title: String(localized: "Custom permissions", bundle: .greeceKit),
+                                            value: custom.count.formatted(),
+                                            help: String(localized: "Permissions defined by apps rather than by Android.", bundle: .greeceKit),
                                             details: custom.prefix(200).map { InspectorItem.field($0, nil, mono: true) })))
         }
         guard !rows.isEmpty else { return nil }
@@ -184,13 +197,16 @@ enum AndroidPage {
         let special = known.contains { $0.level == .special }
         var footer: String?
         if asks && special {
-            footer = "Android asks before granting permissions marked “Asks first”. Special access is turned on in Settings."
+            footer = String(localized: "Android asks before granting permissions marked “Asks first”. Special access is turned on in Settings.", bundle: .greeceKit,
+                            comment: "Section footer. “Asks first” and “Special access” are labels on the rows above: use the same words")
         } else if asks {
-            footer = "Android asks before granting permissions marked “Asks first”."
+            footer = String(localized: "Android asks before granting permissions marked “Asks first”.", bundle: .greeceKit,
+                            comment: "Section footer. “Asks first” is a label on the rows above: use the same words")
         } else if special {
-            footer = "Special access is turned on in Settings."
+            footer = String(localized: "Special access is turned on in Settings.", bundle: .greeceKit)
         }
-        return InspectorSection("permissions", title: "Permissions", footer: footer, rows: rows, visibleLimit: 10)
+        return InspectorSection("permissions", title: String(localized: "Permissions", bundle: .greeceKit, comment: "Section title"),
+                                footer: footer, rows: rows, visibleLimit: 10)
     }
 
     static func integrations(_ package: AndroidPackage) -> [AndroidIntegration] {
@@ -214,7 +230,8 @@ enum AndroidPage {
             .item(InspectorItem(symbol: $0.symbol, tint: $0.tint, title: $0.title, subtitle: $0.subtitle,
                                 tone: $0.sensitive ? .caution : .neutral))
         }
-        return InspectorSection("integrations", title: "System Integrations", rows: rows)
+        return InspectorSection("integrations", title: String(localized: "System Integrations", bundle: .greeceKit, comment: "Section title on an Android app’s page"),
+                                rows: rows)
     }
 
     static func linksSection(_ package: AndroidPackage) -> InspectorSection? {
@@ -222,37 +239,46 @@ enum AndroidPage {
         let sorted = package.links.sorted { ($0.host == nil ? 0 : 1, $0.display) < ($1.host == nil ? 0 : 1, $1.display) }
         let rows: [InspectorRow] = sorted.map { link in
             let web = link.scheme == "http" || link.scheme == "https"
+            let help = web
+                ? String(localized: "Opens web links to this address in the app.", bundle: .greeceKit)
+                : String(localized: "Opens \(link.scheme): links in the app.", bundle: .greeceKit,
+                         comment: "Tooltip on a link an Android app handles. The argument is a URL scheme, such as “myapp”")
             return .item(InspectorItem(symbol: web ? "globe" : "link", tint: web ? .blue : .indigo, title: link.display,
-                                       value: link.verified ? "Verified" : nil, tone: link.verified ? .positive : .neutral,
-                                       help: web ? "Opens web links to this address in the app." : "Opens \(link.scheme): links in the app."))
+                                       value: link.verified ? String(localized: "Verified", bundle: .greeceKit, comment: "A web link the website confirms belongs to the app") : nil,
+                                       tone: link.verified ? .positive : .neutral, help: help))
         }
         let footer = package.links.contains(where: \.verified)
-            ? "Verified links open in the app without asking, once the website confirms the app." : nil
-        return InspectorSection("links", title: "Links", footer: footer, rows: rows, visibleLimit: 8)
+            ? String(localized: "Verified links open in the app without asking, once the website confirms the app.", bundle: .greeceKit) : nil
+        return InspectorSection("links", title: String(localized: "Links", bundle: .greeceKit, comment: "Section title: web addresses and URL schemes an app opens"),
+                                footer: footer, rows: rows, visibleLimit: 8)
     }
 
     static func signatureSection(_ package: AndroidPackage, now: Date) -> InspectorSection {
         let signature = package.signature
+        let title = String(localized: "Signature", bundle: .greeceKit, comment: "Section title")
         var rows: [InspectorRow] = []
         guard signature.isSigned else {
-            rows.append(.note(InspectorNote(symbol: "xmark.seal", text: "This package isn’t signed. Android won’t install it until it is.", tone: .critical)))
-            return InspectorSection("signature", title: "Signature", rows: rows)
+            rows.append(.note(InspectorNote(symbol: "xmark.seal", text: String(localized: "This package isn’t signed. Android won’t install it until it is.", bundle: .greeceKit),
+                                            tone: .critical)))
+            return InspectorSection("signature", title: title, rows: rows)
         }
         if signature.isDebugCertificate {
-            rows.append(.note(InspectorNote(symbol: "hammer", text: "Signed with Android Studio’s debug certificate. It’s meant for testing, and Google Play won’t accept it.", tone: .caution)))
+            rows.append(.note(InspectorNote(symbol: "hammer",
+                                            text: String(localized: "Signed with Android Studio’s debug certificate. It’s meant for testing, and Google Play won’t accept it.", bundle: .greeceKit),
+                                            tone: .caution)))
         }
-        rows.append(.item(InspectorItem(symbol: "signature", title: "Schemes", value: signature.schemes.joined(separator: ", "),
-                                        help: schemeList(signature.schemes))))
+        rows.append(.item(InspectorItem(symbol: "signature", title: String(localized: "Schemes", bundle: .greeceKit, comment: "Inspector row title: the signature schemes an Android package uses"),
+                                        value: signature.schemes.joined(separator: ", "), help: schemeList(signature.schemes))))
         if package.kind == .bundle {
-            rows.append(.item(InspectorItem(symbol: "arrow.triangle.2.circlepath", title: "Upload key",
-                                            subtitle: "Google Play re-signs the APKs it builds from this bundle with the app signing key.")))
+            rows.append(.item(InspectorItem(symbol: "arrow.triangle.2.circlepath", title: String(localized: "Upload key", bundle: .greeceKit),
+                                            subtitle: String(localized: "Google Play re-signs the APKs it builds from this bundle with the app signing key.", bundle: .greeceKit))))
         }
         if signature.keyRotated {
-            rows.append(.item(InspectorItem(symbol: "key.horizontal", title: "Signing key rotated",
-                                            subtitle: "The app moved to a new key; older installs still accept updates.", tone: .accent)))
+            rows.append(.item(InspectorItem(symbol: "key.horizontal", title: String(localized: "Signing key rotated", bundle: .greeceKit),
+                                            subtitle: String(localized: "The app moved to a new key; older installs still accept updates.", bundle: .greeceKit), tone: .accent)))
         }
         if signature.signerCount > 1 {
-            rows.append(.item(.field("Signers", signature.signerCount.formatted())))
+            rows.append(.item(.field(String(localized: "Signers", bundle: .greeceKit, comment: "Inspector row title; its value is a count"), signature.signerCount.formatted())))
         }
         let summaries = signature.certificates.compactMap { CertificateSummary(der: $0) }
         var chain = CertificateRows.chain(summaries, now: now)
@@ -260,33 +286,39 @@ enum AndroidPage {
         for index in chain.indices where chain[index].tone == .critical { chain[index].tone = .neutral }
         rows += chain.map { .item($0) }
         if signature.hasSourceStamp {
-            rows.append(.item(InspectorItem(symbol: "seal", title: "Source stamp", subtitle: "Names the store or tool that built this APK.")))
+            rows.append(.item(InspectorItem(symbol: "seal", title: String(localized: "Source stamp", bundle: .greeceKit, comment: "Part of an Android package’s signature"),
+                                            subtitle: String(localized: "Names the store or tool that built this APK.", bundle: .greeceKit))))
         }
-        return InspectorSection("signature", title: "Signature", rows: rows)
+        return InspectorSection("signature", title: title, rows: rows)
     }
 
     static func componentsSection(_ package: AndroidPackage) -> InspectorSection? {
         let groups: [(String, String, [AndroidPackage.Component])] = [
-            ("Activities", "macwindow", package.activities),
-            ("Services", "gearshape.2", package.services),
-            ("Broadcast receivers", "dot.radiowaves.up.forward", package.receivers),
-            ("Content providers", "tray.full", package.providers),
+            (String(localized: "Activities", bundle: .greeceKit, comment: "Android app components: its screens"), "macwindow", package.activities),
+            (String(localized: "Services", bundle: .greeceKit, comment: "Android app components that run in the background"), "gearshape.2", package.services),
+            (String(localized: "Broadcast receivers", bundle: .greeceKit, comment: "Android app components"), "dot.radiowaves.up.forward", package.receivers),
+            (String(localized: "Content providers", bundle: .greeceKit, comment: "Android app components"), "tray.full", package.providers),
         ]
         var rows: [InspectorRow] = []
         if let launcher = package.launcherActivity {
-            rows.append(.item(InspectorItem(symbol: "play.circle", title: "Opens with", value: simpleName(launcher), help: launcher, mono: true)))
+            rows.append(.item(InspectorItem(symbol: "play.circle", title: String(localized: "Opens with", bundle: .greeceKit, comment: "Inspector row title; its value is the screen an Android app starts on"),
+                                            value: simpleName(launcher), help: launcher, mono: true)))
         }
         for (title, symbol, components) in groups where !components.isEmpty {
             let exported = components.filter(\.exported).count
             let details = components.prefix(200).map { component in
-                InspectorItem(title: simpleName(component.name), value: component.exported ? "Exported" : nil, help: component.name, mono: true)
+                InspectorItem(title: simpleName(component.name),
+                              value: component.exported ? String(localized: "Exported", bundle: .greeceKit, comment: "An Android component other apps can use") : nil,
+                              help: component.name, mono: true)
             }
             rows.append(.item(InspectorItem(symbol: symbol, title: title,
-                                            subtitle: exported > 0 ? "\(exported.formatted()) open to other apps" : nil,
+                                            subtitle: exported > 0 ? String(localized: "\(exported) open to other apps", bundle: .greeceKit,
+                                                                            comment: "Under a kind of Android component. The argument is how many other apps can use") : nil,
                                             value: components.count.formatted(), details: details)))
         }
         guard !rows.isEmpty else { return nil }
-        return InspectorSection("components", title: "Components", rows: rows)
+        return InspectorSection("components", title: String(localized: "Components", bundle: .greeceKit, comment: "Section title: an Android app’s activities, services and so on"),
+                                rows: rows)
     }
 
     private static func simpleName(_ name: String) -> String {
@@ -296,13 +328,16 @@ enum AndroidPage {
 
     static func architecturesSection(_ package: AndroidPackage) -> InspectorSection? {
         guard !package.abis.isEmpty else { return nil }
-        let names = ["arm64-v8a": "64-bit ARM", "armeabi-v7a": "32-bit ARM", "armeabi": "ARMv5", "x86_64": "64-bit x86",
-                     "x86": "32-bit x86", "riscv64": "64-bit RISC-V", "mips": "MIPS", "mips64": "64-bit MIPS"]
+        let names = ["arm64-v8a": String(localized: "64-bit ARM", bundle: .greeceKit), "armeabi-v7a": String(localized: "32-bit ARM", bundle: .greeceKit),
+                     "armeabi": "ARMv5", "x86_64": String(localized: "64-bit x86", bundle: .greeceKit), "x86": String(localized: "32-bit x86", bundle: .greeceKit),
+                     "riscv64": String(localized: "64-bit RISC-V", bundle: .greeceKit), "mips": "MIPS", "mips64": String(localized: "64-bit MIPS", bundle: .greeceKit)]
         let rows: [InspectorRow] = package.abis.map { abi in
             .item(InspectorItem(symbol: "cpu", title: names[abi.name] ?? abi.name, subtitle: abi.name, value: Format.bytes(abi.bytes), help: abi.name))
         }
-        let footer = package.nativeLibraries.isEmpty ? nil : Format.count(package.nativeLibraries.count, "native library", "native libraries")
-        return InspectorSection("architectures", title: "Architectures", footer: footer, rows: rows)
+        let footer = package.nativeLibraries.isEmpty ? nil
+            : String(localized: "\(package.nativeLibraries.count) native libraries", bundle: .greeceKit, comment: "Section footer. The argument is a count")
+        return InspectorSection("architectures", title: String(localized: "Architectures", bundle: .greeceKit, comment: "Section title: processor architectures"),
+                                footer: footer, rows: rows)
     }
 
     static func builtWithSection(_ package: AndroidPackage) -> InspectorSection? {
@@ -311,57 +346,83 @@ enum AndroidPage {
         }
         rows += package.sdks.map { .item(InspectorItem(symbol: "puzzlepiece.extension", tint: .gray, title: $0)) }
         guard !rows.isEmpty else { return nil }
-        return InspectorSection("builtWith", title: "Built With", rows: rows)
+        return InspectorSection("builtWith", title: String(localized: "Built With", bundle: .greeceKit, comment: "Section title: the toolkits and SDKs an app uses"), rows: rows)
     }
 
     static func sizeSection(_ package: AndroidPackage) -> InspectorSection? {
         guard package.sizes.total > 0, !package.sizes.segments.isEmpty else { return nil }
         let footer = package.kind == .bundle
-            ? "Uncompressed sizes. Google Play delivers each device only the parts it needs."
-            : "Uncompressed sizes inside the package."
-        return InspectorSection("size", title: "Size", footer: footer, rows: [.sizes(package.sizes)])
+            ? String(localized: "Uncompressed sizes. Google Play delivers each device only the parts it needs.", bundle: .greeceKit)
+            : String(localized: "Uncompressed sizes inside the package.", bundle: .greeceKit)
+        return InspectorSection("size", title: String(localized: "Size", bundle: .greeceKit, comment: "Section title"), footer: footer, rows: [.sizes(package.sizes)])
     }
 
     static func infoSection(_ package: AndroidPackage) -> InspectorSection {
         var items: [InspectorItem] = []
-        if let name = package.package { items.append(.field("Package", name, mono: true)) }
-        if let version = package.versionName { items.append(.field("Version", version)) }
-        if let code = package.versionCode { items.append(.field("Version code", code, mono: true)) }
-        if let minSdk = package.minSdk { items.append(.field("Requires", AndroidVersions.describe(minSdk))) }
-        if let target = package.targetSdk { items.append(.field("Targets", AndroidVersions.describe(target))) }
-        if let compile = package.compileSdk { items.append(.field("Compiled with", AndroidVersions.describe(compile))) }
+        if let name = package.package { items.append(.field(String(localized: "Package", bundle: .greeceKit, comment: "Inspector row title: an Android package name"), name, mono: true)) }
+        if let version = package.versionName { items.append(.field(String(localized: "Version", bundle: .greeceKit, comment: "Inspector row title"), version)) }
+        if let code = package.versionCode { items.append(.field(String(localized: "Version code", bundle: .greeceKit, comment: "Inspector row title: an Android app’s internal version number"), code, mono: true)) }
+        if let minSdk = package.minSdk {
+            items.append(.field(String(localized: "Requires", bundle: .greeceKit, comment: "Inspector row title; its value is the oldest system version the app runs on"),
+                                AndroidVersions.describe(minSdk)))
+        }
+        if let target = package.targetSdk {
+            items.append(.field(String(localized: "Targets", bundle: .greeceKit, comment: "Inspector row title; its value is the Android version the app is designed for"),
+                                AndroidVersions.describe(target)))
+        }
+        if let compile = package.compileSdk {
+            items.append(.field(String(localized: "Compiled with", bundle: .greeceKit, comment: "Inspector row title; its value is an Android SDK version"),
+                                AndroidVersions.describe(compile)))
+        }
         // Translations plus the default language, as aapt counts them.
-        if package.locales > 0 { items.append(.field("Languages", (package.locales + 1).formatted())) }
+        if package.locales > 0 {
+            items.append(.field(String(localized: "Languages", bundle: .greeceKit, comment: "Inspector row title; its value is a count"), (package.locales + 1).formatted()))
+        }
         if !package.features.isEmpty {
             let required = package.features.filter(\.required)
-            items.append(InspectorItem(title: "Hardware features", value: required.isEmpty ? "None required" : Format.count(required.count, "required"),
+            let value = required.isEmpty
+                ? String(localized: "None required", bundle: .greeceKit, comment: "Hardware features an Android app needs")
+                : String(localized: "\(required.count) required", bundle: .greeceKit, comment: "Hardware features an Android app needs. The argument is a count")
+            items.append(InspectorItem(title: String(localized: "Hardware features", bundle: .greeceKit), value: value,
                                        details: package.features.prefix(200).map {
-                                           InspectorItem.field($0.name, $0.required ? "Required" : "Optional", mono: false)
+                                           InspectorItem.field($0.name, $0.required ? String(localized: "Required", bundle: .greeceKit, comment: "A hardware feature or setting that is needed")
+                                                                                    : String(localized: "Optional", bundle: .greeceKit, comment: "A hardware feature an Android app can use but doesn’t need"),
+                                                               mono: false)
                                        }))
         }
         if let app = package.applicationClass, app != "android.app.Application" {
-            items.append(InspectorItem(title: "Application class", value: simpleName(app), help: app, mono: true))
+            items.append(InspectorItem(title: String(localized: "Application class", bundle: .greeceKit, comment: "Inspector row title: an Android app’s custom Application subclass"),
+                                       value: simpleName(app), help: app, mono: true))
         }
+        let allowed = String(localized: "Allowed", bundle: .greeceKit, comment: "Inspector row value: a setting that permits something")
         let cleartext: (String, InspectorTone)
         if package.hasNetworkSecurityConfig {
-            cleartext = ("Set by network security config", .neutral)
+            cleartext = (String(localized: "Set by network security config", bundle: .greeceKit), .neutral)
         } else if package.usesCleartextTraffic ?? ((package.targetSdk ?? 1) < 28) {
-            cleartext = ("Allowed", .caution)
+            cleartext = (allowed, .caution)
         } else {
-            cleartext = ("Blocked", .neutral)
+            cleartext = (String(localized: "Blocked", bundle: .greeceKit, comment: "Inspector row value: plain HTTP connections aren’t allowed"), .neutral)
         }
-        items.append(.field("Unencrypted HTTP", cleartext.0, tone: cleartext.1,
-                            help: "Whether the app may use plain HTTP connections."))
-        items.append(.field("Backups", package.allowBackup ?? true ? "Allowed" : "Off",
-                            help: "Whether Android backs up the app’s data."))
-        if package.requestLegacyExternalStorage { items.append(.field("Storage", "Legacy shared storage")) }
-        if package.largeHeap { items.append(.field("Memory", "Large heap")) }
-        if package.dexCount > 0 { items.append(.field("DEX files", package.dexCount.formatted())) }
+        items.append(.field(String(localized: "Unencrypted HTTP", bundle: .greeceKit, comment: "Inspector row title"), cleartext.0, tone: cleartext.1,
+                            help: String(localized: "Whether the app may use plain HTTP connections.", bundle: .greeceKit)))
+        items.append(.field(String(localized: "Backups", bundle: .greeceKit, comment: "Inspector row title"),
+                            package.allowBackup ?? true ? allowed : String(localized: "Off", bundle: .greeceKit, comment: "The state of a setting or feature"),
+                            help: String(localized: "Whether Android backs up the app’s data.", bundle: .greeceKit)))
+        if package.requestLegacyExternalStorage {
+            items.append(.field(String(localized: "Storage", bundle: .greeceKit, comment: "Inspector row title"), String(localized: "Legacy shared storage", bundle: .greeceKit)))
+        }
+        if package.largeHeap {
+            items.append(.field(String(localized: "Memory", bundle: .greeceKit, comment: "Inspector row title"), String(localized: "Large heap", bundle: .greeceKit, comment: "An Android app that asks for more memory")))
+        }
+        if package.dexCount > 0 {
+            items.append(.field(String(localized: "DEX files", bundle: .greeceKit, comment: "Inspector row title; its value is a count of Android code files"), package.dexCount.formatted()))
+        }
         if package.kind == .bundle {
-            items.append(.field("Modules", (["base"] + package.modules).joined(separator: ", ")))
+            items.append(.field(String(localized: "Modules", bundle: .greeceKit, comment: "Inspector row title: an Android App Bundle’s feature modules"),
+                                (["base"] + package.modules).joined(separator: ", ")))
             if let version = package.bundletoolVersion, !version.isEmpty { items.append(.field("Bundletool", version, mono: true)) }
         }
-        items.append(.field("Files", package.memberCount.formatted()))
-        return InspectorSection("info", title: "Info", rows: .items(items))
+        items.append(.field(String(localized: "Files", bundle: .greeceKit, comment: "Inspector row title; its value is a count"), package.memberCount.formatted()))
+        return InspectorSection("info", title: String(localized: "Info", bundle: .greeceKit, comment: "Section title"), rows: .items(items))
     }
 }

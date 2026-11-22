@@ -2,21 +2,24 @@ import XCTest
 
 /// The app's String Catalog (Greece/Localizable.xcstrings): every string is translated into every
 /// language Greece ships, and every translation takes the same arguments as the English, so no
-/// language can show a raw key, drop a value or crash formatting one.
-final class LocalizationTests: XCTestCase {
+/// language can show a raw key, drop a value or crash formatting one. `KitLocalizationTests` runs the
+/// same checks on GreeceKit's catalog.
+class LocalizationTests: XCTestCase {
     static let languages = ["de", "fr", "es", "it", "pt-BR", "nl", "sv", "pl", "tr", "el", "ru", "uk", "ja", "ko", "zh-Hans", "zh-Hant"]
 
-    private static let catalogURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-        .appendingPathComponent("Greece/Localizable.xcstrings")
+    static let repository = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
 
-    private struct Entry {
+    /// The catalog under test, relative to the repository.
+    class var catalogPath: String { "Greece/Localizable.xcstrings" }
+
+    struct Entry {
         let key: String
         let json: [String: Any]
         var localizations: [String: Any] { json["localizations"] as? [String: Any] ?? [:] }
     }
 
-    private func entries() throws -> [Entry] {
-        let data = try Data(contentsOf: Self.catalogURL)
+    func entries() throws -> [Entry] {
+        let data = try Data(contentsOf: Self.repository.appendingPathComponent(Self.catalogPath))
         let catalog = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         XCTAssertEqual(catalog["sourceLanguage"] as? String, "en")
         let strings = try XCTUnwrap(catalog["strings"] as? [String: [String: Any]])
@@ -72,7 +75,7 @@ final class LocalizationTests: XCTestCase {
     // MARK: - Reading the catalog
 
     /// Every string unit of a localization: the plain one, plural variations, substitution variations.
-    private static func units(in localization: [String: Any], path: String = "") -> [(String, [String: Any])] {
+    static func units(in localization: [String: Any], path: String = "") -> [(String, [String: Any])] {
         var result: [(String, [String: Any])] = []
         if let unit = localization["stringUnit"] as? [String: Any] { result.append((path.isEmpty ? "value" : path, unit)) }
         if let variations = localization["variations"] as? [String: [String: Any]] {

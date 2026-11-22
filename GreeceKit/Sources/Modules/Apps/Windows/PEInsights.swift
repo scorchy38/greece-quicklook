@@ -48,7 +48,7 @@ struct PEInsights {
             installerDetail = manifestDescription.contains("Inno") ? manifestDescription : nil
         } else if sectionNames.contains(".wixburn") {
             installer = "WiX Burn"
-            installerDetail = "WiX Toolset bootstrapper"
+            installerDetail = String(localized: "WiX Toolset bootstrapper", bundle: .greeceKit, comment: "Describes a Windows installer built with the WiX Toolset")
         } else if versionText.contains("InstallShield") || contains(head, "InstallShield", wide: true) {
             installer = "InstallShield"
         } else if versionText.contains("Advanced Installer") || contains(head, "Advanced Installer", wide: true) {
@@ -75,8 +75,9 @@ struct PEInsights {
         let imports = Set(file.imports.map { $0.name.lowercased() })
         var built: [String] = []
         if let dotNet = file.dotNet { built.append(Self.prettyFramework(dotNet.targetFramework) ?? ".NET") }
+        let visualCPlusPlus2015 = String(localized: "Visual C++ 2015 or later", bundle: .greeceKit, comment: "The toolkit a Windows program was built with")
         let runtimes: [(String, String)] = [
-            ("vcruntime140.dll", "Visual C++ 2015 or later"), ("msvcp140.dll", "Visual C++ 2015 or later"),
+            ("vcruntime140.dll", visualCPlusPlus2015), ("msvcp140.dll", visualCPlusPlus2015),
             ("msvcr120.dll", "Visual C++ 2013"), ("msvcr110.dll", "Visual C++ 2012"), ("msvcr100.dll", "Visual C++ 2010"),
             ("msvcr90.dll", "Visual C++ 2008"), ("msvcr80.dll", "Visual C++ 2005"), ("msvcr71.dll", "Visual C++ 2003"),
         ]

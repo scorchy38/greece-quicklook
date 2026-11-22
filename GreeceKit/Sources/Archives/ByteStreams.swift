@@ -46,7 +46,8 @@ final class RandomAccessFile: RandomAccessSource, @unchecked Sendable {
             let descriptor = open(url.path, O_RDONLY | O_CLOEXEC)
             guard descriptor >= 0 else {
                 parts.forEach { close($0.descriptor) }
-                throw ArchiveError.unsupported("“\(url.lastPathComponent)” can’t be opened.")
+                throw ArchiveError.unsupported(String(localized: "“\(url.lastPathComponent)” can’t be opened.", bundle: .greeceKit,
+                                                      comment: "Error message; the argument is a file name"))
             }
             var info = stat()
             let size = fstat(descriptor, &info) == 0 ? UInt64(max(info.st_size, 0)) : 0

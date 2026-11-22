@@ -83,9 +83,11 @@ private struct InspectorRoot: View {
     var body: some View {
         VStack(spacing: 0) {
             if case .tree(_, let title, let count, _)? = model.page.contents, model.tree != nil {
-                Picker("", selection: $model.showsFiles) {
-                    Text("Info").tag(false)
-                    Text(count.map { "\(title) (\($0.formatted()))" } ?? title).tag(true)
+                Picker(selection: $model.showsFiles) {
+                    Text("Info", bundle: .greeceKit, comment: "Section or tab title: general information about a file").tag(false)
+                    Text(count.map { String(localized: "\(title) (\($0))", bundle: .greeceKit, comment: "Tab title with a count. The arguments are a tab title and how many files it lists, such as “Files (1,204)”") } ?? title).tag(true)
+                } label: {
+                    EmptyView()
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
@@ -140,7 +142,8 @@ private struct SectionView: View {
                 Button {
                     model.expandedSections.insert(section.id)
                 } label: {
-                    Text("Show All \(section.rows.count.formatted())")
+                    // String(localized:) groups digits ("Show All 1,204"), as before.
+                    Text(String(localized: "Show All \(section.rows.count)", bundle: .greeceKit, comment: "Button under a long inspector section. The argument is how many rows it has"))
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
                 .buttonStyle(.link)
@@ -207,12 +210,12 @@ private struct InspectorHeaderView: View {
         .textCase(nil)
         .foregroundStyle(.primary)
         .contextMenu {
-            Button("Copy Name") { Clipboard.copy(header.title) }
+            Button(String(localized: "Copy Name", bundle: .greeceKit)) { Clipboard.copy(header.title) }
             if let subtitle = header.subtitle {
-                Button("Copy " + MenuText.quoted(subtitle)) { Clipboard.copy(subtitle) }
+                Button(copyTitle(subtitle)) { Clipboard.copy(subtitle) }
             }
             if let identifier = header.identifier {
-                Button("Copy Identifier") { Clipboard.copy(identifier) }
+                Button(String(localized: "Copy Identifier", bundle: .greeceKit, comment: "Menu item: copies a bundle or package identifier")) { Clipboard.copy(identifier) }
             }
         }
     }
@@ -335,7 +338,7 @@ private struct RowView: View {
                 Spacer(minLength: 0)
             }
             .contextMenu {
-                Button("Copy Text") { Clipboard.copy(note.text) }
+                Button(String(localized: "Copy Text", bundle: .greeceKit, comment: "Menu item: copies a note’s text")) { Clipboard.copy(note.text) }
                 CopySectionButton(section: section)
             }
         case .pending(_, let title):
@@ -404,16 +407,21 @@ private struct ItemView: View {
         .contextMenu {
             // A row with a value copies the value; one without is its own content.
             if let value = item.value {
-                Button("Copy " + MenuText.quoted(value)) { Clipboard.copy(value) }
+                Button(copyTitle(value)) { Clipboard.copy(value) }
             } else {
-                Button("Copy " + MenuText.quoted(item.title)) { Clipboard.copy(item.title) }
+                Button(copyTitle(item.title)) { Clipboard.copy(item.title) }
             }
             if let subtitle = item.subtitle {
-                Button("Copy " + MenuText.quoted(subtitle)) { Clipboard.copy(subtitle) }
+                Button(copyTitle(subtitle)) { Clipboard.copy(subtitle) }
             }
             CopySectionButton(section: section)
         }
     }
+}
+
+/// "Copy “Version 2.1 (214)”": a menu item naming the text it copies, cut short.
+private func copyTitle(_ text: String) -> String {
+    String(localized: "Copy “\(MenuText.short(text))”", bundle: .greeceKit, comment: "Menu item. The argument is the text it copies, shortened")
 }
 
 /// Copies a whole section as text, one row a line: a way to take a list of entitlements or
@@ -424,7 +432,7 @@ private struct CopySectionButton: View {
     var body: some View {
         if let section, section.rows.count > 1 {
             Divider()
-            Button("Copy Section") { Clipboard.copy(section.copyText) }
+            Button(String(localized: "Copy Section", bundle: .greeceKit, comment: "Menu item: copies a whole inspector section as text")) { Clipboard.copy(section.copyText) }
         }
     }
 }
@@ -487,7 +495,7 @@ private struct CodeView: View {
                 .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color(nsColor: .textBackgroundColor).opacity(colorScheme == .dark ? 0.35 : 0.9)))
                 .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.primary.opacity(0.08), lineWidth: 0.5))
             if code.truncated {
-                Text("Showing the beginning only.")
+                Text("Showing the beginning only.", bundle: .greeceKit, comment: "Under a long script or document that was cut short")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -495,7 +503,7 @@ private struct CodeView: View {
             ItemView(item: InspectorItem(symbol: code.symbol, title: code.title, subtitle: code.subtitle, tone: code.tone))
         }
         .contextMenu {
-            Button("Copy Contents") { Clipboard.copy(code.text) }
+            Button(String(localized: "Copy Contents", bundle: .greeceKit, comment: "Menu item: copies a script’s or document’s text")) { Clipboard.copy(code.text) }
         }
     }
 
@@ -530,7 +538,7 @@ private struct SizesView: View {
         let total = max(sizes.total, sizes.segments.reduce(0) { $0 + $1.bytes }, 1)
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Total")
+                Text("Total", bundle: .greeceKit, comment: "Label beside a storage bar’s total size")
                 Spacer()
                 Text(Format.bytes(sizes.total)).foregroundStyle(.secondary).monospacedDigit()
             }

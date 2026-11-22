@@ -20,15 +20,25 @@ enum PalettePreview {
         let payload = Payload(format: format.badge, kind: format.title, name: name, groups: palette.groups, columns: palette.columns, count: palette.count)
         let document = WebDocument(module: .init("media-palette"), data: payload,
                                    scripts: ["modules/media.common.js", "modules/media.palette.js"], styles: ["modules/media.css"])
-        var details = [MediaText.plural(palette.count, "color")]
+        var details = [String(localized: "\(palette.count) colors", bundle: .greeceKit, comment: "Info bar detail: how many colours a palette has")]
         let named = palette.groups.filter { $0.name != nil }.count
-        if named > 0 { details.append(MediaText.plural(named, "group")) }
+        if named > 0 {
+            details.append(String(localized: "\(named) groups", bundle: .greeceKit, comment: "Info bar detail: how many named groups of colours a palette has"))
+        }
         let models = Set(palette.allColors.map(\.model))
-        if models.count == 1, let model = models.first, model != "RGB" { details.append(model) }
+        if models.count == 1, let model = models.first, model != "RGB" { details.append(displayName(model: model)) }
         let spots = palette.allColors.filter { $0.kind == "Spot" }.count
-        if spots > 0 { details.append("\(spots.formatted()) spot") }
+        if spots > 0 {
+            details.append(String(localized: "\(spots) spot", bundle: .greeceKit,
+                                  comment: "Info bar detail: how many of a palette’s colours are spot colours (printing inks), such as “3 spot”"))
+        }
         let summary = FileSummary(symbol: "swatchpalette", title: format.title, details: details, trailing: file.modifiedText)
         return .web(document, summary, NSSize(width: 900, height: 700))
+    }
+
+    /// A colour model for the info bar. The model itself ("Gray", "CMYK") is an id the page reads.
+    static func displayName(model: String) -> String {
+        model == "Gray" ? String(localized: "Gray", bundle: .greeceKit, comment: "Info bar detail: the palette’s colours are shades of grey (a colour model, like RGB or CMYK)") : model
     }
 }
 

@@ -87,6 +87,14 @@ final class EntryPreviewPane: NSView {
 
     private var innerSettings: PreviewSettings { Self.inner(settings) }
 
+    private static var encryptedNote: String {
+        String(localized: "Encrypted. Greece can’t open it without the password.", bundle: .greeceKit, comment: "Note on a file inside an archive")
+    }
+
+    private static var noPreviewNote: String {
+        String(localized: "There’s no preview for this kind of file.", bundle: .greeceKit, comment: "Note on a file inside an archive")
+    }
+
     /// Previews inside the pane go without their own info bar: the pane's header says what they are.
     private static func inner(_ settings: PreviewSettings) -> PreviewSettings {
         var copy = settings
@@ -103,10 +111,13 @@ final class EntryPreviewPane: NSView {
         guard let node else {
             let count = nodes.count
             let size = nodes.reduce(UInt64(0)) { $0.saturatingAdd($1.size ?? 0) }
-            header.configure(icon: NSImage(systemSymbolName: "square.on.square", accessibilityDescription: nil), title: "\(count) items",
-                             subtitle: FileTreeView.bytes(size), allowsPreview: false)
-            display(ArchiveStateView(symbol: "square.on.square", title: "\(count.formatted()) Items Selected",
-                                     message: "\(FileTreeView.bytes(size)) in all"))
+            let total = FileTreeView.bytes(size)
+            header.configure(icon: NSImage(systemSymbolName: "square.on.square", accessibilityDescription: nil),
+                             title: String(localized: "\(count) items", bundle: .greeceKit, comment: "A count of files and folders"),
+                             subtitle: total, allowsPreview: false)
+            display(ArchiveStateView(symbol: "square.on.square",
+                                     title: String(localized: "\(count) Items Selected", bundle: .greeceKit, comment: "Title when several files are selected; the argument is how many"),
+                                     message: String(localized: "\(total) in all", bundle: .greeceKit, comment: "Under “12 Items Selected”: their total size, such as “4 MB in all”")))
             return
         }
         let kind = FileTreeView.kindName(of: node)
@@ -115,7 +126,7 @@ final class EntryPreviewPane: NSView {
                          subtitle: EntryInfoView.subtitle(node, kind: kind), allowsPreview: canPreview)
         if mode == .info || !canPreview {
             var note: String?
-            if node.isEncrypted { note = "Encrypted. Greece can’t open it without the password." }
+            if node.isEncrypted { note = Self.encryptedNote }
             var open: (() -> Void)?
             if node.isDirectory, !node.isPackage, let onOpenFolder { open = { onOpenFolder(node) } }
             display(EntryInfoView(node: node, kind: kind, note: mode == .preview ? note : nil, open: open))
@@ -205,10 +216,10 @@ final class EntryPreviewPane: NSView {
         case .failure(let error):
             let note: String
             switch error {
-            case ArchiveError.tooLarge: note = "Too large to preview inside the archive."
-            case ArchiveError.encrypted: note = "Encrypted. Greece can’t open it without the password."
+            case ArchiveError.tooLarge: note = String(localized: "Too large to preview inside the archive.", bundle: .greeceKit)
+            case ArchiveError.encrypted: note = Self.encryptedNote
             case ArchiveError.cancelled: return
-            case PreviewError.unsupported: note = "There’s no preview for this kind of file."
+            case PreviewError.unsupported: note = Self.noPreviewNote
             default: note = error.localizedDescription
             }
             display(EntryInfoView(node: node, kind: kind, note: note))
@@ -227,7 +238,8 @@ final class EntryPreviewPane: NSView {
                 pdf.backgroundColor = .underPageBackgroundColor
                 view = pdf
                 if let pages = pdf.document?.pageCount {
-                    subtitle = [kind, "\(pages) \(pages == 1 ? "page" : "pages")", node.size.map(FileTreeView.bytes)].compactMap { $0 }.joined(separator: " · ")
+                    subtitle = [kind, String(localized: "\(pages) pages", bundle: .greeceKit, comment: "A count of pages"),
+                                node.size.map(FileTreeView.bytes)].compactMap { $0 }.joined(separator: " · ")
                 }
             case .media(let url, let audio):
                 let player = AVPlayerView()
@@ -250,7 +262,7 @@ final class EntryPreviewPane: NSView {
                     }
                     return
                 } catch {
-                    display(EntryInfoView(node: node, kind: kind, note: "There’s no preview for this kind of file."))
+                    display(EntryInfoView(node: node, kind: kind, note: Self.noPreviewNote))
                     return
                 }
             }
@@ -291,10 +303,13 @@ private final class PaneHeader: NSView {
         detail.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         switcher.segmentCount = 2
-        switcher.setImage(NSImage(systemSymbolName: "eye", accessibilityDescription: "Preview"), forSegment: 0)
-        switcher.setImage(NSImage(systemSymbolName: "info.circle", accessibilityDescription: "Info"), forSegment: 1)
-        switcher.setToolTip("Preview", forSegment: 0)
-        switcher.setToolTip("Get Info", forSegment: 1)
+        let preview = String(localized: "Preview", bundle: .greeceKit, comment: "Tooltip and accessibility label: shows the selected file’s preview")
+        switcher.setImage(NSImage(systemSymbolName: "eye", accessibilityDescription: preview), forSegment: 0)
+        switcher.setImage(NSImage(systemSymbolName: "info.circle",
+                                  accessibilityDescription: String(localized: "Info", bundle: .greeceKit, comment: "Accessibility label: shows Get Info for the selected file")),
+                          forSegment: 1)
+        switcher.setToolTip(preview, forSegment: 0)
+        switcher.setToolTip(String(localized: "Get Info", bundle: .greeceKit), forSegment: 1)
         switcher.trackingMode = .selectOne
         switcher.controlSize = .small
         switcher.segmentStyle = .automatic

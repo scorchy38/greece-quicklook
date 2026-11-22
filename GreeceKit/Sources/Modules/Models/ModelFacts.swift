@@ -46,7 +46,10 @@ struct ModelFacts: Encodable, Equatable {
             if used.contains("KHR_draco_mesh_compression") { facts.compression.append("Draco") }
             if used.contains("EXT_meshopt_compression") || used.contains("KHR_meshopt_compression") { facts.compression.append("Meshopt") }
             if used.contains("KHR_texture_basisu") { facts.compression.append("KTX2") }
-            if used.contains("KHR_mesh_quantization") { facts.compression.append("Quantized") }
+            if used.contains("KHR_mesh_quantization") {
+                facts.compression.append(String(localized: "Quantized", bundle: .greeceKit,
+                                                comment: "A glTF model’s compression, listed after names such as “Draco”: its vertex data is stored as small integers"))
+            }
         case .stl:
             facts = readSTL(url, deadline: deadline)
         case .ply:
@@ -393,22 +396,30 @@ struct ModelFacts: Encodable, Equatable {
     /// Info bar facts, most telling first.
     func details(format: ModelFormat) -> [String] {
         var details: [String] = []
-        func plural(_ count: Int, _ one: String, _ many: String) -> String { "\(count.formatted()) \(count == 1 ? one : many)" }
-        if let points, points > 0 { details.append(plural(points, isSplat ? "splat" : "point", isSplat ? "splats" : "points")) }
-        if let triangles, triangles > 0 { details.append(plural(triangles, "triangle", "triangles")) }
-        else if let faces, faces > 0 { details.append(plural(faces, "face", "faces")) }
-        if let voxels, voxels > 0 { details.append(plural(voxels, "voxel", "voxels")) }
-        if let materials, materials > 1 { details.append(plural(materials, "material", "materials")) }
-        if let animations, animations > 0 { details.append(plural(animations, "animation", "animations")) }
+        if let points, points > 0 {
+            details.append(isSplat
+                           ? String(localized: "\(points) splats", bundle: .greeceKit, comment: "Info bar detail: the Gaussian splats of a 3D splat scene")
+                           : String(localized: "\(points) points", bundle: .greeceKit,
+                                    comment: "Map features or parts of one that are points; also points in a 3D point cloud"))
+        }
+        if let triangles, triangles > 0 { details.append(String(localized: "\(triangles) triangles", bundle: .greeceKit, comment: "Info bar detail: a 3D model’s triangles")) }
+        else if let faces, faces > 0 { details.append(String(localized: "\(faces) faces", bundle: .greeceKit, comment: "Info bar detail: a 3D model’s faces (polygons)")) }
+        if let voxels, voxels > 0 { details.append(String(localized: "\(voxels) voxels", bundle: .greeceKit, comment: "Info bar detail: the filled voxels (3D pixels) of a voxel model")) }
+        if let materials, materials > 1 { details.append(String(localized: "\(materials) materials", bundle: .greeceKit, comment: "Info bar detail: a 3D model’s materials")) }
+        if let animations, animations > 0 { details.append(String(localized: "\(animations) animations", bundle: .greeceKit, comment: "Info bar detail: a 3D model’s animations")) }
         if let size, size.count == 3 {
             // Width × depth × height, whichever axis the format calls up.
             let ordered = format.isZUp ? size : [size[0], size[2], size[1]]
-            if let text = Self.dimensions(ordered, units: format == .vox ? "voxels" : units) { details.append(text) }
+            if let text = Self.dimensions(ordered, units: format == .vox ? Self.voxelUnits : units) { details.append(text) }
         }
         return details
     }
 
-    /// "24.3 × 18 × 9.1 cm": metric sizes in the unit that reads best, others as stored.
+    /// The `units` of a size counted in voxels (MagicaVoxel), rather than a length unit.
+    static let voxelUnits = "voxels"
+
+    /// "24.3 × 18 × 9.1 cm": metric sizes in the unit that reads best, others as stored. The numbers and
+    /// the unit follow the locale ("24,3 × 18 × 9,1 cm", "24,3 × 18 × 9,1 см").
     static func dimensions(_ size: [Double], units: String?) -> String? {
         guard size.count == 3, size.allSatisfy({ $0.isFinite && $0 >= 0 }), size.contains(where: { $0 > 0 }) else { return nil }
         var values = size
@@ -419,13 +430,45 @@ struct ModelFacts: Encodable, Equatable {
             else if largest < 1 { values = size.map { $0 * 100 }; unit = "cm" }
         }
         let largest = values.max() ?? 0
-        let text = values.map { formatLength($0, largest: largest) }.joined(separator: " × ")
-        return unit.map { "\(text) \($0)" } ?? text
+        let style = numberStyle(largest: largest)
+        let numbers = values.map { $0.formatted(style) }
+        if unit == voxelUnits {
+            let text = numbers.joined(separator: " × ")
+            return String(localized: "\(text) voxels", bundle: .greeceKit,
+                          comment: "Info bar detail: a voxel model’s width, depth and height in voxels. The argument is a size such as “32 × 32 × 16”")
+        }
+        guard let unit else { return numbers.joined(separator: " × ") }
+        // The unit goes with the last number: "24.3 × 18 × 9.1 cm".
+        let last: String
+        if let length = lengthUnit(unit) {
+            last = Measurement(value: values[2], unit: length)
+                .formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: style))
+        } else {
+            last = "\(numbers[2]) \(unit)"
+        }
+        return (numbers.prefix(2) + [last]).joined(separator: " × ")
     }
 
-    static func formatLength(_ value: Double, largest: Double) -> String {
+    /// The Foundation unit for a `units` symbol.
+    static func lengthUnit(_ symbol: String) -> UnitLength? {
+        switch symbol {
+        case "m": return .meters
+        case "cm": return .centimeters
+        case "mm": return .millimeters
+        case "µm": return .micrometers
+        case "km": return .kilometers
+        case "in": return .inches
+        case "ft": return .feet
+        case "US ft": return usSurveyFoot
+        default: return nil
+        }
+    }
+
+    private static let usSurveyFoot = UnitLength(symbol: "US ft", converter: UnitConverterLinear(coefficient: 1200.0 / 3937.0))
+
+    static func numberStyle(largest: Double) -> FloatingPointFormatStyle<Double> {
         let digits = largest >= 1000 ? 0 : largest >= 100 ? 1 : 2
-        return value.formatted(.number.precision(.fractionLength(0...digits)))
+        return .number.precision(.fractionLength(0...digits))
     }
 }
 

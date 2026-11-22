@@ -16,7 +16,10 @@ enum ShapefileReader {
     static func sources(for url: URL, maxBytes: Int) throws -> Sources {
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
         guard size <= maxBytes else {
-            throw GeoError.tooLarge("This shapefile is \(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)); Greece draws shapefiles up to \(ByteCountFormatter.string(fromByteCount: Int64(maxBytes), countStyle: .file)).")
+            let sizeText = ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)
+            let limitText = ByteCountFormatter.string(fromByteCount: Int64(maxBytes), countStyle: .file)
+            throw GeoError.tooLarge(String(localized: "This shapefile is \(sizeText); Greece draws shapefiles up to \(limitText).", bundle: .greeceKit,
+                                           comment: "Error. The arguments are the file’s size and the largest Greece draws, such as “250 MB” and “192 MB”"))
         }
         let shp = try Data(contentsOf: url, options: .alwaysMapped)
         let folder = url.deletingLastPathComponent()
@@ -64,7 +67,7 @@ enum ShapefileReader {
 
     static func read(_ sources: Sources, limits: GeoLimits, budget: inout GeoBudget) throws -> Result {
         let data = sources.shp
-        guard data.count >= 100, data.beU32(0) == 9994 else { throw GeoError.invalid("This isn’t a shapefile.") }
+        guard data.count >= 100, data.beU32(0) == 9994 else { throw GeoError.invalid(String(localized: "This isn’t a shapefile.", bundle: .greeceKit)) }
         let shapeType = Int32(bitPattern: data.u32(32))
         let layer = GeoLayer(name: sources.name)
         let table = sources.dbf.flatMap { ShapefileDBF(data: $0, cpg: sources.cpg, maxFields: max(limits.maxProperties, 1)) }
@@ -228,7 +231,13 @@ struct ShapefileDBF {
             let length = Int(data[data.startIndex + at + 16])
             let decimals = Int(data[data.startIndex + at + 17])
             let type = data[data.startIndex + at + 11]
-            if fields.count < maxFields { fields.append(Field(name: name.isEmpty ? "Field \(fields.count + 1)" : name, type: type, offset: offset, length: length, decimals: decimals)) }
+            if fields.count < maxFields {
+                let number = String(fields.count + 1)
+                let fieldName = name.isEmpty
+                    ? String(localized: "Field \(number)", bundle: .greeceKit, comment: "Name of an unnamed attribute of a shapefile, such as “Field 3”")
+                    : name
+                fields.append(Field(name: fieldName, type: type, offset: offset, length: length, decimals: decimals))
+            }
             offset += length
             at += 32
         }
