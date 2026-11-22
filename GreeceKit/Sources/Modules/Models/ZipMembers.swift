@@ -82,6 +82,8 @@ struct ZipMembers {
         var stream = z_stream()
         guard inflateInit2_(&stream, -15, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) == Z_OK else { return nil }
         defer { inflateEnd(&stream) }
+        // DEFLATE can't expand data more than about 1,032 times: a header promising more is lying.
+        let limit = min(limit, input.count * 1100 + 1024)
         var output = Data(count: max(1, min(expected > 0 ? expected : input.count * 4, limit)))
         var produced = 0
         var input = input

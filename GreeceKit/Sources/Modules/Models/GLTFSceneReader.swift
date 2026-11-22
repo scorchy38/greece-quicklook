@@ -252,7 +252,10 @@ struct GLTFSceneReader {
         let normalized = normalize && (accessor["normalized"] as? Bool ?? false)
         let componentSize = [5120: 1, 5121: 1, 5122: 2, 5123: 2, 5125: 4, 5126: 4][type] ?? 0
         guard count > 0, count <= 50_000_000, componentSize > 0 else { return nil }
-        guard let viewIndex = accessor["bufferView"] as? Int else { return [Float](repeating: 0, count: count * components) }
+        // Accessors without data are all zeros (sparse ones aren't read); don't let one allocate much.
+        guard let viewIndex = accessor["bufferView"] as? Int else {
+            return count <= 1_000_000 ? [Float](repeating: 0, count: count * components) : nil
+        }
         guard let (view, declaredStride) = bufferView(viewIndex) else { return nil }
         let offset = accessor["byteOffset"] as? Int ?? 0
         let elementSize = componentSize * components

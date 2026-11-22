@@ -168,6 +168,8 @@ enum FBXReader {
     /// zlib-wrapped DEFLATE, stopping at `expected` bytes.
     static func inflateZlib(_ input: Data, expected: Int) -> Data? {
         guard expected > 0, expected <= Limits.arrayElements * 8 else { return expected == 0 ? Data() : nil }
+        // zlib can't expand data more than about 1,032 times: a header promising more is lying.
+        guard expected <= input.count * 1100 + 1024 else { return nil }
         var stream = z_stream()
         guard inflateInit_(&stream, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) == Z_OK else { return nil }
         defer { inflateEnd(&stream) }
