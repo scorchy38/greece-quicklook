@@ -33,9 +33,10 @@ qlmanage -r >/dev/null 2>&1 || true
 # Any other copy (old downloads, build folders) competes with this one: remove them.
 # (Launching a build's app, e.g. for a render, registers that copy again.)
 for id in "${ids[@]}"; do
-  pluginkit -m -A -D -v -i "$id" | awk -F'\t' '{print $NF}' | grep '^/' | grep -v "^$dest/" | while read -r other; do
-    pluginkit -r "$other" 2>/dev/null || true
-  done
+  others=$(pluginkit -m -A -D -v -i "$id" | awk -F'\t' '{print $NF}' | grep '^/' | grep -v "^$dest/" || true)
+  while read -r other; do
+    [[ -n "$other" ]] && { pluginkit -r "$other" 2>/dev/null || true; }
+  done <<< "$others"
 done
 
 # The registry can lag when the Mac is busy; give it up to 15 more seconds.
