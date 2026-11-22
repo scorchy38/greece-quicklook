@@ -78,3 +78,4 @@ To add features to an existing kind of page without editing `greece.js`, put
 - Pages of that kind load them automatically.
 - Register with `greece.enhance('<kind>', async (root, kit) => { … })`.
 - Enhancers run after the page has rendered and before it's shown. A failing enhancer is logged and skipped.
+- To add Markdown syntax, push a markdown-it plugin to `greece.markdownPlugins` when the script loads (`greece.markdownPlugins.push((md) => …)`). Every Markdown renderer uses it: pages, notebooks and modules' prose.
