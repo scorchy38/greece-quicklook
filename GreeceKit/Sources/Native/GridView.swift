@@ -210,6 +210,18 @@ final class GridView: NSView, NSTableViewDataSource, NSTableViewDelegate {
 
     func refreshHeader() { header.needsDisplay = true }
 
+    /// Widens columns whose strip wouldn't fit (a profile's kind and its detail side by side), so a
+    /// longer word in another language ("Ganzzahl", "Целое число") doesn't hide the detail. Never
+    /// narrows a column, and stops at `limit`, so one long caption can't push the others away.
+    func widenColumnsToFitStrips(limit: CGFloat = 220) {
+        guard stripHeight > 0 else { return }
+        for column in tableView.tableColumns {
+            guard let index = Int(column.identifier.rawValue), let strip = strip(forColumn: index) else { continue }
+            let needed = (GridStripRenderer.width(of: strip) + 18).rounded(.up)
+            if needed > column.width, column.width < limit { column.width = min(needed, limit) }
+        }
+    }
+
     private func rowNumberWidth() -> CGFloat {
         CGFloat(max(2, String(source.rowCount).count)) * 7.5 + 18
     }
@@ -736,9 +748,25 @@ final class GridHeaderBar: NSView, NSViewToolTipOwner {
 }
 
 enum GridStripRenderer {
+    private static let small = NSFont.systemFont(ofSize: 10, weight: .medium)
+    private static let detailFont = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
+
+    /// The width a strip's text needs on one line: a profile's kind and detail, or a caption.
+    static func width(of strip: GridHeaderStrip) -> CGFloat {
+        func measure(_ string: String, _ font: NSFont) -> CGFloat { (string as NSString).size(withAttributes: [.font: font]).width }
+        switch strip {
+        case .profile(let kind, let detail, _, _, _):
+            return measure(kind, small) + (detail.map { 6 + measure($0, detailFont) } ?? 0)
+        case .caption(let caption, let symbol):
+            return measure(caption, small) + (symbol == nil ? 0 : 12)
+        case .progress(_, let caption):
+            return measure(caption, detailFont)
+        case .pending:
+            return 0
+        }
+    }
+
     static func draw(_ strip: GridHeaderStrip, in rect: NSRect, alignRight: Bool) {
-        let small = NSFont.systemFont(ofSize: 10, weight: .medium)
-        let detailFont = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
         func text(_ string: String, font: NSFont, color: NSColor, in frame: NSRect, align: NSTextAlignment) {
             let style = NSMutableParagraphStyle()
             style.alignment = align

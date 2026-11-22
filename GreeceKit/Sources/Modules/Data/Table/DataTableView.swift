@@ -339,6 +339,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
     @objc private func toggleProfiles(_ sender: NSButton) {
         profilesShown = sender.state == .on
         updateStrips()
+        grid.widenColumnsToFitStrips()
         grid.refreshHeader()
     }
 
@@ -366,6 +367,7 @@ final class DataTableView: NSView, PreviewSettingsAware, NSSearchFieldDelegate {
                             self.profiles[index] = profile
                             if profile.kind != .text, profile.kind != .empty { self.source.sortKinds[index] = profile.kind }
                         }
+                        self.grid.widenColumnsToFitStrips()
                         self.grid.refreshHeader()
                     }
                 }
