@@ -59,9 +59,9 @@ struct CodeSignature {
         switch hashType {
         case 1: return "SHA-1"
         case 2: return "SHA-256"
-        case 3: return "SHA-256 (truncated)"
+        case 3: return String(localized: "SHA-256 (truncated)", bundle: .greeceKit, comment: "A hash algorithm, in a tooltip")
         case 4: return "SHA-384"
-        default: return "Unknown"
+        default: return String(localized: "Unknown", bundle: .greeceKit, comment: "An unknown hash algorithm, in a tooltip")
         }
     }
 

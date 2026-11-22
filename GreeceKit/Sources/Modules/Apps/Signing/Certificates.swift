@@ -19,7 +19,8 @@ struct CertificateSummary: Equatable {
         sha1 = Insecure.SHA1.hash(data: der).map { String(format: "%02x", $0) }.joined()
         var name: CFString?
         SecCertificateCopyCommonName(certificate, &name)
-        commonName = (name as String?) ?? (SecCertificateCopySubjectSummary(certificate) as String?) ?? "Unnamed certificate"
+        commonName = (name as String?) ?? (SecCertificateCopySubjectSummary(certificate) as String?)
+            ?? String(localized: "Unnamed certificate", bundle: .greeceKit)
 
         let keys = [kSecOIDX509V1SubjectName, kSecOIDX509V1IssuerName, kSecOIDX509V1ValidityNotBefore, kSecOIDX509V1ValidityNotAfter] as CFArray
         guard let values = SecCertificateCopyValues(certificate, keys, nil) as? [String: Any] else { return }
@@ -95,33 +96,45 @@ enum SignerKind: Equatable {
         }
     }
 
+    /// Apple's program names ("App Store", "TestFlight", "Developer ID") stay as they are.
     var title: String {
         switch self {
         case .apple: return "Apple"
         case .appStore: return "App Store"
         case .testFlight: return "TestFlight"
         case .developerID: return "Developer ID"
-        case .development: return "Development"
-        case .distribution: return "Distribution"
-        case .adHoc: return "Ad Hoc"
-        case .other: return "Signed"
+        case .development: return String(localized: "Development", bundle: .greeceKit, comment: "Badge and inspector row value: how code was signed (a development certificate)")
+        case .distribution: return String(localized: "Distribution", bundle: .greeceKit, comment: "Badge and inspector row value: how code was signed (a distribution certificate)")
+        case .adHoc: return String(localized: "Ad Hoc", bundle: .greeceKit, comment: "Badge and inspector row value: how code was signed (without a certificate)")
+        case .other: return String(localized: "Signed", bundle: .greeceKit, comment: "Badge and inspector row value: signed with some other certificate (adjective)")
         }
     }
 
     var badge: InspectorBadge {
         switch self {
-        case .apple: return InspectorBadge("signer", symbol: "apple.logo", title: "Apple", tone: .positive, help: "Signed by Apple as part of its own software.")
-        case .appStore: return InspectorBadge("signer", symbol: "bag", title: "App Store", tone: .positive, help: "Signed by Apple for distribution through the App Store.")
-        case .testFlight: return InspectorBadge("signer", symbol: "airplane", title: "TestFlight", tone: .accent, help: "Signed by Apple for beta testing through TestFlight.")
-        case .developerID: return InspectorBadge("signer", symbol: "checkmark.seal", title: "Developer ID", tone: .positive, help: "Signed with a Developer ID certificate for distribution outside the App Store.")
-        case .development: return InspectorBadge("signer", symbol: "hammer", title: "Development", tone: .caution, help: "Signed with a development certificate. It runs only on registered devices or the developer’s Mac.")
-        case .distribution: return InspectorBadge("signer", symbol: "shippingbox", title: "Distribution", tone: .accent, help: "Signed with a distribution certificate (ad hoc, enterprise or App Store submission).")
-        case .adHoc: return InspectorBadge("signer", symbol: "signature", title: "Ad Hoc", tone: .caution, help: "Signed without a certificate. Gatekeeper treats it as coming from an unidentified developer.")
-        case .other: return InspectorBadge("signer", symbol: "signature", title: "Signed", tone: .neutral, help: "Signed with a certificate that isn’t one of Apple’s developer certificates.")
+        case .apple: return InspectorBadge("signer", symbol: "apple.logo", title: title, tone: .positive,
+                                           help: String(localized: "Signed by Apple as part of its own software.", bundle: .greeceKit))
+        case .appStore: return InspectorBadge("signer", symbol: "bag", title: title, tone: .positive,
+                                              help: String(localized: "Signed by Apple for distribution through the App Store.", bundle: .greeceKit))
+        case .testFlight: return InspectorBadge("signer", symbol: "airplane", title: title, tone: .accent,
+                                                help: String(localized: "Signed by Apple for beta testing through TestFlight.", bundle: .greeceKit))
+        case .developerID: return InspectorBadge("signer", symbol: "checkmark.seal", title: title, tone: .positive,
+                                                 help: String(localized: "Signed with a Developer ID certificate for distribution outside the App Store.", bundle: .greeceKit))
+        case .development: return InspectorBadge("signer", symbol: "hammer", title: title, tone: .caution,
+                                                 help: String(localized: "Signed with a development certificate. It runs only on registered devices or the developer’s Mac.", bundle: .greeceKit))
+        case .distribution: return InspectorBadge("signer", symbol: "shippingbox", title: title, tone: .accent,
+                                                  help: String(localized: "Signed with a distribution certificate (ad hoc, enterprise or App Store submission).", bundle: .greeceKit))
+        case .adHoc: return InspectorBadge("signer", symbol: "signature", title: title, tone: .caution,
+                                           help: String(localized: "Signed without a certificate. Gatekeeper treats it as coming from an unidentified developer.", bundle: .greeceKit))
+        case .other: return InspectorBadge("signer", symbol: "signature", title: title, tone: .neutral,
+                                           help: String(localized: "Signed with a certificate that isn’t one of Apple’s developer certificates.", bundle: .greeceKit))
         }
     }
 
-    static let unsignedBadge = InspectorBadge("signer", symbol: "xmark.seal", title: "Unsigned", tone: .critical, help: "Not code signed. macOS won’t run it without an explicit exception.")
+    static var unsignedBadge: InspectorBadge {
+        InspectorBadge("signer", symbol: "xmark.seal", title: String(localized: "Unsigned", bundle: .greeceKit, comment: "Badge: the code has no signature"), tone: .critical,
+                       help: String(localized: "Not code signed. macOS won’t run it without an explicit exception.", bundle: .greeceKit))
+    }
 }
 
 enum CertificateRows {
@@ -129,13 +142,17 @@ enum CertificateRows {
     static func chain(_ certificates: [CertificateSummary], now: Date = Date()) -> [InspectorItem] {
         certificates.enumerated().map { index, certificate in
             var details: [InspectorItem] = []
-            if let organization = certificate.organization { details.append(.field("Organization", organization)) }
-            if let unit = certificate.organizationalUnit { details.append(.field("Unit", unit, mono: unit.count == 10)) }
-            if let issuer = certificate.issuer { details.append(.field("Issued By", issuer)) }
-            if let start = certificate.notBefore { details.append(.field("Valid From", Format.date(start))) }
+            if let organization = certificate.organization {
+                details.append(.field(String(localized: "Organization", bundle: .greeceKit, comment: "Inspector row title: a certificate’s organization"), organization))
+            }
+            if let unit = certificate.organizationalUnit {
+                details.append(.field(String(localized: "Unit", bundle: .greeceKit, comment: "Inspector row title: a certificate’s organizational unit (often a team ID)"), unit, mono: unit.count == 10))
+            }
+            if let issuer = certificate.issuer { details.append(.field(String(localized: "Issued By", bundle: .greeceKit, comment: "Inspector row title: who issued a certificate"), issuer)) }
+            if let start = certificate.notBefore { details.append(.field(String(localized: "Valid From", bundle: .greeceKit, comment: "Inspector row title: a certificate’s start date"), Format.date(start))) }
             if let end = certificate.notAfter {
                 let expiry = Format.expiry(end, now: now)
-                details.append(.field("Valid Until", Format.date(end), tone: expiry.tone == .critical ? .critical : .neutral))
+                details.append(.field(validUntilLabel, Format.date(end), tone: expiry.tone == .critical ? .critical : .neutral))
             }
             details.append(.field("SHA-256", Format.grouped(hex: certificate.sha256), mono: true))
             details.append(.field("SHA-1", Format.grouped(hex: certificate.sha1), mono: true))
@@ -147,10 +164,17 @@ enum CertificateRows {
                 subtitle = expiry.text
                 tone = expiry.tone
             }
-            let role = index == 0 ? "Signed by" : (index == certificates.count - 1 && certificate.isSelfSigned ? "Root" : "Intermediate")
-            return InspectorItem(symbol: index == 0 ? "person.text.rectangle" : (role == "Root" ? "building.columns" : "arrow.turn.down.right"),
+            let isRoot = index > 0 && index == certificates.count - 1 && certificate.isSelfSigned
+            let role = isRoot ? String(localized: "Root", bundle: .greeceKit, comment: "Inspector row value: a root certificate")
+                : String(localized: "Intermediate", bundle: .greeceKit, comment: "Inspector row value: an intermediate certificate")
+            return InspectorItem(symbol: index == 0 ? "person.text.rectangle" : (isRoot ? "building.columns" : "arrow.turn.down.right"),
                                  title: certificate.commonName, subtitle: subtitle, value: index == 0 ? nil : role,
                                  tone: tone, help: "SHA-256 " + certificate.sha256, details: details)
         }
+    }
+
+    /// The title of each certificate's expiry date row.
+    static var validUntilLabel: String {
+        String(localized: "Valid Until", bundle: .greeceKit, comment: "Inspector row title: a certificate’s expiry date")
     }
 }
