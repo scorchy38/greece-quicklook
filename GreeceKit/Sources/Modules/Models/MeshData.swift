@@ -18,6 +18,8 @@ struct ModelMesh {
     var normals: [SIMD3<Float>] = []
     var uvs: [SIMD2<Float>] = []
     var colors: [SIMD4<Float>] = []
+    /// glTF stores linear vertex colours; every other format here stores sRGB.
+    var colorsAreLinear = false
     var indices: [UInt32] = []
     var material = ModelMaterial()
 
@@ -127,6 +129,7 @@ extension ModelMesh {
         }
         var result = clusterer.mesh
         result.material = material
+        result.colorsAreLinear = colorsAreLinear
         result.computeNormals()
         return result
     }

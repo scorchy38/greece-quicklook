@@ -79,6 +79,7 @@ struct GLTFSceneReader {
         if let colorIndex = attributes["COLOR_0"] as? Int, document.accessors.indices.contains(colorIndex) {
             let width = document.accessors[colorIndex]["type"] as? String == "VEC3" ? 3 : 4
             if let colors = floats(colorIndex, components: width), colors.count == mesh.positions.count * width {
+                mesh.colorsAreLinear = true
                 mesh.colors = stride(from: 0, to: colors.count - width + 1, by: width).map {
                     SIMD4(colors[$0], colors[$0 + 1], colors[$0 + 2], width == 4 ? colors[$0 + 3] : 1)
                 }

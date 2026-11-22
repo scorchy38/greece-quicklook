@@ -36,7 +36,9 @@ enum ModelRenderer {
             sources.append(SCNGeometrySource(textureCoordinates: mesh.uvs.map { CGPoint(x: CGFloat($0.x), y: CGFloat($0.y)) }))
         }
         if !mesh.colors.isEmpty {
-            let data = mesh.colors.withUnsafeBufferPointer { Data(buffer: $0) }
+            // SceneKit reads float vertex colours as linear.
+            let colors = mesh.colorsAreLinear ? mesh.colors : mesh.colors.map { SIMD4(linear($0.x), linear($0.y), linear($0.z), $0.w) }
+            let data = colors.withUnsafeBufferPointer { Data(buffer: $0) }
             sources.append(SCNGeometrySource(data: data, semantic: .color, vectorCount: mesh.colors.count, usesFloatComponents: true,
                                              componentsPerVector: 4, bytesPerComponent: 4, dataOffset: 0,
                                              dataStride: MemoryLayout<SIMD4<Float>>.stride))
@@ -78,7 +80,8 @@ enum ModelRenderer {
 
     static func geometry(for points: ModelPoints) -> SCNGeometry {
         let vertices = SCNGeometrySource(vertices: points.positions.map { SCNVector3($0.x, $0.y, $0.z) })
-        let colors = points.colors.count == points.positions.count ? points.colors : points.positions.map { _ in SIMD3<Float>(0.6, 0.62, 0.66) }
+        let srgb = points.colors.count == points.positions.count ? points.colors : points.positions.map { _ in SIMD3<Float>(0.6, 0.62, 0.66) }
+        let colors = srgb.map { SIMD3(linear($0.x), linear($0.y), linear($0.z)) }
         let colorData = colors.withUnsafeBufferPointer { Data(buffer: $0) }
         let colorSource = SCNGeometrySource(data: colorData, semantic: .color, vectorCount: colors.count, usesFloatComponents: true,
                                             componentsPerVector: 3, bytesPerComponent: 4, dataOffset: 0,
@@ -102,6 +105,11 @@ enum ModelRenderer {
         return geometry
     }
 
+    /// The sRGB transfer function, inverted.
+    static func linear(_ value: Float) -> Float {
+        value <= 0.04045 ? value / 12.92 : pow((value + 0.055) / 1.055, 2.4)
+    }
+
     // MARK: - Scenes SceneKit or ModelIO loaded
 
     /// Brings a loaded scene into the studio: lights and cameras go, plain materials become physically based.
@@ -112,13 +120,42 @@ enum ModelRenderer {
         content.enumerateHierarchy { node, _ in
             node.light = nil
             node.camera = nil
-            guard let geometry = node.geometry else { return }
+            guard var geometry = node.geometry else { return }
+            if let linear = linearizingColors(geometry) {
+                node.geometry = linear
+                geometry = linear
+            }
             for element in geometry.elements where element.primitiveType == .triangles { triangles += element.primitiveCount }
             geometry.materials = geometry.materials.map { studioMaterial(from: $0, geometry: geometry, clayWhenPlain: clayWhenPlain) }
             if geometry.materials.isEmpty { geometry.materials = [studioMaterial(from: SCNMaterial(), geometry: geometry, clayWhenPlain: true)] }
         }
         guard triangles > 0 else { return nil }
         return render(content, zUp: zUp, isCloud: false, pixels: pixels)
+    }
+
+    /// ModelIO and SceneKit hand over files' sRGB vertex colours as they are; SceneKit then reads them
+    /// as linear, washing them out. Returns a copy with linear colours, or nil if there's nothing to fix.
+    static func linearizingColors(_ geometry: SCNGeometry) -> SCNGeometry? {
+        guard let source = geometry.sources(for: .color).first, source.usesFloatComponents, source.bytesPerComponent == 4,
+              source.componentsPerVector >= 3, source.vectorCount > 0 else { return nil }
+        let components = source.componentsPerVector
+        let stride = source.dataStride, offset = source.dataOffset
+        guard stride >= components * 4, offset + (source.vectorCount - 1) * stride + components * 4 <= source.data.count else { return nil }
+        var values = [Float](repeating: 0, count: source.vectorCount * components)
+        source.data.withUnsafeBytes { raw in
+            for v in 0..<source.vectorCount {
+                for c in 0..<components {
+                    let value = raw.loadUnaligned(fromByteOffset: offset + v * stride + c * 4, as: Float.self)
+                    values[v * components + c] = c < 3 ? linear(min(max(value, 0), 1)) : value
+                }
+            }
+        }
+        let converted = SCNGeometrySource(data: values.withUnsafeBufferPointer { Data(buffer: $0) }, semantic: .color, vectorCount: source.vectorCount,
+                                          usesFloatComponents: true, componentsPerVector: components, bytesPerComponent: 4,
+                                          dataOffset: 0, dataStride: components * 4)
+        let copy = SCNGeometry(sources: geometry.sources.map { $0.semantic == .color ? converted : $0 }, elements: geometry.elements)
+        copy.materials = geometry.materials
+        return copy
     }
 
     private static func studioMaterial(from original: SCNMaterial, geometry: SCNGeometry, clayWhenPlain: Bool) -> SCNMaterial {
