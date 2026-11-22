@@ -1,0 +1,14 @@
+/* Greece — indent guides. One hairline per indentation step, theme-coloured, drawn as a
+   repeating gradient sized to the line's indentation. */
+
+html.has-guides .code-view .ln.gd {
+  background-image: repeating-linear-gradient(to right, var(--guide) 0 1px, transparent 1px var(--guide-unit));
+  background-size: calc(var(--guide-unit) * var(--g)) 100%;
+  background-position: var(--code-x) 0;
+  background-repeat: no-repeat;
+}
+.ln.g1 { --g: 1; } .ln.g2 { --g: 2; } .ln.g3 { --g: 3; } .ln.g4 { --g: 4; } .ln.g5 { --g: 5; }
+.ln.g6 { --g: 6; } .ln.g7 { --g: 7; } .ln.g8 { --g: 8; } .ln.g9 { --g: 9; } .ln.g10 { --g: 10; }
+.ln.g11 { --g: 11; } .ln.g12 { --g: 12; } .ln.g13 { --g: 13; } .ln.g14 { --g: 14; } .ln.g15 { --g: 15; }
+.ln.g16 { --g: 16; } .ln.g17 { --g: 17; } .ln.g18 { --g: 18; } .ln.g19 { --g: 19; } .ln.g20 { --g: 20; }
+.ln.g21 { --g: 21; } .ln.g22 { --g: 22; } .ln.g23 { --g: 23; } .ln.g24 { --g: 24; }
