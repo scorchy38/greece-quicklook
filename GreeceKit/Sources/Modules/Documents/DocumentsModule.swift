@@ -96,12 +96,6 @@ enum DocumentsModule: PreviewModule {
         return [String(localized: "\(words) words", bundle: .greeceKit, comment: "Info bar detail: a document’s word count"), time]
     }
 
-    /// "1 line", "1,204 lines", in English only. Being replaced: a count people see is a whole phrase
-    /// with plural variations, `String(localized: "\(count) lines", bundle: .greeceKit)`.
-    static func count(_ n: Int, _ singular: String, _ plural: String? = nil) -> String {
-        "\(n.formatted()) \(n == 1 ? singular : (plural ?? singular + "s"))"
-    }
-
     /// Extra highlight.js grammars a page needs for its code (only ones that ship in the bundle).
     static func grammarScripts(_ languages: Set<String>) -> [String] {
         languages.compactMap { name -> String? in

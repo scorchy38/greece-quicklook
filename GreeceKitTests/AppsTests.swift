@@ -538,8 +538,6 @@ final class AppsCoreTests: XCTestCase {
         XCTAssertEqual(Format.version("2.1", build: "214"), "Version 2.1 (214)")
         XCTAssertEqual(Format.version("3.0", build: "3.0"), "Version 3.0")
         XCTAssertNil(Format.version(" ", build: nil))
-        XCTAssertEqual(Format.count(1, "file"), "1 file")
-        XCTAssertEqual(Format.count(1204, "library", "libraries"), "1,204 libraries")
         XCTAssertEqual(Format.clean("a\u{0}b\u{7}c" + String(repeating: "x", count: 400), limit: 10), "abcxxxxxxx…")
         XCTAssertEqual(BundlePage.sdkName("macosx15.2", xcode: "1620", build: nil), "macOS 15.2 SDK, Xcode 16.2")
         XCTAssertEqual(BundlePage.humanize("NSPrivacyCollectedDataTypeEmailAddress", prefix: "NSPrivacyCollectedDataType"), "Email address")

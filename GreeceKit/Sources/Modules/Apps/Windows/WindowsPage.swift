@@ -379,9 +379,10 @@ enum WindowsPage {
         let total = file.imports.reduce(0) { $0 + $1.functionCount }
         let libraries = file.imports.count
         let thirdParty = file.imports.filter { !libraryDescription($0.name).isSystem }.count
+        // Separate facts, so each count takes its own plural form.
         let footer = Format.joined([
-            String(localized: "\(total) functions from \(libraries) libraries", bundle: .greeceKit,
-                   comment: "Section footer. The arguments are counts of imported functions and of the libraries they come from"),
+            String(localized: "\(libraries) libraries", bundle: .greeceKit, comment: "Section footer: how many libraries a program imports"),
+            String(localized: "\(total) imported functions", bundle: .greeceKit, comment: "Section footer: how many functions a program imports from those libraries"),
             thirdParty > 0 ? String(localized: "\(thirdParty) not part of Windows", bundle: .greeceKit,
                                     comment: "Section footer: how many of the imported libraries don’t come with Windows. The argument is a count") : nil,
         ])

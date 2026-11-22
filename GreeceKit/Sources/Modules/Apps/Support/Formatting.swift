@@ -8,12 +8,6 @@ enum Format {
 
     static func bytes(_ value: Int) -> String { bytes(UInt64(max(0, value))) }
 
-    /// "1 file", "1,204 files", in English only. Being replaced: a count people see is a whole phrase
-    /// with plural variations, `String(localized: "\(count) files", bundle: .greeceKit)`.
-    static func count(_ value: Int, _ singular: String, _ plural: String? = nil) -> String {
-        "\(value.formatted()) \(value == 1 ? singular : (plural ?? singular + "s"))"
-    }
-
     static func date(_ date: Date) -> String {
         date.formatted(date: .abbreviated, time: .omitted)
     }
