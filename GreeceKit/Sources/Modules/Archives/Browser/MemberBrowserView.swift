@@ -15,17 +15,17 @@ extension ArchiveSession: MemberSource {
 }
 
 /// A Finder-style list of files with the selected one's real preview (or Get Info) in a pane that
-/// opens beside it: the body of the archive browser, and of disk images' Files tab.
+/// opens beside it: the body of the archive browser, folders, and disk images' Files tab.
 @MainActor
-final class MemberBrowserView: NSView, NSSplitViewDelegate {
+final class MemberBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegate {
     let tree: FileTreeView
     private let pane: EntryPreviewPane
     private let split = NSSplitView()
     private var paneShown = false
     private var paneFraction: CGFloat = 0.5
 
-    init(root: FileNode, source: MemberSource, scratch: ArchiveScratch, settings: PreviewSettings, compressedSizes: Bool = false) {
-        tree = FileTreeView(root: root, settings: settings, showsKind: false, compressedSizes: compressedSizes)
+    init(root: FileNode, source: MemberSource, scratch: ArchiveScratch, settings: PreviewSettings, showsKind: Bool = false, compressedSizes: Bool = false) {
+        tree = FileTreeView(root: root, settings: settings, showsKind: showsKind, compressedSizes: compressedSizes)
         pane = EntryPreviewPane(source: source, scratch: scratch, settings: settings,
                                 headerHeight: tree.outline.headerView?.frame.height ?? 28)
         super.init(frame: NSRect(x: 0, y: 0, width: 980, height: 600))

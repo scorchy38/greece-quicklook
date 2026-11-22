@@ -241,6 +241,11 @@ public enum PreviewFactory {
             browser.reportSelection()
             return view
         case .tree(let root, let summary, let showsKind):
+            // A folder on disk previews whatever is selected in it, as an archive does.
+            if root.url != nil {
+                let browser = MemberBrowserView(root: root, source: LocalMembers(), scratch: ArchiveScratch(), settings: settings, showsKind: showsKind)
+                return PreviewView(content: browser, summary: summary, preferredSize: NSSize(width: 980, height: 640), settings: settings)
+            }
             let tree = FileTreeView(root: root, settings: settings, showsKind: showsKind)
             return PreviewView(content: tree, summary: summary, preferredSize: NSSize(width: 820, height: 600), settings: settings)
         case .video(let summary):
