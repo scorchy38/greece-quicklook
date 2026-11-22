@@ -36,7 +36,7 @@
     if (Math.abs(shift) > 1) window.scrollBy(0, shift);
   }
 
-  greece.enhance('markdown', (root) => {
+  greece.enhance('markdown', (root, kit) => {
     const sets = Array.from(root.querySelectorAll('.md-tabs'));
     if (!sets.length) return;
     sets.forEach((set, n) => {
@@ -50,7 +50,7 @@
         button.type = 'button';
         button.setAttribute('role', 'tab');
         button.id = `md-tab-${n}-${i}`;
-        button.textContent = panel.dataset.label || `Tab ${i + 1}`;
+        button.textContent = panel.dataset.label || kit.t('Tab {0}', i + 1);
         panel.setAttribute('role', 'tabpanel');
         panel.setAttribute('aria-labelledby', button.id);
         bar.appendChild(button);

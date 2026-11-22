@@ -24,8 +24,8 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'mermaid-expand';
-      button.title = 'Open Diagram';
-      button.setAttribute('aria-label', 'Open Diagram');
+      button.title = kit.t('Open Diagram');
+      button.setAttribute('aria-label', kit.t('Open Diagram'));
       button.innerHTML = ICONS.expand;
       block.appendChild(button);
     });
@@ -44,18 +44,19 @@
       const overlay = document.createElement('div');
       overlay.className = 'diagram-view';
       overlay.setAttribute('role', 'dialog');
-      overlay.setAttribute('aria-label', 'Diagram');
+      overlay.setAttribute('aria-label', kit.t('Diagram'));
+      const tip = (text, key) => `title="${kit.esc(text)} (${key})" aria-label="${kit.esc(text)}"`;
       overlay.innerHTML = `
         <div class="diagram-stage"><div class="diagram-canvas"></div></div>
         <div class="diagram-bar" role="toolbar">
-          <button type="button" data-act="out" title="Zoom Out (−)">${ICONS.minus}</button>
-          <button type="button" data-act="actual" class="zoom-level" title="Actual Size (1)">100%</button>
-          <button type="button" data-act="in" title="Zoom In (+)">${ICONS.plus}</button>
+          <button type="button" data-act="out" ${tip(kit.t('Zoom Out'), '−')}>${ICONS.minus}</button>
+          <button type="button" data-act="actual" class="zoom-level" ${tip(kit.t('Actual Size'), '1')}>${kit.esc(kit.number(1, { style: 'percent' }))}</button>
+          <button type="button" data-act="in" ${tip(kit.t('Zoom In'), '+')}>${ICONS.plus}</button>
           <span class="sep"></span>
-          <button type="button" data-act="fit" title="Zoom to Fit (0)">${ICONS.fit}</button>
-          <button type="button" data-act="copy" class="labelled" title="Copy as SVG">${ICONS.copy}<span>Copy SVG</span></button>
+          <button type="button" data-act="fit" ${tip(kit.t('Zoom to Fit'), '0')}>${ICONS.fit}</button>
+          <button type="button" data-act="copy" class="labelled" title="${kit.esc(kit.t('Copy as SVG'))}">${ICONS.copy}<span>${kit.esc(kit.t('Copy SVG'))}</span></button>
           <span class="sep"></span>
-          <button type="button" data-act="close" title="Close (Esc)">${ICONS.close}</button>
+          <button type="button" data-act="close" ${tip(kit.t('Close'), 'Esc')}>${ICONS.close}</button>
         </div>`;
       const stage = overlay.querySelector('.diagram-stage');
       const canvas = overlay.querySelector('.diagram-canvas');
@@ -78,7 +79,7 @@
       let y = 0;
       const apply = () => {
         canvas.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
-        level.textContent = Math.round(scale * 100) + '%';
+        level.textContent = kit.number(Math.round(scale * 100) / 100, { style: 'percent' });
       };
       const zoomAt = (factor, px, py) => {
         const target = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * factor));
@@ -174,10 +175,10 @@
             .replace(/ style="max-width: none;?"/, '');
           kit.copyText('<?xml version="1.0" encoding="UTF-8"?>\n' + markup);
           const labelNode = button.querySelector('span');
-          labelNode.textContent = 'Copied';
+          labelNode.textContent = kit.t('Copied');
           button.classList.add('done');
           clearTimeout(button._t);
-          button._t = setTimeout(() => { labelNode.textContent = 'Copy SVG'; button.classList.remove('done'); }, 1400);
+          button._t = setTimeout(() => { labelNode.textContent = kit.t('Copy SVG'); button.classList.remove('done'); }, 1400);
         }
       });
 

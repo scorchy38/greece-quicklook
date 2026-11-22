@@ -24,9 +24,9 @@
     panel.className = 'code-symbols code-overlay';
     panel.hidden = true;
     panel.innerHTML = `
-      <header><span class="title">Symbols</span><span class="count"></span></header>
-      <label class="symbols-filter"><span class="glyph">${G.icons.search}</span><input type="text" placeholder="Filter" spellcheck="false" autocomplete="off" aria-label="Filter symbols"></label>
-      <nav class="symbols-list" aria-label="Symbols"></nav>`;
+      <header><span class="title">${kit.esc(kit.t('Symbols'))}</span><span class="count"></span></header>
+      <label class="symbols-filter"><span class="glyph">${G.icons.search}</span><input type="text" placeholder="${kit.esc(kit.t('Filter'))}" spellcheck="false" autocomplete="off" aria-label="${kit.esc(kit.t('Filter Symbols'))}"></label>
+      <nav class="symbols-list" aria-label="${kit.esc(kit.t('Symbols'))}"></nav>`;
     document.body.appendChild(panel);
     const list = panel.querySelector('.symbols-list');
     const filter = panel.querySelector('input');
@@ -42,9 +42,9 @@
           return `<a class="sym mark" data-i="${i}" style="--depth:${query ? 0 : s.depth}">${kit.esc(s.name)}</a>`;
         }
         const [letter, tone] = BADGES[s.kind] || ['•', 'prop'];
-        return `<a class="sym" data-i="${i}" style="--depth:${query ? 0 : s.depth}" title="${kit.esc(s.name)} — line ${(s.line + 1).toLocaleString()}">`
+        return `<a class="sym" data-i="${i}" style="--depth:${query ? 0 : s.depth}" title="${kit.esc(kit.t('{0} — line {1}', s.name, s.line + 1))}">`
           + `<i class="badge ${tone}">${letter}</i><span class="name">${kit.esc(s.name)}</span></a>`;
-      }).join('') || `<p class="none">${query ? 'No matching symbols' : 'No symbols'}</p>`;
+      }).join('') || `<p class="none">${kit.esc(query ? kit.t('No matching symbols') : kit.t('No symbols'))}</p>`;
       items = Array.from(list.querySelectorAll('.sym'));
       active = -1;
       track();
@@ -110,8 +110,8 @@
     function start(analysis) {
       symbols = analysis.symbols || [];
       if (!symbols.length) return;
-      countLabel.textContent = symbols.filter((s) => s.kind !== 'mark').length.toLocaleString();
-      button = G.addTool({ icon: 'sidebar', label: 'Symbols', title: 'Symbols (⇧⌘O)', order: 40, onClick: toggle });
+      countLabel.textContent = kit.number(symbols.filter((s) => s.kind !== 'mark').length);
+      button = G.addTool({ icon: 'sidebar', label: kit.t('Symbols'), title: kit.t('Symbols') + ' (⇧⌘O)', order: 40, onClick: toggle });
       render();
       const wide = window.innerWidth >= 1240 && kit.options.outline && symbols.length >= 6;
       if (wide && !G.large) open(false);

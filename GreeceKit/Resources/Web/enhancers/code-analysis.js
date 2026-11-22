@@ -657,7 +657,7 @@
           stack.pop();
           end[top] = i + 1;
           next[top] = count;
-        } else if (!error) error = { offset: i, message: 'Unexpected ' + text[i] };
+        } else if (!error) error = { offset: i, reason: 'token', token: text[i], message: 'Unexpected ' + text[i] };
         pendingKey = -1;
         i++;
         continue;
@@ -670,7 +670,7 @@
         let j = i;
         while (j < n && text.charCodeAt(j) <= 32) j++;
         if (text.charCodeAt(j) === 58) { pendingKey = k; i = j + 1; continue; }
-        if (!error) error = { offset: k, message: 'Expected a colon after a key' };
+        if (!error) error = { offset: k, reason: 'colon', message: 'Expected a colon after a key' };
         pendingKey = k;
         continue;
       }
@@ -696,12 +696,12 @@
         else if (word === 'false') type[index] = T.false;
         else if (word === 'null') type[index] = T.null;
         else if (/^[-+]?(?:\d|\.\d|0x[\da-f]|Infinity|NaN)/i.test(word)) type[index] = T.number;
-        else if (!error) error = { offset: s, message: 'Unexpected ' + word.slice(0, 20) };
+        else if (!error) error = { offset: s, reason: 'token', token: word.slice(0, 20), message: 'Unexpected ' + word.slice(0, 20) };
       }
       end[index] = i;
       next[index] = count;
     }
-    if (stack.length > 1 && !error && !truncated) error = { offset: n, message: 'Unexpected end of file' };
+    if (stack.length > 1 && !error && !truncated) error = { offset: n, reason: 'end', message: 'Unexpected end of file' };
     while (stack.length > 1) { const top = stack.pop(); end[top] = n; next[top] = count; }
     end[0] = n;
     next[0] = count;

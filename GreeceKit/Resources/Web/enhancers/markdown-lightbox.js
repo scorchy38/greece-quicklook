@@ -26,7 +26,7 @@
       large.alt = img.alt || '';
       const caption = img.getAttribute('title') || img.alt || '';
       box.querySelector('.lightbox-caption').textContent = caption;
-      box.querySelector('.lightbox-count').textContent = images.length > 1 ? `${index + 1} of ${images.length}` : '';
+      box.querySelector('.lightbox-count').textContent = images.length > 1 ? kit.t('{0} of {1}', index + 1, images.length) : '';
       box.querySelector('.lightbox-prev').disabled = index === 0;
       box.querySelector('.lightbox-next').disabled = index === images.length - 1;
       box.dataset.index = String(index);
@@ -39,12 +39,13 @@
       box = document.createElement('div');
       box.className = 'lightbox';
       box.setAttribute('role', 'dialog');
-      box.setAttribute('aria-label', 'Image');
+      box.setAttribute('aria-label', kit.t('Image'));
+      const label = { close: kit.esc(kit.t('Close')), previous: kit.esc(kit.t('Previous')), next: kit.esc(kit.t('Next')) };
       box.innerHTML = `
         <img class="lightbox-image" alt="">
-        <button type="button" class="lightbox-button lightbox-close" title="Close (Esc)" aria-label="Close">${ICONS.close}</button>
-        ${images.length > 1 ? `<button type="button" class="lightbox-button lightbox-prev" title="Previous (←)" aria-label="Previous">${ICONS.prev}</button>
-        <button type="button" class="lightbox-button lightbox-next" title="Next (→)" aria-label="Next">${ICONS.next}</button>` : '<span class="lightbox-prev" hidden></span><span class="lightbox-next" hidden></span>'}
+        <button type="button" class="lightbox-button lightbox-close" title="${label.close} (Esc)" aria-label="${label.close}">${ICONS.close}</button>
+        ${images.length > 1 ? `<button type="button" class="lightbox-button lightbox-prev" title="${label.previous} (←)" aria-label="${label.previous}">${ICONS.prev}</button>
+        <button type="button" class="lightbox-button lightbox-next" title="${label.next} (→)" aria-label="${label.next}">${ICONS.next}</button>` : '<span class="lightbox-prev" hidden></span><span class="lightbox-next" hidden></span>'}
         <div class="lightbox-footer"><span class="lightbox-caption"></span><span class="lightbox-count"></span></div>`;
       document.body.appendChild(box);
       document.documentElement.classList.add('lightbox-open');

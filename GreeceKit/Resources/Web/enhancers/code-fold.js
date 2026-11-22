@@ -6,7 +6,7 @@
   'use strict';
   if (!window.greece) return;
 
-  greece.enhance('code', () => {
+  greece.enhance('code', (root, kit) => {
     const G = window.greeceCode;
     if (!G) return;
     const count = G.count;
@@ -30,7 +30,6 @@
       regionAt: (i) => (R ? R.at[i] : -1),
     };
 
-    function linesLabel(n) { return n === 1 ? '1 line' : n.toLocaleString() + ' lines'; }
 
     function decorate(el, i) {
       // Touch classes only when they change: this runs on every line of a huge file.
@@ -51,9 +50,10 @@
         pill = null;
       }
       if (pill) {
-        pill.dataset.lines = '⋯  ' + linesLabel(R.hide[r] - R.start[r]);
+        const lines = R.hide[r] - R.start[r];
+        pill.dataset.lines = '⋯  ' + kit.plural(lines, '{0} lines');
         pill.dataset.tail = R.tail[r] ? G.line(R.end[r]).trim() : '';
-        pill.title = 'Show ' + linesLabel(R.hide[r] - R.start[r]);
+        pill.title = kit.plural(lines, 'Show {0} lines');
       }
     }
 

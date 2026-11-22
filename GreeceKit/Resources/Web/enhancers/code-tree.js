@@ -40,7 +40,7 @@
     tree.hidden = true;
     tree.tabIndex = 0;
     tree.setAttribute('role', 'tree');
-    tree.innerHTML = `<div class="tree-head"><span>Key</span><span>Type</span><span>Value</span></div>
+    tree.innerHTML = `<div class="tree-head"><span>${kit.esc(kit.t('Key'))}</span><span>${kit.esc(kit.t('Type'))}</span><span>${kit.esc(kit.t('Value'))}</span></div>
       <div class="tree-message" hidden></div><div class="tree-body"><div class="tree-rows"></div></div>`;
     root.appendChild(tree);
     const head = tree.querySelector('.tree-head');
@@ -51,7 +51,7 @@
     const pathBar = document.createElement('div');
     pathBar.className = 'tree-path code-overlay';
     pathBar.hidden = true;
-    pathBar.innerHTML = `<span class="path-text"></span><button type="button" class="copy-path">Copy Path</button><button type="button" class="copy-value">Copy Value</button>`;
+    pathBar.innerHTML = `<span class="path-text"></span><button type="button" class="copy-path">${kit.esc(kit.t('Copy Path'))}</button><button type="button" class="copy-value">${kit.esc(kit.t('Copy Value'))}</button>`;
     document.body.appendChild(pathBar);
     const pathText = pathBar.querySelector('.path-text');
 
@@ -61,7 +61,9 @@
     switcher.className = 'pill segmented';
     switcher.dataset.order = '10';
     switcher.setAttribute('role', 'group');
-    switcher.innerHTML = '<button type="button" data-mode="code" class="on" title="Code">Code</button><button type="button" data-mode="tree" title="Tree">Tree</button>';
+    const codeLabel = kit.esc(kit.t('Code'));
+    const treeLabel = kit.esc(kit.t('Tree'));
+    switcher.innerHTML = `<button type="button" data-mode="code" class="on" title="${codeLabel}">${codeLabel}</button><button type="button" data-mode="tree" title="${treeLabel}">${treeLabel}</button>`;
     if (tools) tools.insertBefore(switcher, tools.firstChild);
     switcher.addEventListener('click', (event) => {
       const b = event.target.closest('button');
@@ -74,7 +76,7 @@
       const offer = document.createElement('button');
       offer.type = 'button';
       offer.className = 'notice-action';
-      offer.textContent = 'Show the Whole File as a Tree';
+      offer.textContent = kit.t('Show the Whole File as a Tree');
       offer.addEventListener('click', () => show());
       notice.appendChild(offer);
     }
@@ -86,19 +88,19 @@
       ready = (async () => {
         if (plist) source = dataElement.textContent;
         else if (kit.payload.truncated) {
-          setMessage('Reading the whole file…');
+          setMessage(kit.t('Reading the whole file…'));
           try { source = await (await fetch('greece://module/source')).text(); } catch (_) { source = G.text; }
         } else source = G.text;
         if (source.length > 2000000) {
-          setMessage('Indexing ' + (source.length / 1048576).toFixed(0) + ' MB…');
+          setMessage(kit.t('Indexing {0}…', kit.bytes(source.length)));
           at = await indexInWorker(source);
         } else at = A.indexJSON(source);
         const top = A.childrenOf(0, at);
         displayRoot = top.length === 1 ? top[0] : 0;
         expanded.add(displayRoot);
-        if (at.error && at.count <= 1) setMessage('This isn’t valid JSON: ' + at.error.message + ' on line ' + lineOf(at.error.offset) + '.');
-        else if (at.error) setMessage('Showing what could be read. ' + at.error.message + ' on line ' + lineOf(at.error.offset) + '.', true);
-        else if (at.truncated) setMessage('Showing the first ' + at.count.toLocaleString() + ' values.', true);
+        if (at.error && at.count <= 1) setMessage(invalidMessage(at.error));
+        else if (at.error) setMessage(partialMessage(at.error), true);
+        else if (at.truncated) setMessage(kit.plural(at.count, 'Showing the first {0} values.'), true);
         else setMessage('');
         rebuild();
       })();
@@ -120,7 +122,22 @@
     function lineOf(offset) {
       let line = 1;
       for (let i = source.indexOf('\n'); i !== -1 && i < offset; i = source.indexOf('\n', i + 1)) line++;
-      return line.toLocaleString();
+      return line;
+    }
+
+    /** Why nothing could be read, as one sentence (the indexer gives a reason and the offset). */
+    function invalidMessage(error) {
+      const line = lineOf(error.offset);
+      if (error.reason === 'colon') return kit.t('This isn’t valid JSON: a key needs a colon after it, on line {0}.', line);
+      if (error.reason === 'end') return kit.t('This isn’t valid JSON: the file ends too soon, on line {0}.', line);
+      return kit.t('This isn’t valid JSON: unexpected {0} on line {1}.', kit.quoted(String(error.token || '')), line);
+    }
+    /** The same, when most of the file could be read and is shown. */
+    function partialMessage(error) {
+      const line = lineOf(error.offset);
+      if (error.reason === 'colon') return kit.t('Showing what could be read. A key needs a colon after it, on line {0}.', line);
+      if (error.reason === 'end') return kit.t('Showing what could be read. The file ends too soon, on line {0}.', line);
+      return kit.t('Showing what could be read. Unexpected {0} on line {1}.', kit.quoted(String(error.token || '')), line);
     }
 
     function setMessage(text, quiet) {
@@ -234,17 +251,22 @@
 
     // ---------------------------------------------------------------- Rows
 
+    // The Type column, in the page's language; built once, the column repeats them on every row.
+    const TYPES = {
+      dictionary: kit.t('Dictionary'), object: kit.t('Object'), array: kit.t('Array'), date: kit.t('Date'), data: kit.t('Data'),
+      string: kit.t('String'), number: kit.t('Number'), boolean: kit.t('Boolean'), null: kit.t('Null'),
+    };
     function typeName(n) {
       switch (at.type[n]) {
-        case T.object: return plist ? 'Dictionary' : 'Object';
-        case T.array: return 'Array';
+        case T.object: return plist ? TYPES.dictionary : TYPES.object;
+        case T.array: return TYPES.array;
         case T.string: {
-          if (plist) { const v = text(n); if (DATE.test(v)) return 'Date'; if (DATA.test(v)) return 'Data'; }
-          return 'String';
+          if (plist) { const v = text(n); if (DATE.test(v)) return TYPES.date; if (DATA.test(v)) return TYPES.data; }
+          return TYPES.string;
         }
-        case T.number: return 'Number';
-        case T.true: case T.false: return 'Boolean';
-        case T.null: return 'Null';
+        case T.number: return TYPES.number;
+        case T.true: case T.false: return TYPES.boolean;
+        case T.null: return TYPES.null;
         default: return '—';
       }
     }
@@ -255,14 +277,13 @@
     }
     function keyOf(n) {
       const p = at.parent[n];
-      if (n === displayRoot) return { label: plist ? 'Root' : '$', index: false };
+      if (n === displayRoot) return { label: plist ? kit.t('Root') : '$', index: false };
       if (p >= 0 && at.type[p] === T.object) return { label: A.keyText(source, at, n), index: false };
       const list = kids(p);
       let lo = 0, hi = list.length - 1;
       while (lo < hi) { const mid = (lo + hi) >> 1; if (list[mid] < n) lo = mid + 1; else hi = mid; }
-      return { label: (plist ? 'Item ' : '') + lo, index: true };
+      return { label: plist ? kit.t('Item {0}', String(lo)) : lo, index: true };
     }
-    const plural = (n, one, many) => n.toLocaleString() + ' ' + (n === 1 ? one : many);
 
     let marker = null;   // the find query, as a pattern, while searching
 
@@ -307,7 +328,7 @@
       if (rows.from[r] >= 0) {
         const open = expanded.has(bucketKey(n, rows.from[r], rows.to[r]));
         return `<div class="${classes.join(' ')} bucket" data-r="${r}" style="--depth:${depth}" role="treeitem" aria-expanded="${open}">`
-          + `<span class="cell key"><i class="disclosure${open ? ' open' : ''}"></i><span class="k index">[${rows.from[r].toLocaleString()} … ${(rows.to[r] - 1).toLocaleString()}]</span></span><span class="cell type"></span><span class="cell value"></span></div>`;
+          + `<span class="cell key"><i class="disclosure${open ? ' open' : ''}"></i><span class="k index">[${kit.number(rows.from[r])} … ${kit.number(rows.to[r] - 1)}]</span></span><span class="cell type"></span><span class="cell value"></span></div>`;
       }
       const container = isContainer(n);
       const open = container && expanded.has(n);
@@ -315,7 +336,7 @@
       let value, tone;
       if (container) {
         const count = kids(n).length;
-        value = at.type[n] === T.object ? plural(count, plist ? 'item' : 'key', plist ? 'items' : 'keys') : plural(count, 'item', 'items');
+        value = at.type[n] === T.object && !plist ? kit.plural(count, '{0} keys') : kit.plural(count, '{0} items');
         tone = 'count';
       } else {
         const t = at.type[n];
@@ -325,7 +346,7 @@
       return `<div class="${classes.join(' ')}" data-r="${r}" style="--depth:${depth}" role="treeitem"${container ? ` aria-expanded="${open}"` : ''}>`
         + `<span class="cell key">${container ? `<i class="disclosure${open ? ' open' : ''}"></i>` : '<i class="leaf"></i>'}`
         + `<span class="k${key.index ? ' index' : ''}">${kit.esc(String(key.label))}</span></span>`
-        + `<span class="cell type">${typeName(n)}</span><span class="cell value ${tone}">${kit.esc(value)}</span></div>`;
+        + `<span class="cell type">${kit.esc(typeName(n))}</span><span class="cell value ${tone}">${kit.esc(value)}</span></div>`;
     }
 
     function paint(force) {
@@ -358,7 +379,7 @@
 
     function updatePath() {
       if (selected < 0 || rows.from[selected] >= 0) {
-        pathText.textContent = selected < 0 ? 'Select a row to see its path' : '';
+        pathText.textContent = selected < 0 ? kit.t('Select a row to see its path') : '';
         pathBar.classList.toggle('empty', true);
         return;
       }
