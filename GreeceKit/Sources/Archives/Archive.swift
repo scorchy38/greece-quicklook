@@ -112,16 +112,20 @@ public struct ArchiveListing: Sendable {
         let compressor = compression ?? (format.isCompressor ? format : nil)
         let base: String
         switch container {
-        case .compressedFile: return "\((compressor ?? format).displayName) Compressed File"
-        case .tar: base = "Tar Archive"
-        case .zip: base = "ZIP Archive"
+        case .compressedFile:
+            return String(localized: "\((compressor ?? format).displayName) Compressed File", bundle: .greeceKit,
+                          comment: "Info bar title for a lone compressed file; the argument is the compression format, such as “gzip”")
+        case .tar: base = String(localized: "Tar Archive", bundle: .greeceKit)
+        case .zip: base = String(localized: "ZIP Archive", bundle: .greeceKit)
         case .other:
             switch format {
-            case .iso: base = "ISO Disk Image"
-            case .rpm: base = "RPM Package"
-            case .deb: base = "Debian Package"
-            case .cab: base = "Cabinet Archive"
-            default: base = "\(format.displayName) Archive"
+            case .iso: base = String(localized: "ISO Disk Image", bundle: .greeceKit)
+            case .rpm: base = String(localized: "RPM Package", bundle: .greeceKit)
+            case .deb: base = String(localized: "Debian Package", bundle: .greeceKit)
+            case .cab: base = String(localized: "Cabinet Archive", bundle: .greeceKit)
+            default:
+                base = String(localized: "\(format.displayName) Archive", bundle: .greeceKit,
+                              comment: "Info bar title; the argument is the archive format, such as “7-Zip” or “RAR”")
             }
         }
         return compressor.map { base + " · " + $0.displayName } ?? base
@@ -144,11 +148,13 @@ public enum ArchiveError: LocalizedError {
     case cancelled
     public var errorDescription: String? {
         switch self {
-        case .corrupt(let reason): return "This archive appears to be damaged (\(reason))."
+        case .corrupt(let reason):
+            return String(localized: "This archive appears to be damaged (\(reason)).", bundle: .greeceKit,
+                          comment: "Error message; the argument says what’s wrong, such as “the file list ends early” (it may come in English from the archive library)")
         case .unsupported(let reason): return reason
-        case .encrypted: return "This item is encrypted."
-        case .tooLarge: return "This item is too large to preview."
-        case .cancelled: return "Cancelled."
+        case .encrypted: return String(localized: "This item is encrypted.", bundle: .greeceKit)
+        case .tooLarge: return String(localized: "This item is too large to preview.", bundle: .greeceKit)
+        case .cancelled: return String(localized: "Cancelled.", bundle: .greeceKit)
         }
     }
 }

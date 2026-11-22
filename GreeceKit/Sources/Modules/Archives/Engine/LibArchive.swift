@@ -37,7 +37,9 @@ final class LibArchive {
     private(set) var headerIndex = -1
 
     init(_ input: Input, formats: Formats = .containers) throws {
-        guard let archive = archive_read_new() else { throw ArchiveError.unsupported("The archive reader couldn’t start.") }
+        guard let archive = archive_read_new() else {
+            throw ArchiveError.unsupported(String(localized: "The archive reader couldn’t start.", bundle: .greeceKit))
+        }
         handle = archive
 
         archive_read_support_filter_gzip(archive)
@@ -70,7 +72,10 @@ final class LibArchive {
         let status: Int32
         switch input {
         case .files(let urls):
-            guard !urls.isEmpty else { archive_read_free(archive); throw ArchiveError.unsupported("No archive to read.") }
+            guard !urls.isEmpty else {
+                archive_read_free(archive)
+                throw ArchiveError.unsupported(String(localized: "No archive to read.", bundle: .greeceKit))
+            }
             if urls.count == 1 {
                 status = archive_read_open_filename(archive, urls[0].path, LibArchive.chunk)
             } else {
@@ -256,13 +261,17 @@ final class LibArchive {
     // MARK: - Errors
 
     static func message(_ archive: OpaquePointer) -> String {
-        archive_error_string(archive).map { String(cString: $0) } ?? "unreadable data"
+        archive_error_string(archive).map { String(cString: $0) }
+            ?? String(localized: "unreadable data", bundle: .greeceKit,
+                      comment: "Why an archive is damaged, shown inside “This archive appears to be damaged (…)” and, capitalised, as a sentence of its own")
     }
 
     static func error(_ message: String) -> ArchiveError {
         let lower = message.lowercased()
         if lower.contains("encrypt") || lower.contains("passphrase") || lower.contains("password") { return .encrypted }
-        if lower.contains("unrecognized archive format") { return .unsupported("Greece doesn’t recognise this archive’s format.") }
+        if lower.contains("unrecognized archive format") {
+            return .unsupported(String(localized: "Greece doesn’t recognise this archive’s format.", bundle: .greeceKit))
+        }
         return .corrupt(message)
     }
 }
