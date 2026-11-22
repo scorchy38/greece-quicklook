@@ -97,10 +97,12 @@ private struct StatusFooter: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 7) {
+            // When a language wraps the status onto two lines, the dot stays with the first.
+            HStack(alignment: .firstTextBaseline, spacing: 7) {
                 Circle()
                     .fill(color)
                     .frame(width: 7, height: 7)
+                    .alignmentGuide(.firstTextBaseline) { $0[.bottom] }
                 Text(text)
                     .font(.callout)
                     .foregroundStyle(.secondary)
