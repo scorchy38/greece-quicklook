@@ -81,20 +81,24 @@ final class ComicBook: @unchecked Sendable {
         extracting = true
         condition.unlock()
         let order = Dictionary(pages.enumerated().map { ($1.index, $0) }, uniquingKeysWith: { first, _ in first })
-        DispatchQueue.global(qos: .userInitiated).async { [self] in
+        let session = self.session, pages = self.pages, scratch = self.scratch
+        // Weakly held: when the preview closes and the book goes, extraction stops at the next page.
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             var written: UInt64 = 0
             session.extractInOrder(pages, limit: ComicBook.pageLimit) { entry, data in
+                guard let self else { return false }
                 var url: URL?
                 if let data, let page = order[entry.index], written < 2 * 1024 * 1024 * 1024 {
                     let destination = scratch.location(for: String(page) + "." + (entry.path as NSString).pathExtension)
                     if (try? data.write(to: destination)) != nil { url = destination; written += UInt64(data.count) }
                 }
-                condition.lock()
-                if let url, let page = order[entry.index] { extracted[page] = url }
-                condition.broadcast()
-                condition.unlock()
+                self.condition.lock()
+                if let url, let page = order[entry.index] { self.extracted[page] = url }
+                self.condition.broadcast()
+                self.condition.unlock()
                 return true
             }
+            guard let self else { return }
             condition.lock()
             finishedExtracting = true
             condition.broadcast()

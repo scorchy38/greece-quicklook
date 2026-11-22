@@ -75,6 +75,8 @@ final class ArchiveBrowserView: NSView, PreviewSettingsAware, NSSplitViewDelegat
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
+    deinit { document.loading.cancel() }
+
     func apply(_ settings: PreviewSettings) {
         self.settings = settings
         pane.apply(settings)

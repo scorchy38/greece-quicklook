@@ -48,6 +48,9 @@ final class ArchiveDocument: @unchecked Sendable {
         return PackageInspector.inspect(session, listing: listing, flavor: identity.flavor, members: session.packageMembers)
     }
 
+    /// Set when the preview closes, so a huge archive stops listing with it.
+    let loading = CancelToken()
+
     /// Keeps listing on a background queue, handing each batch to `update` on the main thread.
     func continueLoading(_ update: @escaping @MainActor (_ added: [ArchiveEntry], _ listing: ArchiveListing, _ finished: Bool, _ package: PackageInfo?) -> Void) {
         guard isLoading else { return }
@@ -55,6 +58,7 @@ final class ArchiveDocument: @unchecked Sendable {
         DispatchQueue.global(qos: .userInitiated).async { [self] in
             var interval = 0.2
             while !lister.isFinished {
+                if loading.isCancelled { lister.stop(); return }
                 var added: [ArchiveEntry] = []
                 do { added = try lister.step(until: CFAbsoluteTimeGetCurrent() + interval) } catch { lister.stop() }
                 let snapshot = lister.listing
