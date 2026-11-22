@@ -7,6 +7,7 @@ final class LanguageTests: XCTestCase {
     /// Bundled grammars no file maps to, and why.
     private let withoutFiles: [String: String] = [
         "markdown": "Markdown files open in the Markdown renderer",
+        "typst": "Typst files are claimed by the documents module, which highlights them with this grammar",
         "python-repl": "REPL transcript, only inside documents",
         "node-repl": "REPL transcript, only inside documents",
         "julia-repl": "REPL transcript, only inside documents",
