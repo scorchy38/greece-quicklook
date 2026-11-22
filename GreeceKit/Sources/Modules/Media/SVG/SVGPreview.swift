@@ -32,7 +32,7 @@ enum SVGPreview {
         let raw = try file.mediaData(limit: compressed ? 32 * 1024 * 1024 : decompressedLimit)
         guard compressed else { return raw }
         guard let inflated = MediaInflate.inflate(raw, windowBits: 15 + 32, limit: decompressedLimit) else {
-            throw MediaError.unreadable("This compressed SVG is damaged or too large to expand.")
+            throw MediaError.unreadable(String(localized: "This compressed SVG is damaged or too large to expand.", bundle: .greeceKit))
         }
         return inflated
     }
@@ -145,9 +145,19 @@ enum SVGPreview {
 
         var details = ["\(format(info.width)) × \(format(info.height))"]
         if let box = info.viewBox { details.append("viewBox " + box.map(format).joined(separator: " ")) }
-        if info.elements > 0 { details.append(MediaText.plural(info.elements, "element")) }
-        if let size = file.sizeText { details.append(compressed ? "\(size), \(MediaText.size(data.count)) expanded" : size) }
-        let summary = FileSummary(symbol: "square.on.circle", title: compressed ? "SVGZ Image" : "SVG Image", details: details, trailing: file.modifiedText)
+        if info.elements > 0 {
+            details.append(String(localized: "\(info.elements) elements", bundle: .greeceKit, comment: "Info bar detail: how many elements (shapes, groups…) an SVG has"))
+        }
+        if let size = file.sizeText {
+            let expanded = MediaText.size(data.count)
+            details.append(compressed ? String(localized: "\(size), \(expanded) expanded", bundle: .greeceKit,
+                                               comment: "Info bar detail for a compressed SVG: its size on disk, then its size once expanded, such as “12 KB, 48 KB expanded”")
+                                      : size)
+        }
+        let title = compressed
+            ? String(localized: "SVGZ Image", bundle: .greeceKit, comment: "Info bar title: a compressed SVG image")
+            : String(localized: "SVG Image", bundle: .greeceKit, comment: "Info bar title")
+        let summary = FileSummary(symbol: "square.on.circle", title: title, details: details, trailing: file.modifiedText)
         return .web(document, summary, NSSize(width: 900, height: 720))
     }
 }

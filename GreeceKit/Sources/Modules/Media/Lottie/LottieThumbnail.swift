@@ -34,7 +34,7 @@ enum LottieThumbnail {
         guard side >= 96 else { return }
         let style = NSMutableParagraphStyle()
         style.alignment = .center
-        let text = "\(SVGPreview.format(animation.width))×\(SVGPreview.format(animation.height))  ·  \(animation.duration.formatted(.number.precision(.fractionLength(1)))) s"
+        let text = "\(SVGPreview.format(animation.width))×\(SVGPreview.format(animation.height))  ·  \(MediaText.seconds(animation.duration))"
         NSAttributedString(string: text, attributes: [
             .font: NSFont.monospacedDigitSystemFont(ofSize: side * 0.065, weight: .medium),
             .foregroundColor: NSColor(srgbRed: 0.43, green: 0.43, blue: 0.45, alpha: 1), .paragraphStyle: style,

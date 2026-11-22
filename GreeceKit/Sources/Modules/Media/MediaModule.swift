@@ -99,7 +99,8 @@ enum MediaError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .tooLarge(let size):
-            return "This file is too large to preview (\(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)))."
+            let size = ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file)
+            return String(localized: "This file is too large to preview (\(size)).", bundle: .greeceKit, comment: "The argument is the file’s size, such as “120 MB”")
         case .unreadable(let reason):
             return reason
         }
@@ -107,10 +108,6 @@ enum MediaError: LocalizedError {
 }
 
 enum MediaText {
-    static func plural(_ count: Int, _ singular: String, _ plural: String? = nil) -> String {
-        "\(count.formatted()) \(count == 1 ? singular : (plural ?? singular + "s"))"
-    }
-
     /// "1:02:03" or "2:03", for durations in milliseconds.
     static func clock(_ milliseconds: Int) -> String {
         let seconds = max(0, milliseconds) / 1000
@@ -120,6 +117,12 @@ enum MediaText {
 
     static func size(_ bytes: Int) -> String {
         ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file)
+    }
+
+    /// "2.5 s": an animation's length, to a tenth of a second.
+    static func seconds(_ seconds: Double) -> String {
+        let number = seconds.formatted(.number.precision(.fractionLength(1)))
+        return String(localized: "\(number) s", bundle: .greeceKit, comment: "A length of time in seconds, such as “2.5 s”: an animation’s duration")
     }
 }
 

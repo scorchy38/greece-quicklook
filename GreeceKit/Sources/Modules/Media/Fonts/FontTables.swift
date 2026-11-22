@@ -79,11 +79,15 @@ enum FontContainer: String {
 
     var displayName: String {
         switch self {
-        case .sfnt: return "Font"
-        case .collection: return "Font Collection"
+        case .sfnt: return String(localized: "Font", bundle: .greeceKit, comment: "A font file’s format on its preview page, as opposed to a font collection or a web font")
+        case .collection: return Self.collectionName
         case .woff: return "WOFF"
         case .woff2: return "WOFF2"
         }
+    }
+
+    static var collectionName: String {
+        String(localized: "Font Collection", bundle: .greeceKit, comment: "Info bar title: a file that holds several fonts (.ttc, .otc)")
     }
 }
 
@@ -228,12 +232,23 @@ enum FontTables {
                 for (axisIndex, axis) in axes.enumerated() {
                     if let value = reader.fixed(record + 4 + axisIndex * 4) { coordinates[axis.tag] = value }
                 }
-                instances.append(Instance(name: names[nameID] ?? "Instance \(index + 1)", coordinates: coordinates))
+                let name = names[nameID] ?? String(localized: "Instance \(String(index + 1))", bundle: .greeceKit,
+                                                   comment: "A variable font’s named style that has no name of its own. The argument is its number, such as “Instance 3”")
+                instances.append(Instance(name: name, coordinates: coordinates))
             }
         }
 
+        /// Names for the registered axes, when the font gives none.
         static func axisName(_ tag: String) -> String {
-            ["wght": "Weight", "wdth": "Width", "slnt": "Slant", "ital": "Italic", "opsz": "Optical Size", "GRAD": "Grade"][tag] ?? tag
+            switch tag {
+            case "wght": return String(localized: "Weight [font axis]", defaultValue: "Weight", bundle: .greeceKit, comment: "Variable font axis: how bold the letters are")
+            case "wdth": return String(localized: "Width [font axis]", defaultValue: "Width", bundle: .greeceKit, comment: "Variable font axis: how wide or condensed the letters are")
+            case "slnt": return String(localized: "Slant", bundle: .greeceKit, comment: "Variable font axis: how far the letters lean")
+            case "ital": return String(localized: "Italic", bundle: .greeceKit, comment: "Variable font axis: upright or italic")
+            case "opsz": return String(localized: "Optical Size", bundle: .greeceKit, comment: "Variable font axis: letterforms tuned for the size they’re read at")
+            case "GRAD": return String(localized: "Grade", bundle: .greeceKit, comment: "Variable font axis: how heavy the strokes are, without changing the letters’ width")
+            default: return tag
+            }
         }
     }
 
@@ -264,14 +279,24 @@ enum FontTables {
         var embedding: String? {
             guard let fsType else { return nil }
             let usage = fsType & 0x000F
-            var text: String
-            if usage & 0x2 != 0 && usage & 0xC == 0 { text = "Restricted" }
-            else if usage & 0x8 != 0 { text = "Editable" }
-            else if usage & 0x4 != 0 { text = "Preview & Print" }
-            else { text = "Installable" }
-            if fsType & 0x0100 != 0 { text += ", no subsetting" }
-            if fsType & 0x0200 != 0 { text += ", bitmaps only" }
-            return text
+            var parts: [String]
+            if usage & 0x2 != 0 && usage & 0xC == 0 {
+                parts = [String(localized: "Restricted", bundle: .greeceKit, comment: "Font embedding permission: the font may not be embedded in documents")]
+            } else if usage & 0x8 != 0 {
+                parts = [String(localized: "Editable", bundle: .greeceKit, comment: "Font embedding permission: documents with the font embedded may be edited")]
+            } else if usage & 0x4 != 0 {
+                parts = [String(localized: "Preview & Print", bundle: .greeceKit, comment: "Font embedding permission: documents with the font embedded may only be viewed and printed")]
+            } else {
+                parts = [String(localized: "Installable", bundle: .greeceKit, comment: "Font embedding permission: the font may be embedded and installed")]
+            }
+            // Further limits, listed after the permission: “Editable, no subsetting, bitmaps only”.
+            if fsType & 0x0100 != 0 {
+                parts.append(String(localized: "no subsetting", bundle: .greeceKit, comment: "Font embedding limit, listed after the permission: the whole font must be embedded"))
+            }
+            if fsType & 0x0200 != 0 {
+                parts.append(String(localized: "bitmaps only", bundle: .greeceKit, comment: "Font embedding limit, listed after the permission: only bitmaps may be embedded, not outlines"))
+            }
+            return parts.joined(separator: ", ")
         }
     }
 

@@ -102,7 +102,8 @@ final class FontFaceInfo: @unchecked Sendable {
         if tables.contains("CFF ") { return "PostScript (CFF)" }
         if tables.contains("glyf") { return "TrueType" }
         if tables.contains("sbix") || tables.contains("CBDT") || tables.contains("EBDT") { return "Bitmap" }
-        return "Unknown"
+        return String(localized: "Unknown [font outlines]", defaultValue: "Unknown", bundle: .greeceKit,
+                      comment: "A font’s outline format (TrueType, PostScript…) that Greece can’t tell")
     }
 
     var colorFormats: [String] {
@@ -187,7 +188,7 @@ struct FontFileInfo {
     let faces: [FontFaceInfo]
 
     init(data: Data) throws {
-        guard let container = FontContainer.sniff([UInt8](data.prefix(16))) else { throw MediaError.unreadable("This isn’t a font file Greece can read.") }
+        guard let container = FontContainer.sniff([UInt8](data.prefix(16))) else { throw MediaError.unreadable(String(localized: "This isn’t a font file Greece can read.", bundle: .greeceKit)) }
         self.container = container
         var faces: [FontFaceInfo] = []
         if container == .collection {
@@ -210,19 +211,23 @@ struct FontFileInfo {
         } else if let info = FontFaceInfo(data: data) {
             faces.append(info)
         }
-        guard !faces.isEmpty else { throw MediaError.unreadable("This font is damaged or uses a format macOS can’t read.") }
+        guard !faces.isEmpty else { throw MediaError.unreadable(String(localized: "This font is damaged or uses a format macOS can’t read.", bundle: .greeceKit)) }
         self.faces = faces
     }
 
     var title: String {
         switch container {
-        case .collection: return "Font Collection"
-        case .woff: return "WOFF Font"
-        case .woff2: return "WOFF2 Font"
+        case .collection: return FontContainer.collectionName
+        case .woff: return String(localized: "WOFF Font", bundle: .greeceKit, comment: "Info bar title: a web font. WOFF is a file format")
+        case .woff2: return String(localized: "WOFF2 Font", bundle: .greeceKit, comment: "Info bar title: a web font. WOFF2 is a file format")
         case .sfnt:
             let face = faces[0]
-            if !face.variation.axes.isEmpty { return "Variable Font" }
-            return face.outlines == "TrueType" ? "TrueType Font" : "OpenType Font"
+            if !face.variation.axes.isEmpty {
+                return String(localized: "Variable Font", bundle: .greeceKit, comment: "Info bar title: a font whose weight, width or other styles vary along axes")
+            }
+            return face.outlines == "TrueType"
+                ? String(localized: "TrueType Font", bundle: .greeceKit, comment: "Info bar title. TrueType is a font format")
+                : String(localized: "OpenType Font", bundle: .greeceKit, comment: "Info bar title. OpenType is a font format")
         }
     }
 }

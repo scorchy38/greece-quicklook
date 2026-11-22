@@ -5,15 +5,15 @@ enum SubtitleFormat: String, Codable, CaseIterable {
 
     var title: String {
         switch self {
-        case .srt: return "SubRip Subtitles"
-        case .webvtt: return "WebVTT Subtitles"
-        case .ass: return "Advanced SubStation Subtitles"
-        case .ssa: return "SubStation Alpha Subtitles"
-        case .sami: return "SAMI Captions"
-        case .ttml: return "TTML Captions"
-        case .sbv: return "YouTube Captions"
-        case .microdvd: return "MicroDVD Subtitles"
-        case .lrc: return "Lyrics"
+        case .srt: return String(localized: "SubRip Subtitles", bundle: .greeceKit, comment: "Info bar title. SubRip is a subtitle format (.srt)")
+        case .webvtt: return String(localized: "WebVTT Subtitles", bundle: .greeceKit, comment: "Info bar title. WebVTT is a subtitle format (.vtt)")
+        case .ass: return String(localized: "Advanced SubStation Subtitles", bundle: .greeceKit, comment: "Info bar title. Advanced SubStation is a subtitle format (.ass)")
+        case .ssa: return String(localized: "SubStation Alpha Subtitles", bundle: .greeceKit, comment: "Info bar title. SubStation Alpha is a subtitle format (.ssa)")
+        case .sami: return String(localized: "SAMI Captions", bundle: .greeceKit, comment: "Info bar title. SAMI is a captions format (.smi)")
+        case .ttml: return String(localized: "TTML Captions", bundle: .greeceKit, comment: "Info bar title. TTML is a captions format")
+        case .sbv: return String(localized: "YouTube Captions", bundle: .greeceKit, comment: "Info bar title: YouTube’s captions format (.sbv)")
+        case .microdvd: return String(localized: "MicroDVD Subtitles", bundle: .greeceKit, comment: "Info bar title. MicroDVD is a subtitle format (.sub)")
+        case .lrc: return String(localized: "Lyrics", bundle: .greeceKit, comment: "Info bar title: a song’s lyrics with timings (.lrc)")
         }
     }
 
@@ -387,7 +387,15 @@ enum SubtitleParser {
         var offset = 0
         var length: Int?
         var lines: [(Int, String)] = []
-        let names = ["ti": "Title", "ar": "Artist", "al": "Album", "au": "Author", "by": "Lyrics by", "re": "Created with", "ve": "Version"]
+        // Labels for the song's tags, shown as chips above the lyrics ("ti", the title, becomes the heading).
+        let names = [
+            "ar": String(localized: "Artist", bundle: .greeceKit, comment: "Label of a song’s tag, above its lyrics"),
+            "al": String(localized: "Album", bundle: .greeceKit, comment: "Label of a song’s tag, above its lyrics"),
+            "au": String(localized: "Author", bundle: .greeceKit, comment: "Label of a song’s tag, above its lyrics: who wrote the song"),
+            "by": String(localized: "Lyrics by", bundle: .greeceKit, comment: "Label of a song’s tag, above its lyrics: who wrote down the timed lyrics"),
+            "re": String(localized: "Created with", bundle: .greeceKit, comment: "Label of a song’s tag, above its lyrics: the app that made the file"),
+            "ve": String(localized: "Version", bundle: .greeceKit, comment: "Label of a song’s tag, above its lyrics: the version of that app"),
+        ]
         for raw in text.split(separator: "\n").prefix(lineLimit) {
             var rest = Substring(raw.trimmingCharacters(in: .whitespaces))
             var times: [Int] = []
