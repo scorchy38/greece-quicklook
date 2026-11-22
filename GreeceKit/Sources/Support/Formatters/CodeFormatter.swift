@@ -48,7 +48,10 @@ public enum CodeFormatter {
             return .sql(dialect: dialects[ext] ?? "sql")
         case "xml":
             if language.name == "HTML" { return ["html", "htm", "xhtml", "shtml"].contains(ext) ? .html : nil }
-            return .xml
+            // Only real XML documents: component templates (Vue, Svelte…) share the grammar but not the rules.
+            let xml: Set<String> = ["xml", "xsd", "xsl", "xslt", "svg", "plist", "xaml", "csproj", "fsproj", "vbproj", "props", "targets",
+                                    "resx", "storyboard", "xib", "wsdl", "rss", "atom", "opml", "xliff", "xlf", "nuspec", "config", "manifest"]
+            return language.name == "XML" || xml.contains(ext) ? .xml : nil
         default: return nil
         }
     }
