@@ -311,6 +311,39 @@ final class ArchivesTests: XCTestCase {
                       "\(cpio.entries.map(\.path))")
     }
 
+    func testNamesSortLikeFinder() {
+        let names = ["file 10.txt", "File 9.txt", "file 1.txt", "README", "_build", "2024 notes", "10 things", "9 lives", "Ábaco", "abacus", "zeta"]
+        let fast = names.sorted { FileTreeView.finderOrder($0, $1) == .orderedAscending }
+        XCTAssertEqual(Array(fast.prefix(4)), ["_build", "9 lives", "10 things", "2024 notes"])
+        XCTAssertEqual(fast.filter { $0.lowercased().hasPrefix("file") }, ["file 1.txt", "File 9.txt", "file 10.txt"])
+        XCTAssertEqual(fast.last, "zeta")
+        XCTAssertEqual(FileTreeView.finderOrder("a", "a"), .orderedSame)
+    }
+
+    func testIncrementalTreeMatchesOneShot() {
+        let entries = (0..<500).map { ArchiveEntry(path: "dir\($0 % 7)/sub\($0 % 3)/file\($0).txt", isDirectory: false, size: UInt64($0)) }
+        let builder = ArchiveTreeBuilder(showHidden: false)
+        for chunk in stride(from: 0, to: entries.count, by: 64) { builder.add(Array(entries[chunk..<min(chunk + 64, entries.count)])) }
+        builder.finish()
+        let whole = FileNode.tree(from: ArchiveListing(format: .zip, container: .zip, entries: entries, archiveSize: 1), showHidden: false)
+        XCTAssertEqual(builder.root.fileCount, 500)
+        XCTAssertEqual(builder.root.size, whole.size)
+        XCTAssertEqual(builder.root.children?.count, 7)
+    }
+
+    func testListingStreamsInBatches() throws {
+        for index in 0..<400 { try "x".write(to: directory.appendingPathComponent("Project/Sources/f\(index).txt"), atomically: false, encoding: .utf8) }
+        let session = try ArchiveSession(url: try make("many.tgz", ["-z"]))
+        let lister = session.makeLister()
+        let first = try lister.step(until: CFAbsoluteTimeGetCurrent() - 1)   // already past: one batch only
+        XCTAssertFalse(lister.isFinished)
+        XCTAssertEqual(first.count, 64)
+        var total = first.count
+        while !lister.isFinished { total += try lister.step(until: .infinity).count }
+        XCTAssertEqual(total, lister.listing.entries.count)
+        XCTAssertGreaterThan(total, 400)
+    }
+
     func testPlainLatinNamesStayLatin() {
         let names = ["Café.txt", "Résumé final.doc", "Naïve – Übersicht.pdf"].map { Array($0.data(using: .windowsCP1252)!) }
         XCTAssertEqual(NameDecoder.choose(names, fallback: nil).script, .latin)
@@ -574,6 +607,37 @@ final class ComicTests: XCTestCase {
         XCTAssertNotNil(document.resources)
         XCTAssertEqual(summary.title, "Comic Book")
         XCTAssertEqual(summary.details.first, "8 pages")
+    }
+}
+
+/// Phase timings for a big archive, for performance work. Skipped unless GREECE_PERF names a file.
+final class ArchivePerformance: XCTestCase {
+    @MainActor
+    func testPhases() throws {
+        guard let path = ProcessInfo.processInfo.environment["GREECE_PERF"] else { throw XCTSkip("Set GREECE_PERF to an archive") }
+        let url = URL(fileURLWithPath: path)
+        var clock = CFAbsoluteTimeGetCurrent()
+        func lap(_ label: String) {
+            let now = CFAbsoluteTimeGetCurrent()
+            print(String(format: "PERF %@ %.0f ms", label, (now - clock) * 1000))
+            clock = now
+        }
+        let identity = try XCTUnwrap(ArchiveSniffer.identify(FileInfo(url: url)))
+        lap("identify")
+        let session = try ArchiveSession(url: url, format: identity.format)
+        let listing = try session.listAll()
+        lap("list \(listing.entries.count)")
+        let builder = ArchiveTreeBuilder(showHidden: false)
+        builder.add(listing.entries)
+        lap("tree")
+        builder.finish()
+        lap("totals")
+        _ = PackageInspector.inspect(session, listing: listing, flavor: identity.flavor, members: [:])
+        lap("package")
+        let tree = FileTreeView(root: builder.root, settings: PreviewSettings(), showsKind: false, compressedSizes: true)
+        lap("view")
+        tree.reload()
+        lap("reload")
     }
 }
 

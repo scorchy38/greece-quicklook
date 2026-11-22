@@ -14,11 +14,11 @@ final class ArchiveDocument: @unchecked Sendable {
     /// How long listing may hold up the first paint before the rest streams in.
     static let firstPaintBudget: TimeInterval = 0.25
 
-    init(url: URL, identity: ArchiveIdentity, showHidden: Bool) throws {
+    init(url: URL, identity: ArchiveIdentity, showHidden: Bool, foldersFirst: Bool = true) throws {
         session = try ArchiveSession(url: url, format: identity.format)
         self.identity = identity
         lister = session.makeLister()
-        builder = ArchiveTreeBuilder(showHidden: showHidden)
+        builder = ArchiveTreeBuilder(showHidden: showHidden, foldersFirst: foldersFirst)
         let first = try lister.step(until: CFAbsoluteTimeGetCurrent() + ArchiveDocument.firstPaintBudget)
         builder.add(first)
         builder.finish()
@@ -80,14 +80,20 @@ final class ArchiveDocument: @unchecked Sendable {
             if let version = package.version { details.append(package.name.map { "\($0) \(version)" } ?? version) }
         }
         let files = listing.fileCount
-        details.append("\(files.formatted()) \(files == 1 ? "file" : "files")")
-        details.append(FileTreeView.bytes(listing.totalSize))
+        if listing.headerEncrypted && listing.entries.isEmpty {
+            details.append("File list encrypted")
+        } else if listing.entries.isEmpty && !loading {
+            details.append(listing.damage == nil ? "Empty" : "Nothing readable")
+        } else {
+            details.append("\(files.formatted()) \(files == 1 ? "file" : "files")")
+            details.append(FileTreeView.bytes(listing.totalSize))
+        }
         if listing.totalSize > 0, listing.archiveSize > 0, listing.archiveSize < listing.totalSize, !loading {
             let saved = 100 - Int((Double(listing.archiveSize) / Double(listing.totalSize) * 100).rounded())
             if saved > 0 { details.append("\(saved)% smaller") }
         }
         if listing.volumes > 1 { details.append("\(listing.volumes) parts") }
-        if listing.isEncrypted { details.append("Encrypted") }
+        if listing.isEncrypted && !listing.entries.isEmpty { details.append("Encrypted") }
         if let encoding = listing.nameEncoding { details.append("\(encoding) names") }
         if loading { details.append("Loading…") }
         else if listing.truncated { details.append("Showing first \(listing.entries.count.formatted())") }

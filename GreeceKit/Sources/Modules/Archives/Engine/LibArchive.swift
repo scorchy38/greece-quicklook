@@ -225,7 +225,9 @@ final class LibArchive {
         let isSymlink = type == S_IFLNK
         var entry = ArchiveEntry(path: path ?? String(decoding: raw ?? [], as: UTF8.self), isDirectory: isDirectory, isSymlink: isSymlink,
                                  size: 0, compressedSize: nil,
-                                 modified: archive_entry_mtime_is_set(header) != 0 ? Date(timeIntervalSince1970: TimeInterval(archive_entry_mtime(header))) : nil)
+                                 // A zero timestamp means "not recorded" (reproducible builds), not 1 January 1970.
+                                 modified: archive_entry_mtime_is_set(header) != 0 && archive_entry_mtime(header) != 0
+                                    ? Date(timeIntervalSince1970: TimeInterval(archive_entry_mtime(header))) : nil)
         if !isDirectory, archive_entry_size_is_set(header) != 0 {
             entry.size = UInt64(max(archive_entry_size(header), 0))
         }

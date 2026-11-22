@@ -130,11 +130,13 @@ final class FileNode {
 final class ArchiveTreeBuilder {
     let root = FileNode(name: "", isDirectory: true, children: [])
     let showHidden: Bool
+    let foldersFirst: Bool
     private var directories: [String: FileNode] = [:]
     private(set) var hiddenCount = 0
 
-    init(showHidden: Bool) {
+    init(showHidden: Bool, foldersFirst: Bool = true) {
         self.showHidden = showHidden
+        self.foldersFirst = foldersFirst
         directories[""] = root
     }
 
@@ -158,15 +160,16 @@ final class ArchiveTreeBuilder {
 
     func add(_ entries: [ArchiveEntry]) {
         for entry in entries {
-            var path = entry.path.replacingOccurrences(of: "\\", with: "/")
+            var path = entry.path
+            if path.contains("\\") { path = path.replacingOccurrences(of: "\\", with: "/") }
             while path.hasSuffix("/") { path.removeLast() }
             while path.hasPrefix("/") { path.removeFirst() }
             while path.hasPrefix("./") { path.removeFirst(2) }
             guard !path.isEmpty, path != "." else { continue }
-            let components = path.split(separator: "/")
+            let components = path.split(separator: "/", omittingEmptySubsequences: true)
             // Real projects are never this deep; crafted archives are.
-            guard components.count <= 128 else { continue }
-            let hidden = components.contains { $0.hasPrefix(".") } || path.hasPrefix("__MACOSX")
+            guard components.count <= 128, let last = components.last else { continue }
+            let hidden = components.contains { $0.first == "." } || path.hasPrefix("__MACOSX")
             if hidden && !showHidden { hiddenCount += 1; continue }
 
             if entry.isDirectory {
@@ -175,9 +178,10 @@ final class ArchiveTreeBuilder {
                 if node.entry == nil { node.entry = entry }
                 continue
             }
-            let parent = directory(for: (path as NSString).deletingLastPathComponent)
+            let parentPath = components.count > 1 ? components.dropLast().joined(separator: "/") : ""
+            let parent = directory(for: parentPath)
             let node = FileNode(
-                name: (path as NSString).lastPathComponent,
+                name: String(last),
                 isDirectory: false,
                 isSymlink: entry.isSymlink,
                 isHidden: hidden,
@@ -190,7 +194,12 @@ final class ArchiveTreeBuilder {
         }
     }
 
-    func finish() { root.computeArchiveTotals() }
+    /// Totals and Finder's default order. Sorting here, off the main thread, leaves the list view
+    /// only an already-sorted tree to check, which is linear.
+    func finish() {
+        root.computeArchiveTotals()
+        FileTreeView.sort(root, foldersFirst: foldersFirst)
+    }
 }
 
 /// Finder-style list: icons, sizes, dates, disclosure triangles, sortable and optional columns.
@@ -250,15 +259,14 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
         addColumn("modified", title: "Date Modified", width: 170, min: 90)
         addColumn("size", title: "Size", width: 82, min: 60, alignment: .right)
         if isArchive && compressedSizes {
-            addColumn("compressed", title: "Compressed", width: 92, min: 60, alignment: .right).isHidden = true
+            addColumn("compressed", title: "Compressed", width: 92, min: 60, alignment: .right)
         }
-        addColumn("kind", title: "Kind", width: 130, min: 70).isHidden = !showsKind
+        addColumn("kind", title: "Kind", width: 130, min: 70)
         outline.outlineTableColumn = outline.tableColumns.first
         outline.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-        // Columns the person shows or hides stay that way, like Finder's.
-        outline.autosaveName = isArchive ? (compressedSizes ? "GreeceArchiveColumns" : "GreeceArchiveColumnsPlain") : "GreeceFolderColumns"
-        outline.autosaveTableColumns = true
-        outline.tableColumns.first?.isHidden = false
+        columnsKey = isArchive ? "GreeceArchiveColumns" : "GreeceFolderColumns"
+        chosenColumns = Set(UserDefaults.standard.stringArray(forKey: columnsKey) ?? (showsKind ? ["modified", "size", "kind"] : ["modified", "size"]))
+        applyColumns()
 
         let headerMenu = NSMenu()
         headerMenu.delegate = self
@@ -280,9 +288,57 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
         ])
+        // Sort descriptors set above (and any autosave restored) only took note of the order;
+        // apply it once, now that the outline sits in its scroll view.
+        configuring = false
         sortTree(root)
         outline.reloadData()
         expandLoneFolder()
+    }
+
+    /// While true, sort changes are recorded but not applied (setting up columns reports several).
+    private var configuring = true
+
+    // MARK: - Columns
+
+    /// The optional columns the person chose (from the header's menu), remembered like Finder's.
+    private var chosenColumns: Set<String> = []
+    private var columnsKey = ""
+    /// Narrow (a preview pane open beside the list, Finder's preview column): only Name and Size.
+    private var compact = false
+
+    private static let naturalWidths: [String: CGFloat] = ["modified": 170, "size": 82, "compressed": 92, "kind": 130]
+
+    private func applyColumns() {
+        for column in outline.tableColumns.dropFirst() {
+            let id = column.identifier.rawValue
+            column.isHidden = !chosenColumns.contains(id) || (compact && id != "size")
+            if let natural = FileTreeView.naturalWidths[id], column.width < natural { column.width = natural }
+        }
+        fitNameColumn()
+    }
+
+    override func layout() {
+        super.layout()
+        let narrow = bounds.width > 0 && bounds.width < 600
+        if narrow != compact {
+            compact = narrow
+            applyColumns()
+        }
+        fitNameColumn()
+    }
+
+    /// Name takes whatever the other visible columns leave, so nothing hides off to the right.
+    private func fitNameColumn() {
+        guard let name = outline.tableColumns.first else { return }
+        let available = scrollView.contentView.bounds.width
+        guard available > 0 else { return }
+        let others = outline.tableColumns.dropFirst().filter { !$0.isHidden }
+        let used = others.reduce(CGFloat(0)) { $0 + $1.width } + outline.intercellSpacing.width * CGFloat(others.count + 1)
+        let width = max(name.minWidth, (available - used).rounded(.down))
+        if abs(name.width - width) > 0.5, outline.frame.width > available + 0.5 || name.width < width - 0.5 {
+            name.width = width
+        }
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) is not supported") }
@@ -334,8 +390,8 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
             for column in outline.tableColumns.dropFirst() {
                 let item = NSMenuItem(title: column.title, action: #selector(toggleColumn(_:)), keyEquivalent: "")
                 item.target = self
-                item.representedObject = column
-                item.state = column.isHidden ? .off : .on
+                item.representedObject = column.identifier.rawValue
+                item.state = chosenColumns.contains(column.identifier.rawValue) ? .on : .off
                 menu.addItem(item)
             }
             return
@@ -364,9 +420,11 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     }
 
     @objc private func toggleColumn(_ sender: NSMenuItem) {
-        guard let column = sender.representedObject as? NSTableColumn else { return }
-        column.isHidden.toggle()
-        outline.sizeLastColumnToFit()
+        guard let id = sender.representedObject as? String else { return }
+        if chosenColumns.contains(id) { chosenColumns.remove(id) } else { chosenColumns.insert(id) }
+        UserDefaults.standard.set(chosenColumns.sorted(), forKey: columnsKey)
+        // In a narrow list the column may stay hidden for now; widening shows it.
+        applyColumns()
     }
 
     @objc private func getInfo(_ sender: NSMenuItem) {
@@ -394,8 +452,12 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
     // MARK: - Sorting
 
     private func sortTree(_ node: FileNode) {
+        FileTreeView.sort(node, key: sortKey, ascending: ascending, foldersFirst: foldersFirst)
+    }
+
+    /// Sorts a tree in place. Also used off the main thread to hand the view an already-sorted tree.
+    static func sort(_ node: FileNode, key: String = "name", ascending up: Bool = true, foldersFirst folders: Bool) {
         guard var children = node.children else { return }
-        let key = sortKey, up = ascending, folders = foldersFirst
         children.sort { a, b in
             if folders && a.isDirectory != b.isDirectory && !(a.isPackage || b.isPackage) { return a.isDirectory }
             switch key {
@@ -413,18 +475,78 @@ final class FileTreeView: NSView, NSOutlineViewDataSource, NSOutlineViewDelegate
                 if x != y { return up ? x.localizedStandardCompare(y) == .orderedAscending : x.localizedStandardCompare(y) == .orderedDescending }
             default: break
             }
-            let order = a.name.localizedStandardCompare(b.name)
+            let order = FileTreeView.finderOrder(a.name, b.name)
             return (key == "name" && !up) ? order == .orderedDescending : order == .orderedAscending
         }
         node.children = children
-        children.forEach { if $0.children != nil { sortTree($0) } }
+        children.forEach { if $0.children != nil { sort($0, key: key, ascending: up, foldersFirst: folders) } }
+    }
+
+    /// Finder's name order: case-insensitive, numbers by value ("file 9" before "file 10"),
+    /// punctuation before digits before letters. ASCII names are compared directly, which is
+    /// what keeps a 100,000-entry archive quick to sort; anything else goes to the system collation.
+    static func finderOrder(_ a: String, _ b: String) -> ComparisonResult {
+        var a = a, b = b
+        a.makeContiguousUTF8()
+        b.makeContiguousUTF8()
+        let fast = a.utf8.withContiguousStorageIfAvailable { x in
+            b.utf8.withContiguousStorageIfAvailable { y in asciiOrder(x, y) } ?? nil
+        } ?? nil
+        if let fast { return fast }
+        return a.localizedStandardCompare(b)
+    }
+
+    /// Nil when either name has non-ASCII bytes (the system collation decides those).
+    private static func asciiOrder(_ x: UnsafeBufferPointer<UInt8>, _ y: UnsafeBufferPointer<UInt8>) -> ComparisonResult? {
+        @inline(__always) func isDigit(_ byte: UInt8) -> Bool { byte >= 0x30 && byte <= 0x39 }
+        /// Punctuation and spaces first, then digits, then letters (case folded).
+        @inline(__always) func rank(_ byte: UInt8) -> Int {
+            switch byte {
+            case 0x30...0x39: return 500
+            case 0x41...0x5A: return 1000 + Int(byte) + 0x20
+            case 0x61...0x7A: return 1000 + Int(byte)
+            default: return Int(byte)
+            }
+        }
+        var i = 0, j = 0
+        while i < x.count && j < y.count {
+            let p = x[i], q = y[j]
+            if p >= 0x80 || q >= 0x80 { return nil }
+            if isDigit(p) && isDigit(q) {
+                // Whole numbers by value: skip leading zeros, then the longer run is larger.
+                var si = i, sj = j
+                while si < x.count && x[si] == 0x30 { si += 1 }
+                while sj < y.count && y[sj] == 0x30 { sj += 1 }
+                var ei = si, ej = sj
+                while ei < x.count && isDigit(x[ei]) { ei += 1 }
+                while ej < y.count && isDigit(y[ej]) { ej += 1 }
+                if ei - si != ej - sj { return ei - si < ej - sj ? .orderedAscending : .orderedDescending }
+                var k = 0
+                while k < ei - si {
+                    if x[si + k] != y[sj + k] { return x[si + k] < y[sj + k] ? .orderedAscending : .orderedDescending }
+                    k += 1
+                }
+                i = ei
+                j = ej
+                continue
+            }
+            let (rp, rq) = (rank(p), rank(q))
+            if rp != rq { return rp < rq ? .orderedAscending : .orderedDescending }
+            i += 1
+            j += 1
+        }
+        if x[i...].contains(where: { $0 >= 0x80 }) || y[j...].contains(where: { $0 >= 0x80 }) { return nil }
+        if i < x.count { return .orderedDescending }
+        if j < y.count { return .orderedAscending }
+        // Equal ignoring case and zero padding: fall back to byte order, so the sort is stable.
+        return x.lexicographicallyPrecedes(y) ? .orderedAscending : (y.lexicographicallyPrecedes(x) ? .orderedDescending : .orderedSame)
     }
 
     func outlineView(_ outlineView: NSOutlineView, sortDescriptorsDidChange oldDescriptors: [NSSortDescriptor]) {
         guard let descriptor = outlineView.sortDescriptors.first, let key = descriptor.key else { return }
         sortKey = key
         ascending = descriptor.ascending
-        reload()
+        if !configuring { reload() }
     }
 
     // MARK: - Data source

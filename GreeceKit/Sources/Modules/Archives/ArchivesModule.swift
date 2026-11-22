@@ -11,7 +11,7 @@ enum ArchivesModule: PreviewModule {
 
     static func prepare(_ file: FileInfo, settings: PreviewSettings) throws -> PreparedPreview {
         guard let identity = ArchiveSniffer.identify(file) else { throw PreviewError.unsupported }
-        let document = try ArchiveDocument(url: file.url, identity: identity, showHidden: settings.showHiddenFiles)
+        let document = try ArchiveDocument(url: file.url, identity: identity, showHidden: settings.showHiddenFiles, foldersFirst: settings.foldersFirst)
         let modified = file.modifiedText
 
         if document.listing.container == .compressedFile, let single = try? singleFile(document, settings: settings, modified: modified) {
