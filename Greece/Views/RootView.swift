@@ -66,7 +66,7 @@ struct RootView: View {
                 }
             }
             .searchable(text: $query, placement: .sidebar, prompt: "Search Settings")
-            .navigationSplitViewColumnWidth(min: 190, ideal: 210, max: 260)
+            .navigationSplitViewColumnWidth(min: 190, ideal: Self.sidebarWidth, max: 260)
             .safeAreaInset(edge: .bottom) {
                 StatusFooter { page = .welcome }
             }
@@ -75,6 +75,14 @@ struct RootView: View {
                 .navigationTitle(page.title)
         }
     }
+
+    /// The sidebar opens at 210 pt, or wider when a page name in the app's language needs more room
+    /// (Greek “Αρχειοθήκες και φάκελοι”), so no name is cut off. A row's icon and insets take 62 pt.
+    private static let sidebarWidth: CGFloat = {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let widest = Page.allCases.map { ($0.title as NSString).size(withAttributes: [.font: font]).width }.max() ?? 0
+        return min(260, max(210, (widest + 63).rounded(.up)))
+    }()
 
     @ViewBuilder private var detail: some View {
         switch page {
