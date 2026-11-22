@@ -6,10 +6,13 @@
 (function (global) {
   'use strict';
   const Smart = global.GreeceSmart = global.GreeceSmart || {};
+  /** The page's strings (Smart.kit), looked up when used: code-smart.js, which sets it, may load after this file. */
+  const kit = new Proxy({}, { get: (_, name) => Smart.kit[name] });
 
   const NONE = 0; const TRACE = 1; const DEBUG = 2; const INFO = 3; const WARN = 4; const ERROR = 5;
   const LETTER = ['n', 't', 'd', 'i', 'w', 'e'];
-  const NAMES = ['Other', 'Trace', 'Debug', 'Info', 'Warnings', 'Errors'];
+  /** Each level's name on its filter chip and in the card. */
+  const NAMES = [() => kit.t('Other'), () => kit.t('Trace'), () => kit.t('Debug'), () => kit.t('Info'), () => kit.t('Warnings'), () => kit.t('Errors')];
 
   const WORDS = {
     FATAL: ERROR, CRITICAL: ERROR, CRIT: ERROR, EMERG: ERROR, EMERGENCY: ERROR, ALERT: ERROR, PANIC: ERROR,
@@ -88,10 +91,10 @@
     if (!sample.length) return '';
     const share = (re) => sample.filter((l) => re.test(l)).length / sample.length;
     if (share(/^\s*\{.*\}\s*$/) > 0.6) return 'JSON Lines';
-    if (share(ACCESS) > 0.6) return 'Access Log';
+    if (share(ACCESS) > 0.6) return kit.t('Access Log');
     if (share(LOGCAT) > 0.6 || share(LOGCAT_BRIEF) > 0.6) return 'Android Logcat';
     if (share(/^(<\d{1,3}>)?[A-Z][a-z]{2} {1,2}\d{1,2} \d\d:\d\d:\d\d \S+ [^:\s]+(\[\d+\])?:/) > 0.6) return 'syslog';
-    if (share(MACOS) > 0.6) return 'macOS Unified Log';
+    if (share(MACOS) > 0.6) return kit.t('macOS Unified Log');
     if (share(/\blevel=|\bmsg=/) > 0.6) return 'logfmt';
     return '';
   }
@@ -210,10 +213,9 @@
   const CHUNK = 400;
   const FIRST = 2000;
   const MAX_LINE = 20000;
-  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const two = (v) => String(v).padStart(2, '0');
-  const when = (d) => `${d.getDate()} ${MONTHS[d.getMonth()]}, ${two(d.getHours())}:${two(d.getMinutes())}`;
-  const clock = (d) => `${two(d.getHours())}:${two(d.getMinutes())}`;
+  /** "3 Mar, 10:00" and "10:00", as the page's locale writes them. */
+  const when = (d) => kit.date(d, { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+  const clock = (d) => kit.date(d, { timeStyle: 'short' });
 
   function span(a, b) {
     if (!a || !b || isNaN(a) || isNaN(b)) return '';
@@ -232,14 +234,14 @@
       const i = rowStart[r];
       let t = lines[i];
       let cut = '';
-      if (t.length > MAX_LINE) { cut = `<span class="lg-cut">… ${Smart.number(t.length - MAX_LINE)} more characters</span>`; t = t.slice(0, MAX_LINE); }
+      if (t.length > MAX_LINE) { cut = `<span class="lg-cut">… ${esc(kit.plural(t.length - MAX_LINE, '{0} more characters'))}</span>`; t = t.slice(0, MAX_LINE); }
       const ts = tsEnd[i];
       const ls = lvStart[i];
       const le = Math.min(lvEnd[i], t.length);
       let body = ts ? `<span class="lg-ts">${esc(t.slice(0, ts))}</span>` : '';
       if (le > ls && ls >= ts) body += esc(t.slice(ts, ls)) + `<span class="lg-lv">${esc(t.slice(ls, le))}</span>` + esc(t.slice(le));
       else body += esc(t.slice(ts));
-      if (rowCount[r] > 1) body += `<span class="lg-rep" title="Repeated ${rowCount[r]} times">×${Smart.number(rowCount[r])}</span>`;
+      if (rowCount[r] > 1) body += `<span class="lg-rep" title="${esc(kit.plural(rowCount[r], 'Repeated {0} times'))}">×${kit.number(rowCount[r])}</span>`;
       return `<div class="ln lg-${LETTER[level[i]]}" data-n="${i + 1}">${body}${cut}</div>`;
     };
     const chunkCount = Math.ceil(rows / CHUNK);
@@ -295,18 +297,18 @@
     // ---- Card: what this log covers.
     const facts = [];
     const levelsPresent = [ERROR, WARN, INFO, DEBUG, TRACE].filter((lv) => counts[lv]);
-    levelsPresent.forEach((lv) => facts.push({ label: NAMES[lv], value: Smart.number(counts[lv]) }));
-    if (data.collapsed) facts.push({ label: 'Repeats folded', value: Smart.number(data.collapsed) });
+    levelsPresent.forEach((lv) => facts.push({ label: NAMES[lv](), value: kit.number(counts[lv]) }));
+    if (data.collapsed) facts.push({ label: kit.t('Repeats folded'), value: kit.number(data.collapsed) });
     const top = data.topErrors.filter((g) => g.count > 0);
-    const topHTML = top.length ? `<ol class="log-top">${top.map((g) => `<li><button type="button" class="log-jump" data-line="${g.line}"><span class="log-top-count">×${Smart.number(g.count)}</span><span class="log-top-text">${esc(g.message)}</span><span class="smart-dim">line ${Smart.number(g.line)}</span></button></li>`).join('')}</ol>` : '';
-    const subtitle = [Smart.plural(lines.length, 'line'), span(data.first, data.last)].filter(Boolean).join(' · ');
+    const topHTML = top.length ? `<ol class="log-top">${top.map((g) => `<li><button type="button" class="log-jump" data-line="${g.line}"><span class="log-top-count">×${kit.number(g.count)}</span><span class="log-top-text">${esc(g.message)}</span><span class="smart-dim">${esc(kit.t('line {0}', g.line))}</span></button></li>`).join('')}</ol>` : '';
+    const subtitle = [kit.plural(lines.length, '{0} lines'), span(data.first, data.last)].filter(Boolean).join(' · ');
     const card = Smart.card(root, {
       kind: 'log',
       icon: 'log',
-      title: 'Log',
+      title: kit.t('Log'),
       label: data.format,
       subtitle,
-      body: Smart.facts(facts) + (topHTML ? Smart.section(top.length === 1 ? 'Most Frequent Error' : 'Most Frequent Errors', topHTML, { wide: true }) : ''),
+      body: Smart.facts(facts) + (topHTML ? Smart.section(top.length === 1 ? kit.t('Most Frequent Error') : kit.t('Most Frequent Errors'), topHTML, { wide: true }) : ''),
     });
 
     // ---- Filter bar
@@ -315,15 +317,15 @@
     bar.className = 'log-bar';
     bar.setAttribute('role', 'toolbar');
     const chips = [ERROR, WARN, INFO, DEBUG, TRACE, NONE].filter((lv) => counts[lv] && (lv !== NONE || levelsPresent.length))
-      .map((lv) => `<button type="button" class="log-chip lg-${LETTER[lv]}" data-level="${lv}" aria-pressed="true"><i></i>${NAMES[lv]}<b>${Smart.number(counts[lv])}</b></button>`).join('');
+      .map((lv) => `<button type="button" class="log-chip lg-${LETTER[lv]}" data-level="${lv}" aria-pressed="true"><i></i>${esc(NAMES[lv]())}<b>${kit.number(counts[lv])}</b></button>`).join('');
     bar.innerHTML = `<div class="log-chips">${chips}</div>` + (target ? `<div class="log-nav"><span class="log-pos"></span>` +
-      `<button type="button" class="log-step" data-step="-1" title="Previous ${target === ERROR ? 'Error' : 'Warning'} (⇧N)" aria-label="Previous"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10 4.5-4.5 4.5 4.5"/></svg></button>` +
-      `<button type="button" class="log-step next" data-step="1" title="Next ${target === ERROR ? 'Error' : 'Warning'} (N)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 6 4.5 4.5L12.5 6"/></svg>Next ${target === ERROR ? 'Error' : 'Warning'}</button></div>` : '');
+      `<button type="button" class="log-step" data-step="-1" title="${esc(target === ERROR ? kit.t('Previous Error') : kit.t('Previous Warning'))} (⇧N)" aria-label="${esc(kit.t('Previous'))}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 10 4.5-4.5 4.5 4.5"/></svg></button>` +
+      `<button type="button" class="log-step next" data-step="1" title="${esc(target === ERROR ? kit.t('Next Error') : kit.t('Next Warning'))} (N)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m3.5 6 4.5 4.5L12.5 6"/></svg><span class="label">${esc(target === ERROR ? kit.t('Next Error') : kit.t('Next Warning'))}</span></button></div>` : '');
     if (levelsPresent.length) document.body.appendChild(bar);
 
     const strip = document.createElement('canvas');
     strip.className = 'log-strip';
-    strip.title = 'Errors and warnings';
+    strip.title = kit.t('Errors and warnings');
     if (counts[ERROR] || counts[WARN]) document.body.appendChild(strip);
 
     // Rows to step through: every row at the target level.
@@ -371,7 +373,7 @@
       else { next = -1; for (let k = targets.length - 1; k >= 0; k--) if (targets[k] < from) { next = k; break; } if (next < 0) next = targets.length - 1; }
       position = next;
       focusRow(targets[position]);
-      if (pos) pos.textContent = `${Smart.number(position + 1)} of ${Smart.number(targets.length)}`;
+      if (pos) pos.textContent = kit.t('{0} of {1}', position + 1, targets.length);
     }
 
     function setHidden(lv, on) {

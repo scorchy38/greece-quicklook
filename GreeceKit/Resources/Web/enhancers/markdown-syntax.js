@@ -13,8 +13,13 @@
 
   const greece = window.greece;
   if (!greece || !Array.isArray(greece.markdownPlugins)) return;
-  const esc = greece.kit.esc;
-  const fileName = String(greece.kit.fileName || '');
+  // Strings in the page's language come from kit (greece.js). MarkdownExtrasTests runs these
+  // plugins in JavaScriptCore with a stand-in kit that has none: there titles stay English.
+  const kit = greece.kit.t ? greece.kit : Object.assign({
+    t: (s, ...a) => String(s).replace(/ \[[^\]]+\]$/, '').replace(/\{(\d+)\}/g, (m, i) => (i < a.length ? String(a[i]) : m)),
+  }, greece.kit);
+  const esc = kit.esc;
+  const fileName = String(kit.fileName || '');
   const isMDX = /\.mdx$/i.test(fileName);
 
   const isSpace = (code) => code === 0x20 || code === 0x09;
@@ -62,12 +67,22 @@
     faq: 'question', failure: 'failure', fail: 'failure', missing: 'failure', bug: 'bug',
     example: 'example', quote: 'quote', cite: 'quote', details: 'note', seealso: 'note', 'see-also': 'note',
   };
-  const TITLES = { tldr: 'TL;DR', faq: 'FAQ', todo: 'To Do', seealso: 'See Also', 'see-also': 'See Also' };
+  /** Each known name's default title, in the page's language. Any other name is its own title. */
+  const TITLES = {
+    note: () => kit.t('Note'), info: () => kit.t('Info'), todo: () => kit.t('To Do'), tip: () => kit.t('Tip'), hint: () => kit.t('Hint'),
+    important: () => kit.t('Important'), warning: () => kit.t('Warning'), warn: () => kit.t('Warn'), attention: () => kit.t('Attention'),
+    caution: () => kit.t('Caution'), danger: () => kit.t('Danger'), error: () => kit.t('Error'), abstract: () => kit.t('Abstract'),
+    summary: () => kit.t('Summary'), tldr: () => kit.t('TL;DR'), success: () => kit.t('Success'), check: () => kit.t('Check'),
+    done: () => kit.t('Done [callout]'), question: () => kit.t('Question'), help: () => kit.t('Help'), faq: () => kit.t('FAQ'),
+    failure: () => kit.t('Failure'), fail: () => kit.t('Fail'), missing: () => kit.t('Missing'), bug: () => kit.t('Bug'),
+    example: () => kit.t('Example'), quote: () => kit.t('Quote'), cite: () => kit.t('Cite'), details: () => kit.t('Details'),
+    seealso: () => kit.t('See Also'), 'see-also': () => kit.t('See Also'),
+  };
 
   function calloutMeta(name, fold, title) {
     const key = String(name).toLowerCase();
     const type = CALLOUTS[key] || 'note';
-    const fallback = TITLES[key] || key.replace(/[-_]+/g, ' ').replace(/^./, (c) => c.toUpperCase());
+    const fallback = TITLES[key] ? TITLES[key]() : key.replace(/[-_]+/g, ' ').replace(/^./, (c) => c.toUpperCase());
     return { type, fold: fold || '', title: title == null ? fallback : title };
   }
 
@@ -286,7 +301,7 @@
     } else {
       // `details` folds closed; everything else is a callout with an optional custom title.
       const meta = calloutMeta(name, name === 'details' ? '-' : '', title || null);
-      if (name === 'details' && !title) meta.title = 'Details';
+      if (name === 'details' && !title) meta.title = kit.t('Details');
       pushCalloutOpen(state, meta, [startLine, close]);
       if (close > startLine + 1) tokenizeIndented(state, startLine + 1, close, indent, 'container');
       state.push('callout_close', meta.fold ? 'details' : 'blockquote', -1).meta = meta;
@@ -735,7 +750,7 @@
       let label = propValue(tag, 'title', 'label', 'value', 'name');
       if (!label && context && context.labels) label = context.labels[context.index] || '';
       if (context) context.index += 1;
-      return `<section class="md-tab" data-label="${esc(label || 'Tab')}">${body}</section>\n`;
+      return `<section class="md-tab" data-label="${esc(label || kit.t('Tab'))}">${body}</section>\n`;
     }
     if (MDX_DETAILS.test(name)) {
       return `<details class="mdx-details"><summary>${esc(propValue(tag, 'title', 'summary', 'label') || name)}</summary>${body}</details>\n`;

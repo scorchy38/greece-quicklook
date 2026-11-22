@@ -22,8 +22,8 @@
       const anchor = document.createElement('a');
       anchor.className = 'heading-anchor';
       anchor.href = '#' + encodeURIComponent(heading.id);
-      anchor.setAttribute('aria-label', 'Copy Link to Section');
-      anchor.title = 'Copy Link to Section';
+      anchor.setAttribute('aria-label', kit.t('Copy Link to Section'));
+      anchor.title = kit.t('Copy Link to Section');
       anchor.innerHTML = ICON;
       heading.insertBefore(anchor, heading.firstChild);
       heading.classList.add('has-anchor');
@@ -38,7 +38,7 @@
       if (!tip) {
         tip = document.createElement('span');
         tip.className = 'anchor-tip';
-        tip.textContent = 'Link Copied';
+        tip.textContent = kit.t('Link Copied');
         anchor.appendChild(tip);
       }
       anchor.classList.add('copied');

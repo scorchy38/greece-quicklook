@@ -6,12 +6,14 @@
 (function (global) {
   'use strict';
   const Smart = global.GreeceSmart = global.GreeceSmart || {};
+  /** The page's strings (Smart.kit), looked up when used: code-smart.js, which sets it, may load after this file. */
+  const kit = new Proxy({}, { get: (_, name) => Smart.kit[name] });
   const MAX = 2 * 1024 * 1024;
 
   const str = (v, max = 200) => Smart.text(v, max);
   const entries = (v) => Smart.entries(v, 3000);
   const json = (text) => { try { const v = JSON.parse(text.slice(0, MAX)); return Smart.isObject(v) ? v : null; } catch (_) { return null; } };
-  const licence = (v) => (typeof v === 'string' ? v : Array.isArray(v) ? v.map((x) => str(x.type || x, 40)).join(' or ') : Smart.isObject(v) ? str(v.type || v.text || (v.file ? `See ${v.file}` : ''), 80) : '');
+  const licence = (v) => (typeof v === 'string' ? v : Array.isArray(v) ? kit.list(v.map((x) => str(x.type || x, 40)), { type: 'disjunction' }) : Smart.isObject(v) ? str(v.type || v.text || (v.file ? kit.t('See {0}', v.file) : ''), 80) : '');
   const repoURL = (v) => (typeof v === 'string' ? v : Smart.isObject(v) ? str(v.url, 300) : '');
 
   /** A dependency's version requirement in a few characters. */
@@ -40,16 +42,16 @@
       const j = json(text);
       if (!j) return null;
       const facts = [
-        { label: 'License', value: licence(j.license || j.licenses) },
+        { label: kit.t('License'), value: licence(j.license || j.licenses) },
         ...entries(j.engines).map(([k, v]) => ({ label: k === 'node' ? 'Node' : k, value: str(v, 40), mono: true })),
-        { label: 'Module', value: j.type === 'module' ? 'ES modules' : j.type === 'commonjs' ? 'CommonJS' : '' },
-        { label: 'Package Manager', value: str(j.packageManager, 60), mono: true },
-        { label: 'Workspaces', value: Array.isArray(j.workspaces) ? Smart.number(j.workspaces.length) : Smart.isObject(j.workspaces) && Array.isArray(j.workspaces.packages) ? Smart.number(j.workspaces.packages.length) : '' },
-        { label: 'Visibility', value: j.private === true ? 'Private' : '' },
-        { label: 'Home', value: Smart.link(j.homepage || repoURL(j.repository)), html: true },
+        { label: kit.t('Module'), value: j.type === 'module' ? kit.t('ES modules') : j.type === 'commonjs' ? 'CommonJS' : '' },
+        { label: kit.t('Package Manager'), value: str(j.packageManager, 60), mono: true },
+        { label: kit.t('Workspaces'), value: Array.isArray(j.workspaces) ? kit.number(j.workspaces.length) : Smart.isObject(j.workspaces) && Array.isArray(j.workspaces.packages) ? kit.number(j.workspaces.packages.length) : '' },
+        { label: kit.t('Visibility'), value: j.private === true ? kit.t('Private') : '' },
+        { label: kit.t('Home'), value: Smart.link(j.homepage || repoURL(j.repository)), html: true },
       ];
       return {
-        label: 'npm package', title: str(j.name, 120) || 'package.json', version: str(j.version, 40), subtitle: str(j.description, 300), facts,
+        label: kit.t('npm package'), title: str(j.name, 120) || 'package.json', version: str(j.version, 40), subtitle: str(j.description, 300), facts,
         scripts: entries(j.scripts).map(([name, command]) => ({ name, command: str(command, 400) })),
         deps: [...depsOf(j.dependencies, ''), ...depsOf(j.devDependencies, 'dev'), ...depsOf(j.peerDependencies, 'peer'), ...depsOf(j.optionalDependencies, 'optional')],
       };
@@ -61,12 +63,12 @@
       const require = entries(j.require);
       const engines = require.filter(([k]) => k === 'php' || /^ext-/.test(k));
       return {
-        label: 'Composer package', title: str(j.name, 120) || 'composer.json', version: str(j.version, 40), subtitle: str(j.description, 300),
+        label: kit.t('Composer package'), title: str(j.name, 120) || 'composer.json', version: str(j.version, 40), subtitle: str(j.description, 300),
         facts: [
-          { label: 'License', value: licence(j.license) },
+          { label: kit.t('License'), value: licence(j.license) },
           ...engines.slice(0, 6).map(([k, v]) => ({ label: k === 'php' ? 'PHP' : k, value: str(v, 40), mono: true })),
-          { label: 'Type', value: str(j.type, 40) },
-          { label: 'Home', value: Smart.link(j.homepage), html: true },
+          { label: kit.t('Type'), value: str(j.type, 40) },
+          { label: kit.t('Home'), value: Smart.link(j.homepage), html: true },
         ],
         scripts: entries(j.scripts).map(([name, command]) => ({ name, command: Array.isArray(command) ? command.map((c) => str(c, 120)).join(' && ') : str(command, 400) })),
         deps: [...require.filter(([k]) => k !== 'php' && !/^ext-/.test(k)).map(([name, v]) => ({ name, version: requirement(v), type: '' })), ...depsOf(j['require-dev'], 'dev')],
@@ -86,14 +88,14 @@
       if (workspace) deps.push(...depsOf(workspace.dependencies, 'workspace'));
       const features = entries(data.features).length;
       return {
-        label: workspace && !p.name ? 'Cargo workspace' : 'Rust crate', title: str(p.name, 120) || (workspace ? 'Workspace' : 'Cargo.toml'), version, subtitle: str(p.description, 300),
+        label: workspace && !p.name ? kit.t('Cargo workspace') : kit.t('Rust crate'), title: str(p.name, 120) || (workspace ? kit.t('Workspace') : 'Cargo.toml'), version, subtitle: str(p.description, 300),
         facts: [
-          { label: 'License', value: str(p.license || (p['license-file'] ? `See ${p['license-file']}` : ''), 80) },
-          { label: 'Edition', value: str(Smart.isObject(p.edition) ? '' : p.edition, 10) },
+          { label: kit.t('License'), value: str(p.license || (p['license-file'] ? kit.t('See {0}', p['license-file']) : ''), 80) },
+          { label: kit.t('Edition'), value: str(Smart.isObject(p.edition) ? '' : p.edition, 10) },
           { label: 'Rust', value: str(p['rust-version'], 20), mono: true },
-          { label: 'Members', value: workspace && Array.isArray(workspace.members) ? Smart.number(workspace.members.length) : '' },
-          { label: 'Features', value: features ? Smart.number(features) : '' },
-          { label: 'Home', value: Smart.link(p.homepage || p.repository), html: true },
+          { label: kit.t('Members'), value: workspace && Array.isArray(workspace.members) ? kit.number(workspace.members.length) : '' },
+          { label: kit.t('Features'), value: features ? kit.number(features) : '' },
+          { label: kit.t('Home'), value: Smart.link(p.homepage || p.repository), html: true },
         ],
         scripts: [],
         deps,
@@ -123,13 +125,13 @@
       const backend = Smart.isObject(data['build-system']) ? str(data['build-system']['build-backend'], 60) : '';
       const urls = Smart.isObject(p.urls) ? Object.values(p.urls).find((u) => typeof u === 'string') : '';
       return {
-        label: poetry.name && !p.name ? 'Poetry project' : 'Python project', title: str(p.name || poetry.name, 120) || 'pyproject.toml', version: str(p.version || poetry.version, 40) || (Array.isArray(p.dynamic) && p.dynamic.includes('version') ? 'dynamic' : ''),
+        label: poetry.name && !p.name ? kit.t('Poetry project') : kit.t('Python project'), title: str(p.name || poetry.name, 120) || 'pyproject.toml', version: str(p.version || poetry.version, 40) || (Array.isArray(p.dynamic) && p.dynamic.includes('version') ? 'dynamic' : ''),
         subtitle: str(p.description || poetry.description, 300),
         facts: [
-          { label: 'License', value: licence(p.license || poetry.license) },
+          { label: kit.t('License'), value: licence(p.license || poetry.license) },
           { label: 'Python', value: python, mono: true },
-          { label: 'Build', value: backend, mono: true },
-          { label: 'Home', value: Smart.link(urls || poetry.homepage || poetry.repository), html: true },
+          { label: kit.t('Build'), value: backend, mono: true },
+          { label: kit.t('Home'), value: Smart.link(urls || poetry.homepage || poetry.repository), html: true },
         ],
         scripts: [...entries(p.scripts), ...entries(poetry.scripts)].map(([name, command]) => ({ name, command: str(command, 300) })),
         deps,
@@ -152,11 +154,11 @@
       src.split('\n').forEach((line) => { if (/^require\s+[^(\s]/.test(line)) add(line.replace(/^require\s+/, '')); });
       const replaces = (src.match(/^replace\s|^\s+\S+\s+=>\s/gm) || []).length;
       return {
-        label: 'Go module', title: module.split('/').pop() || 'go.mod', subtitle: module, version: '',
+        label: kit.t('Go module'), title: module.split('/').pop() || 'go.mod', subtitle: module, version: '',
         facts: [
           { label: 'Go', value: go, mono: true },
-          { label: 'Toolchain', value: toolchain, mono: true },
-          { label: 'Replaced', value: replaces ? Smart.number(replaces) : '' },
+          { label: kit.t('Toolchain'), value: toolchain, mono: true },
+          { label: kit.t('Replaced'), value: replaces ? kit.number(replaces) : '' },
         ],
         scripts: [], deps,
       };
@@ -188,8 +190,8 @@
         label: 'Bundler', title: 'Gemfile', subtitle: '', version: '',
         facts: [
           { label: 'Ruby', value: ruby, mono: true },
-          { label: 'Source', value: Smart.link(source), html: true },
-          { label: 'Gemspec', value: /^gemspec\b/m.test(src) ? 'Yes' : '' },
+          { label: kit.t('Source'), value: Smart.link(source), html: true },
+          { label: 'Gemspec', value: /^gemspec\b/m.test(src) ? kit.t('Yes') : '' },
         ],
         scripts: [], deps,
       };
@@ -217,9 +219,9 @@
       return {
         label: 'CocoaPods', title: 'Podfile', subtitle: targets.length ? '' : '', version: '',
         facts: [
-          { label: 'Platform', value: platforms.join(', ') },
-          { label: 'Frameworks', value: /^use_frameworks!/m.test(src) ? 'Yes' : '' },
-          { label: 'Targets', value: Smart.number((src.match(/^\s*target\s+["']/gm) || []).length) || '' },
+          { label: kit.t('Platform'), value: platforms.join(', ') },
+          { label: kit.t('Frameworks'), value: /^use_frameworks!/m.test(src) ? kit.t('Yes') : '' },
+          { label: kit.t('Targets'), value: kit.number((src.match(/^\s*target\s+["']/gm) || []).length) || '' },
         ],
         scripts: [], deps,
       };
@@ -256,16 +258,16 @@
       }
       const products = [];
       const product = /\.(library|executable|plugin)\s*\(\s*name\s*:\s*"([^"]+)"/g;
-      while ((m = product.exec(body)) && products.length < 100) products.push({ name: m[2], command: m[1] === 'library' ? 'Library' : m[1] === 'executable' ? 'Executable' : 'Plugin' });
+      while ((m = product.exec(body)) && products.length < 100) products.push({ name: m[2], command: m[1] === 'library' ? kit.t('Library') : m[1] === 'executable' ? kit.t('Executable') : kit.t('Plugin') });
       const targets = (body.match(/\.(?:target|executableTarget|testTarget|macro|plugin|binaryTarget|systemLibrary)\s*\(\s*name\s*:/g) || []).length;
       return {
-        label: 'Swift package', title: name || 'Package.swift', version: '', subtitle: '',
+        label: kit.t('Swift package'), title: name || 'Package.swift', version: '', subtitle: '',
         facts: [
-          { label: 'Swift Tools', value: tools, mono: true },
-          { label: 'Platforms', value: platforms.join(', ') },
-          { label: 'Targets', value: targets ? Smart.number(targets) : '' },
+          { label: kit.t('Swift Tools'), value: tools, mono: true },
+          { label: kit.t('Platforms'), value: platforms.join(', ') },
+          { label: kit.t('Targets'), value: targets ? kit.number(targets) : '' },
         ],
-        scripts: products, scriptsTitle: 'Products', deps,
+        scripts: products, scriptsTitle: kit.t('Products'), deps,
       };
     },
 
@@ -274,15 +276,15 @@
       if (!Smart.isObject(y)) return null;
       const env = Smart.isObject(y.environment) ? y.environment : {};
       return {
-        label: Smart.isObject(y.dependencies) && Smart.isObject(y.dependencies.flutter) ? 'Flutter package' : 'Dart package',
+        label: Smart.isObject(y.dependencies) && Smart.isObject(y.dependencies.flutter) ? kit.t('Flutter package') : kit.t('Dart package'),
         title: str(y.name, 120) || 'pubspec.yaml', version: str(y.version, 40), subtitle: str(y.description, 300),
         facts: [
           { label: 'Dart', value: str(env.sdk, 40), mono: true },
           { label: 'Flutter', value: str(env.flutter, 40), mono: true },
-          { label: 'Publish', value: y.publish_to === 'none' ? 'Private' : '' },
-          { label: 'Home', value: Smart.link(y.homepage || y.repository), html: true },
+          { label: kit.t('Publish'), value: y.publish_to === 'none' ? kit.t('Private') : '' },
+          { label: kit.t('Home'), value: Smart.link(y.homepage || y.repository), html: true },
         ],
-        scripts: entries(y.executables).map(([name, v]) => ({ name, command: str(v || name, 100) })), scriptsTitle: 'Executables',
+        scripts: entries(y.executables).map(([name, v]) => ({ name, command: str(v || name, 100) })), scriptsTitle: kit.t('Executables'),
         deps: [...depsOf(y.dependencies, ''), ...depsOf(y.dev_dependencies, 'dev'), ...depsOf(y.dependency_overrides, 'override')],
       };
     },
@@ -312,9 +314,9 @@
         scripts.push({ name: m[1], command: m[2].startsWith('[') ? (m[2].match(/"[^"]*"/g) || []).map((s) => s.slice(1, -1)).join(', ') : m[2].replace(/^"|"$/g, '') });
       }
       return {
-        label: 'Elixir project', title: app || 'mix.exs', version, subtitle: description,
-        facts: [{ label: 'License', value: licenses.map((l) => l.slice(1, -1)).join(', ') }, { label: 'Elixir', value: elixir, mono: true }],
-        scripts, scriptsTitle: 'Aliases', deps,
+        label: kit.t('Elixir project'), title: app || 'mix.exs', version, subtitle: description,
+        facts: [{ label: kit.t('License'), value: licenses.map((l) => l.slice(1, -1)).join(', ') }, { label: 'Elixir', value: elixir, mono: true }],
+        scripts, scriptsTitle: kit.t('Aliases'), deps,
       };
     },
 
@@ -351,15 +353,15 @@
       const minSdk = number('minSdk');
       const targetSdk = number('targetSdk');
       return {
-        label: /com\.android\.(application|library)|android\s*\{/.test(src) ? 'Android build' : 'Gradle build',
-        title: app || value('group') || 'Gradle Build', version: value('versionName') || value('version'), subtitle: value('description'),
+        label: /com\.android\.(application|library)|android\s*\{/.test(src) ? kit.t('Android build') : kit.t('Gradle build'),
+        title: app || value('group') || kit.t('Gradle build'), version: value('versionName') || value('version'), subtitle: value('description'),
         facts: [
           { label: 'Java', value: java.replace('_', '.'), mono: true },
           { label: 'Android', value: minSdk ? `API ${minSdk}${targetSdk ? ` – ${targetSdk}` : '+'}` : '' },
-          { label: 'Compile SDK', value: number('compileSdk'), mono: true },
-          { label: 'Kotlin', value: /kotlin\s*\(|org\.jetbrains\.kotlin|\.kts$/.test(src) ? 'Yes' : '' },
+          { label: kit.t('Compile SDK'), value: number('compileSdk'), mono: true },
+          { label: 'Kotlin', value: /kotlin\s*\(|org\.jetbrains\.kotlin|\.kts$/.test(src) ? kit.t('Yes') : '' },
         ],
-        scripts: plugins, scriptsTitle: 'Plugins',
+        scripts: plugins, scriptsTitle: kit.t('Plugins'),
         deps,
       };
     },
@@ -382,6 +384,21 @@
 
   // ------------------------------------------------------------------------------ Card
 
+  /** What each kind of dependency is called on its tag, and in the summary of counts. */
+  const TYPES = {
+    dev: () => kit.t('dev'), test: () => kit.t('test'), peer: () => kit.t('peer'), optional: () => kit.t('optional'),
+    build: () => kit.t('build'), indirect: () => kit.t('indirect'), platform: () => kit.t('platform'), override: () => kit.t('override'),
+    group: () => kit.t('group'), workspace: () => kit.t('workspace'), debug: () => kit.t('debug'), 'compile only': () => kit.t('compile only'),
+    runtime: () => kit.t('runtime'),
+  };
+  const COUNTS = {
+    '': (n) => kit.plural(n, '{0} direct'), dev: (n) => kit.plural(n, '{0} dev'), test: (n) => kit.plural(n, '{0} test'),
+    peer: (n) => kit.plural(n, '{0} peer'), optional: (n) => kit.plural(n, '{0} optional'), build: (n) => kit.plural(n, '{0} build'),
+    indirect: (n) => kit.plural(n, '{0} indirect'), platform: (n) => kit.plural(n, '{0} platform'), override: (n) => kit.plural(n, '{0} override'),
+    group: (n) => kit.plural(n, '{0} group'), workspace: (n) => kit.plural(n, '{0} workspace'), debug: (n) => kit.plural(n, '{0} debug'),
+    'compile only': (n) => kit.plural(n, '{0} compile only'), runtime: (n) => kit.plural(n, '{0} runtime'),
+  };
+  const typeName = (type) => (TYPES[type] ? TYPES[type]() : type);
   const TONES = { dev: 'gray', test: 'gray', peer: 'purple', optional: 'teal', build: 'orange', indirect: 'gray', platform: 'teal', override: 'orange', group: 'teal', workspace: 'teal', debug: 'gray', 'compile only': 'orange', runtime: 'teal' };
 
   function render({ root, Smart }, model) {
@@ -392,18 +409,18 @@
     const sections = [];
     if (model.scripts && model.scripts.length) {
       const rows = model.scripts.map((s) => `<li><code class="smart-name" title="${esc(s.name)}">${esc(s.name)}</code><span class="smart-command" title="${esc(s.command || '')}">${esc(s.command || '')}</span><span></span></li>`);
-      sections.push(Smart.section(model.scriptsTitle || 'Scripts', `<ul class="smart-list scripts">${Smart.more(rows, 8, '')}</ul>`, { count: model.scripts.length }));
+      sections.push(Smart.section(model.scriptsTitle || kit.t('Scripts'), `<ul class="smart-list scripts">${Smart.more(rows, 8)}</ul>`, { count: model.scripts.length }));
     }
     if (model.deps && model.deps.length) {
       const byType = new Map();
       model.deps.forEach((d) => byType.set(d.type || '', (byType.get(d.type || '') || 0) + 1));
       const summary = Array.from(byType.entries()).sort((a, b) => (a[0] === '' ? -1 : b[0] === '' ? 1 : b[1] - a[1]))
-        .map(([type, count]) => (type ? `${Smart.number(count)} ${type}` : `${Smart.number(count)} direct`)).join(' · ');
-      const rows = model.deps.map((d) => `<tr><td class="dep-name" title="${esc(d.name)}">${esc(d.name)}</td><td class="dep-version" title="${esc(d.version)}">${esc(d.version || '')}</td><td class="dep-kind">${d.type ? Smart.tag(d.type, TONES[d.type] || 'gray') : ''}${d.note ? `<span class="smart-dim" title="${esc(d.note)}">${esc(d.note)}</span>` : ''}</td></tr>`);
+        .map(([type, count]) => (COUNTS[type] ? COUNTS[type](count) : `${kit.number(count)} ${type}`)).join(' · ');
+      const rows = model.deps.map((d) => `<tr><td class="dep-name" title="${esc(d.name)}">${esc(d.name)}</td><td class="dep-version" title="${esc(d.version)}">${esc(d.version || '')}</td><td class="dep-kind">${d.type ? Smart.tag(typeName(d.type), TONES[d.type] || 'gray') : ''}${d.note ? `<span class="smart-dim" title="${esc(d.note)}">${esc(d.note)}</span>` : ''}</td></tr>`);
       const limit = 10;
       const table = `<table class="smart-table deps"><tbody>${rows.slice(0, limit).join('')}</tbody>${rows.length > limit ? `<tbody class="smart-rest" hidden>${rows.slice(limit).join('')}</tbody>` : ''}</table>` +
-        (rows.length > limit ? `<button type="button" class="smart-more table" data-more="${rows.length - limit}">Show ${Smart.number(rows.length - limit)} More</button>` : '');
-      sections.push(Smart.section('Dependencies', table, { count: model.deps.length, aside: esc(summary) }));
+        (rows.length > limit ? `<button type="button" class="smart-more table" data-more="${rows.length - limit}">${esc(Smart.moreLabel(rows.length - limit))}</button>` : '');
+      sections.push(Smart.section(kit.t('Dependencies'), table, { count: model.deps.length, aside: esc(summary) }));
     }
     if (sections.length) parts.push(`<div class="smart-grid">${sections.join('')}</div>`);
 
@@ -422,7 +439,7 @@
         event.stopPropagation();
         const rest = button.previousElementSibling.querySelector('.smart-rest');
         rest.hidden = !rest.hidden;
-        button.textContent = rest.hidden ? `Show ${Smart.number(Number(button.dataset.more))} More` : 'Show Less';
+        button.textContent = Smart.moreLabel(Number(button.dataset.more), !rest.hidden);
       });
     });
   }

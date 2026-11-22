@@ -1,0 +1,1196 @@
+{
+  "@same": [
+    "{0} B",
+    "{0} KB",
+    "{0} MB",
+    "{0} GB",
+    "{0} TB",
+    "{0}+",
+    "Push",
+    "Pull request",
+    "push",
+    "pull request",
+    ":{0}",
+    "Null",
+    "Fetch",
+    "{0} ({1})",
+    "Spot"
+  ],
+  "{0} bytes": {
+    "one": "{0} byte",
+    "other": "{0} byte"
+  },
+  "{0} B": "{0} B",
+  "{0} KB": "{0} KB",
+  "{0} MB": "{0} MB",
+  "{0} GB": "{0} GB",
+  "{0} TB": "{0} TB",
+  "Copied": "Αντιγράφηκε",
+  "Empty file": "Κενό αρχείο",
+  "Copy": "Αντιγραφή",
+  "Showing the beginning of a very large file.": "Εμφανίζεται η αρχή ενός πολύ μεγάλου αρχείου.",
+  "Note": "Σημείωση",
+  "Tip": "Συμβουλή",
+  "Important": "Σημαντικό",
+  "Warning": "Προειδοποίηση",
+  "Caution": "Προσοχή",
+  "Remote image not loaded": "Η απομακρυσμένη εικόνα δεν φορτώθηκε",
+  "On This Page": "Σε αυτή τη σελίδα",
+  "Empty document": "Κενό έγγραφο",
+  "Showing the beginning of a very large document.": "Εμφανίζεται η αρχή ενός πολύ μεγάλου εγγράφου.",
+  "Added": "Προστέθηκε",
+  "Deleted": "Διαγράφηκε",
+  "Renamed": "Μετονομάστηκε",
+  "Binary file not shown": "Το δυαδικό αρχείο δεν εμφανίζεται",
+  "No content changes": "Καμία αλλαγή περιεχομένου",
+  "{0} commits": {
+    "one": "{0} commit",
+    "other": "{0} commit"
+  },
+  "{0} files changed": {
+    "one": "{0} αρχείο άλλαξε",
+    "other": "{0} αρχεία άλλαξαν"
+  },
+  "Empty notebook": "Κενό σημειωματάριο",
+  "“{0}”": "«{0}»",
+  "Find": "Εύρεση",
+  "Previous": "Προηγούμενο",
+  "Next": "Επόμενο",
+  "Match Case": "Διάκριση πεζών-κεφαλαίων",
+  "Whole Words": "Ολόκληρες λέξεις",
+  "Done": "Τέλος",
+  "Select text to find it": "Επιλέξτε κείμενο για εύρεση",
+  "{0}+": "{0}+",
+  "No matches": "Καμία αντιστοίχιση",
+  "{0} of {1}": "{0} από {1}",
+  "Find {0}": "Εύρεση {0}",
+  "Go to Line": "Μετάβαση σε γραμμή",
+  "Line": "Γραμμή",
+  "{0}+ matches": "{0}+ αντιστοιχίσεις",
+  "{0} matches": {
+    "one": "{0} αντιστοίχιση",
+    "other": "{0} αντιστοιχίσεις"
+  },
+  "{0} lines": {
+    "one": "{0} γραμμή",
+    "other": "{0} γραμμές"
+  },
+  "Show {0} lines": {
+    "one": "Εμφάνιση {0} γραμμής",
+    "other": "Εμφάνιση {0} γραμμών"
+  },
+  "Copy Line {0}": "Αντιγραφή γραμμής {0}",
+  "Unfold": "Ανάπτυξη",
+  "Fold": "Σύμπτυξη",
+  "Wrap Lines": "Αναδίπλωση γραμμών",
+  "Fold All": "Σύμπτυξη όλων",
+  "Unfold All": "Ανάπτυξη όλων",
+  "Copy All": "Αντιγραφή όλων",
+  "Reveal value": "Εμφάνιση τιμής",
+  "Also set on line {0}; this value wins": "Ορίζεται επίσης στη γραμμή {0}· ισχύει αυτή η τιμή",
+  "Duplicate": "Διπλότυπη",
+  "Empty": "Κενή",
+  "Hide value": "Απόκρυψη τιμής",
+  "line {0}, first set on line {1}": "γραμμή {0}, ορίστηκε πρώτα στη γραμμή {1}",
+  "line {0}": "γραμμή {0}",
+  "{0} keys": {
+    "one": "{0} κλειδί",
+    "other": "{0} κλειδιά"
+  },
+  "{0} duplicates": {
+    "one": "{0} διπλότυπη",
+    "other": "{0} διπλότυπες"
+  },
+  "{0} empty": {
+    "one": "{0} κενή",
+    "other": "{0} κενές"
+  },
+  "Values hidden": "Κρυμμένες τιμές",
+  "Environment Template": "Πρότυπο περιβάλλοντος",
+  "Environment Variables": "Μεταβλητές περιβάλλοντος",
+  "Reveal All": "Εμφάνιση όλων",
+  "Hide All": "Απόκρυψη όλων",
+  "Values shown": "Ορατές τιμές",
+  "stage {0}": "στάδιο {0}",
+  "Base": "Είδωλο βάσης",
+  "Ports": "Θύρες",
+  "Entrypoint": "Σημείο εισόδου",
+  "Command": "Εντολή",
+  "Workdir": "Κατάλογος εργασίας",
+  "User": "Χρήστης",
+  "Healthcheck": "Έλεγχος υγείας",
+  "Yes": "Ναι",
+  "from {0}": "από {0}",
+  "Build stages": "Στάδια δόμησης",
+  "Stages": "Στάδια",
+  "{0} stages": {
+    "one": "{0} στάδιο",
+    "other": "{0} στάδια"
+  },
+  "Final: {0}": "Τελικό: {0}",
+  "Service": "Υπηρεσία",
+  "Image [container]": "Είδωλο",
+  "Volumes": "Τόμοι",
+  "Start Order": "Σειρά εκκίνησης",
+  "{0} services": {
+    "one": "{0} υπηρεσία",
+    "other": "{0} υπηρεσίες"
+  },
+  "{0} volumes": {
+    "one": "{0} τόμος",
+    "other": "{0} τόμοι"
+  },
+  "{0} networks": {
+    "one": "{0} δίκτυο",
+    "other": "{0} δίκτυα"
+  },
+  "tag {0}": "ετικέτα {0}",
+  "1 input": "1 είσοδος",
+  "{0} inputs": {
+    "one": "{0} είσοδος",
+    "other": "{0} είσοδοι"
+  },
+  "Push": "Push",
+  "to {0}": "προς {0}",
+  "Pull request": "Pull request",
+  "Pull request target": "Στόχος pull request",
+  "into {0}": "προς {0}",
+  "Schedule": "Πρόγραμμα",
+  "Manual": "Χειροκίνητα",
+  "Called by workflows": "Κλήση από ροές εργασιών",
+  "Release": "Έκδοση",
+  "After workflow": "Μετά από ροή εργασιών",
+  "push": "push",
+  "pull request": "pull request",
+  "pull request target": "στόχος pull request",
+  "schedule": "πρόγραμμα",
+  "manual": "χειροκίνητα",
+  "called by workflows": "κλήση από ροές εργασιών",
+  "release": "έκδοση",
+  "after workflow": "μετά από ροή εργασιών",
+  "Triggers": "Εναύσματα",
+  "reusable workflow": "επαναχρησιμοποιήσιμη ροή εργασιών",
+  "{0} steps": {
+    "one": "{0} βήμα",
+    "other": "{0} βήματα"
+  },
+  "Jobs": "Εργασίες",
+  "Step": "Βήμα",
+  "reusable": "επαναχρησιμοποιήσιμη",
+  "Uses": "Χρησιμοποιεί",
+  "Steps": "Βήματα",
+  "{0} jobs": {
+    "one": "{0} εργασία",
+    "other": "{0} εργασίες"
+  },
+  "On {0}": "Έναυσμα: {0}",
+  "replicas": "αντίγραφα",
+  "type": "τύπος",
+  "ports": "θύρες",
+  "hosts": "κεντρικοί υπολογιστές",
+  "keys": "κλειδιά",
+  "(unnamed)": "(χωρίς όνομα)",
+  "{0} resources": {
+    "one": "{0} πόρος",
+    "other": "{0} πόροι"
+  },
+  "{0} {1}s": {
+    "one": "{0} {1}",
+    "other": "{0} {1}"
+  },
+  "namespace {0}": "χώρος ονομάτων {0}",
+  "Other": "Άλλο",
+  "Trace": "Ανίχνευση",
+  "Debug": "Εκσφαλμάτωση",
+  "Info": "Πληροφορίες",
+  "Warnings": "Προειδοποιήσεις",
+  "Errors": "Σφάλματα",
+  "Access Log": "Αρχείο καταγραφής πρόσβασης",
+  "macOS Unified Log": "Ενοποιημένο αρχείο καταγραφής macOS",
+  "{0} more characters": {
+    "one": "{0} ακόμη χαρακτήρας",
+    "other": "{0} ακόμη χαρακτήρες"
+  },
+  "Repeated {0} times": {
+    "one": "Επαναλήφθηκε {0} φορά",
+    "other": "Επαναλήφθηκε {0} φορές"
+  },
+  "Repeats folded": "Συμπτυγμένες επαναλήψεις",
+  "Log": "Αρχείο καταγραφής",
+  "Most Frequent Error": "Πιο συχνό σφάλμα",
+  "Most Frequent Errors": "Πιο συχνά σφάλματα",
+  "Previous Error": "Προηγούμενο σφάλμα",
+  "Previous Warning": "Προηγούμενη προειδοποίηση",
+  "Next Error": "Επόμενο σφάλμα",
+  "Next Warning": "Επόμενη προειδοποίηση",
+  "Errors and warnings": "Σφάλματα και προειδοποιήσεις",
+  "See {0}": "Βλ. {0}",
+  "License": "Άδεια χρήσης",
+  "Module": "Μονάδα",
+  "ES modules": "Μονάδες ES",
+  "Package Manager": "Διαχειριστής πακέτων",
+  "Workspaces": "Χώροι εργασίας",
+  "Visibility": "Ορατότητα",
+  "Private": "Ιδιωτικό",
+  "Home": "Αρχική σελίδα",
+  "npm package": "Πακέτο npm",
+  "Composer package": "Πακέτο Composer",
+  "Type": "Τύπος",
+  "Cargo workspace": "Χώρος εργασίας Cargo",
+  "Rust crate": "Πακέτο Rust",
+  "Workspace": "Χώρος εργασίας",
+  "Edition": "Έκδοση Rust",
+  "Members": "Μέλη",
+  "Features": "Χαρακτηριστικά",
+  "Poetry project": "Έργο Poetry",
+  "Python project": "Έργο Python",
+  "Build": "Δόμηση",
+  "Go module": "Μονάδα Go",
+  "Toolchain": "Αλυσίδα εργαλείων",
+  "Replaced": "Αντικαταστάσεις",
+  "Source": "Πηγή",
+  "Platform": "Πλατφόρμα",
+  "Frameworks": "Πλαίσια",
+  "Targets": "Στόχοι",
+  "Library": "Βιβλιοθήκη",
+  "Executable": "Εκτελέσιμο",
+  "Plugin": "Προσθήκη",
+  "Swift package": "Πακέτο Swift",
+  "Swift Tools": "Εργαλεία Swift",
+  "Platforms": "Πλατφόρμες",
+  "Products": "Προϊόντα",
+  "Flutter package": "Πακέτο Flutter",
+  "Dart package": "Πακέτο Dart",
+  "Publish": "Δημοσίευση",
+  "Executables": "Εκτελέσιμα",
+  "Elixir project": "Έργο Elixir",
+  "Aliases": "Ψευδώνυμα",
+  "Android build": "Δόμηση Android",
+  "Gradle build": "Δόμηση Gradle",
+  "Compile SDK": "SDK μεταγλώττισης",
+  "Plugins": "Προσθήκες",
+  "dev": "ανάπτυξη",
+  "test": "δοκιμή",
+  "peer": "ομότιμη",
+  "optional": "προαιρετική",
+  "build": "δόμηση",
+  "indirect": "έμμεση",
+  "platform": "πλατφόρμα",
+  "override": "παράκαμψη",
+  "group": "ομάδα",
+  "workspace": "χώρος εργασίας",
+  "debug": "εκσφαλμάτωση",
+  "compile only": "μόνο μεταγλώττιση",
+  "runtime": "χρόνος εκτέλεσης",
+  "{0} direct": {
+    "one": "{0} άμεση",
+    "other": "{0} άμεσες"
+  },
+  "{0} dev": {
+    "one": "{0} ανάπτυξης",
+    "other": "{0} ανάπτυξης"
+  },
+  "{0} test": {
+    "one": "{0} δοκιμών",
+    "other": "{0} δοκιμών"
+  },
+  "{0} peer": {
+    "one": "{0} ομότιμη",
+    "other": "{0} ομότιμες"
+  },
+  "{0} optional": {
+    "one": "{0} προαιρετική",
+    "other": "{0} προαιρετικές"
+  },
+  "{0} build": {
+    "one": "{0} δόμησης",
+    "other": "{0} δόμησης"
+  },
+  "{0} indirect": {
+    "one": "{0} έμμεση",
+    "other": "{0} έμμεσες"
+  },
+  "{0} platform": {
+    "one": "{0} πλατφόρμας",
+    "other": "{0} πλατφόρμας"
+  },
+  "{0} override": {
+    "one": "{0} παράκαμψη",
+    "other": "{0} παρακάμψεις"
+  },
+  "{0} group": {
+    "one": "{0} ομάδας",
+    "other": "{0} ομάδας"
+  },
+  "{0} workspace": {
+    "one": "{0} χώρου εργασίας",
+    "other": "{0} χώρου εργασίας"
+  },
+  "{0} debug": {
+    "one": "{0} εκσφαλμάτωσης",
+    "other": "{0} εκσφαλμάτωσης"
+  },
+  "{0} compile only": {
+    "one": "{0} μόνο μεταγλώττισης",
+    "other": "{0} μόνο μεταγλώττισης"
+  },
+  "{0} runtime": {
+    "one": "{0} χρόνου εκτέλεσης",
+    "other": "{0} χρόνου εκτέλεσης"
+  },
+  "Scripts": "Σκριπτ",
+  "Dependencies": "Εξαρτήσεις",
+  "every weekday in {0}": "κάθε καθημερινή τους μήνες {0}",
+  "on weekdays in {0}": "τις καθημερινές τους μήνες {0}",
+  "every weekday": "κάθε καθημερινή",
+  "on weekdays": "τις καθημερινές",
+  "every Saturday and Sunday in {0}": "κάθε Σάββατο και Κυριακή τους μήνες {0}",
+  "at weekends in {0}": "τα Σαββατοκύριακα τους μήνες {0}",
+  "every Saturday and Sunday": "κάθε Σάββατο και Κυριακή",
+  "at weekends": "τα Σαββατοκύριακα",
+  "every {0} to {1} in {2}": "από {0} έως {1} τους μήνες {2}",
+  "{0} to {1} in {2}": "από {0} έως {1} τους μήνες {2}",
+  "every {0} to {1}": "από {0} έως {1}",
+  "{0} to {1}": "από {0} έως {1}",
+  "every {0} in {1}": "κάθε {0} τους μήνες {1}",
+  "on {0} in {1}": "κάθε {0} τους μήνες {1}",
+  "every {0}": "κάθε {0}",
+  "on {0}": "κάθε {0}",
+  "on every {0} days of {1}": {
+    "one": "κάθε {0} ημέρα τους μήνες {1}",
+    "other": "κάθε {0} ημέρες τους μήνες {1}"
+  },
+  "on every {0} days of every month": {
+    "one": "κάθε {0} ημέρα κάθε μήνα",
+    "other": "κάθε {0} ημέρες κάθε μήνα"
+  },
+  "on days {0}–{1} of {2}": "τις ημέρες {0}–{1} τους μήνες {2}",
+  "on days {0}–{1} of every month": "τις ημέρες {0}–{1} κάθε μήνα",
+  "{0}th": {
+    "other": "{0}η"
+  },
+  "on the {0} of {1}": "την {0} τους μήνες {1}",
+  "on the {0} of every month": "την {0} κάθε μήνα",
+  "every day": "κάθε ημέρα",
+  "every day in {0}": "κάθε ημέρα τους μήνες {0}",
+  "in {0}": "τους μήνες {0}",
+  "every year on {0}": "κάθε χρόνο την {0}",
+  "on {0} every year": "την {0} κάθε χρόνο",
+  "At startup": "Κατά την εκκίνηση",
+  ":{0}": ":{0}",
+  "{0} at {1}": "{0} στις {1}",
+  "Every minute": "Κάθε λεπτό",
+  "Every minute {0}": "Κάθε λεπτό {0}",
+  "Every {0} minutes": {
+    "one": "Κάθε {0} λεπτό",
+    "other": "Κάθε {0} λεπτά"
+  },
+  "Every {0} minutes {1}": {
+    "one": "Κάθε {0} λεπτό {1}",
+    "other": "Κάθε {0} λεπτά {1}"
+  },
+  "Every hour": "Κάθε ώρα",
+  "Every hour {0}": "Κάθε ώρα {0}",
+  "Every hour at {0}": "Κάθε ώρα στις {0}",
+  "Every hour at {0} {1}": "Κάθε ώρα στις {0} {1}",
+  "Every {0} hours": {
+    "one": "Κάθε {0} ώρα",
+    "other": "Κάθε {0} ώρες"
+  },
+  "Every {0} hours {1}": {
+    "one": "Κάθε {0} ώρα {1}",
+    "other": "Κάθε {0} ώρες {1}"
+  },
+  "Every {0} hours at {1}": {
+    "one": "Κάθε {0} ώρα στις {1}",
+    "other": "Κάθε {0} ώρες στις {1}"
+  },
+  "Every {0} hours at {1} {2}": {
+    "one": "Κάθε {0} ώρα στις {1} {2}",
+    "other": "Κάθε {0} ώρες στις {1} {2}"
+  },
+  "Every {0} hours from {1} to {2}": {
+    "one": "Κάθε {0} ώρα από τις {1} έως τις {2}",
+    "other": "Κάθε {0} ώρες από τις {1} έως τις {2}"
+  },
+  "Every {0} hours from {1} to {2} {3}": {
+    "one": "Κάθε {0} ώρα από τις {1} έως τις {2} {3}",
+    "other": "Κάθε {0} ώρες από τις {1} έως τις {2} {3}"
+  },
+  "Every hour from {0} to {1}": "Κάθε ώρα από τις {0} έως τις {1}",
+  "Every hour from {0} to {1} {2}": "Κάθε ώρα από τις {0} έως τις {1} {2}",
+  "Every {0} minutes from {1} to {2}": {
+    "one": "Κάθε {0} λεπτό από τις {1} έως τις {2}",
+    "other": "Κάθε {0} λεπτά από τις {1} έως τις {2}"
+  },
+  "Every {0} minutes from {1} to {2} {3}": {
+    "one": "Κάθε {0} λεπτό από τις {1} έως τις {2} {3}",
+    "other": "Κάθε {0} λεπτά από τις {1} έως τις {2} {3}"
+  },
+  "Every minute from {0} to {1}": "Κάθε λεπτό από τις {0} έως τις {1}",
+  "Every minute from {0} to {1} {2}": "Κάθε λεπτό από τις {0} έως τις {1} {2}",
+  "Every {0} minutes during {1}": {
+    "one": "Κάθε {0} λεπτό στις ώρες {1}",
+    "other": "Κάθε {0} λεπτά στις ώρες {1}"
+  },
+  "Every {0} minutes during {1} {2}": {
+    "one": "Κάθε {0} λεπτό στις ώρες {1} {2}",
+    "other": "Κάθε {0} λεπτά στις ώρες {1} {2}"
+  },
+  "{0} at {1} and more": "{0} στις {1} και άλλες ώρες",
+  "{0} at {1} past {2}": "{0}, {1} μετά την ώρα, για {2}",
+  "{0} minutes": {
+    "one": "{0} λεπτό",
+    "other": "{0} λεπτά"
+  },
+  "{0} hours": {
+    "one": "{0} ώρα",
+    "other": "{0} ώρες"
+  },
+  "Today {0}": "Σήμερα {0}",
+  "Tomorrow {0}": "Αύριο {0}",
+  "Next run": "Επόμενη εκτέλεση",
+  "as {0}": "ως {0}",
+  "System": "Σύστημα",
+  "Times in {0}": "Σε ώρα {0}",
+  "Times in local time": "Σε τοπική ώρα",
+  "Environment": "Περιβάλλον",
+  "default": "προεπιλογή",
+  "{0} recipes": {
+    "one": "{0} συνταγή",
+    "other": "{0} συνταγές"
+  },
+  "{0} targets": {
+    "one": "{0} στόχος",
+    "other": "{0} στόχοι"
+  },
+  "Default: {0}": "Προεπιλογή: {0}",
+  "All hosts": "Όλοι οι κεντρικοί υπολογιστές",
+  "command": "εντολή",
+  "{0} defaults": {
+    "one": "{0} προεπιλογή",
+    "other": "{0} προεπιλογές"
+  },
+  "key": "κλειδί",
+  "via": "μέσω",
+  "{0} options": {
+    "one": "{0} επιλογή",
+    "other": "{0} επιλογές"
+  },
+  "SSH Config": "Διαμόρφωση SSH",
+  "{0} hosts": {
+    "one": "{0} κεντρικός υπολογιστής",
+    "other": "{0} κεντρικοί υπολογιστές"
+  },
+  "{0} includes": {
+    "one": "{0} συμπερίληψη",
+    "other": "{0} συμπεριλήψεις"
+  },
+  "Required": "Υποχρεωτικό",
+  "Body": "Σώμα",
+  "{0} params": {
+    "one": "{0} παράμ.",
+    "other": "{0} παράμ."
+  },
+  "{0} endpoints": {
+    "one": "{0} τελικό σημείο",
+    "other": "{0} τελικά σημεία"
+  },
+  "{0} tags": {
+    "one": "{0} ετικέτα",
+    "other": "{0} ετικέτες"
+  },
+  "{0} schemas": {
+    "one": "{0} σχήμα",
+    "other": "{0} σχήματα"
+  },
+  "{0} s": "{0} δευτ.",
+  "{0} min": "{0} λ.",
+  "{0} h {1} min": "{0} ώ. {1} λ.",
+  "{0} h": "{0} ώ.",
+  "{0} days": {
+    "one": "{0} ημέρα",
+    "other": "{0} ημέρες"
+  },
+  "Graph": "Γράφημα",
+  "Show Less": "Εμφάνιση λιγότερων",
+  "Show {0} More": {
+    "one": "Εμφάνιση {0} ακόμη",
+    "other": "Εμφάνιση {0} ακόμη"
+  },
+  "Show Details": "Εμφάνιση λεπτομερειών",
+  "Hide Details": "Απόκρυψη λεπτομερειών",
+  "Symbols": "Σύμβολα",
+  "Filter": "Φιλτράρισμα",
+  "Filter Symbols": "Φιλτράρισμα συμβόλων",
+  "{0} — line {1}": "{0} — γραμμή {1}",
+  "No matching symbols": "Κανένα σύμβολο δεν ταιριάζει",
+  "No symbols": "Κανένα σύμβολο",
+  "Key": "Κλειδί",
+  "Value": "Τιμή",
+  "Copy Path": "Αντιγραφή διαδρομής",
+  "Copy Value": "Αντιγραφή τιμής",
+  "Code": "Κώδικας",
+  "Tree": "Δέντρο",
+  "Show the Whole File as a Tree": "Εμφάνιση όλου του αρχείου ως δέντρου",
+  "Reading the whole file…": "Ανάγνωση ολόκληρου του αρχείου…",
+  "Indexing {0}…": "Ευρετηρίαση {0}…",
+  "Showing the first {0} values.": {
+    "one": "Εμφανίζεται η πρώτη {0} τιμή.",
+    "other": "Εμφανίζονται οι πρώτες {0} τιμές."
+  },
+  "This isn’t valid JSON: a key needs a colon after it, on line {0}.": "Αυτό δεν είναι έγκυρο JSON: στη γραμμή {0} λείπει η άνω και κάτω τελεία μετά από ένα κλειδί.",
+  "This isn’t valid JSON: the file ends too soon, on line {0}.": "Αυτό δεν είναι έγκυρο JSON: το αρχείο τελειώνει πρόωρα, στη γραμμή {0}.",
+  "This isn’t valid JSON: unexpected {0} on line {1}.": "Αυτό δεν είναι έγκυρο JSON: μη αναμενόμενο {0} στη γραμμή {1}.",
+  "Showing what could be read. A key needs a colon after it, on line {0}.": "Εμφανίζεται ό,τι μπόρεσε να διαβαστεί. Στη γραμμή {0} λείπει η άνω και κάτω τελεία μετά από ένα κλειδί.",
+  "Showing what could be read. The file ends too soon, on line {0}.": "Εμφανίζεται ό,τι μπόρεσε να διαβαστεί. Το αρχείο τελειώνει πρόωρα, στη γραμμή {0}.",
+  "Showing what could be read. Unexpected {0} on line {1}.": "Εμφανίζεται ό,τι μπόρεσε να διαβαστεί. Μη αναμενόμενο {0} στη γραμμή {1}.",
+  "Dictionary": "Λεξικό",
+  "Object": "Αντικείμενο",
+  "Array": "Πίνακας",
+  "Date": "Ημερομηνία",
+  "Data": "Δεδομένα",
+  "String": "Συμβολοσειρά",
+  "Number": "Αριθμός",
+  "Boolean": "Τιμή Boole",
+  "Null": "Null",
+  "Root": "Ρίζα",
+  "Item {0}": "Στοιχείο {0}",
+  "{0} items": {
+    "one": "{0} στοιχείο",
+    "other": "{0} στοιχεία"
+  },
+  "Select a row to see its path": "Επιλέξτε μια σειρά για να δείτε τη διαδρομή της",
+  "Copy Link to Section": "Αντιγραφή συνδέσμου ενότητας",
+  "Link Copied": "Ο σύνδεσμος αντιγράφηκε",
+  "Image": "Εικόνα",
+  "Close": "Κλείσιμο",
+  "Open Diagram": "Άνοιγμα διαγράμματος",
+  "Diagram": "Διάγραμμα",
+  "Zoom Out": "Σμίκρυνση",
+  "Actual Size": "Πραγματικό μέγεθος",
+  "Zoom In": "Μεγέθυνση",
+  "Zoom to Fit": "Ζουμ για προσαρμογή",
+  "Copy as SVG": "Αντιγραφή ως SVG",
+  "Copy SVG": "Αντιγραφή SVG",
+  "All {0} done": {
+    "one": "Η {0} εργασία ολοκληρώθηκε",
+    "other": "Ολοκληρώθηκαν και οι {0}"
+  },
+  "{1} of {0} done": {
+    "one": "{1} από {0} ολοκληρώθηκε",
+    "other": "{1} από {0} ολοκληρώθηκαν"
+  },
+  "Task lists in this document": "Λίστες εργασιών σε αυτό το έγγραφο",
+  "Hide Outline": "Απόκρυψη περιγράμματος",
+  "Drag to resize. Double-click to reset.": "Σύρετε για αλλαγή μεγέθους. Κάντε διπλό κλικ για επαναφορά.",
+  "Drag to resize": "Σύρετε για αλλαγή μεγέθους",
+  "Show Outline": "Εμφάνιση περιγράμματος",
+  "Outline": "Περίγραμμα",
+  "To Do": "Εκκρεμότητες",
+  "Hint": "Υπόδειξη",
+  "Warn": "Προειδοποίηση",
+  "Attention": "Προσοχή",
+  "Danger": "Κίνδυνος",
+  "Error": "Σφάλμα",
+  "Abstract": "Περίληψη",
+  "Summary": "Σύνοψη",
+  "TL;DR": "Εν συντομία",
+  "Success": "Επιτυχία",
+  "Check": "Επαληθεύτηκε",
+  "Done [callout]": "Ολοκληρώθηκε",
+  "Question": "Ερώτηση",
+  "Help": "Βοήθεια",
+  "FAQ": "Συχνές ερωτήσεις",
+  "Failure": "Αποτυχία",
+  "Fail": "Απέτυχε",
+  "Missing": "Λείπει",
+  "Bug": "Σφάλμα λογισμικού",
+  "Example": "Παράδειγμα",
+  "Quote": "Παράθεση",
+  "Cite": "Παράθεση",
+  "Details": "Λεπτομέρειες",
+  "See Also": "Δείτε επίσης",
+  "Tab": "Καρτέλα",
+  "Tab {0}": "Καρτέλα {0}",
+  "Read from the cover": "Ανάγνωση από το εξώφυλλο",
+  "Read": "Ανάγνωση",
+  "Pages": "Σελίδες",
+  "Previous Page": "Προηγούμενη σελίδα",
+  "Next Page": "Επόμενη σελίδα",
+  "All": "Όλα",
+  "Doc": "Έγγρ.",
+  "Img": "Εικ.",
+  "Font": "Γραμματοσειρά",
+  "Media": "Πολυμέσα",
+  "Document": "Έγγραφο",
+  "Fetch": "Fetch",
+  "Script": "Σκριπτ",
+  "Stylesheet": "Φύλλο στιλ",
+  "Queued": "Στην ουρά",
+  "DNS Lookup": "Αναζήτηση DNS",
+  "Connection": "Σύνδεση",
+  "Request Sent": "Στάλθηκε το αίτημα",
+  "Waiting (TTFB)": "Αναμονή (TTFB)",
+  "Download": "Λήψη",
+  "Filter requests": "Φιλτράρισμα αιτημάτων",
+  "Status": "Κατάσταση",
+  "Method": "Μέθοδος",
+  "Name": "Όνομα",
+  "Size": "Μέγεθος",
+  "Time": "Χρόνος",
+  "Waterfall": "Καταρράκτης",
+  "Load {0}": "Φόρτωση {0}",
+  "Failed": "Απέτυχε",
+  "No matching requests": "Κανένα αίτημα δεν ταιριάζει",
+  "{0} requests": {
+    "one": "{0} αίτημα",
+    "other": "{0} αιτήματα"
+  },
+  "{1} of {0} requests": {
+    "one": "{1} από {0} αίτημα",
+    "other": "{1} από {0} αιτήματα"
+  },
+  "first {0} shown": "εμφανίζονται τα πρώτα {0}",
+  "Requests": "Αιτήματα",
+  "Transferred": "Μεταφέρθηκαν",
+  "Finished": "Ολοκλήρωση",
+  "Load": "Φόρτωση",
+  "HTTP Archive": "Αρχειοθήκη HTTP",
+  "{0} · recorded with {1}": "{0} · καταγραφή με {1}",
+  "Recorded with {0}": "Καταγραφή με {0}",
+  "Network capture": "Καταγραφή δικτύου",
+  "Select a request to see its headers, payload, response and timing.": "Επιλέξτε ένα αίτημα για να δείτε τις κεφαλίδες, το ωφέλιμο φορτίο, την απόκριση και τον χρονισμό του.",
+  "This request’s details couldn’t be read.": "Δεν ήταν δυνατή η ανάγνωση των λεπτομερειών αυτού του αιτήματος.",
+  "Headers": "Κεφαλίδες",
+  "Payload": "Ωφέλιμο φορτίο",
+  "Response": "Απόκριση",
+  "Timing": "Χρονισμός",
+  "Request URL": "URL αιτήματος",
+  "Remote Address": "Απομακρυσμένη διεύθυνση",
+  "{0} · connection {1}": "{0} · σύνδεση {1}",
+  "Protocol": "Πρωτόκολλο",
+  "Redirects To": "Ανακατεύθυνση σε",
+  "General": "Γενικά",
+  "Response Headers": "Κεφαλίδες απόκρισης",
+  "No response headers": "Καμία κεφαλίδα απόκρισης",
+  "Request Headers": "Κεφαλίδες αιτήματος",
+  "No request headers": "Καμία κεφαλίδα αιτήματος",
+  "Cookies Sent": "Cookie που στάλθηκαν",
+  "Cookies Set": "Cookie που ορίστηκαν",
+  "Showing the beginning of a long body.": "Εμφανίζεται η αρχή ενός μεγάλου σώματος.",
+  "Query String": "Συμβολοσειρά ερωτήματος",
+  "Form Data": "Δεδομένα φόρμας",
+  "Request Body": "Σώμα αιτήματος",
+  "No response body was recorded.": "Δεν καταγράφηκε σώμα απόκρισης.",
+  "Binary content.": "Δυαδικό περιεχόμενο.",
+  "Showing the first {0}.": "Εμφανίζονται τα πρώτα {0}.",
+  "Started at {0} · total {1}": "Έναρξη: {0} · σύνολο: {1}",
+  "No timing recorded.": "Δεν καταγράφηκε χρονισμός.",
+  "This formula uses commands Greece can’t typeset": "Αυτός ο τύπος χρησιμοποιεί εντολές που το Greece δεν μπορεί να στοιχειοθετήσει",
+  "The rest of this document took too long to typeset.": "Η στοιχειοθέτηση του υπόλοιπου εγγράφου άργησε υπερβολικά.",
+  "The rest of this document couldn’t be typeset.": "Δεν ήταν δυνατή η στοιχειοθέτηση του υπόλοιπου εγγράφου.",
+  "The rest of this document is too large or too deeply nested to typeset.": "Το υπόλοιπο έγγραφο είναι πολύ μεγάλο ή έχει υπερβολικά βαθιά ένθεση για στοιχειοθέτηση.",
+  "Showing the beginning of a very large project.": "Εμφανίζεται η αρχή ενός πολύ μεγάλου έργου.",
+  "Contents": "Περιεχόμενα",
+  "Showing the beginning of a very large presentation.": "Εμφανίζεται η αρχή μιας πολύ μεγάλης παρουσίασης.",
+  "Slide {0}": "Διαφάνεια {0}",
+  "Illustrated by {0}": "Εικονογράφηση: {0}",
+  "Edited by {0}": "Επιμέλεια: {0}",
+  "Translated by {0}": "Μετάφραση: {0}",
+  "Narrated by {0}": "Αφήγηση: {0}",
+  "Introduction by {0}": "Εισαγωγή: {0}",
+  "Afterword by {0}": "Επίμετρο: {0}",
+  "With contributions by {0}": "Συμβολή: {0}",
+  "Annotated by {0}": "Σχολιασμός: {0}",
+  "Compiled by {0}": "Συλλογή: {0}",
+  "Cover by {0}": "Εξώφυλλο: {0}",
+  "Adapted by {0}": "Διασκευή: {0}",
+  "Art by {0}": "Σχέδιο: {0}",
+  "Photographs by {0}": "Φωτογραφίες: {0}",
+  "No references": "Καμία αναφορά",
+  "vol. {0}": "τόμ. {0}",
+  "pp. {0}": "σσ. {0}",
+  "{0} ed.": "{0} έκδ.",
+  "ed. {0}": "επιμ. {0}",
+  "Copy citation key": "Αντιγραφή κλειδιού παραπομπής",
+  "Untitled": "Χωρίς τίτλο",
+  "{0} references": {
+    "one": "{0} αναφορά",
+    "other": "{0} αναφορές"
+  },
+  "{0} string macros": {
+    "one": "{0} μακροεντολή συμβολοσειράς",
+    "other": "{0} μακροεντολές συμβολοσειρών"
+  },
+  "{0} preambles": {
+    "one": "{0} προοίμιο",
+    "other": "{0} προοίμια"
+  },
+  "Showing the first references of a very large library.": "Εμφανίζονται οι πρώτες αναφορές μιας πολύ μεγάλης βιβλιοθήκης.",
+  "No matching references": "Καμία αναφορά δεν ταιριάζει",
+  "Bibliography": "Βιβλιογραφία",
+  "Filter references": "Φιλτράρισμα αναφορών",
+  "Article": "Άρθρο",
+  "{0} Articles": {
+    "one": "{0} Άρθρο",
+    "other": "{0} Άρθρα"
+  },
+  "Book": "Βιβλίο",
+  "{0} Books": {
+    "one": "{0} Βιβλίο",
+    "other": "{0} Βιβλία"
+  },
+  "Booklet": "Φυλλάδιο",
+  "{0} Booklets": {
+    "one": "{0} Φυλλάδιο",
+    "other": "{0} Φυλλάδια"
+  },
+  "Chapter": "Κεφάλαιο",
+  "{0} Chapters": {
+    "one": "{0} Κεφάλαιο",
+    "other": "{0} Κεφάλαια"
+  },
+  "In Collection": "Σε συλλογή",
+  "{0} In Collection": {
+    "one": "{0} σε συλλογή",
+    "other": "{0} σε συλλογή"
+  },
+  "Conference Paper": "Εργασία συνεδρίου",
+  "{0} Conference Papers": {
+    "one": "{0} Εργασία συνεδρίου",
+    "other": "{0} Εργασίες συνεδρίων"
+  },
+  "Manual [document]": "Εγχειρίδιο",
+  "{0} Manuals": {
+    "one": "{0} Εγχειρίδιο",
+    "other": "{0} Εγχειρίδια"
+  },
+  "Master’s Thesis": "Μεταπτυχιακή εργασία",
+  "{0} Master’s Theses": {
+    "one": "{0} Μεταπτυχιακή εργασία",
+    "other": "{0} Μεταπτυχιακές εργασίες"
+  },
+  "Misc": "Διάφορα",
+  "{0} Misc": {
+    "one": "{0} Διάφορα",
+    "other": "{0} Διάφορα"
+  },
+  "PhD Thesis": "Διδακτορική διατριβή",
+  "{0} PhD Theses": {
+    "one": "{0} Διδακτορική διατριβή",
+    "other": "{0} Διδακτορικές διατριβές"
+  },
+  "Proceedings": "Πρακτικά",
+  "{0} Proceedings": {
+    "one": "{0} Πρακτικά",
+    "other": "{0} Πρακτικά"
+  },
+  "Report": "Έκθεση",
+  "{0} Reports": {
+    "one": "{0} Έκθεση",
+    "other": "{0} Εκθέσεις"
+  },
+  "Unpublished": "Αδημοσίευτο",
+  "{0} Unpublished": {
+    "one": "{0} Αδημοσίευτο",
+    "other": "{0} Αδημοσίευτα"
+  },
+  "Online": "Διαδικτυακό",
+  "{0} Online": {
+    "one": "{0} Διαδικτυακό",
+    "other": "{0} Διαδικτυακά"
+  },
+  "Thesis": "Διατριβή",
+  "{0} Theses": {
+    "one": "{0} Διατριβή",
+    "other": "{0} Διατριβές"
+  },
+  "Software": "Λογισμικό",
+  "{0} Software": {
+    "one": "{0} Λογισμικό",
+    "other": "{0} Λογισμικό"
+  },
+  "Dataset": "Σύνολο δεδομένων",
+  "{0} Datasets": {
+    "one": "{0} Σύνολο δεδομένων",
+    "other": "{0} Σύνολα δεδομένων"
+  },
+  "Patent": "Δίπλωμα ευρεσιτεχνίας",
+  "{0} Patents": {
+    "one": "{0} Δίπλωμα ευρεσιτεχνίας",
+    "other": "{0} Διπλώματα ευρεσιτεχνίας"
+  },
+  "Collection": "Συλλογή",
+  "{0} Collections": {
+    "one": "{0} Συλλογή",
+    "other": "{0} Συλλογές"
+  },
+  "Periodical": "Περιοδικό",
+  "{0} Periodicals": {
+    "one": "{0} Περιοδικό",
+    "other": "{0} Περιοδικά"
+  },
+  "Standard": "Πρότυπο",
+  "{0} Standards": {
+    "one": "{0} Πρότυπο",
+    "other": "{0} Πρότυπα"
+  },
+  "Video": "Βίντεο",
+  "{0} Videos": {
+    "one": "{0} Βίντεο",
+    "other": "{0} Βίντεο"
+  },
+  "Audio": "Ηχογράφηση",
+  "{0} Audio": {
+    "one": "{0} Ηχογράφηση",
+    "other": "{0} Ηχογραφήσεις"
+  },
+  "Artwork": "Έργο τέχνης",
+  "{0} Artworks": {
+    "one": "{0} Έργο τέχνης",
+    "other": "{0} Έργα τέχνης"
+  },
+  "Preprint": "Προδημοσίευση",
+  "{0} Preprints": {
+    "one": "{0} Προδημοσίευση",
+    "other": "{0} Προδημοσιεύσεις"
+  },
+  "Entry": "Καταχώριση",
+  "{0} ({1})": "{0} ({1})",
+  "Publisher": "Εκδότης",
+  "Published": "Δημοσιεύτηκε",
+  "Language": "Γλώσσα",
+  "Identifier": "Αναγνωριστικό",
+  "{0} words · {1} min read": {
+    "one": "{0} λέξη · {1} λ. ανάγνωσης",
+    "other": "{0} λέξεις · {1} λ. ανάγνωσης"
+  },
+  "{0} words · {1} h {2} min read": {
+    "one": "{0} λέξη · {1} ώ. {2} λ. ανάγνωσης",
+    "other": "{0} λέξεις · {1} ώ. {2} λ. ανάγνωσης"
+  },
+  "Length": "Έκταση",
+  "Format": "Μορφή",
+  "Book {0}": "Βιβλίο {0}",
+  "Cover": "Εξώφυλλο",
+  "This book is protected, so its chapters can’t be shown.": "Αυτό το βιβλίο είναι προστατευμένο, οπότε τα κεφάλαιά του δεν μπορούν να εμφανιστούν.",
+  "Previous [chapter]": "Προηγούμενο",
+  "Next [chapter]": "Επόμενο",
+  "Show All": "Εμφάνιση όλων",
+  "Section {0}": "Ενότητα {0}",
+  "Empty diagram": "Κενό διάγραμμα",
+  "Zoom out": "Σμίκρυνση",
+  "Zoom to fit": "Ζουμ για προσαρμογή",
+  "Fit": "Προσαρμογή",
+  "Zoom in": "Μεγέθυνση",
+  "Copy the diagram’s source": "Αντιγραφή του κώδικα του διαγράμματος",
+  "Mermaid isn’t available.": "Το Mermaid δεν είναι διαθέσιμο.",
+  "No diagram": "Κανένα διάγραμμα",
+  "This diagram couldn’t be drawn": "Δεν ήταν δυνατή η σχεδίαση αυτού του διαγράμματος",
+  "TikZ drawing": "Σχέδιο TikZ",
+  "PGF drawing": "Σχέδιο PGF",
+  "Picture": "Εικόνα",
+  "Circuit diagram": "Διάγραμμα κυκλώματος",
+  "Tree diagram": "Δενδροδιάγραμμα",
+  "Commutative diagram": "Αντιμεταθετικό διάγραμμα",
+  "Plot": "Γράφημα",
+  "PSTricks drawing": "Σχέδιο PSTricks",
+  "Drawing": "Σχέδιο",
+  "Missing figure": "Σχήμα που λείπει",
+  "Figure": "Σχήμα",
+  "Not in the bibliography": "Δεν υπάρχει στη βιβλιογραφία",
+  "Included PDF": "Ενσωματωμένο PDF",
+  "Missing file": "Αρχείο που λείπει",
+  "Not included": "Δεν συμπεριλήφθηκε",
+  "Map": "Χάρτης",
+  "Layers": "Επίπεδα",
+  "The map couldn’t start.": "Δεν ήταν δυνατή η εκκίνηση του χάρτη.",
+  "{0}°N": "{0}°Β",
+  "{0}°S": "{0}°Ν",
+  "{0}°E": "{0}°Α",
+  "{0}°W": "{0}°Δ",
+  "Tile": "Πλακίδιο",
+  "Point": "Σημείο",
+  "Points": "Σημεία",
+  "Line [shape]": "Γραμμή",
+  "Lines": "Γραμμές",
+  "Polygon": "Πολύγωνο",
+  "Polygons": "Πολύγωνα",
+  "Feature": "Οντότητα",
+  "No": "Όχι",
+  "No attributes": "Καμία ιδιότητα",
+  "{0} areas": {
+    "one": "{0} περιοχή",
+    "other": "{0} περιοχές"
+  },
+  "{0} lines [shape]": {
+    "one": "{0} γραμμή",
+    "other": "{0} γραμμές"
+  },
+  "{0} points": {
+    "one": "{0} σημείο",
+    "other": "{0} σημεία"
+  },
+  "Tables": "Πίνακες",
+  "Objects": "Αντικείμενα",
+  "Tile Layers": "Επίπεδα πλακιδίων",
+  "Basemap": "Χάρτης υποβάθρου",
+  "Grid": "Πλέγμα",
+  "Labels": "Ετικέτες",
+  "Reprojected to WGS 84 for display": "Μετασχηματίστηκε σε WGS 84 για την εμφάνιση",
+  "Basemap: {0}": "Χάρτης υποβάθρου: {0}",
+  "Vector tiles (PBF)": "Διανυσματικά πλακίδια (PBF)",
+  "Zoom": "Ζουμ",
+  "Showing": "Σε προβολή",
+  "Tile size": "Μέγεθος πλακιδίου",
+  "Bounds": "Όρια",
+  "Center": "Κέντρο",
+  "Version": "Έκδοση",
+  "Scheme": "Σχήμα",
+  "Generator": "Γεννήτρια",
+  "Vector": "Διανυσματικό",
+  "Raster": "Ψηφιδωτό",
+  "Collapse": "Σύμπτυξη",
+  "Zoom {0} (overzoomed)": "Ζουμ {0} (υπερμεγέθυνση)",
+  "Zoom {0}": "Ζουμ {0}",
+  "Distance": "Απόσταση",
+  "Duration": "Διάρκεια",
+  "Moving": "Χρόνος κίνησης",
+  "Elevation Gain": "Ανάβαση",
+  "Highest": "Μέγιστο υψόμετρο",
+  "Max Speed": "Μέγ. ταχύτητα",
+  "Avg Speed": "Μέση ταχύτητα",
+  "Avg Heart Rate": "Μέσοι παλμοί",
+  "{0} bpm": "{0} παλμοί/λεπτό",
+  "Track": "Διαδρομή",
+  "No features to draw": "Καμία οντότητα για σχεδίαση",
+  "Copied {0}": "Αντιγράφηκε: {0}",
+  "Sample": "Δείγμα",
+  "Pangram": "Πάνγραμμα",
+  "Alphabet": "Αλφάβητο",
+  "Figures": "Ψηφία",
+  "Sample text": "Δείγμα κειμένου",
+  "No faces in this font": "Αυτή η γραμματοσειρά δεν έχει στιλ",
+  "WebKit couldn’t load this font for display. Its details are below.": "Το WebKit δεν μπόρεσε να φορτώσει αυτήν τη γραμματοσειρά για εμφάνιση. Οι λεπτομέρειές της βρίσκονται παρακάτω.",
+  "Specimen": "Δείγμα γραμματοσειράς",
+  "Click the sample to type your own": "Κάντε κλικ στο δείγμα για να πληκτρολογήσετε το δικό σας κείμενο",
+  "Variable Axes": "Μεταβλητοί άξονες",
+  "{0} axes": {
+    "one": "{0} άξονας",
+    "other": "{0} άξονες"
+  },
+  "Axes": "Άξονες",
+  "OpenType Features": "Χαρακτηριστικά OpenType",
+  "Features [font]": "Χαρακτηριστικά",
+  "Apply {0} to the specimen": "Εφαρμογή του {0} στο δείγμα",
+  "{0} · on by default": "{0} · ενεργό από προεπιλογή",
+  "Sizes": "Μεγέθη",
+  "Icons": "Εικονίδια",
+  "Characters": "Χαρακτήρες",
+  "Information": "Πληροφορίες",
+  "Ascender": "Ανιούσα",
+  "Cap height": "Ύψος κεφαλαίων",
+  "x-height": "Ύψος x",
+  "Baseline": "Γραμμή βάσης",
+  "Descender": "Κατιούσα",
+  "Glyphs": "Γλυφές",
+  "Variable": "Μεταβλητή",
+  "Designer": "Σχεδιαστής",
+  "Scripts [writing]": "Γραφές",
+  "Show more": "Εμφάνιση περισσότερων",
+  "Show less": "Εμφάνιση λιγότερων",
+  "Family": "Οικογένεια",
+  "Style": "Στιλ",
+  "Full name": "Πλήρες όνομα",
+  "PostScript name": "Όνομα PostScript",
+  "Designer URL": "URL σχεδιαστή",
+  "Manufacturer": "Κατασκευαστής",
+  "Vendor URL": "URL προμηθευτή",
+  "Vendor ID": "Αναγνωριστικό προμηθευτή",
+  "Description": "Περιγραφή",
+  "{0} · {1} outlines": "{0} · περιγράμματα {1}",
+  "Color ({0})": "Έγχρωμη ({0})",
+  "Units per em": "Μονάδες ανά em",
+  "Metrics": "Μετρικά",
+  "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}": "Ανιούσα {0} · Κατιούσα {1} · Ύψος κεφαλαίων {2} · Ύψος x {3}",
+  "Weight class": "Κλάση πάχους",
+  "Width class": "Κλάση πλάτους",
+  "Italic": "Πλάγια",
+  "Monospaced": "Σταθερού πλάτους",
+  "Traits": "Γνωρίσματα",
+  "Languages": "Γλώσσες",
+  "Embedding": "Ενσωμάτωση",
+  "Created": "Δημιουργήθηκε",
+  "Modified": "Τροποποιήθηκε",
+  "Copyright": "Πνευματικά δικαιώματα",
+  "Trademark": "Εμπορικό σήμα",
+  "License URL": "URL άδειας χρήσης",
+  "Characters can’t be drawn without the font.": "Οι χαρακτήρες δεν μπορούν να σχεδιαστούν χωρίς τη γραμματοσειρά.",
+  "Showing the first {1} of {0} characters.": {
+    "one": "Εμφανίζονται οι πρώτοι {1} από {0} χαρακτήρα.",
+    "other": "Εμφανίζονται οι πρώτοι {1} από {0} χαρακτήρες."
+  },
+  "Code point": "Σημείο κώδικα",
+  "Character": "Χαρακτήρας",
+  "Copy the character": "Αντιγραφή του χαρακτήρα",
+  "Copy the code point": "Αντιγραφή του σημείου κώδικα",
+  "Unnamed": "Χωρίς όνομα",
+  "Glyph": "Γλυφή",
+  "Glyph ID": "Αναγνωριστικό γλυφής",
+  "Advance": "Πλάτος προώθησης",
+  "{0} units": {
+    "one": "{0} μονάδα",
+    "other": "{0} μονάδες"
+  },
+  "The Lottie player is missing": "Λείπει το πρόγραμμα αναπαραγωγής Lottie",
+  "Click to play or pause": "Κάντε κλικ για αναπαραγωγή ή παύση",
+  "Play": "Αναπαραγωγή",
+  "Loop": "Επανάληψη",
+  "Background: Checkerboard": "Φόντο: Σκακιέρα",
+  "Background: White": "Φόντο: Λευκό",
+  "Background: Black": "Φόντο: Μαύρο",
+  "Speed {0}": "Ταχύτητα {0}",
+  "Pause": "Παύση",
+  "This animation couldn’t be read.": "Δεν ήταν δυνατή η ανάγνωση αυτής της κίνησης.",
+  "This animation couldn’t be played.": "Δεν ήταν δυνατή η αναπαραγωγή αυτής της κίνησης.",
+  "Play from frame {0}": "Αναπαραγωγή από το καρέ {0}",
+  "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.": "Οι εκφράσεις Lottie είναι κώδικας· το Greece δεν τις εκτελεί, οπότε κάποιες κινήσεις μπορεί να διαφέρουν.",
+  "Expressions not evaluated": "Οι εκφράσεις δεν εκτελέστηκαν",
+  "Original": "Αρχικό",
+  "{0} colors": {
+    "one": "{0} χρώμα",
+    "other": "{0} χρώματα"
+  },
+  "Ungrouped": "Χωρίς ομάδα",
+  "Spot": "Spot",
+  "{0} — click to copy": "{0} — κάντε κλικ για αντιγραφή",
+  "Outside sRGB: shown as the nearest sRGB color": "Εκτός sRGB: εμφανίζεται ως το πλησιέστερο χρώμα sRGB",
+  "{0} too fast": {
+    "one": "{0} πολύ γρήγορος",
+    "other": "{0} πολύ γρήγοροι"
+  },
+  "Reading speed {0} cps (over {1})": "Ταχύτητα ανάγνωσης {0} χαρ./δευτ. (πάνω από {1})",
+  "{0} long lines": {
+    "one": "{0} μεγάλη γραμμή",
+    "other": "{0} μεγάλες γραμμές"
+  },
+  "A line over {0} characters": {
+    "one": "Μια γραμμή πάνω από {0} χαρακτήρα",
+    "other": "Μια γραμμή πάνω από {0} χαρακτήρες"
+  },
+  "{0} over 2 lines": {
+    "one": "{0} με πάνω από 2 γραμμές",
+    "other": "{0} με πάνω από 2 γραμμές"
+  },
+  "More than {0} lines": {
+    "one": "Περισσότερες από {0} γραμμή",
+    "other": "Περισσότερες από {0} γραμμές"
+  },
+  "{0} brief": {
+    "one": "{0} πολύ σύντομος",
+    "other": "{0} πολύ σύντομοι"
+  },
+  "On screen under {0} s": "Στην οθόνη λιγότερο από {0} δευτ.",
+  "{0} lingering": {
+    "one": "{0} παρατεταμένος",
+    "other": "{0} παρατεταμένοι"
+  },
+  "On screen over {0} s": "Στην οθόνη περισσότερο από {0} δευτ.",
+  "{0} overlaps": {
+    "one": "{0} επικάλυψη",
+    "other": "{0} επικαλύψεις"
+  },
+  "Starts before the previous cue ends": "Ξεκινά πριν τελειώσει ο προηγούμενος υπότιτλος",
+  "{0} with bad timing": {
+    "one": "{0} με λάθος χρονισμό",
+    "other": "{0} με λάθος χρονισμό"
+  },
+  "Ends before it starts": "Τελειώνει πριν ξεκινήσει",
+  "These subtitles couldn’t be read": "Δεν ήταν δυνατή η ανάγνωση αυτών των υποτίτλων",
+  "Filter lines": "Φιλτράρισμα γραμμών",
+  "Filter cues": "Φιλτράρισμα υποτίτλων",
+  "{0} cues": {
+    "one": "{0} υπότιτλος",
+    "other": "{0} υπότιτλοι"
+  },
+  "Average reading speed, in characters per second": "Μέση ταχύτητα ανάγνωσης, σε χαρακτήρες ανά δευτερόλεπτο",
+  "{0} cps average": "Μ.Ο. {0} χαρ./δευτ.",
+  "{0} speakers": {
+    "one": "{0} ομιλητής",
+    "other": "{0} ομιλητές"
+  },
+  "Timed at {0} fps": "Χρονισμός: {0} fps",
+  "Show only these": "Εμφάνιση μόνο αυτών",
+  "Jump to a moment": "Μετάβαση σε μια στιγμή",
+  "Showing the first {0} cues.": {
+    "one": "Εμφανίζεται ο πρώτος {0} υπότιτλος.",
+    "other": "Εμφανίζονται οι πρώτοι {0} υπότιτλοι."
+  },
+  "{0} cps": "{0} χαρ./δευτ.",
+  "No matching cues": "Κανένας υπότιτλος δεν ταιριάζει",
+  "No cues found": "Δεν βρέθηκαν υπότιτλοι",
+  "SVG image": "Εικόνα SVG",
+  "This SVG couldn’t be drawn.": "Δεν ήταν δυνατή η σχεδίαση αυτού του SVG.",
+  "Actual size": "Πραγματικό μέγεθος",
+  "Fit to window": "Προσαρμογή στο παράθυρο",
+  "Transparency checkerboard": "Σκακιέρα διαφάνειας",
+  "Source [code]": "Πηγαίος κώδικας",
+  "This file contains scripts. Greece shows SVG as an image, so they never run.": "Αυτό το αρχείο περιέχει σκριπτ. Το Greece εμφανίζει το SVG ως εικόνα, οπότε δεν εκτελούνται ποτέ.",
+  "It refers to files or web addresses, which previews don’t load.": "Παραπέμπει σε αρχεία ή διευθύνσεις ιστού, τα οποία οι προεπισκοπήσεις δεν φορτώνουν.",
+  "The source couldn’t be read.": "Δεν ήταν δυνατή η ανάγνωση του πηγαίου κώδικα.",
+  "Model controls": "Χειριστήρια μοντέλου",
+  "This model is too large to preview": "Αυτό το μοντέλο είναι πολύ μεγάλο για προεπισκόπηση",
+  "Greece previews models up to {0}.": "Το Greece κάνει προεπισκόπηση σε μοντέλα έως {0}.",
+  "3D previews need WebGL": "Οι προεπισκοπήσεις 3Δ χρειάζονται WebGL",
+  "Reading the model took too long.": "Η ανάγνωση του μοντέλου άργησε υπερβολικά.",
+  "Greece couldn’t open this model": "Το Greece δεν μπόρεσε να ανοίξει αυτό το μοντέλο",
+  "Loading": "Φόρτωση",
+  "Preparing": "Προετοιμασία",
+  "Not a MagicaVoxel file": "Δεν είναι αρχείο MagicaVoxel",
+  "Unsupported format": "Μη υποστηριζόμενη μορφή",
+  "The file has no scene": "Το αρχείο δεν έχει σκηνή",
+  "Couldn’t read the points": "Δεν ήταν δυνατή η ανάγνωση των σημείων",
+  "Not a LAS/LAZ file": "Δεν είναι αρχείο LAS/LAZ",
+  "Decompressing": "Αποσυμπίεση",
+  "The decoder failed": "Ο αποκωδικοποιητής απέτυχε",
+  "The file has no points": "Το αρχείο δεν έχει σημεία",
+  "The model is empty": "Το μοντέλο είναι κενό",
+  "Shaded": "Σκιασμένο",
+  "Wireframe": "Συρμάτινο πλέγμα",
+  "Display": "Απεικόνιση",
+  "Colour": "Χρώμα",
+  "Animation {0}": "Κίνηση {0}",
+  "Animation": "Κίνηση",
+  "Reset View": "Επαναφορά προβολής",
+  "Statistics": "Στατιστικά",
+  "Classes": "Κλάσεις",
+  "Point format": "Μορφή σημείων",
+  "LAS version": "Έκδοση LAS",
+  "Vertices": "Κορυφές",
+  "Triangles": "Τρίγωνα",
+  "Meshes": "Πλέγματα",
+  "Materials": "Υλικά",
+  "Textures": "Υφές",
+  "Texture memory": "Μνήμη υφών",
+  "Animations": "Κινήσεις",
+  "Bones": "Οστά",
+  "Morph targets": "Στόχοι μορφοποίησης",
+  "Compression": "Συμπίεση",
+  "Created with": "Δημιουργήθηκε με",
+  "{0} voxels": {
+    "one": "{0} voxel",
+    "other": "{0} voxel"
+  },
+  "Width": "Πλάτος",
+  "Depth": "Βάθος",
+  "Height": "Ύψος",
+  "Elevation": "Υψόμετρο",
+  "Intensity": "Ένταση",
+  "Classification": "Ταξινόμηση",
+  "A file it needs couldn’t be read.": "Δεν ήταν δυνατή η ανάγνωση ενός αρχείου που χρειάζεται.",
+  "Unreadable point sample": "Μη αναγνώσιμο δείγμα σημείων",
+  "Truncated point sample": "Περικομμένο δείγμα σημείων",
+  "Not an OFF file": "Δεν είναι αρχείο OFF",
+  "Invalid OFF header": "Μη έγκυρη κεφαλίδα OFF"
+}

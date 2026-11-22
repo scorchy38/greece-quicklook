@@ -20,6 +20,82 @@
   const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ESC[c]);
 
+  // ------------------------------------------------------------------ Strings
+
+  /* The page's words in the reader's language. GreeceKit embeds one table (WebStrings.swift, from
+     l10n/<lang>.json), keyed by the English text: a string, or plural forms by CLDR category. Every
+     key is there (English where a language has none); an unknown key shows as itself. A key may end
+     in a context, "Line [shape]", when one English word needs two translations. */
+  const strings = (() => { try { return JSON.parse($('#strings').textContent); } catch (_) { return {}; } })();
+  const lang = strings.lang || 'en';
+  const locale = strings.locale || lang;
+  const table = strings.strings || {};
+  const missing = new Set();
+  function lookup(key) {
+    if (Object.prototype.hasOwnProperty.call(table, key)) return table[key];
+    if (strings.debug && !missing.has(key)) { missing.add(key); post('log', `l10n: no string for “${key}”`); }
+    return undefined;
+  }
+  /** Fills {0}, {1}… Numbers are written for the page's locale; pass a string to keep digits as they are. */
+  function fill(text, args) {
+    return String(text).replace(/\{(\d+)\}/g, (m, i) => (i < args.length ? (typeof args[i] === 'number' ? number(args[i]) : String(args[i])) : m));
+  }
+  const english = (key) => key.replace(/ \[[^\]]+\]$/, '');
+  /** `t('{0} of {1}', 3, 12)`: the text for an English key, with its placeholders filled. */
+  function t(key, ...args) {
+    const value = lookup(key);
+    return fill(typeof value === 'string' ? value : english(key), args);
+  }
+  const pluralRules = {};
+  function forms(type, count, key, args) {
+    const value = lookup(key);
+    let form = english(key);
+    if (value && typeof value === 'object') {
+      if (!pluralRules[type]) {
+        try { pluralRules[type] = new Intl.PluralRules(lang, { type }); } catch (_) { pluralRules[type] = new Intl.PluralRules('en', { type }); }
+      }
+      form = value[pluralRules[type].select(Number(count))] || value.other || form;
+    }
+    return fill(form, [count, ...args]);
+  }
+  /** `plural(n, '{0} files')`: the form the language uses for n, with {0} = n and {1}… = args.
+      The key is the English "other" form; the table has every CLDR category the language uses. */
+  function plural(count, key, ...args) { return forms('cardinal', count, key, args); }
+  /** `ordinal(n, 'On the {0}th of every month')`: the same, by ordinal category (1st, 2nd, 3rd, 4th). */
+  function ordinal(count, key, ...args) { return forms('ordinal', count, key, args); }
+  const formats = new Map();
+  function formatter(Kind, options, fallback) {
+    const id = Kind.name + JSON.stringify(options || fallback || {});
+    let f = formats.get(id);
+    if (!f) {
+      try { f = new Kind(locale, options || fallback); } catch (_) { f = new Kind('en', options || fallback); }
+      formats.set(id, f);
+    }
+    return f;
+  }
+  /** A number for the page's locale; `options` as Intl.NumberFormat takes them. */
+  function number(n, options) { return formatter(Intl.NumberFormat, options).format(n); }
+  /** A date (Date, timestamp or string) for the page's locale; medium date by default. */
+  function date(d, options) {
+    const value = d instanceof Date ? d : new Date(d);
+    return isNaN(value) ? String(d) : formatter(Intl.DateTimeFormat, options, { dateStyle: 'medium' }).format(value);
+  }
+  /** "a, b and c" for the page's language. */
+  function list(items, options) { return formatter(Intl.ListFormat, options, { type: 'conjunction' }).format(items.map(String)); }
+  /** A file size as Finder writes it: 1000-based, in the language's own units ("1,2 Mo").
+      `{ compact: true }` writes small sizes as "300 B", for table columns. */
+  function bytes(n, options) {
+    let value = Math.max(0, Number(n) || 0);
+    if (value < 1000) return options && options.compact ? kit.t('{0} B', Math.round(value)) : kit.plural(Math.round(value), '{0} bytes');
+    const units = [(v) => kit.t('{0} KB', v), (v) => kit.t('{0} MB', v), (v) => kit.t('{0} GB', v), (v) => kit.t('{0} TB', v)];
+    let unit = -1;
+    while (value >= 1000 && unit < units.length - 1) { value /= 1000; unit++; }
+    return units[unit](number(value, { maximumFractionDigits: value < 10 ? 1 : 0 }));
+  }
+  /** What every renderer shares; the rest of `kit` is added below. Strings go through `kit.t` and
+      `kit.plural` with literal English keys, so tests can find every one (PageLocalizationTests). */
+  const kit = { lang, locale, t, plural, ordinal, number, date, list, bytes };
+
   // ------------------------------------------------------------------ Highlighting
 
   function grammar(lang) {
@@ -69,7 +145,7 @@
     if (!button) return;
     const label = button.dataset.label || button.textContent;
     button.dataset.label = label;
-    button.textContent = 'Copied';
+    button.textContent = kit.t('Copied');
     button.classList.add('done');
     clearTimeout(button._t);
     button._t = setTimeout(() => { button.textContent = label; button.classList.remove('done'); }, 1400);
@@ -108,13 +184,13 @@
     html.classList.add('kind-code');
     let text = payload.text.replace(/\r\n?/g, '\n');
     if (text.endsWith('\n')) text = text.slice(0, -1);
-    if (!payload.text.length) return empty('Empty file');
+    if (!payload.text.length) return empty(kit.t('Empty file'));
 
     const lines = text.split('\n');
     html.style.setProperty('--gutter', `calc(${String(lines.length).length}ch + 6px)`);
 
-    const tools = `<div class="floating-tools"><button class="pill" id="copy-all" type="button">Copy</button></div>`;
-    const truncation = payload.truncated ? notice('Showing the beginning of a very large file.') : '';
+    const tools = `<div class="floating-tools"><button class="pill" id="copy-all" type="button">${esc(kit.t('Copy'))}</button></div>`;
+    const truncation = payload.truncated ? notice(kit.t('Showing the beginning of a very large file.')) : '';
     const lang = grammar(payload.language) ? payload.language : null;
     const highlightable = !!lang && text.length <= 8000000;
 
@@ -256,6 +332,12 @@
     caution: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>',
   };
 
+  /** GitHub's alert types, titled in the page's language. */
+  const ALERT_TITLES = {
+    note: () => kit.t('Note'), tip: () => kit.t('Tip'), important: () => kit.t('Important'),
+    warning: () => kit.t('Warning'), caution: () => kit.t('Caution'),
+  };
+
   function katexHTML(tex, display) {
     if (!window.katex) return `<code class="math">${esc(tex)}</code>`;
     try {
@@ -340,7 +422,7 @@
   function codeBlockHTML(code, lang) {
     const body = highlight(code.replace(/\n$/, ''), lang);
     const title = languageTitle(lang);
-    return `<figure class="codeblock"><div class="tools">${title ? `<span class="lang">${esc(title)}</span>` : ''}<button class="copy" type="button">Copy</button></div><pre><code class="hljs">${body}</code></pre></figure>\n`;
+    return `<figure class="codeblock"><div class="tools">${title ? `<span class="lang">${esc(title)}</span>` : ''}<button class="copy" type="button">${esc(kit.t('Copy'))}</button></div><pre><code class="hljs">${body}</code></pre></figure>\n`;
   }
 
   function createMarkdown() {
@@ -413,7 +495,7 @@
       first.innerHTML = first.innerHTML.slice(match[0].length);
       if (!first.innerHTML.trim()) first.remove();
       quote.classList.add('alert', type);
-      quote.insertAdjacentHTML('afterbegin', `<p class="alert-title">${ALERT_ICONS[type]}${type[0].toUpperCase() + type.slice(1)}</p>`);
+      quote.insertAdjacentHTML('afterbegin', `<p class="alert-title">${ALERT_ICONS[type]}${esc(ALERT_TITLES[type]())}</p>`);
     });
 
     // Task lists: - [ ] and - [x]
@@ -441,7 +523,7 @@
       if (/^https?:/i.test(src) && !options.remoteImages) {
         const placeholder = document.createElement('span');
         placeholder.className = 'remote-image';
-        placeholder.textContent = (img.alt ? img.alt + ' · ' : '') + 'Remote image not loaded';
+        placeholder.textContent = (img.alt ? img.alt + ' · ' : '') + kit.t('Remote image not loaded');
         img.replaceWith(placeholder);
         return;
       }
@@ -483,7 +565,7 @@
     const top = Math.min(...entries.map((h) => Number(h.tagName[1])));
     const nav = document.createElement('nav');
     nav.className = 'outline';
-    nav.innerHTML = '<p class="title">On This Page</p>' + entries.map((h) => {
+    nav.innerHTML = `<p class="title">${esc(kit.t('On This Page'))}</p>` + entries.map((h) => {
       const depth = Math.min(4, Number(h.tagName[1]) - top + 2);
       return `<a href="#${encodeURIComponent(h.id)}" class="d${depth}">${esc(h.textContent)}</a>`;
     }).join('');
@@ -582,8 +664,8 @@
   async function renderMarkdown() {
     html.classList.add('kind-markdown');
     const { body, html: meta } = frontMatter(payload.text.replace(/^\ufeff/, ''));
-    if (!body.trim() && !meta) return empty('Empty document');
-    await markdownDocument(body, { prefix: (payload.truncated ? notice('Showing the beginning of a very large document.') : '') + meta });
+    if (!body.trim() && !meta) return empty(kit.t('Empty document'));
+    await markdownDocument(body, { prefix: (payload.truncated ? notice(kit.t('Showing the beginning of a very large document.')) : '') + meta });
   }
 
   /** Renders Markdown as a reading document (sanitised, highlighted, outlined) inside `container`.
@@ -730,7 +812,7 @@
     if (date) {
       const raw = date.replace(/^(Date|AuthorDate):\s*/, '');
       const parsed = new Date(raw.replace(/^(\w{3}) (\w{3}) (\d+) (\d+:\d+:\d+) (\d{4}) ([+-]\d{4})$/, '$2 $3 $5 $4 GMT$6'));
-      info.date = isNaN(parsed) ? raw : parsed.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+      info.date = isNaN(parsed) ? raw : kit.date(parsed, { dateStyle: 'medium', timeStyle: 'short' });
     }
     const subject = preamble.find((l) => /^Subject: /.test(l));
     let body = [];
@@ -759,6 +841,15 @@
       + (info.message ? `<p class="diff-message">${esc(info.message)}</p>` : '') + '</header>';
   }
 
+  /** A file's status in a diff, shown as a small capitalised badge (modified files have none). */
+  const STATUS_BADGES = { added: () => kit.t('Added'), deleted: () => kit.t('Deleted'), renamed: () => kit.t('Renamed') };
+
+  /** A counted phrase ("3 files changed") with its number in bold. */
+  function boldCount(text, n) {
+    const shown = esc(kit.number(n));
+    return esc(text).replace(shown, `<b>${shown}</b>`);
+  }
+
   function fileSection(f) {
     const path = f.to || f.from || 'file';
     const ext = (path.split('/').pop().split('.').pop() || '').toLowerCase();
@@ -766,10 +857,10 @@
     const pathHTML = f.status === 'renamed' && f.from && f.from !== f.to
       ? `<span class="old">${esc(f.from)} → </span>${esc(f.to)}`
       : esc(path);
-    const badge = f.status !== 'modified' ? `<span class="badge ${f.status}">${f.status}</span>` : '';
+    const badge = STATUS_BADGES[f.status] ? `<span class="badge ${f.status}">${esc(STATUS_BADGES[f.status]())}</span>` : '';
     let body = '';
-    if (f.binary) body = '<div class="file-note">Binary file not shown</div>';
-    else if (!f.rows.length) body = `<div class="file-note">${f.notes.length ? esc(f.notes.join(' · ')) : 'No content changes'}</div>`;
+    if (f.binary) body = `<div class="file-note">${esc(kit.t('Binary file not shown'))}</div>`;
+    else if (!f.rows.length) body = `<div class="file-note">${f.notes.length ? esc(f.notes.join(' · ')) : esc(kit.t('No content changes'))}</div>`;
     else {
       const rows = f.rows.map((r) => {
         if (r.type === 'hunk') return `<tr class="hunk"><td class="o"></td><td class="n"></td><td colspan="2" class="c">${esc(r.text)}</td></tr>`;
@@ -786,8 +877,8 @@
   function summary(files, commits) {
     const added = files.reduce((s, f) => s + f.added, 0);
     const removed = files.reduce((s, f) => s + f.removed, 0);
-    const lead = commits > 1 ? `<span><b>${commits}</b> commits</span>` : '';
-    return `<div class="diff-summary">${lead}<span><b>${files.length}</b> ${files.length === 1 ? 'file' : 'files'} changed</span><span class="add-n">+${added.toLocaleString()}</span><span class="del-n">−${removed.toLocaleString()}</span></div>`;
+    const lead = commits > 1 ? `<span>${boldCount(kit.plural(commits, '{0} commits'), commits)}</span>` : '';
+    return `<div class="diff-summary">${lead}<span>${boldCount(kit.plural(files.length, '{0} files changed'), files.length)}</span><span class="add-n">+${kit.number(added)}</span><span class="del-n">−${kit.number(removed)}</span></div>`;
   }
 
   function renderDiff() {
@@ -851,7 +942,7 @@
     }).join('');
 
     const template = document.createElement('template');
-    template.innerHTML = `<div class="notebook">${out || '<div class="empty">Empty notebook</div>'}</div>`;
+    template.innerHTML = `<div class="notebook">${out || `<div class="empty">${esc(kit.t('Empty notebook'))}</div>`}</div>`;
     sanitize(template.content);
     root.appendChild(template.content);
     const article = $('.notebook');
@@ -930,10 +1021,11 @@
     return text;
   }
 
-  /** A selection quoted for a menu title: “withTimeout(_:)”, shortened in the middle when long. */
+  /** A selection quoted for a menu title, with the language's quotation marks (“withTimeout(_:)”,
+      „withTimeout(_:)“, «withTimeout(_:)», 「withTimeout(_:)」), shortened in the middle when long. */
   function quoted(text, max = 32) {
     const flat = text.replace(/\s+/g, ' ').trim();
-    return '“' + (flat.length > max ? flat.slice(0, max - 12) + '…' + flat.slice(-10) : flat) + '”';
+    return kit.t('“{0}”', flat.length > max ? flat.slice(0, max - 12) + '…' + flat.slice(-10) : flat);
   }
 
   window.greece = {
@@ -967,8 +1059,8 @@
       if (run) Promise.resolve().then(run).catch((e) => post('log', 'menu item: ' + (e && e.stack || e)));
     },
 
-    /** What module renderers share with Greece's own: escaping, highlighting, Markdown, notices. */
-    kit: {
+    /** What module renderers share with Greece's own: strings, escaping, highlighting, Markdown, notices. */
+    kit: Object.assign(kit, {
       $, $$, esc, post, root, payload, options,
       /** False in Quick Look, where typed keys never reach the page: offer selections, buttons and
           context-menu items instead of fields, and never show a field that looks typeable. */
@@ -988,7 +1080,7 @@
       },
       /** Runs after live settings changes (theme, appearance), e.g. to recolour a canvas. */
       onApply(callback) { applyCallbacks.push(callback); },
-    },
+    }),
   };
 
   // ------------------------------------------------------------------ Boot

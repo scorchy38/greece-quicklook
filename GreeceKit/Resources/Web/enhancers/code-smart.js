@@ -37,8 +37,22 @@
     s = s.replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, '').replace(/\s+/g, ' ').trim();
     return s.length > max ? s.slice(0, max - 1) + '…' : s;
   };
-  Smart.plural = (n, one, many) => `${Number(n).toLocaleString('en-US')} ${n === 1 ? one : (many || one + 's')}`;
-  Smart.number = (n) => Number(n).toLocaleString('en-US');
+
+  /** Strings and formats in the page's language (kit, greece.js); parsers tested in JavaScriptCore, with no page, get today's English. */
+  const kit = Smart.kit = (global.greece && global.greece.kit && global.greece.kit.t) ? global.greece.kit : englishKit();
+  function englishKit() {
+    const number = (n, options) => Number(n).toLocaleString('en-US', options);
+    const fill = (s, a) => String(s).replace(/ \[[^\]]+\]$/, '').replace(/\{(\d+)\}/g, (m, i) => (i < a.length ? (typeof a[i] === 'number' ? number(a[i]) : String(a[i])) : m));
+    const suffix = (n) => (n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th');
+    return {
+      lang: 'en', locale: 'en-GB', number,
+      t: (s, ...a) => fill(s, a),
+      plural: (n, s, ...a) => fill(s, [n, ...a]),
+      ordinal: (n, s, ...a) => fill(String(s).replace('{0}th', '{0}' + suffix(n)), [n, ...a]),
+      date: (d, options) => new Intl.DateTimeFormat('en-GB', options).format(d instanceof Date ? d : new Date(d)),
+      list: (items, options) => new Intl.ListFormat('en-GB', options || { type: 'conjunction' }).format(items.map(String)),
+    };
+  }
 
   function baseName(name) { return String(name || '').split('/').pop(); }
 
@@ -317,12 +331,12 @@
   Smart.duration = (ms) => {
     if (!isFinite(ms) || ms < 0) return '';
     const s = Math.round(ms / 1000);
-    if (s < 60) return `${s} s`;
+    if (s < 60) return kit.t('{0} s', s);
     const m = Math.round(s / 60);
-    if (m < 60) return `${m} min`;
+    if (m < 60) return kit.t('{0} min', m);
     const h = Math.floor(m / 60);
-    if (h < 48) return m % 60 ? `${h} h ${m % 60} min` : `${h} h`;
-    return `${Math.round(h / 24)} days`;
+    if (h < 48) return m % 60 ? kit.t('{0} h {1} min', h, m % 60) : kit.t('{0} h', h);
+    return kit.plural(Math.round(h / 24), '{0} days');
   };
 
   // ------------------------------------------------------------------- Layered graphs
@@ -384,7 +398,7 @@
       while (out.length > 1 && measure(out, size, weight) > w - 22) out = out.slice(0, -2) + '…';
       return out;
     };
-    let svg = `<svg class="smart-graph" viewBox="-2 -2 ${width + 4} ${height + 4}" width="${width + 4}" height="${height + 4}" role="img" aria-label="${esc(options.label || 'Graph')}">`;
+    let svg = `<svg class="smart-graph" viewBox="-2 -2 ${width + 4} ${height + 4}" width="${width + 4}" height="${height + 4}" role="img" aria-label="${esc(options.label || kit.t('Graph'))}">`;
     for (const [a, b] of links) {
       const s = pos[ids.get(a)];
       const t = pos[ids.get(b)];
@@ -434,18 +448,21 @@
   };
   Smart.store = store;
 
-  /** A list that shows `limit` items and a "Show All" control for the rest. */
-  Smart.more = (itemsHTML, limit, noun) => {
+  /** "Show 12 More" for a list's hidden rest, or "Show Less" while it's open. */
+  Smart.moreLabel = (count, open) => (open ? kit.t('Show Less') : kit.plural(count, 'Show {0} More'));
+
+  /** A list that shows `limit` items and a "Show N More" control for the rest. */
+  Smart.more = (itemsHTML, limit) => {
     if (itemsHTML.length <= limit) return itemsHTML.join('');
     return itemsHTML.slice(0, limit).join('') +
       `<div class="smart-rest" hidden>${itemsHTML.slice(limit).join('')}</div>` +
-      `<button type="button" class="smart-more" data-more="${itemsHTML.length - limit}">Show ${Smart.number(itemsHTML.length - limit)} More ${esc(noun || '')}</button>`;
+      `<button type="button" class="smart-more" data-more="${itemsHTML.length - limit}">${esc(Smart.moreLabel(itemsHTML.length - limit))}</button>`;
   };
 
   /** One labelled part of a card. `body` is trusted markup built with `esc`. */
   Smart.section = (title, body, options = {}) => {
     if (!body) return '';
-    const count = options.count != null ? `<span class="smart-count">${esc(typeof options.count === 'number' ? Smart.number(options.count) : options.count)}</span>` : '';
+    const count = options.count != null ? `<span class="smart-count">${esc(typeof options.count === 'number' ? kit.number(options.count) : options.count)}</span>` : '';
     return `<section class="smart-section${options.wide ? ' wide' : ''}${options.className ? ' ' + options.className : ''}"><h3>${esc(title)}${count}${options.aside ? `<span class="smart-aside">${options.aside}</span>` : ''}</h3>${body}</section>`;
   };
 
@@ -478,7 +495,7 @@
     const folded = store.get(foldKey) === '1';
     card.innerHTML =
       `<header class="smart-head">` +
-      `<button type="button" class="smart-fold" aria-expanded="${folded ? 'false' : 'true'}" title="${folded ? 'Show Details' : 'Hide Details'}">${CHEVRON}</button>` +
+      `<button type="button" class="smart-fold" aria-expanded="${folded ? 'false' : 'true'}" title="${esc(folded ? kit.t('Show Details') : kit.t('Hide Details'))}">${CHEVRON}</button>` +
       `<span class="smart-icon">${Smart.icon(options.icon)}</span>` +
       `<div class="smart-titles"><div class="smart-title-row"><span class="smart-title">${esc(options.title)}</span>` +
       (options.version ? `<span class="smart-version">${esc(options.version)}</span>` : '') +
@@ -499,7 +516,7 @@
       body.hidden = nowFolded;
       card.classList.toggle('folded', nowFolded);
       fold.setAttribute('aria-expanded', nowFolded ? 'false' : 'true');
-      fold.title = nowFolded ? 'Show Details' : 'Hide Details';
+      fold.title = nowFolded ? kit.t('Show Details') : kit.t('Hide Details');
       store.set(foldKey, nowFolded ? '1' : null);
     };
     fold.addEventListener('click', toggle);
@@ -510,7 +527,7 @@
       const rest = more.previousElementSibling;
       if (!rest || !rest.classList.contains('smart-rest')) return;
       rest.hidden = !rest.hidden;
-      more.textContent = rest.hidden ? `Show ${Smart.number(Number(more.dataset.more))} More` : 'Show Less';
+      more.textContent = Smart.moreLabel(Number(more.dataset.more), !rest.hidden);
     });
 
     const holder = document.createElement('div');

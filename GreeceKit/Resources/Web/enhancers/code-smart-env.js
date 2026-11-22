@@ -100,7 +100,7 @@
     const secrets = [];
     const secret = (value, cls = '') => {
       secrets.push(value);
-      return `<span class="env-secret${cls}" data-i="${secrets.length - 1}" role="button" tabindex="0" title="Reveal value">${MASK}</span>`;
+      return `<span class="env-secret${cls}" data-i="${secrets.length - 1}" role="button" tabindex="0" title="${esc(kit.t('Reveal value'))}">${MASK}</span>`;
     };
 
     const rows = parsed.lines.map((l, index) => {
@@ -120,8 +120,8 @@
         default: {
           const e = l.entry;
           const flags = [];
-          if (e.duplicateOf) flags.push(`<span class="env-flag is-duplicate" title="Also set on line ${e.duplicateOf}; this value wins">Duplicate</span>`);
-          if (e.empty) flags.push('<span class="env-flag is-empty">Empty</span>');
+          if (e.duplicateOf) flags.push(`<span class="env-flag is-duplicate" title="${esc(kit.t('Also set on line {0}; this value wins', e.duplicateOf))}">${esc(kit.t('Duplicate'))}</span>`);
+          if (e.empty) flags.push(`<span class="env-flag is-empty">${esc(kit.t('Empty'))}</span>`);
           const value = l.secret && !e.empty ? secret(l.secret) : esc(l.secret);
           body = `${esc(l.indent)}${l.export ? `<span class="hljs-keyword">${esc(l.export)}</span>` : ''}<span class="env-key${e.duplicateOf ? ' duplicate' : ''}">${esc(l.key)}</span><span class="env-eq">${esc(l.eq)}</span>${value}${l.rest ? `<span class="hljs-comment">${esc(l.rest)}</span>` : ''}${flags.join('')}`;
         }
@@ -146,11 +146,11 @@
       if (on) {
         node.textContent = secrets[i];
         node.classList.add('revealed');
-        node.title = 'Hide value';
+        node.title = kit.t('Hide value');
       } else {
         node.textContent = MASK;
         node.classList.remove('revealed');
-        node.title = 'Reveal value';
+        node.title = kit.t('Reveal value');
       }
     };
     view.addEventListener('click', (event) => {
@@ -164,20 +164,20 @@
 
     // Card
     const issues = [];
-    parsed.duplicates.slice(0, 50).forEach((e) => issues.push(`<li><span class="env-flag is-duplicate">Duplicate</span><code>${esc(e.key)}</code><span class="smart-dim">line ${e.line}, first set on line ${e.duplicateOf}</span></li>`));
-    parsed.empties.slice(0, 50).forEach((e) => issues.push(`<li><span class="env-flag is-empty">Empty</span><code>${esc(e.key)}</code><span class="smart-dim">line ${e.line}</span></li>`));
-    const kind = /\.(example|sample|template|dist)$/.test(kit.fileName.toLowerCase()) ? 'Template' : 'Environment';
-    const subtitleParts = [Smart.plural(parsed.keyCount, 'key')];
-    if (parsed.duplicates.length) subtitleParts.push(Smart.plural(parsed.duplicates.length, 'duplicate'));
-    if (parsed.empties.length) subtitleParts.push(`${Smart.number(parsed.empties.length)} empty`);
-    subtitleParts.push('Values hidden');
+    parsed.duplicates.slice(0, 50).forEach((e) => issues.push(`<li><span class="env-flag is-duplicate">${esc(kit.t('Duplicate'))}</span><code>${esc(e.key)}</code><span class="smart-dim">${esc(kit.t('line {0}, first set on line {1}', e.line, e.duplicateOf))}</span></li>`));
+    parsed.empties.slice(0, 50).forEach((e) => issues.push(`<li><span class="env-flag is-empty">${esc(kit.t('Empty'))}</span><code>${esc(e.key)}</code><span class="smart-dim">${esc(kit.t('line {0}', e.line))}</span></li>`));
+    const template = /\.(example|sample|template|dist)$/.test(kit.fileName.toLowerCase());
+    const subtitleParts = [kit.plural(parsed.keyCount, '{0} keys')];
+    if (parsed.duplicates.length) subtitleParts.push(kit.plural(parsed.duplicates.length, '{0} duplicates'));
+    if (parsed.empties.length) subtitleParts.push(kit.plural(parsed.empties.length, '{0} empty'));
+    subtitleParts.push(kit.t('Values hidden'));
     const card = Smart.card(root, {
       kind: 'env',
       icon: 'key',
-      title: kind === 'Template' ? 'Environment Template' : 'Environment Variables',
+      title: template ? kit.t('Environment Template') : kit.t('Environment Variables'),
       subtitle: subtitleParts.join(' · '),
-      body: issues.length ? `<ul class="env-issues">${Smart.more(issues, 6, '')}</ul>` : '',
-      actions: secrets.length ? '<button type="button" class="smart-button env-toggle" aria-pressed="false">Reveal All</button>' : '',
+      body: issues.length ? `<ul class="env-issues">${Smart.more(issues, 6)}</ul>` : '',
+      actions: secrets.length ? `<button type="button" class="smart-button env-toggle" aria-pressed="false">${esc(kit.t('Reveal All'))}</button>` : '',
     });
     const toggle = card.querySelector('.env-toggle');
     const subtitle = card.querySelector('.smart-subtitle');
@@ -186,8 +186,8 @@
         const on = toggle.getAttribute('aria-pressed') !== 'true';
         view.querySelectorAll('.env-secret').forEach((node) => reveal(node, on));
         toggle.setAttribute('aria-pressed', on ? 'true' : 'false');
-        toggle.textContent = on ? 'Hide All' : 'Reveal All';
-        if (subtitle) subtitle.textContent = subtitleParts.slice(0, -1).concat(on ? 'Values shown' : 'Values hidden').join(' · ');
+        toggle.textContent = on ? kit.t('Hide All') : kit.t('Reveal All');
+        if (subtitle) subtitle.textContent = subtitleParts.slice(0, -1).concat(on ? kit.t('Values shown') : kit.t('Values hidden')).join(' · ');
       });
     }
   }

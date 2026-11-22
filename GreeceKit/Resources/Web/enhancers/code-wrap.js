@@ -9,7 +9,7 @@
     if (!G) return;
     const html = document.documentElement;
 
-    const button = G.addTool({ icon: 'wrap', label: 'Wrap Lines', title: 'Wrap Lines (⌥Z)', order: 30, onClick: () => toggle() });
+    const button = G.addTool({ icon: 'wrap', label: kit.t('Wrap Lines'), title: kit.t('Wrap Lines') + ' (⌥Z)', order: 30, onClick: () => toggle() });
     const sync = () => {
       const on = html.classList.contains('wrap');
       if (button) { button.classList.toggle('on', on); button.setAttribute('aria-pressed', String(on)); }

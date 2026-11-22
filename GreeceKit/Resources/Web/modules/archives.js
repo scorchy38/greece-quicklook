@@ -14,7 +14,7 @@
     root.innerHTML = `
       <div class="comic">
         <header class="comic-hero">
-          <div class="comic-cover" data-page="0" role="button" aria-label="Read from the cover">
+          <div class="comic-cover" data-page="0" role="button" aria-label="${esc(kit.t('Read from the cover'))}">
             ${pages.length ? `<img src="${thumb(0, Math.round(220 * scale))}" alt="">` : ''}
           </div>
           <div class="comic-meta">
@@ -23,20 +23,20 @@
             ${data.subtitle ? `<p class="comic-subtitle">${esc(data.subtitle)}</p>` : ''}
             <p class="comic-facts">${facts}</p>
             ${data.summary ? `<p class="comic-summary">${esc(data.summary)}</p>` : ''}
-            <button class="comic-read" data-page="0">Read</button>
+            <button class="comic-read" data-page="0">${esc(kit.t('Read'))}</button>
           </div>
         </header>
-        <h2 class="comic-section">Pages</h2>
+        <h2 class="comic-section">${esc(kit.t('Pages'))}</h2>
         <div class="comic-grid"></div>
       </div>
       <div class="comic-reader" aria-hidden="true">
         <div class="stage"><img alt=""></div>
         <div class="side left"></div><div class="side right"></div>
-        <button class="close" aria-label="Close">✕</button>
+        <button class="close" aria-label="${esc(kit.t('Close'))}">✕</button>
         <div class="bar">
-          <button class="previous" aria-label="Previous page">‹</button>
+          <button class="previous" aria-label="${esc(kit.t('Previous Page'))}">‹</button>
           <span class="position"></span>
-          <button class="next" aria-label="Next page">›</button>
+          <button class="next" aria-label="${esc(kit.t('Next Page'))}">›</button>
         </div>
       </div>`;
 
@@ -57,7 +57,7 @@
       figure.dataset.page = String(index);
       figure.title = page.name;
       figure.innerHTML = `<div class="comic-thumb"><img alt="" data-src="${thumb(index, Math.round(160 * scale))}"></div>
-        <figcaption>${index + 1}</figcaption>`;
+        <figcaption>${esc(kit.number(index + 1))}</figcaption>`;
       const img = figure.querySelector('img');
       fragment.appendChild(figure);
       // The first screenful loads straight away (Quick Look renders before the page is on screen,
@@ -79,7 +79,7 @@
     function show(index) {
       current = Math.max(0, Math.min(pages.length - 1, index));
       image.src = full(current);
-      position.textContent = `${current + 1} of ${pages.length}`;
+      position.textContent = kit.t('{0} of {1}', current + 1, pages.length);
       previous.disabled = current === 0;
       next.disabled = current === pages.length - 1;
       // Warm the next page so turning is instant.

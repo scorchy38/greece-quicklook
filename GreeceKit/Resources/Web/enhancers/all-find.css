@@ -66,6 +66,7 @@
   background: transparent;
   color: var(--fb-fg);
   font: 13px var(--ui);
+  text-overflow: ellipsis;
 }
 .findbar .find-field input::placeholder { color: color-mix(in srgb, var(--fb-fg) 40%, transparent); }
 .findbar .find-count {
@@ -99,7 +100,7 @@
 .findbar .find-option.on { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .findbar .find-word span { padding: 0 2px; border-left: 1.2px solid currentColor; border-right: 1.2px solid currentColor; line-height: 1.05; }
 .findbar .find-spacer { flex: 1; }
-.findbar .find-done { padding: 0 12px; border-radius: 6px; background: var(--fb-control); box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fb-fg) 12%, transparent); }
+.findbar .find-done { flex: none; white-space: nowrap; padding: 0 12px; border-radius: 6px; background: var(--fb-control); box-shadow: inset 0 0 0 .5px color-mix(in srgb, var(--fb-fg) 12%, transparent); }
 
 /* Quick Look: the query comes from a selection, so the field reads as a label, not an input. */
 .findbar.by-selection .find-field { cursor: default; }

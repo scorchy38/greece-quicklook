@@ -5,14 +5,17 @@
   const M = window.GreeceMedia;
   const { el } = M;
 
+  const kit = window.greece.kit;
+  /** Cues that break a guideline: the chip that counts them, and why a cue is marked. */
   const FLAGS = [
-    { bit: 1, key: 'fast', label: (n) => `${M.number(n)} too fast`, reason: (c, l) => `Reading speed ${c.c} cps (over ${l.cps})` },
-    { bit: 2, key: 'longLines', label: (n) => `${M.number(n)} long ${n === 1 ? 'line' : 'lines'}`, reason: (c, l) => `A line over ${l.line} characters` },
-    { bit: 32, key: 'manyLines', label: (n) => `${M.number(n)} over ${2} lines`, reason: (c, l) => `More than ${l.lines} lines` },
-    { bit: 4, key: 'brief', label: (n) => `${M.number(n)} brief`, reason: (c, l) => `On screen under ${(l.min / 1000).toFixed(2)} s` },
-    { bit: 8, key: 'lingering', label: (n) => `${M.number(n)} lingering`, reason: (c, l) => `On screen over ${l.max / 1000} s` },
-    { bit: 16, key: 'overlaps', label: (n) => `${M.number(n)} ${n === 1 ? 'overlap' : 'overlaps'}`, reason: () => 'Starts before the previous cue ends' },
-    { bit: 64, key: 'badTiming', label: (n) => `${M.number(n)} bad timing`, reason: () => 'Ends before it starts' },
+    { bit: 1, key: 'fast', label: (n) => kit.plural(n, '{0} too fast'), reason: (c, l) => kit.t('Reading speed {0} cps (over {1})', c.c, l.cps) },
+    { bit: 2, key: 'longLines', label: (n) => kit.plural(n, '{0} long lines'), reason: (c, l) => kit.plural(l.line, 'A line over {0} characters') },
+    { bit: 32, key: 'manyLines', label: (n) => kit.plural(n, '{0} over 2 lines'), reason: (c, l) => kit.plural(l.lines, 'More than {0} lines') },
+    { bit: 4, key: 'brief', label: (n) => kit.plural(n, '{0} brief'),
+      reason: (c, l) => kit.t('On screen under {0} s', kit.number(l.min / 1000, { minimumFractionDigits: 2, maximumFractionDigits: 2 })) },
+    { bit: 8, key: 'lingering', label: (n) => kit.plural(n, '{0} lingering'), reason: (c, l) => kit.t('On screen over {0} s', l.max / 1000) },
+    { bit: 16, key: 'overlaps', label: (n) => kit.plural(n, '{0} overlaps'), reason: () => kit.t('Starts before the previous cue ends') },
+    { bit: 64, key: 'badTiming', label: (n) => kit.plural(n, '{0} with bad timing'), reason: () => kit.t('Ends before it starts') },
   ];
 
   let shown = false;
@@ -21,7 +24,7 @@
     kit.afterReady(() => { shown = true; });
     const root = kit.root;
     let cues = [];
-    try { cues = await M.fetchJSON('cues.json'); } catch (_) { return kit.empty('These subtitles couldn’t be read'); }
+    try { cues = await M.fetchJSON('cues.json'); } catch (_) { return kit.empty(kit.t('These subtitles couldn’t be read')); }
     const stats = data.stats;
     const limits = data.limits;
     const lyrics = data.format === 'LRC';
@@ -30,16 +33,19 @@
 
     // --------------------------------------------------------------- Header
     const head = el('div', { class: 'subs-head' });
-    const search = el('input', { class: 'm-search', type: 'search', placeholder: lyrics ? 'Filter lines' : 'Filter cues', 'aria-label': 'Filter' });
+    const search = el('input', { class: 'm-search', type: 'search', placeholder: lyrics ? kit.t('Filter lines') : kit.t('Filter cues'), 'aria-label': kit.t('Filter') });
     head.appendChild(el('div', { class: 'row' }, [el('h1', { text: data.title || data.kind }), search]));
 
     const chips = el('div', { class: 'stats' });
-    chips.appendChild(el('span', { class: 'm-chip', text: M.plural(stats.cues, lyrics ? 'line' : 'cue') }));
+    chips.appendChild(el('span', { class: 'm-chip', text: lyrics ? kit.plural(stats.cues, '{0} lines') : kit.plural(stats.cues, '{0} cues') }));
     if (stats.end > 0) chips.appendChild(el('span', { class: 'm-chip', text: M.timecode(stats.end).replace(/\.\d+$/, '') }));
-    if (data.checks && stats.averageCPS != null) chips.appendChild(el('span', { class: 'm-chip', title: 'Average reading speed, in characters per second', text: `${M.trimNumber(stats.averageCPS, 1)} cps average` }));
-    if (stats.speakers > 0) chips.appendChild(el('span', { class: 'm-chip', text: M.plural(stats.speakers, 'speaker') }));
+    if (data.checks && stats.averageCPS != null) {
+      chips.appendChild(el('span', { class: 'm-chip', title: kit.t('Average reading speed, in characters per second'),
+                                     text: kit.t('{0} cps average', kit.number(stats.averageCPS, { maximumFractionDigits: 1 })) }));
+    }
+    if (stats.speakers > 0) chips.appendChild(el('span', { class: 'm-chip', text: kit.plural(stats.speakers, '{0} speakers') }));
     for (const language of data.languages || []) chips.appendChild(el('span', { class: 'm-chip', text: language }));
-    if (data.frameRate) chips.appendChild(el('span', { class: 'm-chip', text: `Timed at ${M.trimNumber(data.frameRate, 3)} fps` }));
+    if (data.frameRate) chips.appendChild(el('span', { class: 'm-chip', text: kit.t('Timed at {0} fps', kit.number(data.frameRate, { maximumFractionDigits: 3 })) }));
     for (const [key, value] of data.metadata || []) chips.appendChild(el('span', { class: 'm-chip', text: `${key}: ${value}` }));
 
     let flagFilter = 0;
@@ -48,7 +54,7 @@
       for (const flag of FLAGS) {
         const count = stats[flag.key];
         if (!count) continue;
-        const chip = el('button', { type: 'button', class: 'm-chip warn', title: 'Show only these', text: flag.label(count) });
+        const chip = el('button', { type: 'button', class: 'm-chip warn', title: kit.t('Show only these'), text: flag.label(count) });
         chip.addEventListener('click', () => {
           flagFilter = flagFilter === flag.bit ? 0 : flag.bit;
           flagChips.forEach((c) => c.classList.toggle('on', c === chip && flagFilter !== 0));
@@ -61,7 +67,7 @@
     head.appendChild(chips);
 
     // ------------------------------------------------------------- Timeline
-    const timeline = el('div', { class: 'timeline', title: 'Jump to a moment' });
+    const timeline = el('div', { class: 'timeline', title: kit.t('Jump to a moment') });
     const canvas = el('canvas');
     const hover = el('div', { class: 'hover' });
     timeline.append(canvas, hover);
@@ -73,7 +79,7 @@
     ]));
     page.appendChild(head);
 
-    if (data.truncated) page.appendChild(el('div', { class: 'notice', style: { margin: '14px 28px 0' }, text: `Showing the first ${M.number(cues.length)} cues.` }));
+    if (data.truncated) page.appendChild(el('div', { class: 'notice', style: { margin: '14px 28px 0' }, text: kit.plural(cues.length, 'Showing the first {0} cues.') }));
 
     const list = el('div', { class: 'cues' });
     page.appendChild(list);
@@ -173,8 +179,8 @@
       if (label) label = `<span class="label">${label}</span>`;
       const reasons = FLAGS.filter((flag) => cue.f & flag.bit).map((flag) => flag.reason(cue, limits));
       const flag = reasons.length ? `<span class="flag" title="${kit.esc(reasons.join('\n'))}"></span>` : '';
-      const duration = ((cue.e - cue.s) / 1000).toFixed(1) + ' s';
-      const cps = data.checks && cue.c != null ? `<span class="cps${cue.f & 1 ? ' warn' : ''}">${M.trimNumber(cue.c, 1)} cps</span>` : '';
+      const duration = kit.number((cue.e - cue.s) / 1000, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' s';
+      const cps = data.checks && cue.c != null ? `<span class="cps${cue.f & 1 ? ' warn' : ''}">${kit.esc(kit.t('{0} cps', kit.number(cue.c, { maximumFractionDigits: 1 })))}</span>` : '';
       return `<div class="cue" id="cue-${index}"><div class="n">${flag}${kit.esc(number)}</div>` +
         `<div class="t">${M.timecode(cue.s, total >= 3600000)}<br><span class="end">${M.timecode(cue.e, total >= 3600000)}</span></div>` +
         `<div class="text">${label}${text}</div><div class="meta"><span>${duration}</span>${cps}</div></div>`;
@@ -198,7 +204,7 @@
       list.innerHTML = '';
       rendered = 0;
       if (!visible.length) {
-        list.appendChild(el('div', { class: 'empty-list', text: cues.length ? 'No matching cues' : 'No cues found' }));
+        list.appendChild(el('div', { class: 'empty-list', text: cues.length ? kit.t('No matching cues') : kit.t('No cues found') }));
         return;
       }
       // Four screens now, the rest streamed in once the page is on screen.

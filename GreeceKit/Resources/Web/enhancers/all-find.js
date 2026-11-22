@@ -35,23 +35,23 @@
     bar.innerHTML = `
       <label class="find-field">
         <span class="glyph">${ICONS.search}</span>
-        <input type="text" spellcheck="false" autocomplete="off" autocorrect="off" aria-label="Find">
+        <input type="text" spellcheck="false" autocomplete="off" autocorrect="off" aria-label="${kit.esc(kit.t('Find'))}">
         <span class="find-count" aria-live="polite"></span>
       </label>
       <div class="find-steps" role="group">
-        <button type="button" class="find-prev" title="${kit.typing ? 'Previous (⇧⌘G)' : 'Previous'}" aria-label="Previous">${ICONS.up}</button>
-        <button type="button" class="find-next" title="${kit.typing ? 'Next (⌘G)' : 'Next'}" aria-label="Next">${ICONS.down}</button>
+        <button type="button" class="find-prev" title="${kit.esc(kit.t('Previous'))}${kit.typing ? ' (⇧⌘G)' : ''}" aria-label="${kit.esc(kit.t('Previous'))}">${ICONS.up}</button>
+        <button type="button" class="find-next" title="${kit.esc(kit.t('Next'))}${kit.typing ? ' (⌘G)' : ''}" aria-label="${kit.esc(kit.t('Next'))}">${ICONS.down}</button>
       </div>
-      <button type="button" class="find-option find-case" aria-pressed="false" title="Match Case">Aa</button>
-      <button type="button" class="find-option find-word" aria-pressed="false" title="Whole Words"><span>ab</span></button>
+      <button type="button" class="find-option find-case" aria-pressed="false" title="${kit.esc(kit.t('Match Case'))}">Aa</button>
+      <button type="button" class="find-option find-word" aria-pressed="false" title="${kit.esc(kit.t('Whole Words'))}"><span>ab</span></button>
       <span class="find-spacer"></span>
-      <button type="button" class="find-done">Done</button>`;
+      <button type="button" class="find-done">${kit.esc(kit.t('Done'))}</button>`;
     document.body.appendChild(bar);
     const input = bar.querySelector('input');
     const countLabel = bar.querySelector('.find-count');
     const caseButton = bar.querySelector('.find-case');
     const wordButton = bar.querySelector('.find-word');
-    input.placeholder = kit.typing ? 'Find' : 'Select text to find it';
+    input.placeholder = kit.typing ? kit.t('Find') : kit.t('Select text to find it');
     if (!kit.typing) {
       input.readOnly = true;
       input.tabIndex = -1;
@@ -200,8 +200,8 @@
 
     function updateCount() {
       if (!input.value) { countLabel.textContent = ''; bar.classList.remove('invalid'); return; }
-      const total = matches.length >= MAX_MATCHES ? MAX_MATCHES.toLocaleString() + '+' : matches.length.toLocaleString();
-      countLabel.textContent = !matches.length ? 'No matches' : at >= 0 ? `${(at + 1).toLocaleString()} of ${total}` : total;
+      const total = matches.length >= MAX_MATCHES ? kit.t('{0}+', MAX_MATCHES) : kit.number(matches.length);
+      countLabel.textContent = !matches.length ? kit.t('No matches') : at >= 0 ? kit.t('{0} of {1}', at + 1, total) : total;
       bar.classList.toggle('invalid', !matches.length);
     }
 
@@ -277,10 +277,13 @@
 
     greece.contextMenu(() => {
       const query = kit.selectionQuery();
-      return query ? [{ title: 'Find ' + kit.quoted(query), run: () => open(query) }] : null;
+      return query ? [{ title: kit.t('Find {0}', kit.quoted(query)), run: () => open(query) }] : null;
     });
 
     window.greeceFind = { open, close, next: () => step(1), previous: () => step(-1),
                           get count() { return matches.length; }, get current() { return at; } };
+    // Renders and tests: GREECE_STATE=find:word opens the bar on "word" once the page is showing.
+    const state = String(kit.payload.state || '');
+    if (state.startsWith('find:')) kit.afterReady(() => open(state.slice(5)));
   });
 })();

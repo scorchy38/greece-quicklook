@@ -4,34 +4,32 @@
 (function () {
   'use strict';
 
+  const kit = greece.kit;
+  // Filter chips, as in Safari's Web Inspector; abbreviations that are the same everywhere stay as they are.
   const TYPES = [
-    ['all', 'All'], ['document', 'Doc'], ['fetch', 'Fetch/XHR'], ['script', 'JS'], ['stylesheet', 'CSS'],
-    ['image', 'Img'], ['font', 'Font'], ['media', 'Media'], ['websocket', 'WS'], ['other', 'Other'],
+    ['all', kit.t('All')], ['document', kit.t('Doc')], ['fetch', 'Fetch/XHR'], ['script', 'JS'], ['stylesheet', 'CSS'],
+    ['image', kit.t('Img')], ['font', kit.t('Font')], ['media', kit.t('Media')], ['websocket', 'WS'], ['other', kit.t('Other')],
   ];
   const TYPE_NAMES = {
-    document: 'Document', fetch: 'Fetch', script: 'Script', stylesheet: 'Stylesheet', image: 'Image',
-    font: 'Font', media: 'Media', websocket: 'WebSocket', other: 'Other',
+    document: kit.t('Document'), fetch: kit.t('Fetch'), script: kit.t('Script'), stylesheet: kit.t('Stylesheet'), image: kit.t('Image'),
+    font: kit.t('Font'), media: kit.t('Media'), websocket: 'WebSocket', other: kit.t('Other'),
   };
   const PHASES = [
-    ['blocked', 'Queued'], ['dns', 'DNS Lookup'], ['connect', 'Connection'], ['ssl', 'TLS'],
-    ['send', 'Request Sent'], ['wait', 'Waiting (TTFB)'], ['receive', 'Download'],
+    ['blocked', kit.t('Queued')], ['dns', kit.t('DNS Lookup')], ['connect', kit.t('Connection')], ['ssl', 'TLS'],
+    ['send', kit.t('Request Sent')], ['wait', kit.t('Waiting (TTFB)')], ['receive', kit.t('Download')],
   ];
   const MAX_ROWS = 5000;
 
-  function bytes(n) {
-    if (!(n > 0)) return '—';
-    if (n < 1000) return n + ' B';
-    const units = ['KB', 'MB', 'GB'];
-    let v = n / 1000, u = 0;
-    while (v >= 1000 && u < units.length - 1) { v /= 1000; u++; }
-    return (v >= 100 ? v.toFixed(0) : v.toFixed(1)) + ' ' + units[u];
+  function bytes(n, options) {
+    return n > 0 ? kit.bytes(n, options) : '—';
   }
 
   function ms(n) {
     if (n == null || !(n >= 0)) return '—';
-    if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 1 : 2) + ' s';
-    if (n >= 10) return Math.round(n) + ' ms';
-    return n.toFixed(1) + ' ms';
+    const fixed = (value, digits) => kit.number(value, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    if (n >= 1000) return fixed(n / 1000, n >= 10000 ? 1 : 2) + ' s';
+    if (n >= 10) return kit.number(Math.round(n)) + ' ms';
+    return fixed(n, 1) + ' ms';
   }
 
   function statusClass(row) {
@@ -65,9 +63,9 @@
     root.innerHTML = `
       <div class="har">
         <header class="har-bar">
-          <input class="har-search" type="search" placeholder="Filter" spellcheck="false" aria-label="Filter requests">
+          <input class="har-search" type="search" placeholder="${esc(kit.t('Filter'))}" spellcheck="false" aria-label="${esc(kit.t('Filter requests'))}">
           <nav class="har-types" role="tablist">${TYPES.map(([id, label]) =>
-            `<button type="button" data-type="${id}" class="${id === 'all' ? 'on' : ''}">${label}</button>`).join('')}</nav>
+            `<button type="button" data-type="${id}" class="${id === 'all' ? 'on' : ''}">${esc(label)}</button>`).join('')}</nav>
           <span class="har-count"></span>
         </header>
         <div class="har-main">
@@ -75,9 +73,9 @@
             <table class="har-table">
               <colgroup><col class="c-status"><col class="c-method"><col class="c-name"><col class="c-type"><col class="c-size"><col class="c-time"><col class="c-fall"></colgroup>
               <thead><tr>
-                <th data-sort="status">Status</th><th data-sort="method">Method</th><th data-sort="path">Name</th>
-                <th data-sort="type">Type</th><th data-sort="size" class="num">Size</th><th data-sort="time" class="num">Time</th>
-                <th data-sort="start" class="fall">Waterfall${scaleMarks()}</th>
+                <th data-sort="status">${esc(kit.t('Status'))}</th><th data-sort="method">${esc(kit.t('Method'))}</th><th data-sort="path">${esc(kit.t('Name'))}</th>
+                <th data-sort="type">${esc(kit.t('Type'))}</th><th data-sort="size" class="num">${esc(kit.t('Size'))}</th><th data-sort="time" class="num">${esc(kit.t('Time'))}</th>
+                <th data-sort="start" class="fall">${esc(kit.t('Waterfall'))}${scaleMarks()}</th>
               </tr></thead>
               <tbody></tbody>
             </table>
@@ -95,7 +93,7 @@
       const marks = [];
       for (const page of data.pages || []) {
         if (page.contentLoad != null) marks.push(`<i class="mark dcl" style="left:${(page.contentLoad / total * 100).toFixed(3)}%" title="DOMContentLoaded ${esc(ms(page.contentLoad))}"></i>`);
-        if (page.load != null) marks.push(`<i class="mark load" style="left:${(page.load / total * 100).toFixed(3)}%" title="Load ${esc(ms(page.load))}"></i>`);
+        if (page.load != null) marks.push(`<i class="mark load" style="left:${(page.load / total * 100).toFixed(3)}%" title="${esc(kit.t('Load {0}', ms(page.load)))}"></i>`);
       }
       return `<span class="marks">${marks.join('')}</span>`;
     }
@@ -135,18 +133,20 @@
       for (const { row, index } of shown) {
         const name = row.path === '/' ? row.host : (row.path.split('?')[0].split('/').filter(Boolean).pop() || row.path);
         html += `<tr data-i="${index}" class="${index === state.selected ? 'sel' : ''}">`
-          + `<td class="status ${statusClass(row)}">${row.failed && !row.status ? 'Failed' : esc(row.status)}</td>`
+          + `<td class="status ${statusClass(row)}">${esc(row.failed && !row.status ? kit.t('Failed') : row.status)}</td>`
           + `<td class="method">${esc(row.method)}</td>`
           + `<td class="name" title="${esc(row.url)}"><span class="fname">${esc(decodeSafe(name))}</span><span class="host">${esc(row.host)}${esc(row.path.length > 1 ? row.path : '')}</span></td>`
           + `<td class="type">${esc(TYPE_NAMES[row.type] || row.type)}</td>`
-          + `<td class="num">${esc(bytes(row.size))}</td>`
+          + `<td class="num">${esc(bytes(row.size, { compact: true }))}</td>`
           + `<td class="num">${esc(ms(row.time))}</td>`
           + `<td class="fall">${bar(row)}</td></tr>`;
       }
-      tbody.innerHTML = html || `<tr class="none"><td colspan="7">No matching requests</td></tr>`;
+      tbody.innerHTML = html || `<tr class="none"><td colspan="7">${esc(kit.t('No matching requests'))}</td></tr>`;
       const size = rows.reduce((s, { row }) => s + (row.size || 0), 0);
-      count.textContent = (rows.length === entries.length ? `${entries.length.toLocaleString()} requests` : `${rows.length.toLocaleString()} of ${entries.length.toLocaleString()} requests`)
-        + ` · ${bytes(size)} · ${ms(data.duration)}` + (shown.length < rows.length ? ` · first ${MAX_ROWS.toLocaleString()} shown` : '');
+      const facts = [rows.length === entries.length ? kit.plural(entries.length, '{0} requests') : kit.plural(entries.length, '{1} of {0} requests', rows.length),
+        bytes(size), ms(data.duration)];
+      if (shown.length < rows.length) facts.push(kit.t('first {0} shown', MAX_ROWS));
+      count.textContent = facts.join(' · ');
       kit.$$('th[data-sort]', root).forEach((th) => {
         th.classList.toggle('sorted', th.dataset.sort === state.sort);
         th.classList.toggle('desc', th.dataset.sort === state.sort && !state.asc);
@@ -168,26 +168,30 @@
       const page = (data.pages || [])[0];
       const failed = entries.filter((r) => r.failed || r.status >= 400).length;
       const facts = [
-        ['Requests', entries.length.toLocaleString() + (data.total > entries.length ? ` of ${data.total.toLocaleString()}` : '')],
-        ['Transferred', bytes(data.bytes)],
-        ['Finished', ms(data.duration)],
+        [kit.t('Requests'), data.total > entries.length ? kit.t('{0} of {1}', entries.length, data.total) : kit.number(entries.length)],
+        [kit.t('Transferred'), bytes(data.bytes)],
+        [kit.t('Finished'), ms(data.duration)],
       ];
       if (page && page.contentLoad != null) facts.push(['DOMContentLoaded', ms(page.contentLoad)]);
-      if (page && page.load != null) facts.push(['Load', ms(page.load)]);
-      if (failed) facts.push(['Errors', String(failed)]);
+      if (page && page.load != null) facts.push([kit.t('Load'), ms(page.load)]);
+      if (failed) facts.push([kit.t('Errors'), kit.number(failed)]);
+      let origin = kit.t('HTTP Archive');
+      if (data.browser && data.creator) origin = kit.t('{0} · recorded with {1}', data.browser, data.creator);
+      else if (data.creator) origin = kit.t('Recorded with {0}', data.creator);
+      else if (data.browser) origin = data.browser;
       detail.innerHTML = `
         <div class="har-summary">
           <div class="who">
-            <h2>${esc(page && page.title ? page.title : 'Network capture')}</h2>
-            <p>${esc([data.browser, data.creator ? 'recorded with ' + data.creator : ''].filter(Boolean).join(' · ') || 'HTTP Archive')}</p>
+            <h2>${esc(page && page.title ? page.title : kit.t('Network capture'))}</h2>
+            <p>${esc(origin)}</p>
           </div>
           <dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
           <div class="types">${Object.entries(byType).sort((a, b) => b[1].size - a[1].size).map(([type, t]) => `
             <div class="type-row"><span class="tname">${esc(TYPE_NAMES[type] || type)}</span>
               <span class="tbar"><i class="ty-${esc(type)}" style="width:${Math.max(1.5, t.size / largest * 100).toFixed(1)}%"></i></span>
-              <span class="tnum">${t.n.toLocaleString()}</span><span class="tsize">${esc(bytes(t.size))}</span></div>`).join('')}
+              <span class="tnum">${esc(kit.number(t.n))}</span><span class="tsize">${esc(bytes(t.size))}</span></div>`).join('')}
           </div>
-          <p class="hint">Select a request to see its headers, payload, response and timing.</p>
+          <p class="hint">${esc(kit.t('Select a request to see its headers, payload, response and timing.'))}</p>
         </div>`;
     }
 
@@ -206,7 +210,7 @@
       try {
         info = await (await fetch('greece://module/entry/' + index)).json();
       } catch (e) {
-        detail.innerHTML = kit.notice('This request’s details couldn’t be read.');
+        detail.innerHTML = kit.notice(kit.t('This request’s details couldn’t be read.'));
         return;
       }
       if (state.selected !== index) return;
@@ -220,16 +224,16 @@
 
     function renderDetail(row, info) {
       const hasPayload = (info.query && info.query.length) || info.postText || (info.postParams && info.postParams.length);
-      const tabs = [['headers', 'Headers'], hasPayload ? ['payload', 'Payload'] : null, ['response', 'Response'], ['timing', 'Timing']].filter(Boolean);
+      const tabs = [['headers', kit.t('Headers')], hasPayload ? ['payload', kit.t('Payload')] : null, ['response', kit.t('Response')], ['timing', kit.t('Timing')]].filter(Boolean);
       if (!tabs.some(([id]) => id === state.tab)) state.tab = 'headers';
       detail.innerHTML = `
         <header class="detail-head">
-          <span class="status ${statusClass(row)}">${row.failed && !row.status ? 'Failed' : esc(String(info.status || ''))}</span>
+          <span class="status ${statusClass(row)}">${esc(row.failed && !row.status ? kit.t('Failed') : String(info.status || ''))}</span>
           <span class="method">${esc(info.method)}</span>
           <span class="url" title="${esc(info.url)}">${esc(info.url)}</span>
-          <button class="close" type="button" aria-label="Close" title="Close (Esc)">×</button>
+          <button class="close" type="button" aria-label="${esc(kit.t('Close'))}" title="${esc(kit.t('Close'))} (Esc)">×</button>
         </header>
-        <nav class="detail-tabs" role="tablist">${tabs.map(([id, label]) => `<button type="button" data-tab="${id}" class="${id === state.tab ? 'on' : ''}">${label}</button>`).join('')}</nav>
+        <nav class="detail-tabs" role="tablist">${tabs.map(([id, label]) => `<button type="button" data-tab="${id}" class="${id === state.tab ? 'on' : ''}">${esc(label)}</button>`).join('')}</nav>
         <div class="detail-body"></div>`;
       const body = kit.$('.detail-body', detail);
       const show = (tab) => {
@@ -249,19 +253,20 @@
 
     function headersTab(row, info) {
       const general = [
-        { name: 'Request URL', value: info.url },
-        { name: 'Method', value: info.method },
-        { name: 'Status', value: [info.status, info.statusText].filter(Boolean).join(' ') || (info.error || 'Failed') },
-        info.server ? { name: 'Remote Address', value: info.server + (info.connection ? ' · connection ' + info.connection : '') } : null,
-        info.responseVersion ? { name: 'Protocol', value: info.responseVersion } : null,
-        info.redirect ? { name: 'Redirects To', value: info.redirect } : null,
-        info.error ? { name: 'Error', value: info.error } : null,
+        { name: kit.t('Request URL'), value: info.url },
+        { name: kit.t('Method'), value: info.method },
+        { name: kit.t('Status'), value: [info.status, info.statusText].filter(Boolean).join(' ') || (info.error || kit.t('Failed')) },
+        info.server ? { name: kit.t('Remote Address'), value: info.connection ? kit.t('{0} · connection {1}', info.server, String(info.connection)) : info.server } : null,
+        info.responseVersion ? { name: kit.t('Protocol'), value: info.responseVersion } : null,
+        info.redirect ? { name: kit.t('Redirects To'), value: info.redirect } : null,
+        info.error ? { name: kit.t('Error'), value: info.error } : null,
       ].filter(Boolean);
-      return `<h3>General</h3>${table(general, '')}
-        <h3>Response Headers <span class="n">${(info.responseHeaders || []).length}</span></h3>${table(info.responseHeaders, 'No response headers')}
-        <h3>Request Headers <span class="n">${(info.requestHeaders || []).length}</span></h3>${table(info.requestHeaders, 'No request headers')}
-        ${info.requestCookies && info.requestCookies.length ? `<h3>Cookies Sent</h3>${table(info.requestCookies, '')}` : ''}
-        ${info.responseCookies && info.responseCookies.length ? `<h3>Cookies Set</h3>${table(info.responseCookies, '')}` : ''}`;
+      const n = (list) => esc(kit.number((list || []).length));
+      return `<h3>${esc(kit.t('General'))}</h3>${table(general, '')}
+        <h3>${esc(kit.t('Response Headers'))} <span class="n">${n(info.responseHeaders)}</span></h3>${table(info.responseHeaders, kit.t('No response headers'))}
+        <h3>${esc(kit.t('Request Headers'))} <span class="n">${n(info.requestHeaders)}</span></h3>${table(info.requestHeaders, kit.t('No request headers'))}
+        ${info.requestCookies && info.requestCookies.length ? `<h3>${esc(kit.t('Cookies Sent'))}</h3>${table(info.requestCookies, '')}` : ''}
+        ${info.responseCookies && info.responseCookies.length ? `<h3>${esc(kit.t('Cookies Set'))}</h3>${table(info.responseCookies, '')}` : ''}`;
     }
 
     function codeBlock(text, mime) {
@@ -269,21 +274,21 @@
       const shown = grammar === 'json' ? prettyJSON(text) : text;
       const capped = shown.length > 400000 ? shown.slice(0, 400000) : shown;
       return `<pre class="body-code"><code class="hljs">${grammar ? kit.highlight(capped, grammar) : esc(capped)}</code></pre>`
-        + (capped.length < shown.length ? kit.notice('Showing the beginning of a long body.') : '');
+        + (capped.length < shown.length ? kit.notice(kit.t('Showing the beginning of a long body.')) : '');
     }
 
     function payloadTab(info) {
       let html = '';
-      if (info.query && info.query.length) html += `<h3>Query String <span class="n">${info.query.length}</span></h3>${table(info.query, '')}`;
-      if (info.postParams && info.postParams.length) html += `<h3>Form Data</h3>${table(info.postParams, '')}`;
-      else if (info.postText) html += `<h3>Request Body <span class="n">${esc(info.postMime || '')}</span></h3>${codeBlock(info.postText, info.postMime)}`;
+      if (info.query && info.query.length) html += `<h3>${esc(kit.t('Query String'))} <span class="n">${esc(kit.number(info.query.length))}</span></h3>${table(info.query, '')}`;
+      if (info.postParams && info.postParams.length) html += `<h3>${esc(kit.t('Form Data'))}</h3>${table(info.postParams, '')}`;
+      else if (info.postText) html += `<h3>${esc(kit.t('Request Body'))} <span class="n">${esc(info.postMime || '')}</span></h3>${codeBlock(info.postText, info.postMime)}`;
       return html;
     }
 
     function responseTab(info) {
       const mime = (info.mime || '').split(';')[0].trim().toLowerCase();
       const meta = `<p class="body-meta">${esc([mime, info.size > 0 ? bytes(info.size) : '', info.encoding].filter(Boolean).join(' · '))}</p>`;
-      if (info.body == null || info.body === '') return meta + `<p class="none">No response body was recorded.</p>`;
+      if (info.body == null || info.body === '') return meta + `<p class="none">${esc(kit.t('No response body was recorded.'))}</p>`;
       if (/^image\/(png|jpe?g|gif|webp|avif|bmp|x-icon|vnd\.microsoft\.icon|svg\+xml)$/.test(mime)) {
         const src = info.encoding === 'base64'
           ? `data:${mime};base64,${info.body.replace(/[^A-Za-z0-9+/=]/g, '')}`
@@ -293,10 +298,10 @@
       if (info.encoding === 'base64') {
         let decoded = null;
         try { decoded = decodeURIComponent(escape(atob(info.body.replace(/\s/g, '')))); } catch (_) { decoded = null; }
-        if (decoded == null || /[\u0000-\u0008]/.test(decoded.slice(0, 2000))) return meta + `<p class="none">Binary content.</p>`;
+        if (decoded == null || /[\u0000-\u0008]/.test(decoded.slice(0, 2000))) return meta + `<p class="none">${esc(kit.t('Binary content.'))}</p>`;
         return meta + codeBlock(decoded, mime);
       }
-      return meta + codeBlock(info.body, mime) + (info.bodyTruncated ? kit.notice('Showing the first 3 MB.') : '');
+      return meta + codeBlock(info.body, mime) + (info.bodyTruncated ? kit.notice(kit.t('Showing the first {0}.', kit.bytes(3000000))) : '');
     }
 
     function timingTab(row, info) {
@@ -309,7 +314,8 @@
         offset += v;
         return html;
       }).join('');
-      return `<p class="body-meta">Started at ${esc(ms(row.start))} · total ${esc(ms(info.time))}</p><div class="timing">${rows || '<p class="none">No timing recorded.</p>'}</div>`;
+      return `<p class="body-meta">${esc(kit.t('Started at {0} · total {1}', ms(row.start), ms(info.time)))}</p>`
+        + `<div class="timing">${rows || `<p class="none">${esc(kit.t('No timing recorded.'))}</p>`}</div>`;
     }
 
     function clearSelection() {

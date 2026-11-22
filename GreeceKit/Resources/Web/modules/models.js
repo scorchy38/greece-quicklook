@@ -7,6 +7,7 @@
 
   const G = self.GreeceThree;
   if (!window.greece) return;
+  const kit = window.greece.kit;
 
   const ICON = {
     shaded: '<svg viewBox="0 0 16 16"><path d="M8 1.6 13.9 4.9v6.3L8 14.4 2.1 11.2V4.9Z" fill="currentColor" opacity=".9"/><path d="M2.1 4.9 8 8.2l5.9-3.3M8 8.2v6.2" fill="none" stroke="var(--mv-glyph-cut)" stroke-width="1.1" stroke-linejoin="round"/></svg>',
@@ -65,7 +66,7 @@
           <canvas class="mv-still" aria-hidden="true" hidden></canvas>
           <div class="mv-status" role="status"><div class="mv-ring"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" pathLength="100"/></svg></div><div class="mv-status-text"></div></div>
           <aside class="mv-stats" hidden></aside>
-          <div class="mv-toolbar" role="toolbar" aria-label="Model controls" hidden></div>
+          <div class="mv-toolbar" role="toolbar" aria-label="${kit.esc(kit.t('Model controls'))}" hidden></div>
         </div>`;
       this.el = kit.$('.mv', kit.root);
       this.canvas = kit.$('.mv-canvas', this.el);
@@ -94,13 +95,13 @@
       this.buildPage();
       const { THREE } = G;
       if (this.data.tooLarge) {
-        this.fail('This model is too large to preview', 'Greece previews models up to 1 GB.');
+        this.fail(kit.t('This model is too large to preview'), kit.t('Greece previews models up to {0}.', kit.bytes(1e9)));
         return;
       }
       try {
         this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
       } catch (e) {
-        this.fail('3D previews need WebGL', String(e && e.message || e));
+        this.fail(kit.t('3D previews need WebGL'), String(e && e.message || e));
         return;
       }
       const renderer = this.renderer;
@@ -130,13 +131,13 @@
 
       // Show the spinner only if loading is slow enough to notice.
       const spinner = setTimeout(() => { if (this.el.dataset.state === 'loading') this.el.classList.add('show-status'); }, 250);
-      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Reading the model took too long.')), 90000));
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error(kit.t('Reading the model took too long.'))), 90000));
       const loading = Promise.race([this.load(), timeout]).then(
         () => { clearTimeout(spinner); },
         (error) => {
           clearTimeout(spinner);
           this.kit.post('log', 'model: ' + (error && (error.stack || error.message) || error));
-          this.fail('Greece couldn’t open this model', describeError(error));
+          this.fail(kit.t('Greece couldn’t open this model'), describeError(error));
         });
       // Quick Look shows the page after this resolves: give small models time to appear fully drawn.
       await Promise.race([loading, sleep(2200)]);
@@ -157,9 +158,9 @@
       const { THREE } = G;
       this.manager = new THREE.LoadingManager();
       this.manager.onLoad = () => this.invalidate();
-      this.setStatus('Loading');
+      this.setStatus(kit.t('Loading'));
       const onProgress = (event) => {
-        if (event && event.lengthComputable && event.total > 0) this.setStatus('Loading', event.loaded / event.total);
+        if (event && event.lengthComputable && event.total > 0) this.setStatus(kit.t('Loading'), event.loaded / event.total);
       };
 
       let result;
@@ -169,7 +170,7 @@
         case 'pcd': result = this.cloudFromGeometry(new G.loaders.PCDLoader(this.manager).parse(await this.fetchBuffer(onProgress)).geometry); break;
         default: result = await this.loadMesh(onProgress);
       }
-      this.setStatus('Preparing');
+      this.setStatus(kit.t('Preparing'));
       await this.kit.tick();
       this.present(result);
     }
@@ -268,7 +269,7 @@
         }
         case 'vox': {
           const vox = new L.VOXLoader(manager).parse(await this.fetchBuffer(onProgress));
-          if (!vox) throw new Error('Not a MagicaVoxel file');
+          if (!vox) throw new Error(kit.t('Not a MagicaVoxel file'));
           if (vox.scene) object = vox.scene;
           else {
             object = new THREE.Group();
@@ -278,9 +279,9 @@
           break;
         }
         default:
-          throw new Error('Unsupported format');
+          throw new Error(kit.t('Unsupported format'));
       }
-      if (!object) throw new Error('The file has no scene');
+      if (!object) throw new Error(kit.t('The file has no scene'));
       return { kind: 'mesh', object, animations, units, plainMaterials };
     }
 
@@ -313,16 +314,16 @@
 
     async loadLAS() {
       const response = await fetch('greece://module/points');
-      if (!response.ok) throw new Error('Couldn’t read the points');
+      if (!response.ok) throw new Error(kit.t('Couldn’t read the points'));
       return this.cloudFromSample(decodeSample(await response.arrayBuffer()));
     }
 
     async loadLAZ() {
       const { data } = this;
       const header = data.las;
-      if (!header) throw new Error('Not a LAS/LAZ file');
+      if (!header) throw new Error(kit.t('Not a LAS/LAZ file'));
       const [file, wasm, source] = await Promise.all([
-        this.fetchBuffer((e) => { if (e.lengthComputable) this.setStatus('Loading', e.loaded / e.total * 0.3); }),
+        this.fetchBuffer((e) => { if (e.lengthComputable) this.setStatus(kit.t('Loading'), e.loaded / e.total * 0.3); }),
         fetch(data.assets + 'laz-perf/laz-perf.wasm').then((r) => r.arrayBuffer()),
         fetch(data.assets + 'laz-perf/laz-perf.js').then((r) => r.text()),
       ]);
@@ -330,11 +331,11 @@
       const worker = new Worker(URL.createObjectURL(new Blob([body], { type: 'text/javascript' })));
       const sample = await new Promise((resolve, reject) => {
         worker.onmessage = (e) => {
-          if (e.data.progress != null) this.setStatus('Decompressing', 0.3 + e.data.progress * 0.7);
+          if (e.data.progress != null) this.setStatus(kit.t('Decompressing'), 0.3 + e.data.progress * 0.7);
           else if (e.data.error) reject(new Error(e.data.error));
           else resolve(e.data);
         };
-        worker.onerror = (e) => reject(new Error(e.message || 'decoder failed'));
+        worker.onerror = (e) => reject(new Error(e.message || kit.t('The decoder failed')));
         worker.postMessage({ file, wasm, header, budget: data.pointBudget }, [file, wasm]);
       });
       worker.terminate();
@@ -344,7 +345,7 @@
     /** PCD and point-only PLY: three.js geometry into the same sample shape as LAS. */
     cloudFromGeometry(geometry, splat) {
       const position = geometry.getAttribute('position');
-      if (!position) throw new Error('The file has no points');
+      if (!position) throw new Error(kit.t('The file has no points'));
       const total = position.count;
       const stride = Math.max(1, Math.ceil(total / this.data.pointBudget));
       const color = geometry.getAttribute('color');
@@ -385,7 +386,7 @@
     }
 
     cloudFromSample(sample) {
-      if (!sample.count) throw new Error('The file has no points');
+      if (!sample.count) throw new Error(kit.t('The file has no points'));
       return { kind: 'points', sample, units: this.facts.units || null };
     }
 
@@ -413,7 +414,7 @@
 
       // Stand the model on the ground at the origin.
       const box = new THREE.Box3().setFromObject(this.content);
-      if (box.isEmpty()) throw new Error('The model is empty');
+      if (box.isEmpty()) throw new Error(kit.t('The model is empty'));
       const center = box.getCenter(new THREE.Vector3());
       this.content.position.sub(new THREE.Vector3(center.x, result.kind === 'points' ? center.y : box.min.y, center.z));
       this.scene.updateMatrixWorld(true);
@@ -723,7 +724,7 @@
       const button = this.kit.$('.mv-play', this.toolbar);
       if (button) {
         button.innerHTML = this.playing ? ICON.pause : ICON.play;
-        button.title = this.playing ? 'Pause' : 'Play';
+        button.title = this.playing ? kit.t('Pause') : kit.t('Play');
         button.setAttribute('aria-label', button.title);
       }
       this.invalidate();
@@ -734,25 +735,31 @@
     buildToolbar() {
       const { kit } = this;
       const parts = [];
+      const label = (key) => kit.esc(key);
       if (this.result.kind === 'mesh') {
-        parts.push(`<div class="mv-segment" role="radiogroup" aria-label="Display">
-          <button type="button" data-mode="shaded" aria-pressed="true" title="Shaded" aria-label="Shaded">${ICON.shaded}</button>
-          <button type="button" data-mode="wireframe" aria-pressed="false" title="Wireframe" aria-label="Wireframe">${ICON.wireframe}</button></div>`);
+        const shaded = label(kit.t('Shaded')), wireframe = label(kit.t('Wireframe'));
+        parts.push(`<div class="mv-segment" role="radiogroup" aria-label="${label(kit.t('Display'))}">
+          <button type="button" data-mode="shaded" aria-pressed="true" title="${shaded}" aria-label="${shaded}">${ICON.shaded}</button>
+          <button type="button" data-mode="wireframe" aria-pressed="false" title="${wireframe}" aria-label="${wireframe}">${ICON.wireframe}</button></div>`);
       } else {
         const options = this.colorModes.map((mode) => `<option value="${mode.id}">${kit.esc(mode.title)}</option>`).join('');
-        parts.push(`<label class="mv-select" title="Colour"><select class="mv-color" aria-label="Colour">${options}</select></label>`);
+        const colour = label(kit.t('Colour'));
+        parts.push(`<label class="mv-select" title="${colour}"><select class="mv-color" aria-label="${colour}">${options}</select></label>`);
       }
       if (this.clips && this.clips.length) {
         parts.push('<span class="mv-divider"></span>');
-        parts.push(`<button type="button" class="mv-play" title="Pause" aria-label="Pause">${ICON.pause}</button>`);
+        const pause = label(kit.t('Pause'));
+        parts.push(`<button type="button" class="mv-play" title="${pause}" aria-label="${pause}">${ICON.pause}</button>`);
         if (this.clips.length > 1) {
-          const options = this.clips.map((clip, i) => `<option value="${i}">${kit.esc(clip.name || 'Animation ' + (i + 1))}</option>`).join('');
-          parts.push(`<label class="mv-select mv-clip-label" title="Animation"><select class="mv-clip" aria-label="Animation">${options}</select></label>`);
+          const options = this.clips.map((clip, i) => `<option value="${i}">${kit.esc(clip.name || kit.t('Animation {0}', i + 1))}</option>`).join('');
+          const animation = label(kit.t('Animation'));
+          parts.push(`<label class="mv-select mv-clip-label" title="${animation}"><select class="mv-clip" aria-label="${animation}">${options}</select></label>`);
         }
       }
       parts.push('<span class="mv-divider"></span>');
-      parts.push(`<button type="button" class="mv-reset" title="Reset View" aria-label="Reset View">${ICON.reset}</button>`);
-      parts.push(`<button type="button" class="mv-info" title="Statistics" aria-label="Statistics" aria-pressed="false">${ICON.info}</button>`);
+      const reset = label(kit.t('Reset View')), statistics = label(kit.t('Statistics'));
+      parts.push(`<button type="button" class="mv-reset" title="${reset}" aria-label="${reset}">${ICON.reset}</button>`);
+      parts.push(`<button type="button" class="mv-info" title="${statistics}" aria-label="${statistics}" aria-pressed="false">${ICON.info}</button>`);
       this.toolbar.innerHTML = parts.join('');
       this.toolbar.hidden = false;
 
@@ -824,7 +831,7 @@
       const { kit, stats, facts, data } = this;
       const rows = [];
       const row = (label, value) => { if (value !== null && value !== undefined && value !== '') rows.push(`<div class="mv-row"><dt>${kit.esc(label)}</dt><dd>${kit.esc(value)}</dd></div>`); };
-      const number = (n) => Number(n).toLocaleString();
+      const number = (n) => kit.number(Number(n));
 
       const dims = this.dimensions();
       if (dims) {
@@ -833,28 +840,28 @@
       if (this.result.kind === 'points') {
         const sample = this.result.sample;
         const total = (data.las && data.las.pointCount) || sample.total || facts.points || stats.points;
-        row('Points', number(total));
-        if (total > stats.points) row('Showing', number(stats.points));
-        if (this.classesPresent && this.classesPresent.length > 1) row('Classes', String(this.classesPresent.length));
+        row(kit.t('Points'), number(total));
+        if (total > stats.points) row(kit.t('Showing'), number(stats.points));
+        if (this.classesPresent && this.classesPresent.length > 1) row(kit.t('Classes'), number(this.classesPresent.length));
         if (data.las) {
-          row('Point format', String(data.las.pointFormat));
-          row('LAS version', `${data.las.versionMajor}.${data.las.versionMinor}`);
+          row(kit.t('Point format'), String(data.las.pointFormat));
+          row(kit.t('LAS version'), `${data.las.versionMajor}.${data.las.versionMinor}`);
         }
       } else {
-        row('Vertices', number(stats.vertices));
-        row('Triangles', number(stats.triangles));
-        if (stats.points) row('Points', number(stats.points));
-        row('Meshes', number(stats.meshes));
-        row('Materials', number(stats.materials.size));
-        row('Textures', number(stats.textures.size));
-        if (stats.textures.size) row('Texture memory', formatBytes(stats.textureBytes));
-        if (this.clips && this.clips.length) row('Animations', number(this.clips.length));
-        if (stats.bones) row('Bones', number(stats.bones));
-        if (stats.morphs) row('Morph targets', number(stats.morphs));
+        row(kit.t('Vertices'), number(stats.vertices));
+        row(kit.t('Triangles'), number(stats.triangles));
+        if (stats.points) row(kit.t('Points'), number(stats.points));
+        row(kit.t('Meshes'), number(stats.meshes));
+        row(kit.t('Materials'), number(stats.materials.size));
+        row(kit.t('Textures'), number(stats.textures.size));
+        if (stats.textures.size) row(kit.t('Texture memory'), kit.bytes(stats.textureBytes));
+        if (this.clips && this.clips.length) row(kit.t('Animations'), number(this.clips.length));
+        if (stats.bones) row(kit.t('Bones'), number(stats.bones));
+        if (stats.morphs) row(kit.t('Morph targets'), number(stats.morphs));
       }
-      if (facts.compression && facts.compression.length) row('Compression', facts.compression.join(', '));
-      if (facts.version && !data.las && data.format !== 'vox') row('Version', facts.version);
-      if (facts.generator) row('Created with', facts.generator);
+      if (facts.compression && facts.compression.length) row(kit.t('Compression'), kit.list(facts.compression, { type: 'unit', style: 'short' }));
+      if (facts.version && !data.las && data.format !== 'vox') row(kit.t('Version'), facts.version);
+      if (facts.generator) row(kit.t('Created with'), facts.generator);
       this.statsPanel.innerHTML = `<dl>${rows.join('')}</dl>`;
     }
 
@@ -863,7 +870,7 @@
       if (!this.size) return null;
       let scale = 1;
       let unit = this.units ? UNIT_NAMES[this.units] || this.units : '';
-      if (this.data.format === 'vox') unit = 'voxels';
+      const voxels = this.data.format === 'vox';
       const values = [this.size.x, this.size.z, this.size.y];
       if (unit === 'm') {
         const largest = Math.max(...values);
@@ -871,12 +878,12 @@
       }
       const largest = Math.max(...values) * scale;
       const digits = largest >= 1000 ? 0 : largest >= 100 ? 1 : 2;
-      const format = (v) => (v * scale).toLocaleString(undefined, { maximumFractionDigits: digits });
-      const suffix = unit ? ' ' + unit : '';
+      const format = (v) => (voxels ? kit.plural(Math.round(v * scale), '{0} voxels')
+        : kit.number(v * scale, { maximumFractionDigits: digits }) + (unit ? ' ' + unit : ''));
       return [
-        { label: 'Width', value: format(values[0]) + suffix },
-        { label: 'Depth', value: format(values[1]) + suffix },
-        { label: 'Height', value: format(values[2]) + suffix },
+        { label: kit.t('Width'), value: format(values[0]) },
+        { label: kit.t('Depth'), value: format(values[1]) },
+        { label: kit.t('Height'), value: format(values[2]) },
       ];
     }
 
@@ -904,10 +911,10 @@
         this.classesPresent = Array.from(seen).sort((a, b) => a - b);
       }
       this.colorModes = [];
-      if (hasRGB) this.colorModes.push({ id: 'rgb', title: 'Colour' });
-      this.colorModes.push({ id: 'elevation', title: 'Elevation' });
-      if (hasIntensity) this.colorModes.push({ id: 'intensity', title: 'Intensity' });
-      if (this.classesPresent && this.classesPresent.length > 1) this.colorModes.push({ id: 'class', title: 'Classification' });
+      if (hasRGB) this.colorModes.push({ id: 'rgb', title: kit.t('Colour') });
+      this.colorModes.push({ id: 'elevation', title: kit.t('Elevation') });
+      if (hasIntensity) this.colorModes.push({ id: 'intensity', title: kit.t('Intensity') });
+      if (this.classesPresent && this.classesPresent.length > 1) this.colorModes.push({ id: 'class', title: kit.t('Classification') });
 
       // Typical spacing between neighbours, for point size.
       const box = geometry.boundingBox;
@@ -1150,17 +1157,9 @@
     return texture.generateMipmaps !== false ? Math.round(bytes * 4 / 3) : bytes;
   }
 
-  function formatBytes(bytes) {
-    if (!bytes) return '0 KB';
-    const units = ['bytes', 'KB', 'MB', 'GB'];
-    let value = bytes, unit = 0;
-    while (value >= 1000 && unit < units.length - 1) { value /= 1000; unit++; }
-    return `${value.toLocaleString(undefined, { maximumFractionDigits: value >= 100 || unit === 0 ? 0 : 1 })} ${units[unit]}`;
-  }
-
   function describeError(error) {
     const message = String(error && error.message || error || '');
-    if (/HTTP|404|Failed to fetch|Load failed/i.test(message)) return 'A file it needs couldn’t be read.';
+    if (/HTTP|404|Failed to fetch|Load failed/i.test(message)) return kit.t('A file it needs couldn’t be read.');
     return message.length > 140 ? message.slice(0, 140) + '…' : message;
   }
 
@@ -1215,13 +1214,13 @@
   /** The sample GreeceKit serves for LAS files (see LASFile.Sample.encoded). */
   function decodeSample(buffer) {
     const view = new DataView(buffer);
-    if (buffer.byteLength < 40 || view.getUint32(0, true) !== 0x31435047) throw new Error('Unreadable point sample');
+    if (buffer.byteLength < 40 || view.getUint32(0, true) !== 0x31435047) throw new Error(kit.t('Unreadable point sample'));
     const count = view.getUint32(4, true), flags = view.getUint32(8, true);
     const center = [view.getFloat64(16, true), view.getFloat64(24, true), view.getFloat64(32, true)];
     let offset = 40;
     const take = (Type, length) => {
       const bytes = length * Type.BYTES_PER_ELEMENT;
-      if (offset + bytes > buffer.byteLength) throw new Error('Truncated point sample');
+      if (offset + bytes > buffer.byteLength) throw new Error(kit.t('Truncated point sample'));
       const array = new Type(buffer, offset, length);
       offset += (bytes + 3) & ~3;
       return array;
@@ -1239,13 +1238,13 @@
     const lines = text.split(/\r?\n/).map((line) => line.replace(/#.*/, '').trim()).filter(Boolean);
     let header = lines.length ? lines[0].split(/\s+/) : [];
     const keyword = header.shift() || '';
-    if (!/OFF$/.test(keyword)) throw new Error('Not an OFF file');
+    if (!/OFF$/.test(keyword)) throw new Error(kit.t('Not an OFF file'));
     const hasColor = /C/.test(keyword.replace(/OFF$/, '')), hasNormal = /N/.test(keyword.replace(/OFF$/, '')), hasUV = /ST/.test(keyword);
     let cursor = 1;
     let counts = header.map(Number).filter((n) => Number.isFinite(n));
     while (counts.length < 2 && cursor < lines.length) counts = counts.concat(lines[cursor++].split(/\s+/).map(Number));
     const nv = counts[0], nf = counts[1];
-    if (!(nv >= 0 && nf >= 0) || nv > 20e6 || nf > 20e6) throw new Error('Invalid OFF header');
+    if (!(nv >= 0 && nf >= 0) || nv > 20e6 || nf > 20e6) throw new Error(kit.t('Invalid OFF header'));
     // Vertices may wrap across lines: read them as a stream of numbers.
     const perVertex = 3 + (hasNormal ? 3 : 0) + (hasColor ? 4 : 0) + (hasUV ? 2 : 0);
     const vertices = new Float32Array(nv * 3);

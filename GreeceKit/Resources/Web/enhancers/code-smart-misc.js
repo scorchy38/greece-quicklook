@@ -3,13 +3,11 @@
 (function (global) {
   'use strict';
   const Smart = global.GreeceSmart = global.GreeceSmart || {};
+  /** The page's strings (Smart.kit), looked up when used: code-smart.js, which sets it, may load after this file. */
+  const kit = new Proxy({}, { get: (_, name) => Smart.kit[name] });
 
   // =============================================================================== Cron
 
-  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const SHORT_MONTHS = MONTHS.map((m) => m.slice(0, 3));
   const NAMES = {
     month: { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, OCT: 10, NOV: 11, DEC: 12 },
     dow: { SUN: 0, MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6 },
@@ -55,8 +53,14 @@
 
   /** "06:30" */
   const hhmm = (h, m) => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-  const ordinal = (n) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'}`;
-  const list = (items) => (items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items[items.length - 1]}`);
+  /** A time of day as the page's locale writes it: "06:30", "6:30 AM". */
+  const timeOfDay = (h, m) => kit.date(new Date(2024, 0, 1, h, m), { timeStyle: 'short' });
+  /** Weekday (0 = Sunday) and month (1 = January) names, and "1 January", in the page's language. */
+  const dayName = (d) => kit.date(new Date(2023, 0, 1 + d), { weekday: 'long' });
+  const monthName = (m) => kit.date(new Date(2023, m - 1, 1), { month: 'long' });
+  const dayOfYear = (day, month) => kit.date(new Date(2024, month - 1, day), { day: 'numeric', month: 'long' });
+  /** Capitalises a description that starts with a phrase ("every weekday at 06:30"). */
+  const cap = (s) => s.charAt(0).toLocaleUpperCase(kit.lang) + s.slice(1);
 
   /** The five fields of an expression (special names expanded), or null. */
   function cronFields(expression) {
@@ -71,80 +75,128 @@
     return Object.values(f).every(Boolean) ? f : null;
   }
 
+  /** When in the year, month and week a schedule runs: `every` leads a sentence ("every weekday"),
+      `on` follows a recurring one ("Every hour on weekdays"). Every day: `daily`. */
   function daysPhrase(f) {
     const dowAll = f.dow.all;
     const domAll = f.dom.all;
     const monthAll = f.month.all;
-    const months = list(f.month.values.map((m) => MONTHS[m - 1]));
-    const weekdays = (() => {
+    const months = kit.list(f.month.values.map(monthName));
+    const weekdays = (inMonths) => {
       const v = f.dow.values;
-      if (v.join() === '1,2,3,4,5') return { every: 'every weekday', on: 'on weekdays' };
-      if (v.join() === '0,6') return { every: 'every Saturday and Sunday', on: 'at weekends' };
-      if (f.dow.range && v.length > 2) {
-        const [a, b] = f.dow.range.map((d) => DAYS[d % 7]);
-        return { every: `every ${a} to ${b}`, on: `${a} to ${b}` };
+      if (v.join() === '1,2,3,4,5') {
+        return inMonths ? { every: kit.t('every weekday in {0}', inMonths), on: kit.t('on weekdays in {0}', inMonths) }
+          : { every: kit.t('every weekday'), on: kit.t('on weekdays') };
       }
-      const names = list(v.map((d) => DAYS[d]));
-      return { every: `every ${names}`, on: `on ${names}` };
-    })();
-    const monthDays = () => {
-      if (f.dom.step) return `every ${f.dom.step} days`;
-      if (f.dom.range && f.dom.values.length > 2) return `days ${f.dom.values[0]}–${f.dom.values[f.dom.values.length - 1]}`;
-      return `the ${list(f.dom.values.map(ordinal))}`;
+      if (v.join() === '0,6') {
+        return inMonths ? { every: kit.t('every Saturday and Sunday in {0}', inMonths), on: kit.t('at weekends in {0}', inMonths) }
+          : { every: kit.t('every Saturday and Sunday'), on: kit.t('at weekends') };
+      }
+      if (f.dow.range && v.length > 2) {
+        const [a, b] = f.dow.range.map((d) => dayName(d % 7));
+        return inMonths ? { every: kit.t('every {0} to {1} in {2}', a, b, inMonths), on: kit.t('{0} to {1} in {2}', a, b, inMonths) }
+          : { every: kit.t('every {0} to {1}', a, b), on: kit.t('{0} to {1}', a, b) };
+      }
+      const names = kit.list(v.map(dayName));
+      return inMonths ? { every: kit.t('every {0} in {1}', names, inMonths), on: kit.t('on {0} in {1}', names, inMonths) }
+        : { every: kit.t('every {0}', names), on: kit.t('on {0}', names) };
+    };
+    const monthDays = (ofMonths) => {
+      const v = f.dom.values;
+      if (f.dom.step) {
+        return ofMonths ? kit.plural(f.dom.step, 'on every {0} days of {1}', ofMonths) : kit.plural(f.dom.step, 'on every {0} days of every month');
+      }
+      if (f.dom.range && v.length > 2) {
+        return ofMonths ? kit.t('on days {0}–{1} of {2}', v[0], v[v.length - 1], ofMonths) : kit.t('on days {0}–{1} of every month', v[0], v[v.length - 1]);
+      }
+      const days = kit.list(v.map((d) => kit.ordinal(d, '{0}th')));
+      return ofMonths ? kit.t('on the {0} of {1}', days, ofMonths) : kit.t('on the {0} of every month', days);
     };
     if (domAll && dowAll) {
-      if (monthAll) return { daily: true, every: 'every day', on: '' };
-      return { every: `every day in ${months}`, on: `in ${months}` };
+      if (monthAll) return { daily: true, every: kit.t('every day'), on: '' };
+      return { every: kit.t('every day in {0}', months), on: kit.t('in {0}', months) };
     }
-    if (domAll) {
-      const suffix = monthAll ? '' : ` in ${months}`;
-      return { every: weekdays.every + suffix, on: weekdays.on + suffix };
-    }
+    if (domAll) return weekdays(monthAll ? '' : months);
     let dates;
     if (!monthAll && f.dom.values.length === 1 && f.month.values.length === 1 && !f.dom.step) {
-      dates = `on ${f.dom.values[0]} ${MONTHS[f.month.values[0] - 1]}`;
-      if (dowAll) return { every: `every year ${dates}`, on: dates };
+      const date = dayOfYear(f.dom.values[0], f.month.values[0]);
+      if (dowAll) return { every: kit.t('every year on {0}', date), on: kit.t('on {0} every year', date) };
+      dates = kit.t('on {0} every year', date);
     } else {
-      dates = `on ${monthDays()} of ${monthAll ? 'every month' : months}`;
+      dates = monthDays(monthAll ? '' : months);
     }
     if (dowAll) return { every: dates, on: dates };
     // Cron runs when either the day of the month or the weekday matches.
-    return { every: `${dates} and ${weekdays.every}`, on: `${dates} and ${weekdays.on}` };
+    const days = weekdays('');
+    return { every: kit.list([dates, days.every]), on: kit.list([dates, days.on]) };
   }
 
-  /** A cron expression in plain English: "Every weekday at 06:30". */
+  /** A cron expression in plain words: "Every weekday at 06:30". */
   function describe(expression) {
     const text = String(expression).trim();
-    if (/^@reboot$/i.test(text)) return 'At startup';
+    if (/^@reboot$/i.test(text)) return kit.t('At startup');
     const f = cronFields(text);
     if (!f) return null;
     const days = daysPhrase(f);
-    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
     const { minute: m, hour: h } = f;
-    const recurring = (phrase) => cap(days.daily ? phrase : `${phrase} ${days.on}`);
     const hours = h.values;
+    // A step of one is no step: "*/1" runs every minute.
+    const mStep = m.step > 1 ? m.step : 0;
+    const hStep = h.step > 1 ? h.step : 0;
+    // A recurring schedule, alone when it runs every day, or followed by its days ("on weekdays").
+    const say = (alone, withDays) => cap(days.daily ? alone() : withDays(days.on));
+    const pastHour = (minutes) => kit.list(minutes.map((x) => kit.t(':{0}', String(x).padStart(2, '0'))));
 
     // Specific times of day.
     if (m.values.length <= 4 && !m.star && hours.length * m.values.length <= 6 && !h.star) {
       const times = [];
-      for (const hour of hours) for (const minute of m.values) times.push(hhmm(hour, minute));
-      return `${cap(days.every)} at ${list(times)}`;
+      for (const hour of hours) for (const minute of m.values) times.push(timeOfDay(hour, minute));
+      return cap(kit.t('{0} at {1}', days.every, kit.list(times)));
     }
-    let phrase;
-    if (m.star && !m.step && h.star && !h.step) phrase = 'every minute';
-    else if (m.star && m.step && h.star && !h.step) phrase = `every ${m.step} minutes`;
-    else if (m.values.length === 1 && h.star && !h.step) phrase = m.values[0] === 0 ? 'every hour' : `every hour at :${String(m.values[0]).padStart(2, '0')}`;
-    else if (m.values.length === 1 && h.step && h.star) phrase = `every ${h.step} hours${m.values[0] ? ` at :${String(m.values[0]).padStart(2, '0')}` : ''}`;
-    else if (m.values.length === 1 && h.step && !h.star) phrase = `every ${h.step} hours from ${hhmm(hours[0], m.values[0])} to ${hhmm(hours[hours.length - 1], m.values[0])}`;
-    else if (m.values.length === 1 && h.range) phrase = `every hour from ${hhmm(h.range[0], m.values[0])} to ${hhmm(h.range[1], m.values[0])}`;
-    else if (m.star && m.step && h.range) phrase = `every ${m.step} minutes from ${hhmm(h.range[0], 0)} to ${hhmm(h.range[1], 59)}`;
-    else if (m.star && !m.step && hours.length === 1) phrase = `every minute from ${hhmm(hours[0], 0)} to ${hhmm(hours[0], 59)}`;
-    else if (m.star && m.step && hours.length <= 3) phrase = `every ${m.step} minutes during ${list(hours.map((x) => hhmm(x, 0).slice(0, 2) + ':xx'))}`;
-    else if (h.star && !h.step) phrase = `every hour at ${list(m.values.slice(0, 8).map((x) => ':' + String(x).padStart(2, '0')))}`;
-    else if (m.values.length === 1) phrase = `at ${list(hours.slice(0, 8).map((x) => hhmm(x, m.values[0])))}${hours.length > 8 ? ' and more' : ''}`;
-    else phrase = `at ${Smart.plural(m.values.length, 'minute')} past ${Smart.plural(hours.length, 'hour')}`;
-    if (phrase.startsWith('at ')) return `${cap(days.every)} ${phrase}`;
-    return recurring(phrase);
+    const one = m.values[0];
+    if (m.star && !mStep && h.star && !hStep) return say(() => kit.t('Every minute'), (d) => kit.t('Every minute {0}', d));
+    if (m.star && mStep && h.star && !hStep) return say(() => kit.plural(mStep, 'Every {0} minutes'), (d) => kit.plural(mStep, 'Every {0} minutes {1}', d));
+    if (m.values.length === 1 && h.star && !hStep) {
+      if (one === 0) return say(() => kit.t('Every hour'), (d) => kit.t('Every hour {0}', d));
+      return say(() => kit.t('Every hour at {0}', pastHour([one])), (d) => kit.t('Every hour at {0} {1}', pastHour([one]), d));
+    }
+    if (m.values.length === 1 && hStep && h.star) {
+      if (!one) return say(() => kit.plural(hStep, 'Every {0} hours'), (d) => kit.plural(hStep, 'Every {0} hours {1}', d));
+      return say(() => kit.plural(hStep, 'Every {0} hours at {1}', pastHour([one])), (d) => kit.plural(hStep, 'Every {0} hours at {1} {2}', pastHour([one]), d));
+    }
+    if (m.values.length === 1 && hStep && !h.star) {
+      const from = timeOfDay(hours[0], one);
+      const to = timeOfDay(hours[hours.length - 1], one);
+      return say(() => kit.plural(hStep, 'Every {0} hours from {1} to {2}', from, to), (d) => kit.plural(hStep, 'Every {0} hours from {1} to {2} {3}', from, to, d));
+    }
+    if (m.values.length === 1 && h.range) {
+      const from = timeOfDay(h.range[0], one);
+      const to = timeOfDay(h.range[1], one);
+      return say(() => kit.t('Every hour from {0} to {1}', from, to), (d) => kit.t('Every hour from {0} to {1} {2}', from, to, d));
+    }
+    if (m.star && mStep && h.range) {
+      const from = timeOfDay(h.range[0], 0);
+      const to = timeOfDay(h.range[1], 59);
+      return say(() => kit.plural(mStep, 'Every {0} minutes from {1} to {2}', from, to), (d) => kit.plural(mStep, 'Every {0} minutes from {1} to {2} {3}', from, to, d));
+    }
+    if (m.star && !mStep && hours.length === 1) {
+      const from = timeOfDay(hours[0], 0);
+      const to = timeOfDay(hours[0], 59);
+      return say(() => kit.t('Every minute from {0} to {1}', from, to), (d) => kit.t('Every minute from {0} to {1} {2}', from, to, d));
+    }
+    if (m.star && mStep && hours.length <= 3) {
+      const during = kit.list(hours.map((x) => hhmm(x, 0).slice(0, 2) + ':xx'));
+      return say(() => kit.plural(mStep, 'Every {0} minutes during {1}', during), (d) => kit.plural(mStep, 'Every {0} minutes during {1} {2}', during, d));
+    }
+    if (h.star && !hStep) {
+      const at = pastHour(m.values.slice(0, 8));
+      return say(() => kit.t('Every hour at {0}', at), (d) => kit.t('Every hour at {0} {1}', at, d));
+    }
+    if (m.values.length === 1) {
+      const times = kit.list(hours.slice(0, 8).map((x) => timeOfDay(x, one)));
+      return cap(hours.length > 8 ? kit.t('{0} at {1} and more', days.every, times) : kit.t('{0} at {1}', days.every, times));
+    }
+    return cap(kit.t('{0} at {1} past {2}', days.every, kit.plural(m.values.length, '{0} minutes'), kit.plural(hours.length, '{0} hours')));
   }
 
   /** The next time the schedule runs after `from` (local time), or null. */
@@ -171,15 +223,17 @@
     return null;
   }
 
+  /** When a run is, from now: "Today 06:30", "Tomorrow 06:30", "Mon 06:30", "3 Dec, 06:30". */
   function relative(date, now = new Date()) {
     if (!date) return '';
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const days = Math.round((new Date(date.getFullYear(), date.getMonth(), date.getDate()) - today) / 86400000);
-    const time = hhmm(date.getHours(), date.getMinutes());
-    if (days === 0) return `Today ${time}`;
-    if (days === 1) return `Tomorrow ${time}`;
-    if (days < 7) return `${SHORT_DAYS[date.getDay()]} ${time}`;
-    return `${date.getDate()} ${SHORT_MONTHS[date.getMonth()]}${date.getFullYear() !== now.getFullYear() ? ' ' + date.getFullYear() : ''}, ${time}`;
+    const time = timeOfDay(date.getHours(), date.getMinutes());
+    if (days === 0) return kit.t('Today {0}', time);
+    if (days === 1) return kit.t('Tomorrow {0}', time);
+    if (days < 7) return kit.date(date, { weekday: 'short', hour: 'numeric', minute: '2-digit' });
+    const year = date.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {};
+    return kit.date(date, { day: 'numeric', month: 'short', ...year, hour: 'numeric', minute: '2-digit' });
   }
 
   /** "Now" as the wall clock reads in `zone` (CRON_TZ), or local time. */
@@ -340,14 +394,14 @@
     const rows = tab.jobs.map((job) => {
       const next = /^@reboot$/i.test(job.schedule) ? '' : relative(nextRun(job.schedule, now), now);
       return `<tr><td class="cron-when"><span class="cron-text">${esc(job.description)}</span><code class="cron-expr">${esc(job.schedule)}</code></td>` +
-        `<td class="cron-next">${next ? `<span class="smart-dim">Next</span> ${esc(next)}` : ''}</td>` +
-        `<td class="cron-command"><code title="${esc(job.command)}">${esc(job.command)}</code>${job.user ? `<span class="smart-dim">as ${esc(job.user)}</span>` : ''}</td></tr>`;
+        `<td class="cron-next">${next ? `<span class="smart-dim">${esc(kit.t('Next run'))}</span> <span class="cron-when-next">${esc(next)}</span>` : ''}</td>` +
+        `<td class="cron-command"><code title="${esc(job.command)}">${esc(job.command)}</code>${job.user ? `<span class="smart-dim">${esc(kit.t('as {0}', job.user))}</span>` : ''}</td></tr>`;
     });
     const env = tab.env.filter((e) => e.name !== 'CRON_TZ' && e.name !== 'TZ').map((e) => `<li><code class="smart-name">${esc(e.name)}</code><span class="smart-command" title="${esc(e.value)}">${esc(e.value)}</span><span></span></li>`);
     Smart.card(root, {
-      kind: 'cron', icon: 'clock', title: 'Crontab', label: tab.system ? 'System' : '',
-      subtitle: [Smart.plural(tab.jobs.length, 'job'), tab.timeZone ? `Times in ${tab.timeZone}` : 'Times in local time'].join(' · '),
-      body: `<table class="smart-table cron"><tbody>${rows.join('')}</tbody></table>` + (env.length ? Smart.section('Environment', `<ul class="smart-list scripts">${Smart.more(env, 6, '')}</ul>`, { count: env.length }) : ''),
+      kind: 'cron', icon: 'clock', title: 'Crontab', label: tab.system ? kit.t('System') : '',
+      subtitle: [kit.plural(tab.jobs.length, '{0} jobs'), tab.timeZone ? kit.t('Times in {0}', tab.timeZone) : kit.t('Times in local time')].join(' · '),
+      body: `<table class="smart-table cron"><tbody>${rows.join('')}</tbody></table>` + (env.length ? Smart.section(kit.t('Environment'), `<ul class="smart-list scripts">${Smart.more(env, 6)}</ul>`, { count: env.length }) : ''),
     });
   }
 
@@ -361,11 +415,11 @@
     const ordered = described ? make.targets.filter((t) => t.description).concat(make.targets.filter((t) => !t.description)) : make.targets;
     const rows = ordered.map((t) => `<li><code class="smart-name">${esc(t.name)}${t.params ? ` <span class="smart-dim">${esc(t.params)}</span>` : ''}</code>` +
       `${t.description ? `<span class="smart-description">${esc(t.description)}</span>` : t.deps.length ? `<span class="smart-command">${esc(t.deps.join(' '))}</span>` : '<span></span>'}` +
-      `${t.name === make.defaultGoal ? `<span>${Smart.tag('default', 'accent')}</span>` : '<span></span>'}</li>`);
+      `${t.name === make.defaultGoal ? `<span>${Smart.tag(kit.t('default'), 'accent')}</span>` : '<span></span>'}</li>`);
     Smart.card(root, {
       kind: 'make', icon: 'hammer', title: just ? 'Justfile' : 'Makefile',
-      subtitle: [Smart.plural(make.targets.length, just ? 'recipe' : 'target'), make.defaultGoal ? `Default: ${make.defaultGoal}` : ''].filter(Boolean).join(' · '),
-      body: `<ul class="smart-list targets">${Smart.more(rows, 12, '')}</ul>`,
+      subtitle: [just ? kit.plural(make.targets.length, '{0} recipes') : kit.plural(make.targets.length, '{0} targets'), make.defaultGoal ? kit.t('Default: {0}', make.defaultGoal) : ''].filter(Boolean).join(' · '),
+      body: `<ul class="smart-list targets">${Smart.more(rows, 12)}</ul>`,
     });
   }
 
@@ -377,19 +431,19 @@
     const rows = config.hosts.map((h) => {
       const o = h.options;
       const all = h.kind === 'host' && h.patterns.length === 1 && h.patterns[0] === '*';
-      const name = h.kind === 'match' ? `Match ${h.patterns[0]}` : all ? 'All hosts' : h.patterns.join(' ');
+      const name = h.kind === 'match' ? `Match ${h.patterns[0]}` : all ? kit.t('All hosts') : h.patterns.join(' ');
       const address = `${o.user ? esc(o.user) + '<span class="smart-dim">@</span>' : ''}${esc(o.hostname || (all ? '' : h.patterns[0]))}${o.port && o.port !== '22' ? `<span class="smart-dim">:${esc(o.port)}</span>` : ''}`;
       const key = o.identityfile ? o.identityfile.split('/').pop() : '';
-      const via = o.proxyjump || (o.proxycommand ? 'command' : '');
+      const via = o.proxyjump || (o.proxycommand ? kit.t('command') : '');
       const extras = Object.keys(o).filter((k) => !['hostname', 'user', 'port', 'identityfile', 'proxyjump', 'proxycommand'].includes(k)).length;
-      return `<tr class="${all ? 'defaults' : ''}"><td class="ssh-host"><code>${esc(name)}</code></td><td class="ssh-address">${all ? `<span class="smart-dim">${Smart.plural(Object.keys(o).length, 'default')}</span>` : address}</td>` +
-        `<td class="ssh-key">${key ? `<span class="smart-dim">key</span> ${esc(key)}` : ''}</td><td class="ssh-via">${via ? `<span class="smart-dim">via</span> ${esc(via)}` : ''}${extras && !all ? `<span class="smart-dim">${Smart.plural(extras, 'option')}</span>` : ''}</td></tr>`;
+      return `<tr class="${all ? 'defaults' : ''}"><td class="ssh-host"><code>${esc(name)}</code></td><td class="ssh-address">${all ? `<span class="smart-dim">${esc(kit.plural(Object.keys(o).length, '{0} defaults'))}</span>` : address}</td>` +
+        `<td class="ssh-key">${key ? `<span class="smart-dim">${esc(kit.t('key'))}</span> ${esc(key)}` : ''}</td><td class="ssh-via">${via ? `<span class="smart-dim">${esc(kit.t('via'))}</span> ${esc(via)}` : ''}${extras && !all ? `<span class="smart-dim">${esc(kit.plural(extras, '{0} options'))}</span>` : ''}</td></tr>`;
     });
     Smart.card(root, {
-      kind: 'ssh', icon: 'terminal', title: 'SSH Config',
-      subtitle: [Smart.plural(hosts.filter((h) => !(h.patterns.length === 1 && h.patterns[0] === '*')).length, 'host'), config.includes.length ? Smart.plural(config.includes.length, 'include') : ''].filter(Boolean).join(' · '),
+      kind: 'ssh', icon: 'terminal', title: kit.t('SSH Config'),
+      subtitle: [kit.plural(hosts.filter((h) => !(h.patterns.length === 1 && h.patterns[0] === '*')).length, '{0} hosts'), config.includes.length ? kit.plural(config.includes.length, '{0} includes') : ''].filter(Boolean).join(' · '),
       body: `<table class="smart-table ssh"><tbody>${rows.slice(0, 12).join('')}</tbody>${rows.length > 12 ? `<tbody class="smart-rest" hidden>${rows.slice(12).join('')}</tbody>` : ''}</table>` +
-        (rows.length > 12 ? `<button type="button" class="smart-more table" data-more="${rows.length - 12}">Show ${Smart.number(rows.length - 12)} More</button>` : ''),
+        (rows.length > 12 ? `<button type="button" class="smart-more table" data-more="${rows.length - 12}">${esc(Smart.moreLabel(rows.length - 12))}</button>` : ''),
     });
   }
 

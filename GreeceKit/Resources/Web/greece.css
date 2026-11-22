@@ -60,6 +60,11 @@ body {
 }
 ::selection { background: color-mix(in srgb, var(--accent) 28%, transparent); }
 
+/* The page's words are in the reader's language (<html lang>, WebStrings.swift). Korean breaks
+   lines between words, as Apple's apps do; Japanese and Chinese keep strict line-break rules. */
+html:lang(ko) body { word-break: keep-all; }
+html:lang(ja) body, html:lang(zh) body { line-break: strict; }
+
 /* ------------------------------------------------------------------ Code */
 
 html.kind-code body, html.kind-diff body { background: var(--bg); color: var(--fg); }

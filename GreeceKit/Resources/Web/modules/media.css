@@ -75,6 +75,7 @@ html[class*="kind-media-"] body { font: 13px/1.45 var(--ui); }
   background: transparent;
   color: var(--text-2);
   font: 500 12px/1.2 var(--ui);
+  white-space: nowrap;
   cursor: default;
 }
 .m-segmented button:hover { color: var(--text); }
@@ -182,6 +183,13 @@ button.m-chip.on { box-shadow: inset 0 0 0 1px currentColor; }
 .font-nav .title { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 10px; overflow: hidden; }
 .font-nav .family { font: 650 15px/1.3 var(--ui); letter-spacing: -.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .font-nav .style { color: var(--text-2); white-space: nowrap; }
+/* Section names run long in some languages (Greek, Russian, French): when the bar can't hold the
+   font's name and every section, the sections move under the name, and scroll only if even a
+   row of their own is too narrow. */
+.font-nav { flex-wrap: wrap; row-gap: 8px; }
+.font-nav .title { flex: 1 1 160px; }
+.font-nav .m-segmented { min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.font-nav .m-segmented::-webkit-scrollbar { display: none; }
 
 .font-hero { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 28px; align-items: center; padding: 26px 0 10px; }
 @media (max-width: 760px) { .font-hero { grid-template-columns: minmax(0, 1fr); } }

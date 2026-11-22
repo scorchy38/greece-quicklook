@@ -273,5 +273,8 @@ schemes:
       config: Debug
       targets:
         - GreeceKitTests
+      # Preview pages follow the Mac's language; tests read them in English unless they pick one.
+      environmentVariables:
+        GREECE_LANGUAGE: en
     archive:
       config: Release

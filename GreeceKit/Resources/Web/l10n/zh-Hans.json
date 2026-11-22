@@ -1,0 +1,1072 @@
+{
+  "@same": [
+    "{0} B",
+    "{0} KB",
+    "{0} MB",
+    "{0} GB",
+    "{0} TB",
+    "“{0}”",
+    "{0}+",
+    "Rust crate",
+    "Fetch"
+  ],
+  "{0} bytes": {
+    "other": "{0} 字节"
+  },
+  "{0} B": "{0} B",
+  "{0} KB": "{0} KB",
+  "{0} MB": "{0} MB",
+  "{0} GB": "{0} GB",
+  "{0} TB": "{0} TB",
+  "Copied": "已拷贝",
+  "Empty file": "空文件",
+  "Copy": "拷贝",
+  "Showing the beginning of a very large file.": "文件过大，仅显示开头部分。",
+  "Note": "备注",
+  "Tip": "提示",
+  "Important": "重要",
+  "Warning": "警告",
+  "Caution": "小心",
+  "Remote image not loaded": "未载入远程图像",
+  "On This Page": "本页内容",
+  "Empty document": "空文稿",
+  "Showing the beginning of a very large document.": "文稿过大，仅显示开头部分。",
+  "Added": "已添加",
+  "Deleted": "已删除",
+  "Renamed": "已重命名",
+  "Binary file not shown": "未显示二进制文件",
+  "No content changes": "内容无更改",
+  "{0} commits": {
+    "other": "{0} 个提交"
+  },
+  "{0} files changed": {
+    "other": "已更改 {0} 个文件"
+  },
+  "Empty notebook": "空笔记本",
+  "“{0}”": "“{0}”",
+  "Find": "查找",
+  "Previous": "上一个",
+  "Next": "下一个",
+  "Match Case": "区分大小写",
+  "Whole Words": "全字匹配",
+  "Done": "完成",
+  "Select text to find it": "选择文本即可查找",
+  "{0}+": "{0}+",
+  "No matches": "无匹配项",
+  "{0} of {1}": "{0}/{1}",
+  "Find {0}": "查找{0}",
+  "Go to Line": "前往行",
+  "Line": "行号",
+  "{0}+ matches": "{0}+ 个匹配项",
+  "{0} matches": {
+    "other": "{0} 个匹配项"
+  },
+  "{0} lines": {
+    "other": "{0} 行"
+  },
+  "Show {0} lines": {
+    "other": "显示 {0} 行"
+  },
+  "Copy Line {0}": "拷贝第 {0} 行",
+  "Unfold": "展开",
+  "Fold": "折叠",
+  "Wrap Lines": "自动换行",
+  "Fold All": "全部折叠",
+  "Unfold All": "全部展开",
+  "Copy All": "全部拷贝",
+  "Reveal value": "显示值",
+  "Also set on line {0}; this value wins": "第 {0} 行也设置了此变量；以此值为准",
+  "Duplicate": "重复",
+  "Empty": "为空",
+  "Hide value": "隐藏值",
+  "line {0}, first set on line {1}": "第 {0} 行，首次设置于第 {1} 行",
+  "line {0}": "第 {0} 行",
+  "{0} keys": {
+    "other": "{0} 个键"
+  },
+  "{0} duplicates": {
+    "other": "{0} 个重复"
+  },
+  "{0} empty": {
+    "other": "{0} 个为空"
+  },
+  "Values hidden": "值已隐藏",
+  "Environment Template": "环境变量模板",
+  "Environment Variables": "环境变量",
+  "Reveal All": "全部显示",
+  "Hide All": "全部隐藏",
+  "Values shown": "值已显示",
+  "stage {0}": "阶段 {0}",
+  "Base": "基础镜像",
+  "Ports": "端口",
+  "Entrypoint": "入口点",
+  "Command": "命令",
+  "Workdir": "工作目录",
+  "User": "用户",
+  "Healthcheck": "健康检查",
+  "Yes": "是",
+  "from {0}": "基于 {0}",
+  "Build stages": "构建阶段",
+  "Stages": "阶段",
+  "{0} stages": {
+    "other": "{0} 个阶段"
+  },
+  "Final: {0}": "最终：{0}",
+  "Service": "服务",
+  "Image [container]": "镜像",
+  "Volumes": "卷",
+  "Start Order": "启动顺序",
+  "{0} services": {
+    "other": "{0} 个服务"
+  },
+  "{0} volumes": {
+    "other": "{0} 个卷"
+  },
+  "{0} networks": {
+    "other": "{0} 个网络"
+  },
+  "tag {0}": "标签 {0}",
+  "1 input": "1 个输入项",
+  "{0} inputs": {
+    "other": "{0} 个输入项"
+  },
+  "Push": "推送",
+  "to {0}": "到 {0}",
+  "Pull request": "拉取请求",
+  "Pull request target": "拉取请求目标",
+  "into {0}": "合并到 {0}",
+  "Schedule": "计划",
+  "Manual": "手动",
+  "Called by workflows": "由工作流程调用",
+  "Release": "发行版",
+  "After workflow": "工作流程运行后",
+  "push": "推送",
+  "pull request": "拉取请求",
+  "pull request target": "拉取请求目标",
+  "schedule": "计划",
+  "manual": "手动",
+  "called by workflows": "由工作流程调用",
+  "release": "发行版",
+  "after workflow": "工作流程运行后",
+  "Triggers": "触发条件",
+  "reusable workflow": "可重用工作流程",
+  "{0} steps": {
+    "other": "{0} 个步骤"
+  },
+  "Jobs": "作业",
+  "Step": "步骤",
+  "reusable": "可重用",
+  "Uses": "使用",
+  "Steps": "步骤",
+  "{0} jobs": {
+    "other": "{0} 个作业"
+  },
+  "On {0}": "触发：{0}",
+  "replicas": "副本",
+  "type": "类型",
+  "ports": "端口",
+  "hosts": "主机",
+  "keys": "键",
+  "(unnamed)": "（未命名）",
+  "{0} resources": {
+    "other": "{0} 个资源"
+  },
+  "{0} {1}s": {
+    "other": "{0} 个 {1}"
+  },
+  "namespace {0}": "命名空间 {0}",
+  "Other": "其他",
+  "Trace": "跟踪",
+  "Debug": "调试",
+  "Info": "信息",
+  "Warnings": "警告",
+  "Errors": "错误",
+  "Access Log": "访问日志",
+  "macOS Unified Log": "macOS 统一日志",
+  "{0} more characters": {
+    "other": "还有 {0} 个字符"
+  },
+  "Repeated {0} times": {
+    "other": "重复 {0} 次"
+  },
+  "Repeats folded": "已折叠重复行",
+  "Log": "日志",
+  "Most Frequent Error": "最常见错误",
+  "Most Frequent Errors": "最常见错误",
+  "Previous Error": "上一个错误",
+  "Previous Warning": "上一个警告",
+  "Next Error": "下一个错误",
+  "Next Warning": "下一个警告",
+  "Errors and warnings": "错误和警告",
+  "See {0}": "参见 {0}",
+  "License": "许可证",
+  "Module": "模块",
+  "ES modules": "ES 模块",
+  "Package Manager": "软件包管理器",
+  "Workspaces": "工作区",
+  "Visibility": "可见性",
+  "Private": "私有",
+  "Home": "主页",
+  "npm package": "npm 软件包",
+  "Composer package": "Composer 软件包",
+  "Type": "类型",
+  "Cargo workspace": "Cargo 工作区",
+  "Rust crate": "Rust crate",
+  "Workspace": "工作区",
+  "Edition": "版次",
+  "Members": "成员",
+  "Features": "特性",
+  "Poetry project": "Poetry 项目",
+  "Python project": "Python 项目",
+  "Build": "构建",
+  "Go module": "Go 模块",
+  "Toolchain": "工具链",
+  "Replaced": "已替换",
+  "Source": "来源",
+  "Platform": "平台",
+  "Frameworks": "框架",
+  "Targets": "目标",
+  "Library": "库",
+  "Executable": "可执行文件",
+  "Plugin": "插件",
+  "Swift package": "Swift 软件包",
+  "Swift Tools": "Swift 工具",
+  "Platforms": "平台",
+  "Products": "产品",
+  "Flutter package": "Flutter 软件包",
+  "Dart package": "Dart 软件包",
+  "Publish": "发布",
+  "Executables": "可执行文件",
+  "Elixir project": "Elixir 项目",
+  "Aliases": "别名",
+  "Android build": "Android 构建",
+  "Gradle build": "Gradle 构建",
+  "Compile SDK": "编译 SDK",
+  "Plugins": "插件",
+  "dev": "开发",
+  "test": "测试",
+  "peer": "对等",
+  "optional": "可选",
+  "build": "构建",
+  "indirect": "间接",
+  "platform": "平台",
+  "override": "覆盖",
+  "group": "组",
+  "workspace": "工作区",
+  "debug": "调试",
+  "compile only": "仅编译",
+  "runtime": "运行时",
+  "{0} direct": {
+    "other": "直接 {0}"
+  },
+  "{0} dev": {
+    "other": "开发 {0}"
+  },
+  "{0} test": {
+    "other": "测试 {0}"
+  },
+  "{0} peer": {
+    "other": "对等 {0}"
+  },
+  "{0} optional": {
+    "other": "可选 {0}"
+  },
+  "{0} build": {
+    "other": "构建 {0}"
+  },
+  "{0} indirect": {
+    "other": "间接 {0}"
+  },
+  "{0} platform": {
+    "other": "平台 {0}"
+  },
+  "{0} override": {
+    "other": "覆盖 {0}"
+  },
+  "{0} group": {
+    "other": "组 {0}"
+  },
+  "{0} workspace": {
+    "other": "工作区 {0}"
+  },
+  "{0} debug": {
+    "other": "调试 {0}"
+  },
+  "{0} compile only": {
+    "other": "仅编译 {0}"
+  },
+  "{0} runtime": {
+    "other": "运行时 {0}"
+  },
+  "Scripts": "脚本",
+  "Dependencies": "依赖项",
+  "every weekday in {0}": "{0}的每个工作日",
+  "on weekdays in {0}": "{0}的工作日",
+  "every weekday": "每个工作日",
+  "on weekdays": "工作日",
+  "every Saturday and Sunday in {0}": "{0}的每个周六和周日",
+  "at weekends in {0}": "{0}的周末",
+  "every Saturday and Sunday": "每个周六和周日",
+  "at weekends": "周末",
+  "every {0} to {1} in {2}": "{2}的每个{0}至{1}",
+  "{0} to {1} in {2}": "{2}的{0}至{1}",
+  "every {0} to {1}": "每个{0}至{1}",
+  "{0} to {1}": "{0}至{1}",
+  "every {0} in {1}": "{1}的每个{0}",
+  "on {0} in {1}": "{1}的{0}",
+  "every {0}": "每个{0}",
+  "on {0}": "{0}",
+  "on every {0} days of {1}": {
+    "other": "{1}中每 {0} 天"
+  },
+  "on every {0} days of every month": {
+    "other": "每月中每 {0} 天"
+  },
+  "on days {0}–{1} of {2}": "{2}的{0}–{1}日",
+  "on days {0}–{1} of every month": "每月{0}–{1}日",
+  "{0}th": {
+    "other": "{0}日"
+  },
+  "on the {0} of {1}": "{1}的{0}",
+  "on the {0} of every month": "每月{0}",
+  "every day": "每天",
+  "every day in {0}": "{0}的每天",
+  "in {0}": "{0}",
+  "every year on {0}": "每年{0}",
+  "on {0} every year": "每年{0}",
+  "At startup": "开机时",
+  ":{0}": "{0} 分",
+  "{0} at {1}": "{0} {1}",
+  "Every minute": "每分钟",
+  "Every minute {0}": "{0}每分钟",
+  "Every {0} minutes": {
+    "other": "每 {0} 分钟"
+  },
+  "Every {0} minutes {1}": {
+    "other": "{1}每 {0} 分钟"
+  },
+  "Every hour": "每小时",
+  "Every hour {0}": "{0}每小时",
+  "Every hour at {0}": "每小时的 {0}",
+  "Every hour at {0} {1}": "{1}每小时的 {0}",
+  "Every {0} hours": {
+    "other": "每 {0} 小时"
+  },
+  "Every {0} hours {1}": {
+    "other": "{1}每 {0} 小时"
+  },
+  "Every {0} hours at {1}": {
+    "other": "每 {0} 小时的 {1}"
+  },
+  "Every {0} hours at {1} {2}": {
+    "other": "{2}每 {0} 小时的 {1}"
+  },
+  "Every {0} hours from {1} to {2}": {
+    "other": "{1} 至 {2} 每 {0} 小时"
+  },
+  "Every {0} hours from {1} to {2} {3}": {
+    "other": "{3} {1} 至 {2} 每 {0} 小时"
+  },
+  "Every hour from {0} to {1}": "{0} 至 {1} 每小时",
+  "Every hour from {0} to {1} {2}": "{2} {0} 至 {1} 每小时",
+  "Every {0} minutes from {1} to {2}": {
+    "other": "{1} 至 {2} 每 {0} 分钟"
+  },
+  "Every {0} minutes from {1} to {2} {3}": {
+    "other": "{3} {1} 至 {2} 每 {0} 分钟"
+  },
+  "Every minute from {0} to {1}": "{0} 至 {1} 每分钟",
+  "Every minute from {0} to {1} {2}": "{2} {0} 至 {1} 每分钟",
+  "Every {0} minutes during {1}": {
+    "other": "{1} 期间每 {0} 分钟"
+  },
+  "Every {0} minutes during {1} {2}": {
+    "other": "{2} {1} 期间每 {0} 分钟"
+  },
+  "{0} at {1} and more": "{0} {1} 等",
+  "{0} at {1} past {2}": "{0}，{2}，每小时 {1}",
+  "{0} minutes": {
+    "other": "{0} 分钟"
+  },
+  "{0} hours": {
+    "other": "{0} 小时"
+  },
+  "Today {0}": "今天 {0}",
+  "Tomorrow {0}": "明天 {0}",
+  "Next run": "下次运行",
+  "as {0}": "以 {0} 身份",
+  "System": "系统",
+  "Times in {0}": "时区：{0}",
+  "Times in local time": "采用本地时间",
+  "Environment": "环境",
+  "default": "默认",
+  "{0} recipes": {
+    "other": "{0} 个配方"
+  },
+  "{0} targets": {
+    "other": "{0} 个目标"
+  },
+  "Default: {0}": "默认：{0}",
+  "All hosts": "所有主机",
+  "command": "命令",
+  "{0} defaults": {
+    "other": "{0} 项默认设置"
+  },
+  "key": "密钥",
+  "via": "经由",
+  "{0} options": {
+    "other": "{0} 个选项"
+  },
+  "SSH Config": "SSH 配置",
+  "{0} hosts": {
+    "other": "{0} 个主机"
+  },
+  "{0} includes": {
+    "other": "{0} 个包含文件"
+  },
+  "Required": "必需",
+  "Body": "请求体",
+  "{0} params": {
+    "other": "{0} 个参数"
+  },
+  "{0} endpoints": {
+    "other": "{0} 个端点"
+  },
+  "{0} tags": {
+    "other": "{0} 个标签"
+  },
+  "{0} schemas": {
+    "other": "{0} 个架构"
+  },
+  "{0} s": "{0} 秒",
+  "{0} min": "{0} 分钟",
+  "{0} h {1} min": "{0} 小时 {1} 分钟",
+  "{0} h": "{0} 小时",
+  "{0} days": {
+    "other": "{0} 天"
+  },
+  "Graph": "关系图",
+  "Show Less": "显示更少",
+  "Show {0} More": {
+    "other": "再显示 {0} 项"
+  },
+  "Show Details": "显示详细信息",
+  "Hide Details": "隐藏详细信息",
+  "Symbols": "符号",
+  "Filter": "过滤",
+  "Filter Symbols": "过滤符号",
+  "{0} — line {1}": "{0} — 第 {1} 行",
+  "No matching symbols": "没有匹配的符号",
+  "No symbols": "没有符号",
+  "Key": "键",
+  "Value": "值",
+  "Copy Path": "拷贝路径",
+  "Copy Value": "拷贝值",
+  "Code": "代码",
+  "Tree": "树状",
+  "Show the Whole File as a Tree": "以树状显示整个文件",
+  "Reading the whole file…": "正在读取整个文件…",
+  "Indexing {0}…": "正在索引 {0}…",
+  "Showing the first {0} values.": {
+    "other": "仅显示前 {0} 个值。"
+  },
+  "This isn’t valid JSON: a key needs a colon after it, on line {0}.": "这不是有效的 JSON：第 {0} 行的键后面需要冒号。",
+  "This isn’t valid JSON: the file ends too soon, on line {0}.": "这不是有效的 JSON：文件在第 {0} 行过早结束。",
+  "This isn’t valid JSON: unexpected {0} on line {1}.": "这不是有效的 JSON：第 {1} 行出现意外的{0}。",
+  "Showing what could be read. A key needs a colon after it, on line {0}.": "仅显示可读取的部分。第 {0} 行的键后面需要冒号。",
+  "Showing what could be read. The file ends too soon, on line {0}.": "仅显示可读取的部分。文件在第 {0} 行过早结束。",
+  "Showing what could be read. Unexpected {0} on line {1}.": "仅显示可读取的部分。第 {1} 行出现意外的{0}。",
+  "Dictionary": "字典",
+  "Object": "对象",
+  "Array": "数组",
+  "Date": "日期",
+  "Data": "数据",
+  "String": "字符串",
+  "Number": "数字",
+  "Boolean": "布尔值",
+  "Null": "空值",
+  "Root": "根",
+  "Item {0}": "项目 {0}",
+  "{0} items": {
+    "other": "{0} 个项目"
+  },
+  "Select a row to see its path": "选择一行以查看其路径",
+  "Copy Link to Section": "拷贝章节链接",
+  "Link Copied": "已拷贝链接",
+  "Image": "图像",
+  "Close": "关闭",
+  "Open Diagram": "打开图表",
+  "Diagram": "图表",
+  "Zoom Out": "缩小",
+  "Actual Size": "实际大小",
+  "Zoom In": "放大",
+  "Zoom to Fit": "缩放至合适大小",
+  "Copy as SVG": "拷贝为 SVG",
+  "Copy SVG": "拷贝 SVG",
+  "All {0} done": {
+    "other": "{0} 项全部完成"
+  },
+  "{1} of {0} done": {
+    "other": "已完成 {1}/{0}"
+  },
+  "Task lists in this document": "此文稿中的任务列表",
+  "Hide Outline": "隐藏大纲",
+  "Drag to resize. Double-click to reset.": "拖移以调整大小。连按两次以重置。",
+  "Drag to resize": "拖移以调整大小",
+  "Show Outline": "显示大纲",
+  "Outline": "大纲",
+  "To Do": "待办",
+  "Hint": "提示",
+  "Warn": "警告",
+  "Attention": "注意",
+  "Danger": "危险",
+  "Error": "错误",
+  "Abstract": "摘要",
+  "Summary": "概要",
+  "TL;DR": "简而言之",
+  "Success": "成功",
+  "Check": "已确认",
+  "Done [callout]": "已完成",
+  "Question": "问题",
+  "Help": "帮助",
+  "FAQ": "常见问题",
+  "Failure": "失败",
+  "Fail": "失败",
+  "Missing": "缺失",
+  "Bug": "程序错误",
+  "Example": "示例",
+  "Quote": "引文",
+  "Cite": "引用",
+  "Details": "详细信息",
+  "See Also": "另请参阅",
+  "Tab": "标签页",
+  "Tab {0}": "标签页 {0}",
+  "Read from the cover": "从封面开始阅读",
+  "Read": "阅读",
+  "Pages": "页面",
+  "Previous Page": "上一页",
+  "Next Page": "下一页",
+  "All": "全部",
+  "Doc": "文稿",
+  "Img": "图像",
+  "Font": "字体",
+  "Media": "媒体",
+  "Document": "文稿",
+  "Fetch": "Fetch",
+  "Script": "脚本",
+  "Stylesheet": "样式表",
+  "Queued": "排队",
+  "DNS Lookup": "DNS 查询",
+  "Connection": "连接",
+  "Request Sent": "发送请求",
+  "Waiting (TTFB)": "等待（TTFB）",
+  "Download": "下载",
+  "Filter requests": "过滤请求",
+  "Status": "状态",
+  "Method": "方法",
+  "Name": "名称",
+  "Size": "大小",
+  "Time": "时间",
+  "Waterfall": "瀑布图",
+  "Load {0}": "载入 {0}",
+  "Failed": "失败",
+  "No matching requests": "没有匹配的请求",
+  "{0} requests": {
+    "other": "{0} 个请求"
+  },
+  "{1} of {0} requests": {
+    "other": "{0} 个请求中的 {1} 个"
+  },
+  "first {0} shown": "显示前 {0} 个",
+  "Requests": "请求",
+  "Transferred": "已传输",
+  "Finished": "完成",
+  "Load": "载入",
+  "HTTP Archive": "HTTP 归档",
+  "{0} · recorded with {1}": "{0} · 由 {1} 录制",
+  "Recorded with {0}": "由 {0} 录制",
+  "Network capture": "网络捕获",
+  "Select a request to see its headers, payload, response and timing.": "选择一个请求以查看其标头、负载、响应和计时。",
+  "This request’s details couldn’t be read.": "无法读取此请求的详细信息。",
+  "Headers": "标头",
+  "Payload": "负载",
+  "Response": "响应",
+  "Timing": "计时",
+  "Request URL": "请求 URL",
+  "Remote Address": "远程地址",
+  "{0} · connection {1}": "{0} · 连接 {1}",
+  "Protocol": "协议",
+  "Redirects To": "重定向至",
+  "General": "通用",
+  "Response Headers": "响应标头",
+  "No response headers": "没有响应标头",
+  "Request Headers": "请求标头",
+  "No request headers": "没有请求标头",
+  "Cookies Sent": "已发送的 Cookie",
+  "Cookies Set": "已设置的 Cookie",
+  "Showing the beginning of a long body.": "内容过长，仅显示开头部分。",
+  "Query String": "查询字符串",
+  "Form Data": "表单数据",
+  "Request Body": "请求体",
+  "No response body was recorded.": "未记录响应体。",
+  "Binary content.": "二进制内容。",
+  "Showing the first {0}.": "仅显示前 {0}。",
+  "Started at {0} · total {1}": "开始于 {0} · 共 {1}",
+  "No timing recorded.": "未记录计时信息。",
+  "This formula uses commands Greece can’t typeset": "此公式使用了 Greece 无法排版的命令",
+  "The rest of this document took too long to typeset.": "此文稿其余部分的排版耗时过长。",
+  "The rest of this document couldn’t be typeset.": "无法排版此文稿的其余部分。",
+  "The rest of this document is too large or too deeply nested to typeset.": "此文稿的其余部分过大或嵌套过深，无法排版。",
+  "Showing the beginning of a very large project.": "项目过大，仅显示开头部分。",
+  "Contents": "目录",
+  "Showing the beginning of a very large presentation.": "演示文稿过大，仅显示开头部分。",
+  "Slide {0}": "幻灯片 {0}",
+  "Illustrated by {0}": "插图：{0}",
+  "Edited by {0}": "编辑：{0}",
+  "Translated by {0}": "翻译：{0}",
+  "Narrated by {0}": "朗读：{0}",
+  "Introduction by {0}": "导言：{0}",
+  "Afterword by {0}": "后记：{0}",
+  "With contributions by {0}": "参与撰写：{0}",
+  "Annotated by {0}": "注释：{0}",
+  "Compiled by {0}": "编纂：{0}",
+  "Cover by {0}": "封面设计：{0}",
+  "Adapted by {0}": "改编：{0}",
+  "Art by {0}": "美术：{0}",
+  "Photographs by {0}": "摄影：{0}",
+  "No references": "没有参考文献",
+  "vol. {0}": "卷 {0}",
+  "pp. {0}": "第 {0} 页",
+  "{0} ed.": "{0} 版",
+  "ed. {0}": "{0} 编",
+  "Copy citation key": "拷贝引用键",
+  "Untitled": "未命名",
+  "{0} references": {
+    "other": "{0} 条参考文献"
+  },
+  "{0} string macros": {
+    "other": "{0} 个字符串宏"
+  },
+  "{0} preambles": {
+    "other": "{0} 个导言"
+  },
+  "Showing the first references of a very large library.": "文献库过大，仅显示前面的参考文献。",
+  "No matching references": "没有匹配的参考文献",
+  "Bibliography": "书目",
+  "Filter references": "过滤参考文献",
+  "Article": "文章",
+  "{0} Articles": {
+    "other": "{0} 篇文章"
+  },
+  "Book": "图书",
+  "{0} Books": {
+    "other": "{0} 本图书"
+  },
+  "Booklet": "小册子",
+  "{0} Booklets": {
+    "other": "{0} 本小册子"
+  },
+  "Chapter": "章节",
+  "{0} Chapters": {
+    "other": "{0} 个章节"
+  },
+  "In Collection": "文集文章",
+  "{0} In Collection": {
+    "other": "{0} 篇文集文章"
+  },
+  "Conference Paper": "会议论文",
+  "{0} Conference Papers": {
+    "other": "{0} 篇会议论文"
+  },
+  "Manual [document]": "手册",
+  "{0} Manuals": {
+    "other": "{0} 本手册"
+  },
+  "Master’s Thesis": "硕士论文",
+  "{0} Master’s Theses": {
+    "other": "{0} 篇硕士论文"
+  },
+  "Misc": "其他",
+  "{0} Misc": {
+    "other": "{0} 项其他"
+  },
+  "PhD Thesis": "博士论文",
+  "{0} PhD Theses": {
+    "other": "{0} 篇博士论文"
+  },
+  "Proceedings": "会议论文集",
+  "{0} Proceedings": {
+    "other": "{0} 部会议论文集"
+  },
+  "Report": "报告",
+  "{0} Reports": {
+    "other": "{0} 份报告"
+  },
+  "Unpublished": "未出版",
+  "{0} Unpublished": {
+    "other": "{0} 项未出版"
+  },
+  "Online": "在线资源",
+  "{0} Online": {
+    "other": "{0} 项在线资源"
+  },
+  "Thesis": "学位论文",
+  "{0} Theses": {
+    "other": "{0} 篇学位论文"
+  },
+  "Software": "软件",
+  "{0} Software": {
+    "other": "{0} 个软件"
+  },
+  "Dataset": "数据集",
+  "{0} Datasets": {
+    "other": "{0} 个数据集"
+  },
+  "Patent": "专利",
+  "{0} Patents": {
+    "other": "{0} 项专利"
+  },
+  "Collection": "文集",
+  "{0} Collections": {
+    "other": "{0} 部文集"
+  },
+  "Periodical": "期刊",
+  "{0} Periodicals": {
+    "other": "{0} 份期刊"
+  },
+  "Standard": "标准",
+  "{0} Standards": {
+    "other": "{0} 项标准"
+  },
+  "Video": "视频",
+  "{0} Videos": {
+    "other": "{0} 个视频"
+  },
+  "Audio": "音频",
+  "{0} Audio": {
+    "other": "{0} 个音频"
+  },
+  "Artwork": "艺术作品",
+  "{0} Artworks": {
+    "other": "{0} 件艺术作品"
+  },
+  "Preprint": "预印本",
+  "{0} Preprints": {
+    "other": "{0} 篇预印本"
+  },
+  "Entry": "条目",
+  "{0} ({1})": "{0}（{1}）",
+  "Publisher": "出版商",
+  "Published": "出版日期",
+  "Language": "语言",
+  "Identifier": "标识符",
+  "{0} words · {1} min read": {
+    "other": "{0} 字 · 阅读约 {1} 分钟"
+  },
+  "{0} words · {1} h {2} min read": {
+    "other": "{0} 字 · 阅读约 {1} 小时 {2} 分钟"
+  },
+  "Length": "篇幅",
+  "Format": "格式",
+  "Book {0}": "第 {0} 册",
+  "Cover": "封面",
+  "This book is protected, so its chapters can’t be shown.": "此图书受保护，因此无法显示其章节。",
+  "Previous [chapter]": "上一章",
+  "Next [chapter]": "下一章",
+  "Show All": "全部显示",
+  "Section {0}": "第 {0} 节",
+  "Empty diagram": "空图表",
+  "Zoom out": "缩小",
+  "Zoom to fit": "缩放至合适大小",
+  "Fit": "适合",
+  "Zoom in": "放大",
+  "Copy the diagram’s source": "拷贝图表源代码",
+  "Mermaid isn’t available.": "Mermaid 不可用。",
+  "No diagram": "没有图表",
+  "This diagram couldn’t be drawn": "无法绘制此图表",
+  "TikZ drawing": "TikZ 绘图",
+  "PGF drawing": "PGF 绘图",
+  "Picture": "图片",
+  "Circuit diagram": "电路图",
+  "Tree diagram": "树状图",
+  "Commutative diagram": "交换图",
+  "Plot": "坐标图",
+  "PSTricks drawing": "PSTricks 绘图",
+  "Drawing": "绘图",
+  "Missing figure": "缺少插图",
+  "Figure": "插图",
+  "Not in the bibliography": "不在书目中",
+  "Included PDF": "包含的 PDF",
+  "Missing file": "缺少文件",
+  "Not included": "未包含",
+  "Map": "地图",
+  "Layers": "图层",
+  "The map couldn’t start.": "无法启动地图。",
+  "{0}°N": "北纬 {0}°",
+  "{0}°S": "南纬 {0}°",
+  "{0}°E": "东经 {0}°",
+  "{0}°W": "西经 {0}°",
+  "Tile": "瓦片",
+  "Point": "点",
+  "Points": "点",
+  "Line [shape]": "线",
+  "Lines": "多条线",
+  "Polygon": "多边形",
+  "Polygons": "多个多边形",
+  "Feature": "要素",
+  "No": "否",
+  "No attributes": "没有属性",
+  "{0} areas": {
+    "other": "{0} 个区域"
+  },
+  "{0} lines [shape]": {
+    "other": "{0} 条线"
+  },
+  "{0} points": {
+    "other": "{0} 个点"
+  },
+  "Tables": "表格",
+  "Objects": "对象",
+  "Tile Layers": "瓦片图层",
+  "Basemap": "底图",
+  "Grid": "经纬网",
+  "Labels": "标签",
+  "Reprojected to WGS 84 for display": "已重新投影到 WGS 84 以供显示",
+  "Basemap: {0}": "底图：{0}",
+  "Vector tiles (PBF)": "矢量瓦片（PBF）",
+  "Zoom": "缩放",
+  "Showing": "当前显示",
+  "Tile size": "瓦片大小",
+  "Bounds": "范围",
+  "Center": "中心",
+  "Version": "版本",
+  "Scheme": "编号方案",
+  "Generator": "生成工具",
+  "Vector": "矢量",
+  "Raster": "栅格",
+  "Collapse": "收起",
+  "Zoom {0} (overzoomed)": "缩放 {0}（过度缩放）",
+  "Zoom {0}": "缩放 {0}",
+  "Distance": "距离",
+  "Duration": "时长",
+  "Moving": "移动时间",
+  "Elevation Gain": "爬升高度",
+  "Highest": "最高海拔",
+  "Max Speed": "最高速度",
+  "Avg Speed": "平均速度",
+  "Avg Heart Rate": "平均心率",
+  "{0} bpm": "{0} 次/分",
+  "Track": "轨迹",
+  "No features to draw": "没有可绘制的要素",
+  "Copied {0}": "已拷贝 {0}",
+  "Sample": "示例",
+  "Pangram": "全字母句",
+  "Alphabet": "字母表",
+  "Figures": "数字",
+  "Sample text": "示例文本",
+  "No faces in this font": "此字体中没有字样",
+  "WebKit couldn’t load this font for display. Its details are below.": "WebKit 无法载入此字体进行显示。其详细信息如下。",
+  "Specimen": "样本",
+  "Click the sample to type your own": "点按示例即可输入自定文本",
+  "Variable Axes": "可变轴",
+  "{0} axes": {
+    "other": "{0} 个轴"
+  },
+  "Axes": "轴",
+  "OpenType Features": "OpenType 特性",
+  "Features [font]": "特性",
+  "Apply {0} to the specimen": "将 {0} 应用于样本",
+  "{0} · on by default": "{0} · 默认打开",
+  "Sizes": "字号",
+  "Icons": "图标",
+  "Characters": "字符",
+  "Information": "信息",
+  "Ascender": "上升部",
+  "Cap height": "大写字母高度",
+  "x-height": "x 字高",
+  "Baseline": "基线",
+  "Descender": "下降部",
+  "Glyphs": "字形",
+  "Variable": "可变",
+  "Designer": "设计师",
+  "Scripts [writing]": "书写系统",
+  "Show more": "显示更多",
+  "Show less": "显示更少",
+  "Family": "字体系列",
+  "Style": "样式",
+  "Full name": "全名",
+  "PostScript name": "PostScript 名称",
+  "Designer URL": "设计师 URL",
+  "Manufacturer": "制造商",
+  "Vendor URL": "供应商 URL",
+  "Vendor ID": "供应商 ID",
+  "Description": "描述",
+  "{0} · {1} outlines": "{0} · {1} 轮廓",
+  "Color ({0})": "彩色（{0}）",
+  "Units per em": "每 em 单位数",
+  "Metrics": "度量",
+  "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}": "上升部 {0} · 下降部 {1} · 大写字母高度 {2} · x 字高 {3}",
+  "Weight class": "字重等级",
+  "Width class": "字宽等级",
+  "Italic": "斜体",
+  "Monospaced": "等宽",
+  "Traits": "特征",
+  "Languages": "语言",
+  "Embedding": "嵌入",
+  "Created": "创建日期",
+  "Modified": "修改日期",
+  "Copyright": "版权",
+  "Trademark": "商标",
+  "License URL": "许可证 URL",
+  "Characters can’t be drawn without the font.": "没有字体，无法绘制字符。",
+  "Showing the first {1} of {0} characters.": {
+    "other": "仅显示 {0} 个字符中的前 {1} 个。"
+  },
+  "Code point": "码位",
+  "Character": "字符",
+  "Copy the character": "拷贝字符",
+  "Copy the code point": "拷贝码位",
+  "Unnamed": "无名称",
+  "Glyph": "字形",
+  "Glyph ID": "字形 ID",
+  "Advance": "步进宽度",
+  "{0} units": {
+    "other": "{0} 单位"
+  },
+  "The Lottie player is missing": "缺少 Lottie 播放器",
+  "Click to play or pause": "点按以播放或暂停",
+  "Play": "播放",
+  "Loop": "循环播放",
+  "Background: Checkerboard": "背景：棋盘格",
+  "Background: White": "背景：白色",
+  "Background: Black": "背景：黑色",
+  "Speed {0}": "速度 {0}",
+  "Pause": "暂停",
+  "This animation couldn’t be read.": "无法读取此动画。",
+  "This animation couldn’t be played.": "无法播放此动画。",
+  "Play from frame {0}": "从第 {0} 帧播放",
+  "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.": "Lottie 表达式是代码，Greece 不会运行它们，因此某些动态效果可能有所不同。",
+  "Expressions not evaluated": "表达式未求值",
+  "Original": "原始",
+  "{0} colors": {
+    "other": "{0} 种颜色"
+  },
+  "Ungrouped": "未分组",
+  "Spot": "专色",
+  "{0} — click to copy": "{0} — 点按以拷贝",
+  "Outside sRGB: shown as the nearest sRGB color": "超出 sRGB：显示为最接近的 sRGB 颜色",
+  "{0} too fast": {
+    "other": "{0} 条过快"
+  },
+  "Reading speed {0} cps (over {1})": "阅读速度 {0} 字/秒（超过 {1}）",
+  "{0} long lines": {
+    "other": "{0} 条超长行"
+  },
+  "A line over {0} characters": {
+    "other": "有一行超过 {0} 个字符"
+  },
+  "{0} over 2 lines": {
+    "other": "{0} 条超过 2 行"
+  },
+  "More than {0} lines": {
+    "other": "超过 {0} 行"
+  },
+  "{0} brief": {
+    "other": "{0} 条过短"
+  },
+  "On screen under {0} s": "显示不足 {0} 秒",
+  "{0} lingering": {
+    "other": "{0} 条停留过久"
+  },
+  "On screen over {0} s": "显示超过 {0} 秒",
+  "{0} overlaps": {
+    "other": "{0} 条重叠"
+  },
+  "Starts before the previous cue ends": "在上一条字幕结束前开始",
+  "{0} with bad timing": {
+    "other": "{0} 条时间错误"
+  },
+  "Ends before it starts": "结束时间早于开始时间",
+  "These subtitles couldn’t be read": "无法读取这些字幕",
+  "Filter lines": "过滤歌词",
+  "Filter cues": "过滤字幕",
+  "{0} cues": {
+    "other": "{0} 条字幕"
+  },
+  "Average reading speed, in characters per second": "平均阅读速度（字/秒）",
+  "{0} cps average": "平均 {0} 字/秒",
+  "{0} speakers": {
+    "other": "{0} 位说话人"
+  },
+  "Timed at {0} fps": "按 {0} fps 计时",
+  "Show only these": "仅显示这些",
+  "Jump to a moment": "跳到某一时刻",
+  "Showing the first {0} cues.": {
+    "other": "仅显示前 {0} 条字幕。"
+  },
+  "{0} cps": "{0} 字/秒",
+  "No matching cues": "没有匹配的字幕",
+  "No cues found": "未找到字幕",
+  "SVG image": "SVG 图像",
+  "This SVG couldn’t be drawn.": "无法绘制此 SVG。",
+  "Actual size": "实际大小",
+  "Fit to window": "适合窗口大小",
+  "Transparency checkerboard": "透明棋盘格",
+  "Source [code]": "源代码",
+  "This file contains scripts. Greece shows SVG as an image, so they never run.": "此文件包含脚本。Greece 将 SVG 作为图像显示，因此脚本永远不会运行。",
+  "It refers to files or web addresses, which previews don’t load.": "它引用了文件或网址，预览不会载入这些内容。",
+  "The source couldn’t be read.": "无法读取源代码。",
+  "Model controls": "模型控制",
+  "This model is too large to preview": "此模型过大，无法预览",
+  "Greece previews models up to {0}.": "Greece 可预览最大 {0} 的模型。",
+  "3D previews need WebGL": "3D 预览需要 WebGL",
+  "Reading the model took too long.": "读取模型耗时过长。",
+  "Greece couldn’t open this model": "Greece 无法打开此模型",
+  "Loading": "正在载入",
+  "Preparing": "正在准备",
+  "Not a MagicaVoxel file": "不是 MagicaVoxel 文件",
+  "Unsupported format": "不支持的格式",
+  "The file has no scene": "文件中没有场景",
+  "Couldn’t read the points": "无法读取点数据",
+  "Not a LAS/LAZ file": "不是 LAS/LAZ 文件",
+  "Decompressing": "正在解压缩",
+  "The decoder failed": "解码器出错",
+  "The file has no points": "文件中没有点",
+  "The model is empty": "模型为空",
+  "Shaded": "着色",
+  "Wireframe": "线框",
+  "Display": "显示方式",
+  "Colour": "颜色",
+  "Animation {0}": "动画 {0}",
+  "Animation": "动画",
+  "Reset View": "重置视图",
+  "Statistics": "统计信息",
+  "Classes": "类别",
+  "Point format": "点格式",
+  "LAS version": "LAS 版本",
+  "Vertices": "顶点",
+  "Triangles": "三角形",
+  "Meshes": "网格",
+  "Materials": "材质",
+  "Textures": "纹理",
+  "Texture memory": "纹理内存",
+  "Animations": "动画",
+  "Bones": "骨骼",
+  "Morph targets": "变形目标",
+  "Compression": "压缩",
+  "Created with": "创建工具",
+  "{0} voxels": {
+    "other": "{0} 体素"
+  },
+  "Width": "宽度",
+  "Depth": "深度",
+  "Height": "高度",
+  "Elevation": "海拔",
+  "Intensity": "强度",
+  "Classification": "分类",
+  "A file it needs couldn’t be read.": "无法读取所需的文件。",
+  "Unreadable point sample": "无法读取点样本",
+  "Truncated point sample": "点样本被截断",
+  "Not an OFF file": "不是 OFF 文件",
+  "Invalid OFF header": "无效的 OFF 文件头"
+}
