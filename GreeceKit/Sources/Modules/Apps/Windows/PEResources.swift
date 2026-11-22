@@ -108,19 +108,29 @@ struct PEResources {
         return file.bytes(atRVA: entry.dataRVA, count: Int(entry.size))
     }
 
-    /// Counts by kind, for the Info section: "8 icons, 3 dialogs".
-    var census: [(String, Int)] {
-        let names: [UInt32: (String, String)] = [
-            1: ("cursor", "cursors"), 2: ("bitmap", "bitmaps"), 3: ("icon image", "icon images"), 4: ("menu", "menus"),
-            5: ("dialog", "dialogs"), 6: ("string table", "string tables"), 8: ("font", "fonts"), 10: ("data resource", "data resources"),
-            14: ("icon", "icons"), 23: ("HTML page", "HTML pages"),
-        ]
+    /// Counts by kind, for the Info section: "8 icons", "3 dialogs".
+    var census: [String] {
+        // Icon images (3) are the parts of icons (14): only the icons count.
+        let counted: Set<UInt32> = [1, 2, 4, 5, 6, 8, 10, 14, 23]
         // One resource can exist in several languages: count names, not leaves.
         var seen: [UInt32: Set<Identifier>] = [:]
-        for entry in entries { if case .id(let type) = entry.type, names[type] != nil, type != 3 { seen[type, default: []].insert(entry.name) } }
-        return seen.sorted { $0.key < $1.key }.map { key, set in
-            let (singular, plural) = names[key]!
-            return (set.count == 1 ? singular : plural, set.count)
+        for entry in entries { if case .id(let type) = entry.type, counted.contains(type) { seen[type, default: []].insert(entry.name) } }
+        return seen.sorted { $0.key < $1.key }.compactMap { type, set in Self.census(type: type, count: set.count) }
+    }
+
+    /// "8 icons": a count of one kind of resource.
+    private static func census(type: UInt32, count: Int) -> String? {
+        switch type {
+        case 1: return String(localized: "\(count) cursors", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 2: return String(localized: "\(count) bitmaps", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 4: return String(localized: "\(count) menus", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 5: return String(localized: "\(count) dialogs", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 6: return String(localized: "\(count) string tables", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 8: return String(localized: "\(count) fonts", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 10: return String(localized: "\(count) data resources", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 14: return String(localized: "\(count) icons", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        case 23: return String(localized: "\(count) HTML pages", bundle: .greeceKit, comment: "Resources in a Windows program. The argument is a count")
+        default: return nil
         }
     }
 
@@ -307,7 +317,7 @@ struct PEManifest {
         "35138b9a-5d96-4fbd-8e2d-a2440225f93a": "Windows 7",
         "4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38": "Windows 8",
         "1f676c76-80e1-4239-95bb-83d0f6d0da78": "Windows 8.1",
-        "8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a": "Windows 10 and 11",
+        "8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a": String(localized: "Windows 10 and 11", bundle: .greeceKit, comment: "Windows versions a program says it supports"),
     ]
 
     init?(data: Data) {

@@ -310,7 +310,8 @@ struct PEFile {
             budget -= 1
             if names.count < Self.maxNamesKept {
                 if value & ordinalFlag != 0 {
-                    names.append("Ordinal \(value & 0xFFFF)")
+                    let ordinal = String(value & 0xFFFF)
+                    names.append(String(localized: "Ordinal \(ordinal)", bundle: .greeceKit, comment: "A function imported by number instead of by name. The argument is the number"))
                 } else if let hintRVA = rva(fromField: UInt32(truncatingIfNeeded: value & 0x7FFF_FFFF), vaBased: vaBased),
                           let name = string(atRVA: hintRVA &+ 2, maxLength: 256) {
                     names.append(name)
