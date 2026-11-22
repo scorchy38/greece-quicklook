@@ -1,0 +1,35 @@
+name	group	area_km2	population	highest_point_m	airport	first_ferry	density	notes
+Naxos	Cyclades	430	18904	1004	yes	1983-08-03	44.0	Marble quarries
+Andros	Cyclades	380	9221	994	no	2003-08-05	24.3	
+Paros	Cyclades	196	13715	724	yes	1999-08-08	70.0	Windmills
+Tinos	Cyclades	194	8,636	729	no	1985-01-15	44.5	
+Milos	Cyclades	151	4977	748	yes		33.0	Volcanic beaches
+Kea	Cyclades	131	2455	568	no	2006-04-13	18.7	
+Amorgos	Cyclades	121	1973	821	no	1998-09-04	16.3	Monastery on a cliff
+Ios	Cyclades	109	2024	723	no	1988-09-17	18.6	
+Kythnos	Cyclades	99	1456	336	no	1989-07-29	14.7	
+Mykonos	Cyclades	86	10704	341	yes	2007-09-30	124.5	Marble quarries
+Syros	Cyclades	84	21,507	442	yes	1964-06-29	256.0	
+Santorini	Cyclades	76	15550	567	yes	2008-08-29	204.6	Windmills
+Serifos	Cyclades	75	1420	585	no	1976-01-05	18.9	
+Sifnos	Cyclades	74	2625	678	no		35.5	Volcanic beaches
+Folegandros	Cyclades	32	765	414	no	1976-12-03	23.9	
+Crete	Crete	8336	624408	2456	yes	1954-07-11	74.9	Monastery on a cliff
+Rhodes	Dodecanese	1401	125113	1216	yes	1997-05-20	89.3	
+Kos	Dodecanese	290	33,388	843	yes	1987-12-11	115.1	
+Karpathos	Dodecanese	301	6226	1215	yes	1994-10-11	20.7	Marble quarries
+Patmos	Dodecanese	34	3283	269	no	2007-06-08	96.6	
+Corfu	Ionian	593	102071	906	yes	1975-11-21	172.1	Windmills
+Kefalonia	Ionian	781	35801	1628	yes	1990-08-17	45.8	
+Zakynthos	Ionian	406	40759	756	yes		100.4	Volcanic beaches
+Lefkada	Ionian	336	22652	1158	no	1975-04-14	67.4	
+Ithaca	Ionian	118	2,862	806	no	2010-02-02	24.3	Monastery on a cliff
+Lesbos	North Aegean	1633	83755	967	yes	1966-11-27	51.3	
+Chios	North Aegean	842	51390	1297	yes	1961-03-28	61.0	
+Samos	North Aegean	478	32642	1434	yes	1991-12-09	68.3	Marble quarries
+Ikaria	North Aegean	255	8423	1037	yes	1960-03-04	33.0	
+Euboea	Euboea	3684	191206	1743	no	1966-05-29	51.9	Windmills
+Skiathos	Sporades	50	6088	433	yes	1985-06-12	121.8	
+Skopelos	Sporades	96	4,960	680	no		51.7	Volcanic beaches
+Aegina	Saronic	87	13056	531	no	1971-11-28	150.1	
+Hydra	Saronic	64	1966	593	no	1987-09-27	30.7	Monastery on a cliff

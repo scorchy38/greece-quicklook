@@ -1,0 +1,241 @@
+voyage|departs|origin|destination|operator|minutes|fare_eur|on_time
+V0001|2025-06-01T06:44|Santorini|Paros|Zante Ferries|75|26.51|true
+V0002|2025-06-01T07:24|Naxos|Milos|Zante Ferries|135|50.16|false
+V0003|2025-06-01T08:07|Lavrio|Paros|Blue Star Ferries|170|48.99|false
+V0004|2025-06-01T08:48|Lavrio|Paros|Golden Star|40|8.86|true
+V0005|2025-06-01T09:27|Naxos|Milos|Fast Ferries|135|26.08|false
+V0006|2025-06-01T09:48|Santorini|Mykonos|Minoan Lines|50|9.47|true
+V0007|2025-06-01T10:19|Heraklion|Paros|Seajets|75|16.38|true
+V0008|2025-06-01T11:18|Naxos|Mykonos|Fast Ferries|300|119.40|true
+V0009|2025-06-01T12:01|Piraeus|Heraklion|Blue Star Ferries|60|20.40|true
+V0010|2025-06-01T12:37|Naxos|Paros|Minoan Lines|300|56.17|true
+V0011|2025-06-01T13:14|Naxos|Mykonos|Golden Star|40|12.88|true
+V0012|2025-06-01T13:28|Paros|Syros|Seajets|300|71.49|true
+V0013|2025-06-01T14:04|Syros|Milos|Zante Ferries|240|50.91|true
+V0014|2025-06-01T15:02|Rafina|Piraeus|Fast Ferries|300|87.72|true
+V0015|2025-06-01T15:32|Rafina|Lavrio|Minoan Lines|110|32.86|false
+V0016|2025-06-01T15:55|Paros|Syros|Minoan Lines|120|48.17|false
+V0017|2025-06-01T16:58|Piraeus|Santorini|Minoan Lines|110|45.19|true
+V0018|2025-06-01T17:11|Milos|Paros|Seajets|40|10.81|true
+V0019|2025-06-01T18:05|Santorini|Heraklion|Golden Star|40|14.34|false
+V0020|2025-06-01T18:37|Lavrio|Santorini|Fast Ferries|50|9.44|false
+V0021|2025-06-01T19:03|Heraklion|Piraeus|Minoan Lines|50|18.90|true
+V0022|2025-06-01T19:49|Santorini|Paros|Fast Ferries|240|70.72|false
+V0023|2025-06-01T20:16|Heraklion|Syros|Zante Ferries|110|34.14|true
+V0024|2025-06-01T21:07|Naxos|Milos|Golden Star|35|13.10|false
+V0025|2025-06-01T21:29|Mykonos|Lavrio|Golden Star|300|118.43|false
+V0026|2025-06-01T22:11|Piraeus|Syros|Fast Ferries|35|8.33|true
+V0027|2025-06-01T22:56|Santorini|Heraklion|Seajets|35|14.44|false
+V0028|2025-06-01T23:34|Lavrio|Rafina|Golden Star|170|57.16|true
+V0029|2025-06-02T00:03|Syros|Rafina|Minoan Lines|135|30.05|true
+V0030|2025-06-02T00:32|Mykonos|Heraklion|Fast Ferries|135|44.56|true
+V0031|2025-06-02T01:33|Rafina|Syros|Blue Star Ferries|170|51.69|true
+V0032|2025-06-02T02:02|Santorini|Naxos|Golden Star|120|39.41|true
+V0033|2025-06-02T02:48|Piraeus|Mykonos|Golden Star|135|56.03|true
+V0034|2025-06-02T03:17|Santorini|Paros|Seajets|110|21.92|true
+V0035|2025-06-02T04:00|Mykonos|Syros|Golden Star|90|20.23|false
+V0036|2025-06-02T04:30|Heraklion|Paros|Golden Star|35|7.34|true
+V0037|2025-06-02T04:55|Lavrio|Mykonos|Seajets|135|38.48|true
+V0038|2025-06-02T05:35|Piraeus|Paros|Seajets|90|27.75|true
+V0039|2025-06-02T06:13|Paros|Santorini|Blue Star Ferries|50|17.75|true
+V0040|2025-06-02T06:46|Paros|Heraklion|Seajets|120|30.73|false
+V0041|2025-06-02T07:40|Santorini|Naxos|Seajets|50|16.60|true
+V0042|2025-06-02T08:19|Mykonos|Piraeus|Golden Star|110|43.40|true
+V0043|2025-06-02T08:36|Naxos|Milos|Minoan Lines|300|113.05|true
+V0044|2025-06-02T09:28|Lavrio|Piraeus|Seajets|120|33.70|false
+V0045|2025-06-02T10:12|Santorini|Lavrio|Zante Ferries|120|43.53|false
+V0046|2025-06-02T10:37|Mykonos|Paros|Blue Star Ferries|120|31.65|true
+V0047|2025-06-02T11:15|Naxos|Santorini|Golden Star|120|30.35|true
+V0048|2025-06-02T11:51|Rafina|Syros|Golden Star|60|23.30|false
+V0049|2025-06-02T12:39|Rafina|Santorini|Blue Star Ferries|90|26.39|true
+V0050|2025-06-02T13:17|Mykonos|Naxos|Fast Ferries|35|7.97|false
+V0051|2025-06-02T13:43|Mykonos|Paros|Seajets|40|12.42|true
+V0052|2025-06-02T14:24|Milos|Lavrio|Fast Ferries|50|12.30|true
+V0053|2025-06-02T14:43|Piraeus|Santorini|Minoan Lines|120|23.91|true
+V0054|2025-06-02T15:32|Naxos|Paros|Zante Ferries|170|60.82|true
+V0055|2025-06-02T16:06|Lavrio|Santorini|Golden Star|40|16.55|true
+V0056|2025-06-02T16:46|Naxos|Rafina|Golden Star|40|11.98|false
+V0057|2025-06-02T17:36|Santorini|Rafina|Blue Star Ferries|35|9.75|true
+V0058|2025-06-02T18:07|Mykonos|Heraklion|Blue Star Ferries|75|16.67|true
+V0059|2025-06-02T18:34|Lavrio|Santorini|Seajets|75|15.51|true
+V0060|2025-06-02T19:29|Lavrio|Mykonos|Golden Star|110|40.57|true
+V0061|2025-06-02T19:52|Heraklion|Mykonos|Zante Ferries|240|72.22|true
+V0062|2025-06-02T20:18|Heraklion|Naxos|Blue Star Ferries|75|22.09|true
+V0063|2025-06-02T21:16|Paros|Milos|Seajets|170|61.00|true
+V0064|2025-06-02T21:34|Mykonos|Heraklion|Golden Star|35|7.83|true
+V0065|2025-06-02T22:05|Milos|Lavrio|Seajets|50|11.92|true
+V0066|2025-06-02T23:00|Paros|Santorini|Seajets|110|21.43|true
+V0067|2025-06-02T23:19|Heraklion|Paros|Fast Ferries|90|35.34|false
+V0068|2025-06-03T00:03|Heraklion|Lavrio|Golden Star|60|14.57|true
+V0069|2025-06-03T00:59|Santorini|Milos|Blue Star Ferries|110|45.18|true
+V0070|2025-06-03T01:14|Syros|Mykonos|Zante Ferries|35|10.44|true
+V0071|2025-06-03T02:07|Naxos|Mykonos|Zante Ferries|240|80.27|true
+V0072|2025-06-03T02:38|Lavrio|Santorini|Blue Star Ferries|135|36.76|true
+V0073|2025-06-03T03:29|Syros|Naxos|Zante Ferries|240|98.32|true
+V0074|2025-06-03T03:48|Rafina|Piraeus|Zante Ferries|50|10.42|true
+V0075|2025-06-03T04:23|Santorini|Paros|Golden Star|110|28.48|true
+V0076|2025-06-03T05:17|Syros|Piraeus|Golden Star|240|59.29|false
+V0077|2025-06-03T05:54|Mykonos|Syros|Zante Ferries|40|10.42|true
+V0078|2025-06-03T06:25|Syros|Piraeus|Minoan Lines|300|82.83|true
+V0079|2025-06-03T06:45|Syros|Santorini|Blue Star Ferries|110|39.86|true
+V0080|2025-06-03T07:33|Milos|Piraeus|Seajets|40|12.41|true
+V0081|2025-06-03T07:59|Milos|Mykonos|Minoan Lines|300|78.47|true
+V0082|2025-06-03T08:48|Syros|Mykonos|Minoan Lines|75|25.86|false
+V0083|2025-06-03T09:16|Lavrio|Santorini|Zante Ferries|120|39.76|true
+V0084|2025-06-03T09:58|Piraeus|Syros|Golden Star|35|12.27|true
+V0085|2025-06-03T10:31|Naxos|Heraklion|Golden Star|135|27.41|true
+V0086|2025-06-03T11:16|Naxos|Syros|Fast Ferries|40|12.63|true
+V0087|2025-06-03T11:54|Naxos|Rafina|Zante Ferries|170|33.03|true
+V0088|2025-06-03T12:20|Rafina|Syros|Fast Ferries|240|74.43|false
+V0089|2025-06-03T12:57|Mykonos|Rafina|Fast Ferries|300|76.41|true
+V0090|2025-06-03T13:51|Milos|Mykonos|Minoan Lines|75|15.23|true
+V0091|2025-06-03T14:30|Piraeus|Santorini|Zante Ferries|135|28.55|true
+V0092|2025-06-03T15:00|Syros|Naxos|Zante Ferries|240|67.23|true
+V0093|2025-06-03T15:34|Naxos|Lavrio|Golden Star|40|16.17|false
+V0094|2025-06-03T16:09|Milos|Piraeus|Zante Ferries|35|10.84|true
+V0095|2025-06-03T16:58|Milos|Naxos|Seajets|110|32.22|true
+V0096|2025-06-03T17:29|Rafina|Heraklion|Zante Ferries|120|27.35|false
+V0097|2025-06-03T18:13|Paros|Heraklion|Fast Ferries|110|42.77|true
+V0098|2025-06-03T18:55|Syros|Mykonos|Seajets|120|45.46|true
+V0099|2025-06-03T19:10|Milos|Naxos|Golden Star|300|101.79|true
+V0100|2025-06-03T20:08|Santorini|Paros|Zante Ferries|75|17.20|true
+V0101|2025-06-03T20:25|Lavrio|Piraeus|Minoan Lines|35|11.26|true
+V0102|2025-06-03T21:03|Paros|Santorini|Minoan Lines|50|17.03|false
+V0103|2025-06-03T21:32|Lavrio|Mykonos|Seajets|110|44.73|true
+V0104|2025-06-03T22:18|Naxos|Rafina|Seajets|40|7.65|true
+V0105|2025-06-03T23:08|Santorini|Mykonos|Minoan Lines|240|50.32|true
+V0106|2025-06-03T23:24|Lavrio|Rafina|Blue Star Ferries|170|39.76|false
+V0107|2025-06-04T00:07|Piraeus|Heraklion|Seajets|35|11.62|false
+V0108|2025-06-04T00:44|Rafina|Paros|Blue Star Ferries|50|14.80|true
+V0109|2025-06-04T01:34|Syros|Milos|Zante Ferries|110|35.32|true
+V0110|2025-06-04T01:54|Piraeus|Mykonos|Zante Ferries|60|20.76|true
+V0111|2025-06-04T02:32|Lavrio|Mykonos|Fast Ferries|35|13.97|true
+V0112|2025-06-04T03:32|Piraeus|Heraklion|Zante Ferries|110|27.49|true
+V0113|2025-06-04T04:07|Lavrio|Paros|Blue Star Ferries|120|22.41|true
+V0114|2025-06-04T04:25|Santorini|Rafina|Fast Ferries|300|122.20|true
+V0115|2025-06-04T04:55|Syros|Paros|Minoan Lines|110|35.19|false
+V0116|2025-06-04T06:01|Syros|Piraeus|Blue Star Ferries|120|38.21|true
+V0117|2025-06-04T06:32|Syros|Milos|Blue Star Ferries|300|58.96|true
+V0118|2025-06-04T06:56|Milos|Naxos|Seajets|50|20.41|true
+V0119|2025-06-04T07:31|Piraeus|Lavrio|Minoan Lines|90|37.80|true
+V0120|2025-06-04T08:21|Rafina|Heraklion|Minoan Lines|60|14.57|true
+V0121|2025-06-04T09:03|Heraklion|Lavrio|Zante Ferries|300|92.52|false
+V0122|2025-06-04T09:29|Santorini|Milos|Fast Ferries|135|38.89|true
+V0123|2025-06-04T10:18|Paros|Syros|Seajets|170|41.93|true
+V0124|2025-06-04T10:31|Milos|Lavrio|Seajets|300|66.48|true
+V0125|2025-06-04T11:22|Milos|Mykonos|Golden Star|110|32.32|true
+V0126|2025-06-04T12:10|Naxos|Milos|Zante Ferries|300|121.50|true
+V0127|2025-06-04T12:25|Naxos|Lavrio|Minoan Lines|300|94.97|true
+V0128|2025-06-04T13:24|Heraklion|Paros|Zante Ferries|240|44.27|true
+V0129|2025-06-04T14:02|Mykonos|Milos|Minoan Lines|40|14.39|true
+V0130|2025-06-04T14:32|Lavrio|Rafina|Seajets|300|77.05|true
+V0131|2025-06-04T15:06|Lavrio|Naxos|Zante Ferries|40|13.58|false
+V0132|2025-06-04T15:42|Lavrio|Santorini|Zante Ferries|240|43.91|true
+V0133|2025-06-04T16:08|Heraklion|Santorini|Golden Star|60|11.30|true
+V0134|2025-06-04T17:02|Paros|Heraklion|Zante Ferries|120|32.75|true
+V0135|2025-06-04T17:36|Paros|Piraeus|Golden Star|170|48.20|true
+V0136|2025-06-04T17:55|Naxos|Piraeus|Minoan Lines|135|41.63|true
+V0137|2025-06-04T18:48|Milos|Piraeus|Golden Star|75|15.13|true
+V0138|2025-06-04T19:09|Paros|Mykonos|Seajets|135|44.95|true
+V0139|2025-06-04T20:12|Piraeus|Mykonos|Zante Ferries|40|13.63|true
+V0140|2025-06-04T20:34|Milos|Mykonos|Blue Star Ferries|110|40.34|true
+V0141|2025-06-04T21:23|Mykonos|Naxos|Seajets|40|14.22|true
+V0142|2025-06-04T21:54|Lavrio|Rafina|Seajets|300|65.07|true
+V0143|2025-06-04T22:22|Piraeus|Lavrio|Blue Star Ferries|120|36.60|true
+V0144|2025-06-04T23:08|Paros|Lavrio|Minoan Lines|110|36.21|true
+V0145|2025-06-04T23:47|Lavrio|Santorini|Zante Ferries|60|22.01|true
+V0146|2025-06-05T00:30|Lavrio|Heraklion|Minoan Lines|110|36.61|true
+V0147|2025-06-05T01:06|Milos|Mykonos|Seajets|110|32.61|true
+V0148|2025-06-05T01:16|Naxos|Syros|Blue Star Ferries|300|106.75|true
+V0149|2025-06-05T01:55|Piraeus|Rafina|Blue Star Ferries|240|46.23|true
+V0150|2025-06-05T02:47|Mykonos|Lavrio|Zante Ferries|110|37.71|true
+V0151|2025-06-05T03:23|Syros|Paros|Fast Ferries|300|115.94|true
+V0152|2025-06-05T04:08|Milos|Paros|Blue Star Ferries|60|23.74|true
+V0153|2025-06-05T04:28|Syros|Lavrio|Minoan Lines|90|33.52|true
+V0154|2025-06-05T05:19|Milos|Paros|Seajets|110|20.33|true
+V0155|2025-06-05T05:37|Paros|Rafina|Seajets|60|22.07|false
+V0156|2025-06-05T06:38|Rafina|Lavrio|Golden Star|40|9.76|false
+V0157|2025-06-05T07:01|Milos|Paros|Golden Star|90|17.39|true
+V0158|2025-06-05T07:34|Mykonos|Syros|Golden Star|170|34.93|true
+V0159|2025-06-05T08:11|Milos|Lavrio|Blue Star Ferries|90|24.21|true
+V0160|2025-06-05T09:00|Piraeus|Lavrio|Blue Star Ferries|240|81.09|true
+V0161|2025-06-05T09:21|Santorini|Mykonos|Minoan Lines|170|69.29|true
+V0162|2025-06-05T10:22|Milos|Naxos|Golden Star|50|15.65|true
+V0163|2025-06-05T10:39|Syros|Piraeus|Fast Ferries|110|38.58|true
+V0164|2025-06-05T11:27|Milos|Rafina|Minoan Lines|50|18.75|true
+V0165|2025-06-05T12:10|Lavrio|Naxos|Zante Ferries|110|27.14|false
+V0166|2025-06-05T12:47|Mykonos|Milos|Blue Star Ferries|300|61.16|true
+V0167|2025-06-05T13:26|Piraeus|Syros|Fast Ferries|170|54.02|true
+V0168|2025-06-05T13:40|Lavrio|Paros|Zante Ferries|120|36.91|false
+V0169|2025-06-05T14:27|Syros|Naxos|Blue Star Ferries|50|14.49|true
+V0170|2025-06-05T15:14|Paros|Naxos|Fast Ferries|110|42.92|true
+V0171|2025-06-05T15:32|Paros|Rafina|Fast Ferries|135|48.10|true
+V0172|2025-06-05T16:14|Paros|Syros|Seajets|300|102.02|true
+V0173|2025-06-05T16:50|Milos|Paros|Seajets|170|34.11|true
+V0174|2025-06-05T17:22|Syros|Milos|Blue Star Ferries|40|10.79|true
+V0175|2025-06-05T18:18|Mykonos|Syros|Minoan Lines|90|24.73|true
+V0176|2025-06-05T18:55|Santorini|Syros|Golden Star|135|45.37|true
+V0177|2025-06-05T19:28|Heraklion|Santorini|Fast Ferries|110|21.28|true
+V0178|2025-06-05T19:56|Rafina|Syros|Zante Ferries|110|20.78|false
+V0179|2025-06-05T20:39|Rafina|Paros|Seajets|170|45.93|true
+V0180|2025-06-05T21:19|Paros|Lavrio|Fast Ferries|110|41.46|true
+V0181|2025-06-05T21:46|Rafina|Milos|Zante Ferries|135|52.04|true
+V0182|2025-06-05T22:42|Santorini|Rafina|Zante Ferries|120|45.34|false
+V0183|2025-06-05T22:59|Lavrio|Santorini|Seajets|35|10.88|true
+V0184|2025-06-05T23:47|Mykonos|Paros|Blue Star Ferries|40|8.94|true
+V0185|2025-06-06T00:30|Lavrio|Naxos|Fast Ferries|75|18.50|true
+V0186|2025-06-06T01:07|Paros|Santorini|Blue Star Ferries|300|81.59|false
+V0187|2025-06-06T01:47|Mykonos|Naxos|Blue Star Ferries|35|9.45|true
+V0188|2025-06-06T02:20|Heraklion|Piraeus|Zante Ferries|135|45.13|true
+V0189|2025-06-06T02:40|Heraklion|Rafina|Golden Star|90|36.39|true
+V0190|2025-06-06T03:24|Heraklion|Rafina|Fast Ferries|35|7.75|true
+V0191|2025-06-06T03:58|Milos|Mykonos|Fast Ferries|240|84.73|true
+V0192|2025-06-06T04:34|Santorini|Lavrio|Blue Star Ferries|110|41.86|false
+V0193|2025-06-06T05:18|Milos|Lavrio|Fast Ferries|60|22.33|true
+V0194|2025-06-06T05:58|Lavrio|Mykonos|Minoan Lines|120|37.94|true
+V0195|2025-06-06T06:25|Lavrio|Santorini|Blue Star Ferries|300|77.70|true
+V0196|2025-06-06T07:18|Paros|Lavrio|Blue Star Ferries|50|20.02|true
+V0197|2025-06-06T07:52|Milos|Syros|Zante Ferries|50|11.55|true
+V0198|2025-06-06T08:25|Piraeus|Milos|Golden Star|60|23.06|true
+V0199|2025-06-06T08:51|Syros|Santorini|Blue Star Ferries|50|9.76|true
+V0200|2025-06-06T09:22|Mykonos|Paros|Minoan Lines|120|33.96|true
+V0201|2025-06-06T10:25|Paros|Naxos|Zante Ferries|110|34.30|true
+V0202|2025-06-06T11:00|Santorini|Lavrio|Blue Star Ferries|60|21.38|true
+V0203|2025-06-06T11:34|Piraeus|Milos|Zante Ferries|40|14.38|false
+V0204|2025-06-06T12:04|Rafina|Syros|Golden Star|120|48.08|true
+V0205|2025-06-06T12:40|Heraklion|Paros|Zante Ferries|35|13.69|true
+V0206|2025-06-06T13:19|Piraeus|Santorini|Fast Ferries|35|7.29|true
+V0207|2025-06-06T13:57|Syros|Paros|Minoan Lines|90|27.80|false
+V0208|2025-06-06T14:29|Paros|Santorini|Zante Ferries|170|69.25|true
+V0209|2025-06-06T14:59|Lavrio|Paros|Seajets|35|13.04|true
+V0210|2025-06-06T15:56|Syros|Mykonos|Golden Star|135|39.12|true
+V0211|2025-06-06T16:32|Santorini|Syros|Seajets|90|24.16|false
+V0212|2025-06-06T17:10|Syros|Rafina|Fast Ferries|110|36.23|true
+V0213|2025-06-06T17:40|Mykonos|Paros|Zante Ferries|90|21.37|true
+V0214|2025-06-06T18:05|Syros|Santorini|Blue Star Ferries|240|57.27|true
+V0215|2025-06-06T19:00|Milos|Santorini|Minoan Lines|170|56.28|true
+V0216|2025-06-06T19:13|Piraeus|Syros|Golden Star|120|23.30|true
+V0217|2025-06-06T20:15|Milos|Paros|Fast Ferries|60|19.76|true
+V0218|2025-06-06T20:43|Syros|Santorini|Minoan Lines|40|14.51|true
+V0219|2025-06-06T21:17|Naxos|Piraeus|Golden Star|120|33.68|true
+V0220|2025-06-06T21:42|Naxos|Rafina|Blue Star Ferries|120|31.93|true
+V0221|2025-06-06T22:41|Rafina|Mykonos|Minoan Lines|60|16.32|false
+V0222|2025-06-06T23:23|Mykonos|Syros|Fast Ferries|300|106.81|true
+V0223|2025-06-06T23:32|Paros|Rafina|Blue Star Ferries|135|25.12|true
+V0224|2025-06-07T00:37|Piraeus|Syros|Blue Star Ferries|75|24.30|true
+V0225|2025-06-07T00:47|Rafina|Santorini|Minoan Lines|300|94.49|true
+V0226|2025-06-07T01:27|Lavrio|Santorini|Fast Ferries|110|25.25|true
+V0227|2025-06-07T02:13|Piraeus|Paros|Minoan Lines|75|24.11|true
+V0228|2025-06-07T02:51|Lavrio|Piraeus|Zante Ferries|35|11.55|false
+V0229|2025-06-07T03:17|Rafina|Naxos|Seajets|40|13.98|true
+V0230|2025-06-07T04:14|Piraeus|Naxos|Fast Ferries|240|74.00|true
+V0231|2025-06-07T04:47|Mykonos|Heraklion|Minoan Lines|135|48.32|true
+V0232|2025-06-07T05:22|Naxos|Milos|Minoan Lines|170|38.74|true
+V0233|2025-06-07T05:41|Milos|Paros|Zante Ferries|40|13.69|true
+V0234|2025-06-07T06:45|Rafina|Syros|Zante Ferries|90|28.26|false
+V0235|2025-06-07T06:55|Mykonos|Naxos|Fast Ferries|35|8.75|true
+V0236|2025-06-07T08:01|Piraeus|Milos|Seajets|300|80.88|true
+V0237|2025-06-07T08:18|Syros|Paros|Seajets|40|13.60|true
+V0238|2025-06-07T08:53|Paros|Santorini|Blue Star Ferries|60|13.19|true
+V0239|2025-06-07T09:29|Milos|Heraklion|Zante Ferries|60|12.71|true
+V0240|2025-06-07T10:27|Paros|Milos|Zante Ferries|170|56.05|true

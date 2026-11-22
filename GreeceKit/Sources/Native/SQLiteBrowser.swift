@@ -164,6 +164,7 @@ final class SQLiteGridSource: GridSource {
             case .text(let text): return min(text.count, 60)
             case .null: return 4
             case .blob: return 14
+            default: return 8
             }
         }.max() ?? 0
         let title = object.columns[column].name.count + 3
@@ -177,9 +178,10 @@ final class SQLiteGridSource: GridSource {
         return rows[index][column]
     }
 
-    func sort(column: Int, ascending: Bool) {
+    func sort(column: Int, ascending: Bool, completion: @escaping (Bool) -> Void) {
         order = (object.columns[column].name, ascending)
         pages.removeAll()
+        completion(true)
     }
 
     private func page(_ number: Int) -> [[GridValue]] {
