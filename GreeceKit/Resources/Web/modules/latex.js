@@ -694,8 +694,7 @@
     // ---------------------------------------------------------- Definitions
 
     defineCommand(kind) {
-      const star = this.readStar();
-      void star;
+      this.readStar();
       this.skipSpaces(true);
       let name = this.readArg().trim();
       if (!name.startsWith('\\')) return;
@@ -817,10 +816,8 @@
     }
 
     formatCounter(name, value) {
-      const top = this.isBook ? 'chapter' : 'section';
       const within = this.numberWithin[name] || ((name === 'figure' || name === 'table' || name === 'equation') && this.isBook ? 'chapter' : null);
       const prefix = within ? this.sectionNumber(within) : '';
-      void top;
       return prefix ? `${prefix}.${value}` : String(value);
     }
 
@@ -1063,11 +1060,6 @@
     picture(name) {
       const body = this.readUntilEnd(name);
       const kind = { tikzpicture: 'TikZ drawing', pgfpicture: 'PGF drawing', picture: 'Picture', circuitikz: 'Circuit diagram', forest: 'Tree diagram', tikzcd: 'Commutative diagram', axis: 'Plot', pspicture: 'PSTricks drawing' }[name] || 'Drawing';
-      // A tikz-cd diagram is usually small: show it as an array in KaTeX if we can.
-      if (name === 'tikzcd') {
-        const tex = `\\begin{CD}${body.replace(/\\arrow\[[^\]]*\]/g, '').replace(/&/g, '@>>>')}\\end{CD}`;
-        void tex;
-      }
       const nodes = [];
       body.replace(/\\node[^{;]*\{([^{}]{1,60})\}/g, (m, text) => { if (nodes.length < 8 && text.trim()) nodes.push(text.trim()); return m; });
       const detail = nodes.length ? `<span class="detail">${nodes.map((n) => this.inline(n)).join(' · ')}</span>` : '';
@@ -1094,13 +1086,9 @@
       const depth = Math.min(level, 4);
       const items = [];
       let counter = start - 1;
-      // Text before the first \item belongs to nothing; parse and drop whitespace.
-      const lead = this.contentOf(name, { item: true });
-      let reason = this.lastReason;
-      const leadHTML = lead.html();
+      // Text before the first \item is kept, unlabelled.
+      const leadHTML = this.contentOf(name, { item: true }).html();
       if (leadHTML) items.push({ html: leadHTML, label: '' });
-      reason = this.lastReasonFrom;
-      void reason;
       // The loop: each \item starts a new entry until \end{name}.
       while (this.lastStop === 'item') {
         if (this.isBeamer) this.readOverlay();
@@ -1303,8 +1291,7 @@
     rule(kind) {
       const table = this.table;
       if (kind === 'cmid') {
-        const trim = this.s.peek() === '(' ? this.readParens() : null;
-        void trim;
+        if (this.s.peek() === "(") this.readParens();   // (lr) trims
         this.readOpt();
         const range = this.readArg();
         const m = range.match(/(\d+)\s*-\s*(\d+)/);
@@ -1364,11 +1351,10 @@
         if (name === 'subsection') this.subsection = plain(this.inline(short || title));
         return;
       }
-      const short = this.readOpt();
-      void short;
+      this.readOpt();   // the short title only matters for running heads
       const raw = this.readArg();
       const level = SECTION_LEVELS[name];
-      const numbered = !star && level <= this.secnumdepth && !(name === 'part' && false);
+      const numbered = !star && level <= this.secnumdepth;
       let number = null;
       if (numbered) {
         this.stepCounter(name);
@@ -1540,8 +1526,7 @@
     // ---------------------------------------------------------- Citations
 
     cite(name) {
-      const star = this.readStar();
-      void star;
+      this.readStar();
       if (this.isBeamer) this.readOverlay();
       let pre = this.readOpt();
       let post = this.readOpt();
@@ -1678,8 +1663,6 @@
       this.endAlgoLine();
       const lines = this.algo.lines;
       this.algo = saved;
-      const numbered = name === 'algorithmic' && false;
-      void numbered;
       const html = lines.map((l) => `<li style="--indent:${Math.min(l.indent, 12)}">${l.html || '&nbsp;'}</li>`).join('');
       this.out.block(`<ol class="tex-algorithm">${html}</ol>`);
     }
