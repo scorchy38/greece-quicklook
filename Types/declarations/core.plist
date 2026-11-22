@@ -156,10 +156,6 @@
 			<key>public.filename-extension</key>
 			<array>
 				<string>env</string>
-				<string>rst</string>
-				<string>adoc</string>
-				<string>asciidoc</string>
-				<string>org</string>
 				<string>lock</string>
 				<string>properties</string>
 				<string>gitignore</string>

@@ -160,6 +160,16 @@
 				<string>com.apple.ascii-property-list</string>
 				<string>com.apple.xcode.entitlements-property-list</string>
 				<string>com.apple.xcode.app-privacy-property-list</string>
+				<string>com.scorchy.greece.tex-support</string>
+				<string>com.scorchy.greece.bibtex</string>
+				<string>org.idpf.epub-container</string>
+				<string>com.scorchy.greece.org</string>
+				<string>com.scorchy.greece.asciidoc</string>
+				<string>com.scorchy.greece.restructuredtext</string>
+				<string>com.scorchy.greece.sweave</string>
+				<string>com.scorchy.greece.mermaid</string>
+				<string>com.scorchy.greece.typst</string>
+				<string>com.scorchy.greece.pgf</string>
 			</array>
 			<key>QLThumbnailMinimumDimension</key>
 			<integer>0</integer>

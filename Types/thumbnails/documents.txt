@@ -1,0 +1,12 @@
+# Documents: typeset first pages, title slides, reference cards, book covers and figures.
+org.latex-project.latex
+com.scorchy.greece.tex-support
+com.scorchy.greece.bibtex
+org.idpf.epub-container
+com.scorchy.greece.org
+com.scorchy.greece.asciidoc
+com.scorchy.greece.restructuredtext
+com.scorchy.greece.sweave
+com.scorchy.greece.mermaid
+com.scorchy.greece.typst
+com.scorchy.greece.pgf
