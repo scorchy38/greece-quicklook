@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greece
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greece-web
+  namespace: greece
+  labels:
+    app: greece-web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: greece-web
+  template:
+    metadata:
+      labels:
+        app: greece-web
+    spec:
+      initContainers:
+        - name: migrate
+          image: ghcr.io/example/greece-web:2.4.1
+          command: ["node", "migrate.js"]
+      containers:
+        - name: web
+          image: ghcr.io/example/greece-web:2.4.1
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: greece-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: greece-web
+  namespace: greece
+spec:
+  type: ClusterIP
+  selector:
+    app: greece-web
+  ports:
+    - port: 80
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greece
+  namespace: greece
+spec:
+  rules:
+    - host: greece.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: greece-web
+                port:
+                  number: 80
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup
+  namespace: greece
+spec:
+  schedule: "0 3 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: cleanup
+              image: ghcr.io/example/greece-tools:1.3
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greece-secrets
+  namespace: greece
+type: Opaque
+stringData:
+  DATABASE_URL: postgres://greece:never-shown@db/greece
+  STRIPE_SECRET_KEY: sk_live_never_shown

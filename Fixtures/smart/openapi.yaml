@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: Greece Sync API
+  version: 2.1.0
+  description: Sync previews, thumbnails and reading positions between a Mac and the web viewer.
+servers:
+  - url: https://api.greece.example.com/v2
+tags:
+  - name: Files
+    description: Files shared from a Mac
+  - name: Previews
+  - name: Account
+paths:
+  /files:
+    get:
+      tags: [Files]
+      summary: List shared files
+      parameters:
+        - $ref: "#/components/parameters/Cursor"
+        - name: kind
+          in: query
+          schema:
+            type: string
+            enum: [markdown, code, image, archive]
+      responses:
+        "200": { description: A page of files }
+        "401": { description: Not signed in }
+    post:
+      tags: [Files]
+      summary: Share a file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/Upload"
+      responses:
+        "201": { description: Shared }
+        "413": { description: Too large }
+  /files/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Files]
+      summary: Get one file's details
+      responses:
+        "200": { description: The file }
+        "404": { description: Not found }
+    delete:
+      tags: [Files]
+      summary: Stop sharing a file
+      responses:
+        "204": { description: Removed }
+  /files/{id}/preview:
+    get:
+      tags: [Previews]
+      summary: Render a preview as HTML
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+        - name: theme
+          in: query
+          description: Code theme to use
+          schema: { type: string, default: xcode }
+      responses:
+        "200": { description: Rendered preview }
+        "500": { description: Renderer failed }
+  /files/{id}/thumbnail:
+    get:
+      tags: [Previews]
+      summary: Render a thumbnail
+      parameters:
+        - name: size
+          in: query
+          schema: { type: integer, maximum: 1024 }
+      responses:
+        "200": { description: PNG image }
+  /me:
+    get:
+      tags: [Account]
+      summary: The signed-in account
+      responses:
+        "200": { description: Account }
+    patch:
+      tags: [Account]
+      summary: Update preferences
+      deprecated: true
+      responses:
+        "200": { description: Updated }
+components:
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      description: Where the previous page ended
+      schema: { type: string }
+  schemas:
+    Upload:
+      type: object
+      properties:
+        file: { type: string, format: binary }

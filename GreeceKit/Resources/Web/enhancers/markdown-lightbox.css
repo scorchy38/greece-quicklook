@@ -1,0 +1,63 @@
+/* Greece — image lightbox. Photos read best on a dark backdrop, in either appearance. */
+
+article.has-lightbox img:not(a img) { cursor: zoom-in; }
+html.lightbox-open, html.lightbox-open body { overflow: hidden; }
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 56px 72px 64px;
+  background: rgba(14, 14, 16, .86);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+  color: rgba(255, 255, 255, .92);
+  font: 12.5px/1.4 var(--ui);
+  animation: lightbox-in .16s ease-out;
+}
+@keyframes lightbox-in { from { opacity: 0; } to { opacity: 1; } }
+
+.lightbox-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .45);
+  background: #fff;
+  cursor: default;
+}
+
+.lightbox-button {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .12);
+  color: rgba(255, 255, 255, .9);
+  cursor: default;
+}
+.lightbox-button svg { width: 16px; height: 16px; }
+.lightbox-button:hover { background: rgba(255, 255, 255, .22); }
+.lightbox-button:disabled { opacity: .3; }
+.lightbox-close { top: 14px; right: 14px; width: 30px; height: 30px; }
+.lightbox-prev { left: 18px; top: calc(50% - 17px); }
+.lightbox-next { right: 18px; top: calc(50% - 17px); }
+
+.lightbox-footer {
+  position: absolute;
+  left: 72px;
+  right: 72px;
+  bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+.lightbox-caption { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lightbox-count { color: rgba(255, 255, 255, .55); font-variant-numeric: tabular-nums; white-space: nowrap; }

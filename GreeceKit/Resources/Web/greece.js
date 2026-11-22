@@ -349,6 +349,10 @@
     const emoji = window.markdownitEmoji && (window.markdownitEmoji.full || window.markdownitEmoji);
     if (typeof emoji === 'function') md.use(emoji);
     if (options.math && window.katex) md.use(mathPlugin);
+    // Enhancer scripts add syntax (tabs, callouts, definition lists…) before anything renders.
+    for (const plugin of markdownPlugins) {
+      try { md.use(plugin); } catch (e) { post('log', 'markdown plugin failed: ' + (e && e.stack || e)); }
+    }
 
     md.renderer.rules.fence = (tokens, idx) => {
       const token = tokens[idx];
@@ -867,6 +871,7 @@
 
   const renderers = {};
   const enhancers = [];
+  const markdownPlugins = [];
   const applyCallbacks = [];
   let moduleData;
 
@@ -885,6 +890,10 @@
     /** Adds features to pages of a kind ('code', 'markdown', 'diff', 'notebook', a module's kind, or '*')
         after they render and before they're shown: `enhance(root, kit)`, may be async. */
     enhance(kind, enhance) { enhancers.push({ kind, enhance }); },
+
+    /** markdown-it plugins every Markdown renderer uses (pages, notebooks, modules' prose).
+        Enhancer scripts push to it as they load, before the page renders: `(md) => …`. */
+    markdownPlugins,
 
     /** What module renderers share with Greece's own: escaping, highlighting, Markdown, notices. */
     kit: {

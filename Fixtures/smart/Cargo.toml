@@ -1,0 +1,37 @@
+[package]
+name = "greece-index"
+version = "0.8.2"
+edition = "2021"
+rust-version = "1.78"
+description = "Fast full-text index for Quick Look previews"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/example/greece-index"
+keywords = ["search", "index", "quicklook"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.132"
+tokio = { version = "1.41", features = ["rt-multi-thread", "macros"] }
+tantivy = "0.22"
+memmap2 = "0.9"
+anyhow = "1"
+tracing = { version = "0.1", optional = true }
+greece-core = { path = "../core" }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tempfile = "3.13"
+
+[build-dependencies]
+cc = "1.1"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+core-foundation = "0.10"
+
+[features]
+default = []
+trace = ["dep:tracing"]
+
+[[bench]]
+name = "index"
+harness = false

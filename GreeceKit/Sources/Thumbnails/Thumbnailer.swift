@@ -50,13 +50,18 @@ public enum Thumbnailer {
             }
         case .code(let language):
             let short = ["Dockerfile": "DOCKER", "Makefile": "MAKE", "Git Ignore": "GIT", "Shell": "SH", "Plain Text": "TXT"]
-            let badge = ext.isEmpty ? (short[language.name] ?? String(language.name.split(separator: " ").first ?? "").uppercased().prefix(6).description) : ext
+            var badge = ext.isEmpty ? (short[language.name] ?? String(language.name.split(separator: " ").first ?? "").uppercased().prefix(6).description) : ext
+            // .env files never show their values, not even as a picture in Finder.
+            let secret = EnvMask.applies(to: url.lastPathComponent, text: file.text)
+            if secret { badge = "ENV" }
+            let text = secret ? EnvMask.masked(file.text) : file.text
             return ThumbnailPage(size: size, badge: badge) { rect in
-                CodePage.draw(file.text, grammar: language.grammar, in: rect, theme: settings.codeTheme, weight: settings.codeFontWeight)
+                CodePage.draw(text, grammar: language.grammar, in: rect, theme: settings.codeTheme, weight: settings.codeFontWeight)
             }
         case .json:
             var text = file.text
             if JSONFormatter.looksMinified(text), let pretty = JSONFormatter.prettyPrinted(text, lenient: true) { text = pretty }
+            if EnvMask.applies(to: url.lastPathComponent, text: text) { text = EnvMask.masked(text) }
             return ThumbnailPage(size: size, badge: "JSON") { rect in
                 CodePage.draw(text, grammar: "json", in: rect, theme: settings.codeTheme, weight: settings.codeFontWeight)
             }
@@ -442,5 +447,104 @@ enum NotebookOutline {
             }
         }
         return parts.isEmpty ? nil : parts.joined(separator: "\n\n")
+    }
+}
+
+// MARK: - .env files
+
+/// Hides the values of .env files, line for line the way the page does (enhancers/code-smart-env.js):
+/// values become a fixed mask, comments stay, commented-out assignments lose their values, quoted
+/// values that run over several lines are hidden on every line, and lines that aren't assignments
+/// are hidden whole.
+enum EnvMask {
+    static let mask = "••••••••"
+
+    private static let assignment = try! NSRegularExpression(pattern: #"^([ \t]*)(export[ \t]+)?([A-Za-z_][A-Za-z0-9_.-]*)([ \t]*=[ \t]*)(.*)$"#)
+    private static let commented = try! NSRegularExpression(pattern: #"^([ \t]*#[ \t]*)(export[ \t]+)?([A-Za-z_][A-Za-z0-9_.-]*)(=)(.*)$"#)
+    private static let templates: Set<String> = ["local", "example", "sample", "template", "dist", "default", "defaults", "development", "production", "staging", "test"]
+
+    /// .env, .env.local, prod.env, .flaskenv, .dev.vars, env.example… and .envrc files that are only assignments.
+    static func applies(to fileName: String, text: String = "") -> Bool {
+        let name = fileName.lowercased()
+        if name == ".env" || name.hasPrefix(".env.") || (name.hasSuffix(".env") && name.count > 4) || name == ".flaskenv" || name == ".dev.vars" { return true }
+        if name.hasPrefix("env."), templates.contains(String(name.dropFirst(4))) { return true }
+        if name == ".envrc" {
+            let lines = text.prefix(16384).split(whereSeparator: \.isNewline).map(String.init).filter {
+                let trimmed = $0.trimmingCharacters(in: .whitespaces)
+                return !trimmed.isEmpty && !trimmed.hasPrefix("#")
+            }
+            guard !lines.isEmpty else { return false }
+            return Double(lines.filter { match(assignment, $0) != nil }.count) / Double(lines.count) >= 0.8
+        }
+        return false
+    }
+
+    static func masked(_ text: String) -> String {
+        var lines = text.replacingOccurrences(of: "\r\n", with: "\n").replacingOccurrences(of: "\r", with: "\n")
+            .components(separatedBy: "\n")
+        if lines.last == "" { lines.removeLast() }
+        var output: [String] = []
+        var open: Character?
+        for line in lines {
+            if let quote = open {
+                if let close = line.firstIndex(of: quote) {
+                    output.append(mask + line[line.index(after: close)...])
+                    open = nil
+                } else {
+                    output.append(line.isEmpty ? "" : mask)
+                }
+                continue
+            }
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty { output.append(line); continue }
+            if let m = match(commented, line), !m[5].trimmingCharacters(in: .whitespaces).isEmpty {
+                output.append(m[1] + m[2] + m[3] + m[4] + mask)
+                continue
+            }
+            if trimmed.hasPrefix("#") { output.append(line); continue }
+            guard let m = match(assignment, line) else { output.append(mask); continue }
+            let (value, rest) = splitComment(m[5])
+            output.append(m[1] + m[2] + m[3] + m[4] + (value.isEmpty ? "" : mask) + rest)
+            if let quote = value.first, "\"'`".contains(quote), isUnterminated(value, quote: quote) { open = quote }
+        }
+        return output.joined(separator: "\n")
+    }
+
+    /// Capture groups of a whole-line match ("" for groups that didn't take part).
+    private static func match(_ regex: NSRegularExpression, _ line: String) -> [String]? {
+        guard let result = regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)) else { return nil }
+        return (0..<result.numberOfRanges).map { index in
+            Range(result.range(at: index), in: line).map { String(line[$0]) } ?? ""
+        }
+    }
+
+    /// A value and what follows it: a closing quote ends a quoted value; otherwise ` #` starts a comment.
+    private static func splitComment(_ raw: String) -> (String, String) {
+        let chars = Array(raw)
+        if let quote = chars.first, "\"'`".contains(quote) {
+            var i = 1
+            while i < chars.count && chars[i] != quote { i += (chars[i] == "\\" && quote == "\"") ? 2 : 1 }
+            let end = min(i + 1, chars.count)
+            return (String(chars[..<end]), String(chars[end...]))
+        }
+        if chars.count > 1 {
+            for i in 1..<chars.count where chars[i] == "#" && (chars[i - 1] == " " || chars[i - 1] == "\t") {
+                return (String(chars[..<(i - 1)]), String(chars[(i - 1)...]))
+            }
+        }
+        var end = chars.count
+        while end > 0 && (chars[end - 1] == " " || chars[end - 1] == "\t") { end -= 1 }
+        return (String(chars[..<end]), String(chars[end...]))
+    }
+
+    private static func isUnterminated(_ value: String, quote: Character) -> Bool {
+        let chars = Array(value)
+        if chars.count < 2 || chars.last != quote { return true }
+        guard quote == "\"", chars.count > 2 else { return false }
+        // An escaped closing quote doesn't close the value.
+        var backslashes = 0
+        var i = chars.count - 2
+        while i >= 1 && chars[i] == "\\" { backslashes += 1; i -= 1 }
+        return backslashes % 2 == 1
     }
 }
