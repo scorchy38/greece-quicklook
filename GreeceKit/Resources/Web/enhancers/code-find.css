@@ -106,3 +106,7 @@
   pointer-events: none;
 }
 .code-find-marks[hidden] { display: none; }
+
+/* Quick Look: the query comes from a selection, so the field reads as a label, not an input. */
+.code-findbar.by-selection input { pointer-events: none; caret-color: transparent; }
+.code-findbar.by-selection input::placeholder { font-style: normal; }

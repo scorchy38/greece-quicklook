@@ -288,6 +288,7 @@
     kit.root.appendChild(page);
     $$('.bib-key').forEach((button) => copyButton(button, button.textContent));
     const filter = $('.bib-filter');
+    if (!kit.typing) filter.hidden = true;   // Quick Look keeps typed keys for Finder
     const list = $$('.bib-entry');
     const none = $('.bib-none');
     filter.addEventListener('input', () => {

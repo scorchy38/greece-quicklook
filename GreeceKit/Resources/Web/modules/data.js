@@ -321,6 +321,8 @@
     // ---------------------------------------------------------------- Wiring
 
     kit.$('.har-search', root).addEventListener('input', (e) => { state.filter = e.target.value.trim(); render(); });
+    // Quick Look keeps typed keys for Finder: the type tabs filter instead.
+    if (!kit.typing) kit.$('.har-search', root).hidden = true;
     kit.$$('.har-types button', root).forEach((button) => button.addEventListener('click', () => {
       state.type = button.dataset.type;
       kit.$$('.har-types button', root).forEach((b) => b.classList.toggle('on', b === button));

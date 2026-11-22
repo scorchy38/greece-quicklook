@@ -214,6 +214,7 @@ button.m-chip.on { box-shadow: inset 0 0 0 1px currentColor; }
 .tester .controls { display: flex; align-items: center; gap: 12px; color: var(--text-3); font-size: 12px; margin-bottom: 8px; }
 .tester .controls .m-range { width: 160px; }
 .tester .controls .size { min-width: 44px; font-variant-numeric: tabular-nums; color: var(--text-2); }
+.tester .sample-choices { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .tester .sample {
   outline: none;
   font-size: var(--tester-size, 64px);

@@ -6,6 +6,27 @@
   const M = window.GreeceMedia;
   const { el } = M;
 
+  /** Quick Look keeps typed keys for Finder, so the tester offers ready-made texts to try instead. */
+  function sampleChoices(face, sample) {
+    const latin = face.scripts[0] === 'Latin' || !face.scripts.length;
+    const choices = [['Sample', face.sample]];
+    if (latin) {
+      choices.push(['Pangram', 'Sphinx of black quartz, judge my vow.'],
+                   ['Alphabet', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz'],
+                   ['Figures', '0123456789 $€£¥ ½ % & @ # ( ) [ ] { } ? ! , . ; :']);
+    }
+    const group = el('div', { class: 'sample-choices', role: 'group', 'aria-label': 'Sample text' });
+    choices.forEach(([label, text], i) => {
+      const chip = el('button', { type: 'button', class: 'm-chip' + (i === 0 ? ' on' : ''), text: label, 'aria-pressed': String(i === 0) });
+      chip.addEventListener('click', () => {
+        sample.textContent = text;
+        group.querySelectorAll('.m-chip').forEach((c) => { c.classList.toggle('on', c === chip); c.setAttribute('aria-pressed', String(c === chip)); });
+      });
+      group.appendChild(chip);
+    });
+    return group;
+  }
+
   const PARAGRAPH = 'Typography exists to honour content. Each letter is drawn to sit comfortably beside its neighbours, ' +
     'and the space between them matters as much as the strokes themselves. Good type disappears into reading: the eye ' +
     'moves along the line, the mind follows the meaning, and only later do we notice the care in the details.';
@@ -106,7 +127,9 @@
     if (family && !icon) {
       // --------------------------------------------------------- Tester
       const specimen = addSection('specimen', 'Specimen');
-      const sample = el('div', { class: 'sample specimen', contenteditable: 'plaintext-only', spellcheck: 'false', dir: face.direction, text: face.sample });
+      const sample = el('div', kit.typing
+        ? { class: 'sample specimen', contenteditable: 'plaintext-only', spellcheck: 'false', dir: face.direction, text: face.sample }
+        : { class: 'sample specimen', dir: face.direction, text: face.sample });
       const sizeLabel = el('span', { class: 'size', text: '64 pt' });
       const tester = el('div', { class: 'tester' }, [
         el('div', { class: 'controls' }, [
@@ -114,7 +137,7 @@
           M.range(10, 200, 1, 64, (value) => { tester.style.setProperty('--tester-size', value + 'px'); sizeLabel.textContent = value + ' pt'; }),
           sizeLabel,
           el('span', { style: { flex: '1' } }),
-          el('span', { text: 'Click the sample to type your own' }),
+          kit.typing ? el('span', { text: 'Click the sample to type your own' }) : sampleChoices(face, sample),
         ]),
         sample,
       ]);

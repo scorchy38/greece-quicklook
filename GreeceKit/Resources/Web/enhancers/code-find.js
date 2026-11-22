@@ -38,6 +38,12 @@
       <button type="button" class="find-done">Done</button>`;
     document.body.appendChild(bar);
     const input = bar.querySelector('input');
+    if (!kit.typing) {
+      // Quick Look: keys go to Finder, so the field only shows the query; selecting text sets it.
+      input.readOnly = true;
+      input.tabIndex = -1;
+      bar.classList.add('by-selection');
+    }
     const countLabel = bar.querySelector('.find-count');
     const caseButton = bar.querySelector('.find-case');
     const wordButton = bar.querySelector('.find-word');
@@ -51,7 +57,13 @@
     let options = { caseSensitive: false, wholeWord: false };
     let lastQuery = '';
 
+    /** Where the search should start: the selected occurrence it was opened for, read before the
+        field takes focus (focusing it replaces the page's selection). */
+    let startAt = -1;
+
     function open(query, as = 'find') {
+      const selected = kit.selectionQuery();
+      startAt = as === 'find' && selected && (query === selected || (query === undefined && !kit.typing)) ? selectionOffset() : -1;
       mode = as;
       bar.classList.toggle('goto', as === 'goto');
       if (bar.hidden) {
@@ -69,12 +81,14 @@
         clearHighlights();
         marks.hidden = true;
       } else {
-        input.placeholder = 'Find';
+        input.placeholder = kit.typing ? 'Find' : 'Select text to find it';
         input.setAttribute('aria-label', 'Find');
         if (typeof query === 'string') input.value = query;
+        else if (!kit.typing && kit.selectionQuery()) input.value = kit.selectionQuery();
         else if (!input.value && lastQuery) input.value = lastQuery;
         search();
       }
+      if (!kit.typing) return;
       input.focus();
       input.select();
     }
@@ -127,7 +141,17 @@
     caseButton.addEventListener('click', () => setOption(caseButton, 'caseSensitive'));
     wordButton.addEventListener('click', () => setOption(wordButton, 'wholeWord'));
     bar.querySelector('.find-done').addEventListener('click', close);
-    bar.addEventListener('mousedown', (event) => { if (event.target !== input) event.preventDefault(); });
+    bar.addEventListener('mousedown', (event) => { if (event.target !== input || !kit.typing) event.preventDefault(); });
+
+    // Without a keyboard, selecting text while the bar is open searches for it.
+    if (!kit.typing) {
+      document.addEventListener('mouseup', (event) => {
+        // Left button only: a right-click selects a word too, and offers Find in its menu.
+        if (event.button !== 0 || bar.hidden || mode !== 'find' || bar.contains(event.target)) return;
+        const query = kit.selectionQuery();
+        if (query && query !== input.value) open(query, 'find');
+      });
+    }
 
     // ---------------------------------------------------------------- Go to line
 
@@ -208,6 +232,13 @@
         return lo;
       },
 
+      /** The match that starts at text offset `offset`, or -1. */
+      indexAt(offset) {
+        let lo = 0, hi = this.count;
+        while (lo < hi) { const mid = (lo + hi) >> 1; if (this.offsets[mid] < offset) lo = mid + 1; else hi = mid; }
+        return lo < this.count && this.offsets[lo] === offset ? lo : -1;
+      },
+
       /** The first match at or after the top of the viewport. */
       nearest() {
         const top = Math.max(0, G.lineAt(G.inset + (G.stickyHeight || 0) + 2));
@@ -271,6 +302,21 @@
       },
     };
 
+    /** Where the selection starts in the file's text, or -1 when it isn't in the code. */
+    function selectionOffset() {
+      const selection = window.getSelection();
+      if (!selection || !selection.rangeCount) return -1;
+      const range = selection.getRangeAt(0);
+      const start = range.startContainer;
+      const element = start.nodeType === Node.ELEMENT_NODE ? start : start.parentElement;
+      const line = element && element.closest('.ln');
+      if (!line || !line.dataset.n || start.nodeType !== Node.TEXT_NODE) return -1;
+      const walker = document.createTreeWalker(line, NodeFilter.SHOW_TEXT);
+      let seen = 0, node;
+      while ((node = walker.nextNode()) && node !== start) seen += node.nodeValue.length;
+      return node ? G.starts[Number(line.dataset.n) - 1] + seen + range.startOffset : -1;
+    }
+
     function rangeFor(line, col, length) {
       const el = G.lineElement(line);
       if (!el) return null;
@@ -302,7 +348,12 @@
       // While searching, only the count moves; highlights and marks are drawn once at the end.
       const run = p.run(query, options, () => updateCount(p, true));
       await run;
-      if (p.count && p.current < 0 && query === input.value) await p.select(p.nearest());
+      if (p.count && p.current < 0 && query === input.value) {
+        // Searching for a selection starts at that very occurrence.
+        const index = p === codeSearch && startAt >= 0 ? codeSearch.indexAt(startAt) : -1;
+        startAt = -1;
+        await p.select(index >= 0 ? index : p.nearest());
+      }
       updateCount(p, false);
       paint();
     }
@@ -331,10 +382,19 @@
 
     // ---------------------------------------------------------------- Painting
 
+    /* One Highlight per kind, emptied and refilled rather than replaced: WebKit repaints the
+       ranges a highlight loses only when that same object changes, so a replaced one can leave
+       an old match painted yellow after the query changes. */
+    const highlights = supportsHighlights ? { all: new Highlight(), current: new Highlight() } : null;
+    if (highlights) {
+      CSS.highlights.set('greece-find', highlights.all);
+      CSS.highlights.set('greece-find-current', highlights.current);
+    }
+
     function clearHighlights() {
-      if (!supportsHighlights) return;
-      CSS.highlights.delete('greece-find');
-      CSS.highlights.delete('greece-find-current');
+      if (!highlights) return;
+      highlights.all.clear();
+      highlights.current.clear();
     }
 
     let painted = [0, -1];
@@ -343,11 +403,11 @@
     function paint(marksToo = true) {
       if (bar.hidden || mode !== 'find') return;
       const p = provider();
-      if (p === codeSearch && supportsHighlights) {
+      if (p === codeSearch && highlights) {
         const { all, current } = codeSearch.visibleRanges();
-        CSS.highlights.set('greece-find', new Highlight(...all));
-        if (current) CSS.highlights.set('greece-find-current', new Highlight(current));
-        else CSS.highlights.delete('greece-find-current');
+        clearHighlights();
+        for (const range of all) highlights.all.add(range);
+        if (current) highlights.current.add(current);
       }
       if (p.paint) p.paint();
       if (marksToo) drawMarks(p);

@@ -30,6 +30,7 @@
     document.body.appendChild(panel);
     const list = panel.querySelector('.symbols-list');
     const filter = panel.querySelector('input');
+    if (!kit.typing) panel.querySelector('.symbols-filter').hidden = true;
     const countLabel = panel.querySelector('.count');
     let button = null;
 
@@ -55,7 +56,7 @@
       G.setRightInset(WIDTH);
       if (button) button.classList.add('on');
       track();
-      if (focus) filter.focus();
+      if (focus && kit.typing) filter.focus();
       G.emit('layout');
     }
     function close() {

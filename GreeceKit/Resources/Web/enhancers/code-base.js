@@ -108,7 +108,8 @@
         button.className = 'pill' + (icon ? ' icon' : '');
         if (id) button.id = id;
         button.dataset.order = order;
-        button.title = title || label || '';
+        // "Find (⌘F)": the shortcut only where keys reach the page.
+        button.title = (kit.typing ? title : (title || '').replace(/\s*\([^)]*\)$/, '')) || label || '';
         button.setAttribute('aria-label', label || title || '');
         button.innerHTML = icon ? ICONS[icon] : kit.esc(label);
         button.addEventListener('click', (e) => { e.preventDefault(); onClick(button, e); });
