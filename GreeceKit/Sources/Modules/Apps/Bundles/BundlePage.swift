@@ -23,8 +23,11 @@ enum BundlePage {
                                            ticket: ticket, fileCount: facts.filesComplete ? facts.files.count : nil,
                                            totalSize: facts.filesComplete ? facts.totalSize : nil)
         if facts.macho != nil || facts.executablePath != nil {
+            var section = signing.section
+            // iOS apps don't use the hardened runtime: an "Off" there would only mislead.
+            if facts.isIOS { section.rows.removeAll { $0.item?.title == "Hardened Runtime" } }
             page.badges += signing.badges
-            page.sections.append(signing.section)
+            page.sections.append(section)
             page.checks += signing.checks
         }
         if facts.isSandboxed && !facts.isIOS {
@@ -162,7 +165,7 @@ enum BundlePage {
         var seen = Set<String>()
         rows = rows.filter { seen.insert($0.title).inserted }
         guard !rows.isEmpty else { return nil }
-        return InspectorSection("privacy", title: "Privacy", footer: "What it may ask to use, in the developer’s words. macOS asks you first.",
+        return InspectorSection("privacy", title: "Privacy", footer: "What it may ask to use, in the developer’s words. You’re asked before it can.",
                                 rows: rows.map(InspectorRow.item), visibleLimit: 12)
     }
 
@@ -241,8 +244,11 @@ enum BundlePage {
             }
             if nested.role == .launchAgent || nested.role == .launchDaemon, let program = nested.identifier { subtitle.append(program) }
             if title.isEmpty { title = (nested.path as NSString).lastPathComponent }
+            // A flagged row shows a warning marker, so its version moves into the subtitle.
+            let flagged = tone == .caution || tone == .critical
+            if flagged, let version = nested.version { subtitle.append("version \(version)") }
             return InspectorItem(symbol: entry.symbol, tint: entry.tint, title: title, subtitle: subtitle.joined(separator: " · "),
-                                 value: nested.version, tone: tone, help: nested.identifier ?? nested.path)
+                                 value: flagged ? nil : nested.version, tone: tone, help: nested.identifier ?? nested.path)
         }
         var sections: [InspectorSection] = []
         let extensions = facts.nested.filter { [.appExtension, .systemExtension, .watchApp, .appClip, .plugin].contains($0.role) }

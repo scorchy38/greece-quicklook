@@ -32,7 +32,10 @@ enum SigningSection {
     static func build(signature: CodeSignature?, url: URL?, subject: Subject, ticket: NotarizationTicket? = nil,
                       fileCount: Int? = nil, totalSize: UInt64? = nil) -> Output {
         guard let signature else {
-            let rows: [InspectorRow] = [.note(InspectorNote(symbol: "xmark.seal", text: "Not code signed. macOS won’t open it unless you make an exception, and nothing vouches for who made it.", tone: .critical))]
+            let text = subject == .archived
+                ? "Not code signed. An iPhone or iPad won’t install it until it’s signed."
+                : "Not code signed. macOS won’t open it unless you make an exception, and nothing vouches for who made it."
+            let rows: [InspectorRow] = [.note(InspectorNote(symbol: "xmark.seal", text: text, tone: .critical))]
             return Output(section: InspectorSection("signature", title: "Signature", rows: rows), badges: [SignerKind.unsignedBadge], checks: [])
         }
 
@@ -229,6 +232,27 @@ enum SigningSection {
                                         help: "Files changed after it was signed. macOS may refuse to open it.")])
         }
         let message = (SecCopyErrorMessageString(status, nil) as String?) ?? "Error \(status)"
+        // Strict validation rejects older signature formats (iOS apps' resource envelopes, for one)
+        // that macOS still accepts. Nothing changed, so check again the way Gatekeeper does.
+        if status != errSecCSUnsigned {
+            var relaxed = flags
+            relaxed.remove(SecCSFlags(rawValue: kSecCSStrictValidate))
+            if SecStaticCodeCheckValidityWithErrors(code, relaxed, nil, nil) == errSecSuccess {
+                log.info("Integrity check passed without strict validation (\(status, privacy: .public))")
+                return InspectorCheckResult(rows: [.item(InspectorItem(title: "Integrity", subtitle: "Signed in an older format that strict checks reject (\(message)).",
+                                                                       value: "Unmodified since signing", tone: .positive, valueSymbol: "checkmark.shield.fill"))])
+            }
+            // An obsolete resource seal (iOS apps on the Mac): the resources can't be checked, the code can.
+            if status == -67013 {
+                relaxed.insert(SecCSFlags(rawValue: kSecCSDoNotValidateResources))
+                relaxed.remove(SecCSFlags(rawValue: kSecCSCheckNestedCode))
+                if SecStaticCodeCheckValidityWithErrors(code, relaxed, nil, nil) == errSecSuccess {
+                    return InspectorCheckResult(rows: [.item(InspectorItem(title: "Integrity",
+                                                                           subtitle: "Its resources use an older seal that macOS can’t check, so only the code was verified.",
+                                                                           value: "Code unmodified", tone: .positive, valueSymbol: "checkmark.shield.fill"))])
+                }
+            }
+        }
         if status == errSecCSUnsigned {
             return InspectorCheckResult(rows: [.item(InspectorItem(title: "Integrity", value: "Not signed", tone: .critical, valueSymbol: "xmark.seal.fill"))])
         }
