@@ -1,0 +1,8 @@
+# This is a Gradle generated file for dependency locking.
+# Manual edits can break the build and are not advised.
+# This file is expected to be part of source control.
+com.google.guava:guava:33.3.1-jre=compileClasspath,runtimeClasspath
+com.google.guava:failureaccess:1.0.2=compileClasspath,runtimeClasspath
+org.junit.jupiter:junit-jupiter:5.11.3=testCompileClasspath,testRuntimeClasspath
+org.slf4j:slf4j-api:2.0.16=runtimeClasspath
+empty=annotationProcessor

@@ -1,0 +1,33 @@
+Island,Group,Area (km²),Population,Highest point (m),Main port,Airport
+Crete,Crete,8336,624408,2456,Heraklion,Yes
+Euboea,Euboea,3684,191206,1743,Chalcis,No
+Lesbos,North Aegean,1633,83755,968,Mytilene,Yes
+Rhodes,Dodecanese,1401,115490,1216,Rhodes,Yes
+Chios,North Aegean,842,50361,1297,Chios,Yes
+Kefalonia,Ionian,781,35801,1628,Argostoli,Yes
+Corfu,Ionian,610,99477,906,Corfu,Yes
+Lemnos,North Aegean,477,16992,430,Myrina,Yes
+Samos,North Aegean,477,32642,1434,Vathy,Yes
+Naxos,Cyclades,430,20877,1004,Naxos,Yes
+Zakynthos,Ionian,406,40759,756,Zakynthos,Yes
+Thasos,North Aegean,380,13104,1204,Limenas,No
+Andros,Cyclades,380,9221,995,Gavrio,No
+Lefkada,Ionian,336,22652,1158,Lefkada,No
+Karpathos,Dodecanese,301,6226,1215,Pigadia,Yes
+Kos,Dodecanese,290,33388,843,Kos,Yes
+Kythira,Islands,280,3605,506,Diakofti,Yes
+Icaria,North Aegean,255,8423,1037,Agios Kirykos,Yes
+Skyros,Sporades,209,2994,814,Linaria,Yes
+Paros,Cyclades,196,13715,771,Parikia,Yes
+Tinos,Cyclades,194,8636,750,Tinos,No
+Milos,Cyclades,151,4977,751,Adamantas,Yes
+Kea,Cyclades,149,2455,568,Korissia,No
+Amorgos,Cyclades,121,1973,823,Katapola,No
+Ios,Cyclades,109,2024,713,Ios,No
+Mykonos,Cyclades,86,10704,341,Mykonos,Yes
+Syros,Cyclades,84,21390,442,Ermoupoli,Yes
+Santorini,Cyclades,76,15550,567,Athinios,Yes
+Sifnos,Cyclades,74,2625,682,Kamares,No
+Hydra,Saronic,64,1966,593,Hydra,No
+Folegandros,Cyclades,32,765,454,Karavostasis,No
+Delos,Cyclades,3.4,14,112,Delos,No

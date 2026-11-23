@@ -1,0 +1,15 @@
+gitGraph
+    commit id: "Import winter timetable"
+    commit id: "Route pages"
+    branch live-delays
+    checkout live-delays
+    commit id: "Ingest AIS"
+    commit id: "Arrival model"
+    checkout main
+    commit id: "Fix pier names" type: HIGHLIGHT
+    merge live-delays tag: "v2.0-beta"
+    branch notifications
+    commit id: "Push notices"
+    checkout main
+    merge notifications
+    commit id: "Release" tag: "v2.0"

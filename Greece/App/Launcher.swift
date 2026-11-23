@@ -1,0 +1,21 @@
+import AppKit
+import SwiftUI
+
+@main
+enum Main {
+    static func main() {
+        if CommandLine.arguments.contains("--cli") {
+            CommandLineTool.run()
+        } else if CommandLine.arguments.contains("--thumbnail") {
+            SnapshotRunner.runThumbnail()
+        } else if CommandLine.arguments.contains("--quicklook") {
+            SnapshotRunner.runQuickLook()
+        } else if CommandLine.arguments.contains("--render-app") {
+            SnapshotRunner.runApp()
+        } else if CommandLine.arguments.contains("--render") {
+            SnapshotRunner.run()
+        } else {
+            GreeceApp.main()
+        }
+    }
+}

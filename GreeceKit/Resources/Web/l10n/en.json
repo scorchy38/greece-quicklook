@@ -1,0 +1,3374 @@
+{
+  "{0} bytes": {
+    "one": "{0} byte",
+    "other": "{0} bytes",
+    "comment": "A file size under 1 KB, as Finder writes it."
+  },
+  "{0} B": {
+    "value": "{0} B",
+    "comment": "A size under 1 KB in a narrow table column, abbreviated (B for bytes), as in Safari’s Web Inspector."
+  },
+  "{0} KB": {
+    "value": "{0} KB",
+    "comment": "A file size in kilobytes (1000 bytes), as Finder writes it in this language."
+  },
+  "{0} MB": {
+    "value": "{0} MB",
+    "comment": "A file size in megabytes, as Finder writes it in this language."
+  },
+  "{0} GB": {
+    "value": "{0} GB",
+    "comment": "A file size in gigabytes, as Finder writes it in this language."
+  },
+  "{0} TB": {
+    "value": "{0} TB",
+    "comment": "A file size in terabytes, as Finder writes it in this language."
+  },
+  "Copied": {
+    "value": "Copied",
+    "comment": "A Copy button's title for a moment after it copied."
+  },
+  "Empty file": "Empty file",
+  "Copy": {
+    "value": "Copy",
+    "comment": "Button: copies code to the clipboard. Use the macOS Edit menu's Copy."
+  },
+  "Showing the beginning of a very large file.": "Showing the beginning of a very large file.",
+  "Note": {
+    "value": "Note",
+    "comment": "Title of a Markdown alert box (GitHub's [!NOTE])."
+  },
+  "Tip": {
+    "value": "Tip",
+    "comment": "Title of a Markdown alert box (GitHub's [!TIP])."
+  },
+  "Important": {
+    "value": "Important",
+    "comment": "Title of a Markdown alert box (GitHub's [!IMPORTANT])."
+  },
+  "Warning": {
+    "value": "Warning",
+    "comment": "Title of a Markdown alert box (GitHub's [!WARNING])."
+  },
+  "Caution": {
+    "value": "Caution",
+    "comment": "Title of a Markdown alert box (GitHub's [!CAUTION])."
+  },
+  "Remote image not loaded": {
+    "value": "Remote image not loaded",
+    "comment": "Placeholder for an image on the web that the reader chose not to load."
+  },
+  "On This Page": {
+    "value": "On This Page",
+    "comment": "Title of the outline beside a long document (its headings)."
+  },
+  "Empty document": "Empty document",
+  "Showing the beginning of a very large document.": "Showing the beginning of a very large document.",
+  "Added": {
+    "value": "Added",
+    "comment": "Badge on a file in a diff: the file is new. Shown in capitals."
+  },
+  "Deleted": {
+    "value": "Deleted",
+    "comment": "Badge on a file in a diff: the file was removed. Shown in capitals."
+  },
+  "Renamed": {
+    "value": "Renamed",
+    "comment": "Badge on a file in a diff: the file was renamed. Shown in capitals."
+  },
+  "Binary file not shown": {
+    "value": "Binary file not shown",
+    "comment": "In a diff, in place of a binary file's changes."
+  },
+  "No content changes": {
+    "value": "No content changes",
+    "comment": "In a diff: the file changed (mode, name) but not its contents."
+  },
+  "{0} commits": {
+    "one": "{0} commit",
+    "other": "{0} commits",
+    "comment": "Diff summary: how many Git commits a patch file holds."
+  },
+  "{0} files changed": {
+    "one": "{0} file changed",
+    "other": "{0} files changed",
+    "comment": "Diff summary, as Git says it."
+  },
+  "Empty notebook": {
+    "value": "Empty notebook",
+    "comment": "A Jupyter notebook with no cells."
+  },
+  "“{0}”": {
+    "value": "“{0}”",
+    "comment": "Quotation marks around a selected word in menu items such as Find “word”. Use this language's quotation marks."
+  },
+  "Find": {
+    "value": "Find",
+    "comment": "Find bar: the search field's placeholder, and the toolbar button that opens the find bar. Use the macOS Edit › Find wording."
+  },
+  "Previous": {
+    "value": "Previous",
+    "comment": "Find bar and image viewer button: go to the previous match or image. Also: Accessibility label of a button that goes to the previous match or entry."
+  },
+  "Next": {
+    "value": "Next",
+    "comment": "Find bar and image viewer button: go to the next match or image."
+  },
+  "Match Case": {
+    "value": "Match Case",
+    "comment": "Find bar option (button labelled Aa): only match the same upper and lower case. Use the macOS Find wording."
+  },
+  "Whole Words": {
+    "value": "Whole Words",
+    "comment": "Find bar option (button labelled ab): only match whole words."
+  },
+  "Done": {
+    "value": "Done",
+    "comment": "Button that closes the find bar. Use the standard macOS Done button wording."
+  },
+  "Select text to find it": {
+    "value": "Select text to find it",
+    "comment": "Placeholder of the find bar's field in Quick Look, where typing doesn't reach the preview: selecting text in the document searches for it."
+  },
+  "{0}+": {
+    "value": "{0}+",
+    "comment": "A count that stopped at a limit: {0} is the limit (e.g. 20,000+)."
+  },
+  "No matches": {
+    "value": "No matches",
+    "comment": "Find bar count when the search finds nothing."
+  },
+  "{0} of {1}": {
+    "value": "{0} of {1}",
+    "comment": "Position in a list: {0} is the current match or image, {1} the total (e.g. 3 of 12). Both are numbers; {1} may be “20,000+”. Also: Position while stepping through matches or errors: \"2 of 4\". Also: Position in a sequence: page {0} of {1} pages, or {0} of {1} requests."
+  },
+  "Find {0}": {
+    "value": "Find {0}",
+    "comment": "Context menu item: search the page for the selected text. {0} is the selection, already in quotation marks (e.g. Find “beam”)."
+  },
+  "Go to Line": {
+    "value": "Go to Line",
+    "comment": "Title of the code view's bar for jumping to a line number (⌘L), as in Xcode."
+  },
+  "Line": {
+    "value": "Line",
+    "comment": "Placeholder of the Go to Line field: type a line number."
+  },
+  "{0}+ matches": {
+    "value": "{0}+ matches",
+    "comment": "Find bar count that stopped at a limit: {0} is the limit (e.g. 20,000+ matches)."
+  },
+  "{0} matches": {
+    "one": "{0} match",
+    "other": "{0} matches",
+    "comment": "Find bar count of matches in the code, shown before you step to one."
+  },
+  "{0} lines": {
+    "one": "{0} line",
+    "other": "{0} lines",
+    "comment": "Label on a folded block of code: how many lines are hidden in it. Also: On a card above a code file that explains it. How many lines a log file has. Also: Lyrics (LRC file): how many lines it has."
+  },
+  "Show {0} lines": {
+    "one": "Show {0} line",
+    "other": "Show {0} lines",
+    "comment": "Tooltip on a folded block of code: click to show its hidden lines."
+  },
+  "Copy Line {0}": {
+    "value": "Copy Line {0}",
+    "comment": "Context menu item in the code view: copies line number {0}."
+  },
+  "Unfold": {
+    "value": "Unfold",
+    "comment": "Context menu item in the code view: expand this folded block of code."
+  },
+  "Fold": {
+    "value": "Fold",
+    "comment": "Context menu item in the code view: collapse this block of code (code folding, as in Xcode)."
+  },
+  "Wrap Lines": {
+    "value": "Wrap Lines",
+    "comment": "Toolbar button and context menu item: wrap long lines of code to the window's width."
+  },
+  "Fold All": {
+    "value": "Fold All",
+    "comment": "Context menu item in the code view: collapse every block of code."
+  },
+  "Unfold All": {
+    "value": "Unfold All",
+    "comment": "Context menu item in the code view: expand every folded block."
+  },
+  "Copy All": {
+    "value": "Copy All",
+    "comment": "Context menu item: copies the whole file's text."
+  },
+  "Reveal value": {
+    "value": "Reveal value",
+    "comment": "Tooltip on a hidden (masked) value in a .env file."
+  },
+  "Also set on line {0}; this value wins": {
+    "value": "Also set on line {0}; this value wins",
+    "comment": "Tooltip on a .env variable defined twice. {0} = the line of the other definition."
+  },
+  "Duplicate": {
+    "value": "Duplicate",
+    "comment": "Small flag on a .env variable that is defined more than once."
+  },
+  "Empty": {
+    "value": "Empty",
+    "comment": "Small flag on a .env variable that has no value."
+  },
+  "Hide value": {
+    "value": "Hide value",
+    "comment": "Tooltip on a revealed value in a .env file."
+  },
+  "line {0}, first set on line {1}": {
+    "value": "line {0}, first set on line {1}",
+    "comment": "For a duplicate .env variable: where it is, and where it was first defined. Lowercase."
+  },
+  "line {0}": {
+    "value": "line {0}",
+    "comment": "A line number in a file, shown dimmed. Lowercase."
+  },
+  "{0} keys": {
+    "one": "{0} key",
+    "other": "{0} keys",
+    "comment": "In the JSON tree: how many entries a JSON object holds. Also: On a card above a code file that explains it. How many variables a .env file sets."
+  },
+  "{0} duplicates": {
+    "one": "{0} duplicate",
+    "other": "{0} duplicates",
+    "comment": "On a card above a code file that explains it. How many .env variables are defined twice."
+  },
+  "{0} empty": {
+    "one": "{0} empty",
+    "other": "{0} empty",
+    "comment": "On a card above a code file that explains it. How many .env variables have no value."
+  },
+  "Values hidden": {
+    "value": "Values hidden",
+    "comment": "On a card above a code file that explains it. The values in a .env file are masked."
+  },
+  "Environment Template": {
+    "value": "Environment Template",
+    "comment": "On a card above a code file that explains it. Title for an example .env file (.env.example)."
+  },
+  "Environment Variables": {
+    "value": "Environment Variables",
+    "comment": "On a card above a code file that explains it. Title for a .env file."
+  },
+  "Reveal All": {
+    "value": "Reveal All",
+    "comment": "Button: shows every masked value in a .env file."
+  },
+  "Hide All": {
+    "value": "Hide All",
+    "comment": "Button: masks every value in a .env file again."
+  },
+  "Values shown": {
+    "value": "Values shown",
+    "comment": "On a card above a code file that explains it. The values in a .env file are revealed."
+  },
+  "stage {0}": {
+    "value": "stage {0}",
+    "comment": "An unnamed build stage of a Dockerfile, numbered. Lowercase."
+  },
+  "Base": {
+    "value": "Base",
+    "comment": "On a card above a code file that explains it. Label: the base image of a Dockerfile."
+  },
+  "Ports": {
+    "value": "Ports",
+    "comment": "On a card above a code file that explains it. Label or column: network ports."
+  },
+  "Entrypoint": {
+    "value": "Entrypoint",
+    "comment": "On a card above a code file that explains it. Label: a Dockerfile's ENTRYPOINT."
+  },
+  "Command": {
+    "value": "Command",
+    "comment": "On a card above a code file that explains it. Label: a Dockerfile's CMD."
+  },
+  "Workdir": {
+    "value": "Workdir",
+    "comment": "On a card above a code file that explains it. Label: a Dockerfile's WORKDIR (working directory)."
+  },
+  "User": {
+    "value": "User",
+    "comment": "On a card above a code file that explains it. Label: the user a container runs as (Dockerfile USER)."
+  },
+  "Healthcheck": {
+    "value": "Healthcheck",
+    "comment": "On a card above a code file that explains it. Label: whether a Dockerfile defines a HEALTHCHECK."
+  },
+  "Yes": {
+    "value": "Yes",
+    "comment": "On a card above a code file that explains it. Value of a yes/no fact. Also: A true yes/no attribute value of a map feature."
+  },
+  "from {0}": {
+    "value": "from {0}",
+    "comment": "Under a Dockerfile build stage in a diagram: the stage it builds on. Lowercase."
+  },
+  "Build stages": {
+    "value": "Build stages",
+    "comment": "Accessibility label of the diagram of a Dockerfile's build stages."
+  },
+  "Stages": {
+    "value": "Stages",
+    "comment": "On a card above a code file that explains it. Section title: a Dockerfile's build stages."
+  },
+  "{0} stages": {
+    "one": "{0} stage",
+    "other": "{0} stages",
+    "comment": "On a card above a code file that explains it. How many build stages a Dockerfile has."
+  },
+  "Final: {0}": {
+    "value": "Final: {0}",
+    "comment": "On a card above a code file that explains it. The last build stage of a Dockerfile, the image it produces. {0} = its name."
+  },
+  "Service": {
+    "value": "Service",
+    "comment": "Table column: a Docker Compose service."
+  },
+  "Image [container]": {
+    "value": "Image",
+    "comment": "Table column: the container image a service runs."
+  },
+  "Volumes": {
+    "value": "Volumes",
+    "comment": "Table column: the volumes a container mounts."
+  },
+  "Start Order": {
+    "value": "Start Order",
+    "comment": "On a card above a code file that explains it. Section title: a diagram of which Compose services start before others."
+  },
+  "{0} services": {
+    "one": "{0} service",
+    "other": "{0} services",
+    "comment": "On a card above a code file that explains it. How many services a Compose file defines."
+  },
+  "{0} volumes": {
+    "one": "{0} volume",
+    "other": "{0} volumes",
+    "comment": "On a card above a code file that explains it. How many volumes a Compose file defines."
+  },
+  "{0} networks": {
+    "one": "{0} network",
+    "other": "{0} networks",
+    "comment": "On a card above a code file that explains it. How many networks a Compose file defines."
+  },
+  "tag {0}": {
+    "value": "tag {0}",
+    "comment": "A Git tag a GitHub Actions workflow runs for. {0} = the tag pattern. Lowercase."
+  },
+  "1 input": {
+    "value": "1 input",
+    "comment": "A manually run GitHub Actions workflow asks for one input."
+  },
+  "{0} inputs": {
+    "one": "{0} input",
+    "other": "{0} inputs",
+    "comment": "A manually run GitHub Actions workflow asks for this many inputs. 1 has its own text."
+  },
+  "Push": {
+    "value": "Push",
+    "comment": "GitHub Actions trigger: a push to the repository."
+  },
+  "to {0}": {
+    "value": "to {0}",
+    "comment": "GitHub Actions push trigger: the branches pushed to. {0} = branch names."
+  },
+  "Pull request": {
+    "value": "Pull request",
+    "comment": "GitHub Actions trigger: a pull request."
+  },
+  "Pull request target": {
+    "value": "Pull request target",
+    "comment": "GitHub Actions trigger: pull_request_target."
+  },
+  "into {0}": {
+    "value": "into {0}",
+    "comment": "GitHub Actions pull request trigger: the branches merged into. {0} = branch names."
+  },
+  "Schedule": {
+    "value": "Schedule",
+    "comment": "GitHub Actions trigger: on a cron schedule."
+  },
+  "Manual": {
+    "value": "Manual",
+    "comment": "GitHub Actions trigger: run by hand (workflow_dispatch)."
+  },
+  "Called by workflows": {
+    "value": "Called by workflows",
+    "comment": "GitHub Actions trigger: called by other workflows (workflow_call)."
+  },
+  "Release": {
+    "value": "Release",
+    "comment": "GitHub Actions trigger: a release is published."
+  },
+  "After workflow": {
+    "value": "After workflow",
+    "comment": "GitHub Actions trigger: after another workflow runs (workflow_run)."
+  },
+  "push": {
+    "value": "push",
+    "comment": "A GitHub Actions trigger as it reads inside \"On {0}\". Lowercase unless your language capitalises it."
+  },
+  "pull request": {
+    "value": "pull request",
+    "comment": "A GitHub Actions trigger as it reads inside \"On {0}\". Lowercase unless your language capitalises it."
+  },
+  "pull request target": {
+    "value": "pull request target",
+    "comment": "A GitHub Actions trigger as it reads inside \"On {0}\". Lowercase unless your language capitalises it."
+  },
+  "schedule": {
+    "value": "schedule",
+    "comment": "A GitHub Actions trigger as it reads inside \"On {0}\"; also a label: a Kubernetes CronJob's schedule. Lowercase."
+  },
+  "manual": {
+    "value": "manual",
+    "comment": "A GitHub Actions trigger (run by hand) as it reads inside \"On {0}\". Lowercase."
+  },
+  "called by workflows": {
+    "value": "called by workflows",
+    "comment": "A GitHub Actions trigger as it reads inside \"On {0}\". Lowercase."
+  },
+  "release": {
+    "value": "release",
+    "comment": "A GitHub Actions trigger as it reads inside \"On {0}\". Lowercase."
+  },
+  "after workflow": {
+    "value": "after workflow",
+    "comment": "A GitHub Actions trigger as it reads inside \"On {0}\". Lowercase."
+  },
+  "Triggers": {
+    "value": "Triggers",
+    "comment": "On a card above a code file that explains it. Section title: what starts a GitHub Actions workflow."
+  },
+  "reusable workflow": {
+    "value": "reusable workflow",
+    "comment": "A GitHub Actions job that calls another workflow file, shown under its name. Lowercase."
+  },
+  "{0} steps": {
+    "one": "{0} step",
+    "other": "{0} steps",
+    "comment": "How many steps a GitHub Actions job has."
+  },
+  "Jobs": {
+    "value": "Jobs",
+    "comment": "On a card above a code file that explains it. Section title: the jobs of a GitHub Actions workflow."
+  },
+  "Step": {
+    "value": "Step",
+    "comment": "A GitHub Actions step without a name."
+  },
+  "reusable": {
+    "value": "reusable",
+    "comment": "Short form of \"reusable workflow\", in place of a GitHub Actions job's step count. Lowercase."
+  },
+  "Uses": {
+    "value": "Uses",
+    "comment": "Label: the workflow file a reusable GitHub Actions job calls."
+  },
+  "Steps": {
+    "value": "Steps",
+    "comment": "On a card above a code file that explains it. Section title: the steps of each GitHub Actions job."
+  },
+  "{0} jobs": {
+    "one": "{0} job",
+    "other": "{0} jobs",
+    "comment": "On a card above a code file that explains it. How many jobs a workflow or crontab has."
+  },
+  "On {0}": {
+    "value": "On {0}",
+    "comment": "On a card above a code file that explains it. What starts a GitHub Actions workflow. {0} = a list of triggers, e.g. \"push, pull request\"."
+  },
+  "replicas": {
+    "value": "replicas",
+    "comment": "Label in a Kubernetes resource row: how many copies run. Lowercase."
+  },
+  "type": {
+    "value": "type",
+    "comment": "Label in a Kubernetes resource row: a Service's type (ClusterIP…). Lowercase."
+  },
+  "ports": {
+    "value": "ports",
+    "comment": "Label in a Kubernetes resource row: a Service's ports. Lowercase."
+  },
+  "hosts": {
+    "value": "hosts",
+    "comment": "Label in a Kubernetes resource row: an Ingress's host names. Lowercase."
+  },
+  "keys": {
+    "value": "keys",
+    "comment": "Label in a Kubernetes resource row: how many keys a ConfigMap or Secret holds. Lowercase."
+  },
+  "(unnamed)": {
+    "value": "(unnamed)",
+    "comment": "A Kubernetes resource without a name."
+  },
+  "{0} resources": {
+    "one": "{0} resource",
+    "other": "{0} resources",
+    "comment": "On a card above a code file that explains it. How many Kubernetes resources a file defines."
+  },
+  "{0} {1}s": {
+    "one": "{0} {1}",
+    "other": "{0} {1}s",
+    "comment": "On a card above a code file that explains it. How many Kubernetes resources of one kind. {0} = the count, {1} = the kind's API name in English (Deployment, Service), never translated. English adds \"s\"."
+  },
+  "namespace {0}": {
+    "value": "namespace {0}",
+    "comment": "On a card above a code file that explains it. The Kubernetes namespace(s) the resources are in. Lowercase."
+  },
+  "Other": {
+    "value": "Other",
+    "comment": "Log level filter: lines with no level. Also the group of API endpoints without a tag. Also: HAR viewer filter chip and request type: requests of any other kind."
+  },
+  "Trace": {
+    "value": "Trace",
+    "comment": "Log level (most detailed), on a filter chip."
+  },
+  "Debug": {
+    "value": "Debug",
+    "comment": "Log level, on a filter chip."
+  },
+  "Info": {
+    "value": "Info",
+    "comment": "Default title of an info callout box in a Markdown document (Obsidian, MkDocs, Docusaurus). Also: Log level, on a filter chip."
+  },
+  "Warnings": {
+    "value": "Warnings",
+    "comment": "Log level, on a filter chip."
+  },
+  "Errors": {
+    "value": "Errors",
+    "comment": "Log level, on a filter chip. Also: HAR viewer summary: how many requests failed or returned an error status."
+  },
+  "Access Log": {
+    "value": "Access Log",
+    "comment": "On a card above a code file that explains it. What a log file is: a web server access log."
+  },
+  "macOS Unified Log": {
+    "value": "macOS Unified Log",
+    "comment": "On a card above a code file that explains it. What a log file is: exported from the macOS unified logging system (log show)."
+  },
+  "{0} more characters": {
+    "one": "{0} more character",
+    "other": "{0} more characters",
+    "comment": "After a very long log line that is cut short, preceded by \"… \"."
+  },
+  "Repeated {0} times": {
+    "one": "Repeated {0} time",
+    "other": "Repeated {0} times",
+    "comment": "Tooltip on a log line that repeats; shown as ×12."
+  },
+  "Repeats folded": {
+    "value": "Repeats folded",
+    "comment": "On a card above a code file that explains it. Label: how many repeated log lines were folded into one."
+  },
+  "Log": {
+    "value": "Log",
+    "comment": "On a card above a code file that explains it. Title for a log file."
+  },
+  "Most Frequent Error": {
+    "value": "Most Frequent Error",
+    "comment": "On a card above a code file that explains it. Section title when one error message is listed."
+  },
+  "Most Frequent Errors": {
+    "value": "Most Frequent Errors",
+    "comment": "On a card above a code file that explains it. Section title when several error messages are listed."
+  },
+  "Previous Error": {
+    "value": "Previous Error",
+    "comment": "Tooltip: go to the previous error in a log."
+  },
+  "Previous Warning": {
+    "value": "Previous Warning",
+    "comment": "Tooltip: go to the previous warning in a log."
+  },
+  "Next Error": {
+    "value": "Next Error",
+    "comment": "Button: go to the next error in a log."
+  },
+  "Next Warning": {
+    "value": "Next Warning",
+    "comment": "Button: go to the next warning in a log."
+  },
+  "Errors and warnings": {
+    "value": "Errors and warnings",
+    "comment": "Tooltip of the strip beside the scroll bar that marks where errors and warnings are in a log."
+  },
+  "See {0}": {
+    "value": "See {0}",
+    "comment": "A licence given as a file. {0} = the file name, e.g. LICENSE.md."
+  },
+  "License": {
+    "value": "License",
+    "comment": "On a card above a code file that explains it. Label: the package's licence. Also: Font specimen, Information section: a row label."
+  },
+  "Module": {
+    "value": "Module",
+    "comment": "On a card above a code file that explains it. Label: the JavaScript module system a package uses (value: ES modules or CommonJS)."
+  },
+  "ES modules": {
+    "value": "ES modules",
+    "comment": "JavaScript's standard module system (ECMAScript modules)."
+  },
+  "Package Manager": {
+    "value": "Package Manager",
+    "comment": "On a card above a code file that explains it. Label: the package manager a project pins, e.g. pnpm@9."
+  },
+  "Workspaces": {
+    "value": "Workspaces",
+    "comment": "On a card above a code file that explains it. Label: how many workspace packages a monorepo has."
+  },
+  "Visibility": {
+    "value": "Visibility",
+    "comment": "On a card above a code file that explains it. Label: whether a package is private."
+  },
+  "Private": {
+    "value": "Private",
+    "comment": "On a card above a code file that explains it. Value: the package is not published."
+  },
+  "Home": {
+    "value": "Home",
+    "comment": "On a card above a code file that explains it. Label: the project's homepage or repository link."
+  },
+  "npm package": {
+    "value": "npm package",
+    "comment": "On a card above a code file that explains it. What the file is: an npm package (package.json)."
+  },
+  "Composer package": {
+    "value": "Composer package",
+    "comment": "On a card above a code file that explains it. What the file is: a PHP Composer package."
+  },
+  "Type": {
+    "value": "Type",
+    "comment": "Column header in the JSON and property list tree: the kind of value (String, Number…). Also: On a card above a code file that explains it. Label: a Composer package's type (library, project…). Also: HAR viewer column: the request's type (Document, Script…); also the map tile set's type (baselayer, overlay)."
+  },
+  "Cargo workspace": {
+    "value": "Cargo workspace",
+    "comment": "On a card above a code file that explains it. What the file is: a Rust Cargo workspace."
+  },
+  "Rust crate": {
+    "value": "Rust crate",
+    "comment": "On a card above a code file that explains it. What the file is: a Rust crate (package)."
+  },
+  "Workspace": {
+    "value": "Workspace",
+    "comment": "On a card above a code file that explains it. Title for a Cargo workspace without a name."
+  },
+  "Edition": {
+    "value": "Edition",
+    "comment": "On a card above a code file that explains it. Label: the Rust edition (2021…)."
+  },
+  "Members": {
+    "value": "Members",
+    "comment": "On a card above a code file that explains it. Label: how many crates a Cargo workspace has."
+  },
+  "Features": {
+    "value": "Features",
+    "comment": "On a card above a code file that explains it. Label: how many Cargo features a crate defines."
+  },
+  "Poetry project": {
+    "value": "Poetry project",
+    "comment": "On a card above a code file that explains it. What the file is: a Python project managed with Poetry."
+  },
+  "Python project": {
+    "value": "Python project",
+    "comment": "On a card above a code file that explains it. What the file is: a Python project (pyproject.toml)."
+  },
+  "Build": {
+    "value": "Build",
+    "comment": "On a card above a code file that explains it. Label: the Python build backend (hatchling, setuptools…)."
+  },
+  "Go module": {
+    "value": "Go module",
+    "comment": "On a card above a code file that explains it. What the file is: a Go module (go.mod)."
+  },
+  "Toolchain": {
+    "value": "Toolchain",
+    "comment": "On a card above a code file that explains it. Label: the Go toolchain version."
+  },
+  "Replaced": {
+    "value": "Replaced",
+    "comment": "On a card above a code file that explains it. Label: how many go.mod replace directives there are."
+  },
+  "Source": {
+    "value": "Source",
+    "comment": "On a card above a code file that explains it. Label: the gem server a Gemfile installs from."
+  },
+  "Platform": {
+    "value": "Platform",
+    "comment": "On a card above a code file that explains it. Label: the platform a Podfile targets, e.g. iOS 16.0."
+  },
+  "Frameworks": {
+    "value": "Frameworks",
+    "comment": "On a card above a code file that explains it. Label: whether CocoaPods builds pods as frameworks."
+  },
+  "Targets": {
+    "value": "Targets",
+    "comment": "On a card above a code file that explains it. Label: how many targets (build products) a project defines."
+  },
+  "Library": {
+    "value": "Library",
+    "comment": "A Swift package product type."
+  },
+  "Executable": {
+    "value": "Executable",
+    "comment": "A Swift package product type."
+  },
+  "Plugin": {
+    "value": "Plugin",
+    "comment": "A Swift package product type."
+  },
+  "Swift package": {
+    "value": "Swift package",
+    "comment": "On a card above a code file that explains it. What the file is: a Swift package (Package.swift)."
+  },
+  "Swift Tools": {
+    "value": "Swift Tools",
+    "comment": "On a card above a code file that explains it. Label: the swift-tools-version of a Swift package."
+  },
+  "Platforms": {
+    "value": "Platforms",
+    "comment": "On a card above a code file that explains it. Label: the platforms and minimum versions a Swift package supports."
+  },
+  "Products": {
+    "value": "Products",
+    "comment": "On a card above a code file that explains it. Section title: the products a Swift package builds."
+  },
+  "Flutter package": {
+    "value": "Flutter package",
+    "comment": "On a card above a code file that explains it. What the file is: a Flutter package (pubspec.yaml)."
+  },
+  "Dart package": {
+    "value": "Dart package",
+    "comment": "On a card above a code file that explains it. What the file is: a Dart package (pubspec.yaml)."
+  },
+  "Publish": {
+    "value": "Publish",
+    "comment": "On a card above a code file that explains it. Label: where a Dart package is published (value: Private)."
+  },
+  "Executables": {
+    "value": "Executables",
+    "comment": "On a card above a code file that explains it. Section title: the command-line tools a Dart package installs."
+  },
+  "Elixir project": {
+    "value": "Elixir project",
+    "comment": "On a card above a code file that explains it. What the file is: an Elixir Mix project."
+  },
+  "Aliases": {
+    "value": "Aliases",
+    "comment": "On a card above a code file that explains it. Section title: Mix task aliases in an Elixir project."
+  },
+  "Android build": {
+    "value": "Android build",
+    "comment": "On a card above a code file that explains it. What the file is: an Android Gradle build script."
+  },
+  "Gradle build": {
+    "value": "Gradle build",
+    "comment": "On a card above a code file that explains it. What the file is: a Gradle build script."
+  },
+  "Compile SDK": {
+    "value": "Compile SDK",
+    "comment": "On a card above a code file that explains it. Label: the Android SDK level an app compiles against."
+  },
+  "Plugins": {
+    "value": "Plugins",
+    "comment": "On a card above a code file that explains it. Section title: the Gradle plugins a build applies."
+  },
+  "dev": {
+    "value": "dev",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): needed only for development. Lowercase, short."
+  },
+  "test": {
+    "value": "test",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): needed only for tests. Lowercase, short."
+  },
+  "peer": {
+    "value": "peer",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): a peer dependency (npm). Lowercase, short."
+  },
+  "optional": {
+    "value": "optional",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): optional. Lowercase, short."
+  },
+  "build": {
+    "value": "build",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): needed only to build. Lowercase, short."
+  },
+  "indirect": {
+    "value": "indirect",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): indirect, pulled in by another dependency (Go). Lowercase, short."
+  },
+  "platform": {
+    "value": "platform",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): only on some platforms (Cargo target dependencies). Lowercase, short."
+  },
+  "override": {
+    "value": "override",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): a version override (Dart). Lowercase, short."
+  },
+  "group": {
+    "value": "group",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): in a named dependency group (Python, Ruby). Lowercase, short."
+  },
+  "workspace": {
+    "value": "workspace",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): shared across a Cargo workspace. Lowercase, short."
+  },
+  "debug": {
+    "value": "debug",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): only in debug builds (Android). Lowercase, short."
+  },
+  "compile only": {
+    "value": "compile only",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): needed only to compile (Gradle compileOnly). Lowercase, short."
+  },
+  "runtime": {
+    "value": "runtime",
+    "comment": "Tag on a dependency in a project manifest (package.json, Cargo.toml…): needed only at run time (Gradle runtimeOnly). Lowercase, short."
+  },
+  "{0} direct": {
+    "one": "{0} direct",
+    "other": "{0} direct",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): dependencies the project lists directly."
+  },
+  "{0} dev": {
+    "one": "{0} dev",
+    "other": "{0} dev",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): needed only for development."
+  },
+  "{0} test": {
+    "one": "{0} test",
+    "other": "{0} test",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): needed only for tests."
+  },
+  "{0} peer": {
+    "one": "{0} peer",
+    "other": "{0} peer",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): a peer dependency (npm)."
+  },
+  "{0} optional": {
+    "one": "{0} optional",
+    "other": "{0} optional",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): optional."
+  },
+  "{0} build": {
+    "one": "{0} build",
+    "other": "{0} build",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): needed only to build."
+  },
+  "{0} indirect": {
+    "one": "{0} indirect",
+    "other": "{0} indirect",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): indirect, pulled in by another dependency (Go)."
+  },
+  "{0} platform": {
+    "one": "{0} platform",
+    "other": "{0} platform",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): only on some platforms (Cargo target dependencies)."
+  },
+  "{0} override": {
+    "one": "{0} override",
+    "other": "{0} override",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): a version override (Dart)."
+  },
+  "{0} group": {
+    "one": "{0} group",
+    "other": "{0} group",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): in a named dependency group (Python, Ruby)."
+  },
+  "{0} workspace": {
+    "one": "{0} workspace",
+    "other": "{0} workspace",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): shared across a Cargo workspace."
+  },
+  "{0} debug": {
+    "one": "{0} debug",
+    "other": "{0} debug",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): only in debug builds (Android)."
+  },
+  "{0} compile only": {
+    "one": "{0} compile only",
+    "other": "{0} compile only",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): needed only to compile (Gradle compileOnly)."
+  },
+  "{0} runtime": {
+    "one": "{0} runtime",
+    "other": "{0} runtime",
+    "comment": "In the dependency count summary (\"12 direct · 3 dev\"): needed only at run time (Gradle runtimeOnly)."
+  },
+  "Scripts": {
+    "value": "Scripts",
+    "comment": "On a card above a code file that explains it. Section title: the scripts a package defines (npm run …)."
+  },
+  "Dependencies": {
+    "value": "Dependencies",
+    "comment": "On a card above a code file that explains it. Section title: the packages a project depends on."
+  },
+  "every weekday in {0}": {
+    "value": "every weekday in {0}",
+    "comment": "Part of a cron schedule in words. Monday to Friday, in the months {0}."
+  },
+  "on weekdays in {0}": {
+    "value": "on weekdays in {0}",
+    "comment": "Part of a cron schedule in words. After a recurring schedule. {0} = month names."
+  },
+  "every weekday": {
+    "value": "every weekday",
+    "comment": "Part of a cron schedule in words. Monday to Friday."
+  },
+  "on weekdays": {
+    "value": "on weekdays",
+    "comment": "Part of a cron schedule in words. After a recurring schedule: \"Every hour on weekdays\"."
+  },
+  "every Saturday and Sunday in {0}": {
+    "value": "every Saturday and Sunday in {0}",
+    "comment": "Part of a cron schedule in words. {0} = month names."
+  },
+  "at weekends in {0}": {
+    "value": "at weekends in {0}",
+    "comment": "Part of a cron schedule in words. After a recurring schedule. {0} = month names."
+  },
+  "every Saturday and Sunday": {
+    "value": "every Saturday and Sunday",
+    "comment": "Part of a cron schedule in words. "
+  },
+  "at weekends": {
+    "value": "at weekends",
+    "comment": "Part of a cron schedule in words. After a recurring schedule: \"Every hour at weekends\"."
+  },
+  "every {0} to {1} in {2}": {
+    "value": "every {0} to {1} in {2}",
+    "comment": "Part of a cron schedule in words. A range of weekdays in some months. {0}, {1} = weekday names, {2} = month names."
+  },
+  "{0} to {1} in {2}": {
+    "value": "{0} to {1} in {2}",
+    "comment": "Part of a cron schedule in words. After a recurring schedule, a range of weekdays in some months. {2} = month names."
+  },
+  "every {0} to {1}": {
+    "value": "every {0} to {1}",
+    "comment": "Part of a cron schedule in words. A range of weekdays: \"every Monday to Thursday\". {0}, {1} = weekday names."
+  },
+  "{0} to {1}": {
+    "value": "{0} to {1}",
+    "comment": "Part of a cron schedule in words. After a recurring schedule, a range of weekdays: \"Every hour Monday to Thursday\". {0}, {1} = weekday names."
+  },
+  "every {0} in {1}": {
+    "value": "every {0} in {1}",
+    "comment": "Part of a cron schedule in words. {0} = weekday names, {1} = month names."
+  },
+  "on {0} in {1}": {
+    "value": "on {0} in {1}",
+    "comment": "Part of a cron schedule in words. After a recurring schedule. {0} = weekday names, {1} = month names."
+  },
+  "every {0}": {
+    "value": "every {0}",
+    "comment": "Part of a cron schedule in words. {0} = a list of weekday names: \"every Monday, Wednesday and Friday\"."
+  },
+  "on {0}": {
+    "value": "on {0}",
+    "comment": "Part of a cron schedule in words. After a recurring schedule: \"Every hour on Monday and Friday\". {0} = weekday names."
+  },
+  "on every {0} days of {1}": {
+    "one": "on every {0} day of {1}",
+    "other": "on every {0} days of {1}",
+    "comment": "Part of a cron schedule in words. Every Nth day of the months {1}."
+  },
+  "on every {0} days of every month": {
+    "one": "on every {0} day of every month",
+    "other": "on every {0} days of every month",
+    "comment": "Part of a cron schedule in words. Every Nth day of the month."
+  },
+  "on days {0}–{1} of {2}": {
+    "value": "on days {0}–{1} of {2}",
+    "comment": "Part of a cron schedule in words. A range of days of the month in some months. {2} = month names."
+  },
+  "on days {0}–{1} of every month": {
+    "value": "on days {0}–{1} of every month",
+    "comment": "Part of a cron schedule in words. A range of days of the month, e.g. \"on days 2–20 of every month\"."
+  },
+  "{0}th": {
+    "one": "{0}st",
+    "two": "{0}nd",
+    "few": "{0}rd",
+    "other": "{0}th",
+    "comment": "Part of a cron schedule in words. A day of the month as an ordinal number (1st, 2nd, 3rd, 4th), used in \"on the {0} of every month\"."
+  },
+  "on the {0} of {1}": {
+    "value": "on the {0} of {1}",
+    "comment": "Part of a cron schedule in words. {0} = days of the month as ordinals, {1} = month names."
+  },
+  "on the {0} of every month": {
+    "value": "on the {0} of every month",
+    "comment": "Part of a cron schedule in words. {0} = days of the month as ordinals, e.g. \"1st and 15th\"."
+  },
+  "every day": {
+    "value": "every day",
+    "comment": "On a card above a code file that explains it. Part of a cron schedule in words. Starts a sentence before \"at …\"; lowercase, capitalised automatically."
+  },
+  "every day in {0}": {
+    "value": "every day in {0}",
+    "comment": "Part of a cron schedule in words. {0} = month names, e.g. \"January and July\"."
+  },
+  "in {0}": {
+    "value": "in {0}",
+    "comment": "Part of a cron schedule in words. After a recurring schedule: \"Every hour in January\". {0} = month names."
+  },
+  "every year on {0}": {
+    "value": "every year on {0}",
+    "comment": "Part of a cron schedule in words. {0} = a date such as \"1 January\", already formatted for your language."
+  },
+  "on {0} every year": {
+    "value": "on {0} every year",
+    "comment": "Part of a cron schedule in words. After a recurring schedule, or before \"and every Friday\". {0} = a date such as \"1 January\"."
+  },
+  "At startup": {
+    "value": "At startup",
+    "comment": "A cron job that runs when the computer starts (@reboot)."
+  },
+  ":{0}": {
+    "value": ":{0}",
+    "comment": "Part of a cron schedule in words. Minutes past the hour, e.g. \":05\" in \"Every hour at :05\". {0} = two digits."
+  },
+  "{0} at {1}": {
+    "value": "{0} at {1}",
+    "comment": "Part of a cron schedule in words. A whole schedule: {0} = the days (\"every weekday\", \"on the 1st of every month\"), {1} = times of day (\"06:30 and 18:00\")."
+  },
+  "Every minute": {
+    "value": "Every minute",
+    "comment": "Part of a cron schedule in words. A whole schedule."
+  },
+  "Every minute {0}": {
+    "value": "Every minute {0}",
+    "comment": "Part of a cron schedule in words. {0} = the days, e.g. \"on weekdays\", \"in January\"."
+  },
+  "Every {0} minutes": {
+    "one": "Every {0} minute",
+    "other": "Every {0} minutes",
+    "comment": "Part of a cron schedule in words. A whole schedule. One minute has its own text (\"Every minute\")."
+  },
+  "Every {0} minutes {1}": {
+    "one": "Every {0} minute {1}",
+    "other": "Every {0} minutes {1}",
+    "comment": "Part of a cron schedule in words. {1} = the days, e.g. \"on weekdays\"."
+  },
+  "Every hour": {
+    "value": "Every hour",
+    "comment": "Part of a cron schedule in words. A whole schedule, on the hour."
+  },
+  "Every hour {0}": {
+    "value": "Every hour {0}",
+    "comment": "Part of a cron schedule in words. {0} = the days, e.g. \"on weekdays\"."
+  },
+  "Every hour at {0}": {
+    "value": "Every hour at {0}",
+    "comment": "Part of a cron schedule in words. {0} = minutes past the hour, e.g. \":05\" or \":15 and :45\"."
+  },
+  "Every hour at {0} {1}": {
+    "value": "Every hour at {0} {1}",
+    "comment": "Part of a cron schedule in words. {0} = minutes past the hour, {1} = the days."
+  },
+  "Every {0} hours": {
+    "one": "Every {0} hour",
+    "other": "Every {0} hours",
+    "comment": "Part of a cron schedule in words. A whole schedule, on the hour."
+  },
+  "Every {0} hours {1}": {
+    "one": "Every {0} hour {1}",
+    "other": "Every {0} hours {1}",
+    "comment": "Part of a cron schedule in words. {1} = the days."
+  },
+  "Every {0} hours at {1}": {
+    "one": "Every {0} hour at {1}",
+    "other": "Every {0} hours at {1}",
+    "comment": "Part of a cron schedule in words. {1} = minutes past the hour, e.g. \":30\"."
+  },
+  "Every {0} hours at {1} {2}": {
+    "one": "Every {0} hour at {1} {2}",
+    "other": "Every {0} hours at {1} {2}",
+    "comment": "Part of a cron schedule in words. {1} = minutes past the hour, {2} = the days."
+  },
+  "Every {0} hours from {1} to {2}": {
+    "one": "Every {0} hour from {1} to {2}",
+    "other": "Every {0} hours from {1} to {2}",
+    "comment": "Part of a cron schedule in words. {1}, {2} = times of day."
+  },
+  "Every {0} hours from {1} to {2} {3}": {
+    "one": "Every {0} hour from {1} to {2} {3}",
+    "other": "Every {0} hours from {1} to {2} {3}",
+    "comment": "Part of a cron schedule in words. {1}, {2} = times of day, {3} = the days."
+  },
+  "Every hour from {0} to {1}": {
+    "value": "Every hour from {0} to {1}",
+    "comment": "Part of a cron schedule in words. {0}, {1} = times of day."
+  },
+  "Every hour from {0} to {1} {2}": {
+    "value": "Every hour from {0} to {1} {2}",
+    "comment": "Part of a cron schedule in words. {0}, {1} = times of day, {2} = the days, e.g. \"on weekdays\"."
+  },
+  "Every {0} minutes from {1} to {2}": {
+    "one": "Every {0} minute from {1} to {2}",
+    "other": "Every {0} minutes from {1} to {2}",
+    "comment": "Part of a cron schedule in words. {1}, {2} = times of day."
+  },
+  "Every {0} minutes from {1} to {2} {3}": {
+    "one": "Every {0} minute from {1} to {2} {3}",
+    "other": "Every {0} minutes from {1} to {2} {3}",
+    "comment": "Part of a cron schedule in words. {1}, {2} = times of day, {3} = the days."
+  },
+  "Every minute from {0} to {1}": {
+    "value": "Every minute from {0} to {1}",
+    "comment": "Part of a cron schedule in words. {0}, {1} = times of day."
+  },
+  "Every minute from {0} to {1} {2}": {
+    "value": "Every minute from {0} to {1} {2}",
+    "comment": "Part of a cron schedule in words. {0}, {1} = times of day, {2} = the days."
+  },
+  "Every {0} minutes during {1}": {
+    "one": "Every {0} minute during {1}",
+    "other": "Every {0} minutes during {1}",
+    "comment": "Part of a cron schedule in words. {1} = hours written like \"06:xx and 07:xx\"."
+  },
+  "Every {0} minutes during {1} {2}": {
+    "one": "Every {0} minute during {1} {2}",
+    "other": "Every {0} minutes during {1} {2}",
+    "comment": "Part of a cron schedule in words. {1} = hours like \"06:xx\", {2} = the days."
+  },
+  "{0} at {1} and more": {
+    "value": "{0} at {1} and more",
+    "comment": "Part of a cron schedule in words. Like \"{0} at {1}\" when there are more times than shown."
+  },
+  "{0} at {1} past {2}": {
+    "value": "{0} at {1} past {2}",
+    "comment": "Part of a cron schedule in words. An irregular schedule: {0} = the days, {1} = \"{0} minutes\", {2} = \"{0} hours\"."
+  },
+  "{0} minutes": {
+    "one": "{0} minute",
+    "other": "{0} minutes",
+    "comment": "A number of minutes."
+  },
+  "{0} hours": {
+    "one": "{0} hour",
+    "other": "{0} hours",
+    "comment": "A number of hours."
+  },
+  "Today {0}": {
+    "value": "Today {0}",
+    "comment": "When a cron job runs next. {0} = a time of day."
+  },
+  "Tomorrow {0}": {
+    "value": "Tomorrow {0}",
+    "comment": "When a cron job runs next. {0} = a time of day."
+  },
+  "Next run": {
+    "value": "Next run",
+    "comment": "Label before when a cron job runs next, e.g. \"Next run Tomorrow 06:30\". Keep it short."
+  },
+  "as {0}": {
+    "value": "as {0}",
+    "comment": "The user a cron job runs as. {0} = a user name, e.g. root. Lowercase."
+  },
+  "System": {
+    "value": "System",
+    "comment": "On a card above a code file that explains it. Beside \"Crontab\": a system crontab, which names a user for each job."
+  },
+  "Times in {0}": {
+    "value": "Times in {0}",
+    "comment": "On a card above a code file that explains it. The time zone a crontab's times are in. {0} = a zone such as Europe/Athens."
+  },
+  "Times in local time": {
+    "value": "Times in local time",
+    "comment": "On a card above a code file that explains it. A crontab's times are in the Mac's own time zone."
+  },
+  "Environment": {
+    "value": "Environment",
+    "comment": "On a card above a code file that explains it. Section title: environment variables a crontab sets."
+  },
+  "default": {
+    "value": "default",
+    "comment": "Tag on the target a Makefile runs when you type just \"make\". Lowercase."
+  },
+  "{0} recipes": {
+    "one": "{0} recipe",
+    "other": "{0} recipes",
+    "comment": "On a card above a code file that explains it. How many recipes a justfile has."
+  },
+  "{0} targets": {
+    "one": "{0} target",
+    "other": "{0} targets",
+    "comment": "On a card above a code file that explains it. How many targets a Makefile has."
+  },
+  "Default: {0}": {
+    "value": "Default: {0}",
+    "comment": "On a card above a code file that explains it. The target a Makefile runs by default. {0} = its name."
+  },
+  "All hosts": {
+    "value": "All hosts",
+    "comment": "An SSH config \"Host *\" block: settings for every host."
+  },
+  "command": {
+    "value": "command",
+    "comment": "An SSH host reached through a ProxyCommand, shown after \"via\". Lowercase."
+  },
+  "{0} defaults": {
+    "one": "{0} default",
+    "other": "{0} defaults",
+    "comment": "How many settings an SSH config's \"Host *\" block sets for every host."
+  },
+  "key": {
+    "value": "key",
+    "comment": "Label before an SSH host's key file name. Lowercase."
+  },
+  "via": {
+    "value": "via",
+    "comment": "Label before the jump host an SSH host is reached through. Lowercase."
+  },
+  "{0} options": {
+    "one": "{0} option",
+    "other": "{0} options",
+    "comment": "How many other settings an SSH host has."
+  },
+  "SSH Config": {
+    "value": "SSH Config",
+    "comment": "On a card above a code file that explains it. Title for an SSH client configuration file."
+  },
+  "{0} hosts": {
+    "one": "{0} host",
+    "other": "{0} hosts",
+    "comment": "On a card above a code file that explains it. How many hosts an SSH config defines."
+  },
+  "{0} includes": {
+    "one": "{0} include",
+    "other": "{0} includes",
+    "comment": "On a card above a code file that explains it. How many other files an SSH config includes."
+  },
+  "Required": {
+    "value": "Required",
+    "comment": "Tooltip on the asterisk after a required API parameter."
+  },
+  "Body": {
+    "value": "Body",
+    "comment": "Label: an API request's body (its content type and schema)."
+  },
+  "{0} params": {
+    "one": "{0} param",
+    "other": "{0} params",
+    "comment": "How many parameters an API endpoint takes. Short."
+  },
+  "{0} endpoints": {
+    "one": "{0} endpoint",
+    "other": "{0} endpoints",
+    "comment": "On a card above a code file that explains it. How many endpoints an API defines."
+  },
+  "{0} tags": {
+    "one": "{0} tag",
+    "other": "{0} tags",
+    "comment": "On a card above a code file that explains it. How many tags (groups of endpoints) an API defines."
+  },
+  "{0} schemas": {
+    "one": "{0} schema",
+    "other": "{0} schemas",
+    "comment": "On a card above a code file that explains it. How many data schemas an API defines."
+  },
+  "{0} s": {
+    "value": "{0} s",
+    "comment": "A duration in seconds, abbreviated as in macOS."
+  },
+  "{0} min": {
+    "value": "{0} min",
+    "comment": "A duration in minutes, abbreviated as in macOS."
+  },
+  "{0} h {1} min": {
+    "value": "{0} h {1} min",
+    "comment": "A duration in hours and minutes, abbreviated as in macOS."
+  },
+  "{0} h": {
+    "value": "{0} h",
+    "comment": "A duration in hours, abbreviated as in macOS."
+  },
+  "{0} days": {
+    "one": "{0} day",
+    "other": "{0} days",
+    "comment": "A duration, e.g. how long a log covers."
+  },
+  "Graph": {
+    "value": "Graph",
+    "comment": "Accessibility label of a diagram of stages or jobs on a file card."
+  },
+  "Show Less": {
+    "value": "Show Less",
+    "comment": "Button under an expanded list that hides the extra items again."
+  },
+  "Show {0} More": {
+    "one": "Show {0} More",
+    "other": "Show {0} More",
+    "comment": "Button under a list that shows its hidden items. {0} = how many more."
+  },
+  "Show Details": {
+    "value": "Show Details",
+    "comment": "Tooltip of the disclosure button on a file card."
+  },
+  "Hide Details": {
+    "value": "Hide Details",
+    "comment": "Tooltip of the disclosure button on a file card."
+  },
+  "Symbols": {
+    "value": "Symbols",
+    "comment": "Title of the sidebar listing a file's functions, types and sections, and its toolbar button (like Xcode's symbol navigator)."
+  },
+  "Filter": {
+    "value": "Filter",
+    "comment": "Placeholder of the field that filters the Symbols sidebar. Also: Placeholder of a search field that filters the list of network requests. Also: Placeholder of a search field that narrows a list as you type."
+  },
+  "Filter Symbols": {
+    "value": "Filter Symbols",
+    "comment": "Accessibility label of the field that filters the Symbols sidebar."
+  },
+  "{0} — line {1}": {
+    "value": "{0} — line {1}",
+    "comment": "Tooltip on a symbol in the Symbols sidebar: {0} is the symbol's name (e.g. a function), {1} its line number."
+  },
+  "No matching symbols": {
+    "value": "No matching symbols",
+    "comment": "Symbols sidebar when the filter matches nothing."
+  },
+  "No symbols": {
+    "value": "No symbols",
+    "comment": "Symbols sidebar when the file has none."
+  },
+  "Key": {
+    "value": "Key",
+    "comment": "Column header in the JSON and property list tree: the name of an entry (as in Xcode's property list editor)."
+  },
+  "Value": {
+    "value": "Value",
+    "comment": "Column header in the JSON and property list tree."
+  },
+  "Copy Path": {
+    "value": "Copy Path",
+    "comment": "Button in the JSON tree: copies the selected entry's path (e.g. $.items[2].name)."
+  },
+  "Copy Value": {
+    "value": "Copy Value",
+    "comment": "Button in the JSON tree: copies the selected entry's value."
+  },
+  "Code": {
+    "value": "Code",
+    "comment": "Segmented control on JSON files: show the file as highlighted source code (the other choice is Tree)."
+  },
+  "Tree": {
+    "value": "Tree",
+    "comment": "Segmented control on JSON files: show the file as an outline of keys and values (the other choice is Code)."
+  },
+  "Show the Whole File as a Tree": {
+    "value": "Show the Whole File as a Tree",
+    "comment": "Button next to the notice that only the beginning of a very large JSON file is shown."
+  },
+  "Reading the whole file…": "Reading the whole file…",
+  "Indexing {0}…": {
+    "value": "Indexing {0}…",
+    "comment": "Progress while a large JSON file is read into the tree. {0} is the file's size (e.g. 48 MB)."
+  },
+  "Showing the first {0} values.": {
+    "one": "Showing the first {0} value.",
+    "other": "Showing the first {0} values.",
+    "comment": "JSON tree note when a huge file is only partly shown."
+  },
+  "This isn’t valid JSON: a key needs a colon after it, on line {0}.": {
+    "value": "This isn’t valid JSON: a key needs a colon after it, on line {0}.",
+    "comment": "JSON tree error. {0} is a line number."
+  },
+  "This isn’t valid JSON: the file ends too soon, on line {0}.": {
+    "value": "This isn’t valid JSON: the file ends too soon, on line {0}.",
+    "comment": "JSON tree error: brackets are still open when the file ends. {0} is a line number."
+  },
+  "This isn’t valid JSON: unexpected {0} on line {1}.": {
+    "value": "This isn’t valid JSON: unexpected {0} on line {1}.",
+    "comment": "JSON tree error. {0} is the unexpected text, already in quotation marks; {1} is a line number."
+  },
+  "Showing what could be read. A key needs a colon after it, on line {0}.": {
+    "value": "Showing what could be read. A key needs a colon after it, on line {0}.",
+    "comment": "JSON tree note when part of the file is invalid. {0} is a line number."
+  },
+  "Showing what could be read. The file ends too soon, on line {0}.": {
+    "value": "Showing what could be read. The file ends too soon, on line {0}.",
+    "comment": "JSON tree note: brackets are still open when the file ends. {0} is a line number."
+  },
+  "Showing what could be read. Unexpected {0} on line {1}.": {
+    "value": "Showing what could be read. Unexpected {0} on line {1}.",
+    "comment": "JSON tree note when part of the file is invalid. {0} is the unexpected text, already in quotation marks; {1} is a line number."
+  },
+  "Dictionary": {
+    "value": "Dictionary",
+    "comment": "Value type in the property list tree, as in Xcode's property list editor."
+  },
+  "Object": {
+    "value": "Object",
+    "comment": "Value type in the JSON tree: a JSON object."
+  },
+  "Array": {
+    "value": "Array",
+    "comment": "Value type in the JSON and property list tree."
+  },
+  "Date": {
+    "value": "Date",
+    "comment": "Value type in the property list tree."
+  },
+  "Data": {
+    "value": "Data",
+    "comment": "Value type in the property list tree: binary data."
+  },
+  "String": {
+    "value": "String",
+    "comment": "Value type in the JSON and property list tree: text."
+  },
+  "Number": {
+    "value": "Number",
+    "comment": "Value type in the JSON and property list tree."
+  },
+  "Boolean": {
+    "value": "Boolean",
+    "comment": "Value type in the JSON and property list tree: true or false."
+  },
+  "Null": {
+    "value": "Null",
+    "comment": "Value type in the JSON tree: the JSON null value."
+  },
+  "Root": {
+    "value": "Root",
+    "comment": "The top entry of a property list in the tree, as Xcode's property list editor names it."
+  },
+  "Item {0}": {
+    "value": "Item {0}",
+    "comment": "An array entry in the property list tree, as in Xcode: {0} is its index (Item 0, Item 1…)."
+  },
+  "{0} items": {
+    "one": "{0} item",
+    "other": "{0} items",
+    "comment": "In the JSON and property list tree: how many entries an array or dictionary holds."
+  },
+  "Select a row to see its path": {
+    "value": "Select a row to see its path",
+    "comment": "Bar under the JSON tree before a row is selected."
+  },
+  "Copy Link to Section": {
+    "value": "Copy Link to Section",
+    "comment": "Button beside a heading in a Markdown document: copies a link to that heading."
+  },
+  "Link Copied": {
+    "value": "Link Copied",
+    "comment": "Shown for a moment after Copy Link to Section."
+  },
+  "Image": {
+    "value": "Image",
+    "comment": "Accessibility label of the full-window image viewer. Also: HAR viewer request type."
+  },
+  "Close": {
+    "value": "Close",
+    "comment": "Button that closes the full-window image or diagram viewer. Also: Button that closes a panel or reader. Use the standard macOS Close. Also: Tooltip of a close button (the character inspector)."
+  },
+  "Open Diagram": {
+    "value": "Open Diagram",
+    "comment": "Button on a Mermaid diagram: opens it full-window to zoom and pan."
+  },
+  "Diagram": {
+    "value": "Diagram",
+    "comment": "Accessibility label of the full-window diagram viewer."
+  },
+  "Zoom Out": {
+    "value": "Zoom Out",
+    "comment": "Diagram viewer button. Use the macOS View menu wording. Also: Map button. Use the standard macOS View menu's Zoom Out."
+  },
+  "Actual Size": {
+    "value": "Actual Size",
+    "comment": "Diagram viewer button: zoom to 100%. Use the macOS View menu wording (as in Preview)."
+  },
+  "Zoom In": {
+    "value": "Zoom In",
+    "comment": "Diagram viewer button. Use the macOS View menu wording. Also: Map button. Use the standard macOS View menu's Zoom In."
+  },
+  "Zoom to Fit": {
+    "value": "Zoom to Fit",
+    "comment": "Diagram viewer button: fit the whole diagram in the window. Use the macOS wording (as in Preview)."
+  },
+  "Copy as SVG": {
+    "value": "Copy as SVG",
+    "comment": "Tooltip of the diagram viewer button that copies the diagram as an SVG image."
+  },
+  "Copy SVG": {
+    "value": "Copy SVG",
+    "comment": "Short label of the diagram viewer button that copies the diagram as an SVG image. Keep it short."
+  },
+  "All {0} done": {
+    "one": "All {0} done",
+    "other": "All {0} done",
+    "comment": "Task-list progress in the outline when every task is checked: {0} is the number of tasks."
+  },
+  "{1} of {0} done": {
+    "one": "{1} of {0} done",
+    "other": "{1} of {0} done",
+    "comment": "Task-list progress in the outline: {1} tasks are checked out of {0} in all. The form follows {0}, the total."
+  },
+  "Task lists in this document": {
+    "value": "Task lists in this document",
+    "comment": "Tooltip on the task-list progress in the outline."
+  },
+  "Hide Outline": {
+    "value": "Hide Outline",
+    "comment": "Button that hides the outline beside a long document."
+  },
+  "Drag to resize. Double-click to reset.": {
+    "value": "Drag to resize. Double-click to reset.",
+    "comment": "Tooltip on the edge of the outline sidebar."
+  },
+  "Drag to resize": {
+    "value": "Drag to resize",
+    "comment": "Tooltip on the edge of the outline sidebar in Quick Look."
+  },
+  "Show Outline": {
+    "value": "Show Outline",
+    "comment": "Button that shows the outline beside a long document again."
+  },
+  "Outline": {
+    "value": "Outline",
+    "comment": "Context menu item with a checkmark: show or hide the outline (the list of headings beside a document)."
+  },
+  "To Do": {
+    "value": "To Do",
+    "comment": "Default title of a to-do callout box in a Markdown document (Obsidian)."
+  },
+  "Hint": {
+    "value": "Hint",
+    "comment": "Default title of a hint callout box in a Markdown document (MkDocs)."
+  },
+  "Warn": {
+    "value": "Warn",
+    "comment": "Default title of a callout box written [!warn] in a Markdown document (Obsidian's short form of Warning)."
+  },
+  "Attention": {
+    "value": "Attention",
+    "comment": "Default title of an attention callout box in a Markdown document (MkDocs)."
+  },
+  "Danger": {
+    "value": "Danger",
+    "comment": "Default title of a danger callout box in a Markdown document."
+  },
+  "Error": {
+    "value": "Error",
+    "comment": "Default title of an error callout box in a Markdown document. Also: HAR viewer, General section: the error that stopped a request."
+  },
+  "Abstract": {
+    "value": "Abstract",
+    "comment": "Default title of an abstract (summary) callout box in a Markdown document (Obsidian, MkDocs). Also: BibTeX library: a disclosure under an entry that opens its abstract (summary of the paper)."
+  },
+  "Summary": {
+    "value": "Summary",
+    "comment": "Default title of a summary callout box in a Markdown document."
+  },
+  "TL;DR": {
+    "value": "TL;DR",
+    "comment": "Default title of a callout box written [!tldr] in a Markdown document: a very short summary. Keep TL;DR if it's understood in your language."
+  },
+  "Success": {
+    "value": "Success",
+    "comment": "Default title of a success callout box in a Markdown document."
+  },
+  "Check": {
+    "value": "Check",
+    "comment": "Default title of a callout box written [!check] in a Markdown document (Obsidian's alias of Success): a checkmark, something verified. Not the verb."
+  },
+  "Done [callout]": {
+    "value": "Done",
+    "comment": "Default title of a callout box written [!done] in a Markdown document (Obsidian's alias of Success): something finished. Not the Done button."
+  },
+  "Question": {
+    "value": "Question",
+    "comment": "Default title of a question callout box in a Markdown document."
+  },
+  "Help": {
+    "value": "Help",
+    "comment": "Default title of a callout box written [!help] in a Markdown document (Obsidian's alias of Question)."
+  },
+  "FAQ": {
+    "value": "FAQ",
+    "comment": "Default title of a callout box written [!faq] in a Markdown document: frequently asked questions."
+  },
+  "Failure": {
+    "value": "Failure",
+    "comment": "Default title of a failure callout box in a Markdown document."
+  },
+  "Fail": {
+    "value": "Fail",
+    "comment": "Default title of a callout box written [!fail] in a Markdown document (Obsidian's alias of Failure)."
+  },
+  "Missing": {
+    "value": "Missing",
+    "comment": "Default title of a callout box written [!missing] in a Markdown document (Obsidian's alias of Failure)."
+  },
+  "Bug": {
+    "value": "Bug",
+    "comment": "Default title of a bug callout box in a Markdown document (a software bug)."
+  },
+  "Example": {
+    "value": "Example",
+    "comment": "Default title of an example callout box in a Markdown document."
+  },
+  "Quote": {
+    "value": "Quote",
+    "comment": "Default title of a quote callout box in a Markdown document (a quotation)."
+  },
+  "Cite": {
+    "value": "Cite",
+    "comment": "Default title of a callout box written [!cite] in a Markdown document (Obsidian's alias of Quote)."
+  },
+  "Details": {
+    "value": "Details",
+    "comment": "Default title of a folded details box in a Markdown document: click it to show what's inside."
+  },
+  "See Also": {
+    "value": "See Also",
+    "comment": "Default title of a see-also callout box in a Markdown document."
+  },
+  "Tab": {
+    "value": "Tab",
+    "comment": "Name of an unnamed tab in a Markdown (MDX) document's tab set."
+  },
+  "Tab {0}": {
+    "value": "Tab {0}",
+    "comment": "Name of an unnamed tab in a Markdown document's tab set: {0} is its position (Tab 1, Tab 2…)."
+  },
+  "Read from the cover": {
+    "value": "Read from the cover",
+    "comment": "Accessibility label of a comic book's cover, which opens the reader."
+  },
+  "Read": {
+    "value": "Read",
+    "comment": "Comic book: button that opens the reader at the cover (verb)."
+  },
+  "Pages": {
+    "value": "Pages",
+    "comment": "Comic book: heading above the grid of page thumbnails."
+  },
+  "Previous Page": {
+    "value": "Previous Page",
+    "comment": "Comic book reader button."
+  },
+  "Next Page": {
+    "value": "Next Page",
+    "comment": "Comic book reader button."
+  },
+  "All": {
+    "value": "All",
+    "comment": "HAR viewer filter chip: show requests of every type. Keep very short."
+  },
+  "Doc": {
+    "value": "Doc",
+    "comment": "HAR viewer filter chip, short for Document (HTML pages). Keep as short as possible."
+  },
+  "Img": {
+    "value": "Img",
+    "comment": "HAR viewer filter chip, short for Images. Keep as short as possible."
+  },
+  "Font": {
+    "value": "Font",
+    "comment": "HAR viewer filter chip and request type: web fonts."
+  },
+  "Media": {
+    "value": "Media",
+    "comment": "HAR viewer filter chip and request type: audio and video."
+  },
+  "Document": {
+    "value": "Document",
+    "comment": "HAR viewer request type: an HTML page."
+  },
+  "Fetch": {
+    "value": "Fetch",
+    "comment": "HAR viewer request type: a script's fetch or XMLHttpRequest. Technical term, as in Safari's Web Inspector."
+  },
+  "Script": {
+    "value": "Script",
+    "comment": "HAR viewer request type: JavaScript."
+  },
+  "Stylesheet": {
+    "value": "Stylesheet",
+    "comment": "HAR viewer request type: CSS."
+  },
+  "Queued": {
+    "value": "Queued",
+    "comment": "HAR viewer timing phase: time waiting before the request started."
+  },
+  "DNS Lookup": {
+    "value": "DNS Lookup",
+    "comment": "HAR viewer timing phase: resolving the host name, as in Safari's Web Inspector."
+  },
+  "Connection": {
+    "value": "Connection",
+    "comment": "HAR viewer timing phase: establishing the TCP connection."
+  },
+  "Request Sent": {
+    "value": "Request Sent",
+    "comment": "HAR viewer timing phase: sending the request."
+  },
+  "Waiting (TTFB)": {
+    "value": "Waiting (TTFB)",
+    "comment": "HAR viewer timing phase: waiting for the server's first byte. TTFB = time to first byte; keep the abbreviation."
+  },
+  "Download": {
+    "value": "Download",
+    "comment": "HAR viewer timing phase: receiving the response (noun)."
+  },
+  "Filter requests": {
+    "value": "Filter requests",
+    "comment": "Accessibility label of the HAR viewer's filter field."
+  },
+  "Status": {
+    "value": "Status",
+    "comment": "HAR viewer column and row: the HTTP status code."
+  },
+  "Method": {
+    "value": "Method",
+    "comment": "HAR viewer column and row: the HTTP method (GET, POST)."
+  },
+  "Name": {
+    "value": "Name",
+    "comment": "HAR viewer column: the requested file's name. Also: Font specimen, character inspector: the character’s Unicode name."
+  },
+  "Size": {
+    "value": "Size",
+    "comment": "HAR viewer column: response size. Also: Font specimen: label of the type tester’s font size slider."
+  },
+  "Time": {
+    "value": "Time",
+    "comment": "HAR viewer column: how long the request took."
+  },
+  "Waterfall": {
+    "value": "Waterfall",
+    "comment": "HAR viewer column: a timeline bar chart of when each request ran, as in Web Inspector."
+  },
+  "Load {0}": {
+    "value": "Load {0}",
+    "comment": "HAR viewer waterfall marker tooltip: the page's load event, at time {0}."
+  },
+  "Failed": {
+    "value": "Failed",
+    "comment": "HAR viewer: status of a request that never got a response."
+  },
+  "No matching requests": {
+    "value": "No matching requests",
+    "comment": "HAR viewer: the filter matches nothing."
+  },
+  "{0} requests": {
+    "one": "{0} request",
+    "other": "{0} requests",
+    "comment": "HTTP Archive (HAR) viewer status line: how many network requests the capture holds."
+  },
+  "{1} of {0} requests": {
+    "one": "{1} of {0} request",
+    "other": "{1} of {0} requests",
+    "comment": "HAR viewer status line while filtering: {1} requests shown of {0} in total. The plural follows {0}, the total."
+  },
+  "first {0} shown": {
+    "value": "first {0} shown",
+    "comment": "HAR viewer status line, after ' · ': only the first {0} requests are listed. Lowercase in English because it follows a dot."
+  },
+  "Requests": {
+    "value": "Requests",
+    "comment": "HAR viewer summary: how many network requests the capture holds."
+  },
+  "Transferred": {
+    "value": "Transferred",
+    "comment": "HAR viewer summary: total bytes transferred over the network."
+  },
+  "Finished": {
+    "value": "Finished",
+    "comment": "HAR viewer summary: when the last request finished (a duration from the start)."
+  },
+  "Load": {
+    "value": "Load",
+    "comment": "HAR viewer summary: when the page's load event fired (the browser event)."
+  },
+  "HTTP Archive": {
+    "value": "HTTP Archive",
+    "comment": "Name of the HAR file format, shown when the capture doesn't say which browser recorded it."
+  },
+  "{0} · recorded with {1}": {
+    "value": "{0} · recorded with {1}",
+    "comment": "HAR viewer summary: {0} is the browser (e.g. Safari 18.1), {1} the tool that recorded the capture (e.g. WebInspector)."
+  },
+  "Recorded with {0}": {
+    "value": "Recorded with {0}",
+    "comment": "HAR viewer summary: {0} is the tool that recorded the network capture (e.g. WebInspector)."
+  },
+  "Network capture": {
+    "value": "Network capture",
+    "comment": "HAR viewer summary title when the capture's page has no title."
+  },
+  "Select a request to see its headers, payload, response and timing.": "Select a request to see its headers, payload, response and timing.",
+  "This request’s details couldn’t be read.": {
+    "value": "This request’s details couldn’t be read.",
+    "comment": "HAR viewer error."
+  },
+  "Headers": {
+    "value": "Headers",
+    "comment": "HAR viewer tab: HTTP headers of a request and its response."
+  },
+  "Payload": {
+    "value": "Payload",
+    "comment": "HAR viewer tab: the data a request sent (query string, form data, body)."
+  },
+  "Response": {
+    "value": "Response",
+    "comment": "HAR viewer tab: the response's content."
+  },
+  "Timing": {
+    "value": "Timing",
+    "comment": "HAR viewer tab: the request's timing breakdown."
+  },
+  "Request URL": {
+    "value": "Request URL",
+    "comment": "HAR viewer, General section."
+  },
+  "Remote Address": {
+    "value": "Remote Address",
+    "comment": "HAR viewer: the server's IP address, as in Web Inspector."
+  },
+  "{0} · connection {1}": {
+    "value": "{0} · connection {1}",
+    "comment": "HAR viewer, Remote Address row: {0} is an IP address and port, {1} the browser's connection ID."
+  },
+  "Protocol": {
+    "value": "Protocol",
+    "comment": "HAR viewer: the HTTP version of the response (e.g. h2)."
+  },
+  "Redirects To": {
+    "value": "Redirects To",
+    "comment": "HAR viewer: the URL a redirect response points to."
+  },
+  "General": {
+    "value": "General",
+    "comment": "HAR viewer section title: URL, method, status of a request, as in Web Inspector."
+  },
+  "Response Headers": "Response Headers",
+  "No response headers": "No response headers",
+  "Request Headers": "Request Headers",
+  "No request headers": "No request headers",
+  "Cookies Sent": {
+    "value": "Cookies Sent",
+    "comment": "HAR viewer section title: cookies the browser sent with the request."
+  },
+  "Cookies Set": {
+    "value": "Cookies Set",
+    "comment": "HAR viewer section title: cookies the server set in its response."
+  },
+  "Showing the beginning of a long body.": {
+    "value": "Showing the beginning of a long body.",
+    "comment": "HAR viewer: a request or response body is cut short."
+  },
+  "Query String": {
+    "value": "Query String",
+    "comment": "HAR viewer section title: the URL's query parameters."
+  },
+  "Form Data": {
+    "value": "Form Data",
+    "comment": "HAR viewer section title: form fields a request posted."
+  },
+  "Request Body": {
+    "value": "Request Body",
+    "comment": "HAR viewer section title: the data a request posted."
+  },
+  "No response body was recorded.": {
+    "value": "No response body was recorded.",
+    "comment": "HAR viewer: the capture doesn't include the response's content."
+  },
+  "Binary content.": {
+    "value": "Binary content.",
+    "comment": "HAR viewer: a response body that isn't text, so it isn't shown."
+  },
+  "Showing the first {0}.": {
+    "value": "Showing the first {0}.",
+    "comment": "HAR viewer: only the first {0} (a size, e.g. 3 MB) of a response are shown. Also: SVG viewer: only the beginning of a huge file’s source is shown. {0} is a size such as “8 MB”."
+  },
+  "Started at {0} · total {1}": {
+    "value": "Started at {0} · total {1}",
+    "comment": "HAR viewer, Timing tab: {0} is when the request started after the first one, {1} how long it took (e.g. 120 ms)."
+  },
+  "No timing recorded.": {
+    "value": "No timing recorded.",
+    "comment": "HAR viewer, Timing tab: the capture has no timing breakdown for the request."
+  },
+  "This formula uses commands Greece can’t typeset": {
+    "value": "This formula uses commands Greece can’t typeset",
+    "comment": "LaTeX document: tooltip on a formula shown as source."
+  },
+  "The rest of this document took too long to typeset.": {
+    "value": "The rest of this document took too long to typeset.",
+    "comment": "LaTeX document: Greece stopped typesetting after a time limit."
+  },
+  "The rest of this document couldn’t be typeset.": {
+    "value": "The rest of this document couldn’t be typeset.",
+    "comment": "LaTeX document: typesetting failed partway."
+  },
+  "The rest of this document is too large or too deeply nested to typeset.": {
+    "value": "The rest of this document is too large or too deeply nested to typeset.",
+    "comment": "LaTeX document: a limit stopped typesetting partway."
+  },
+  "Showing the beginning of a very large project.": {
+    "value": "Showing the beginning of a very large project.",
+    "comment": "LaTeX document made of many files, too large to show in full."
+  },
+  "Contents": {
+    "value": "Contents",
+    "comment": "Title of the outline beside a LaTeX document, and the heading of an EPUB book’s table of contents."
+  },
+  "Showing the beginning of a very large presentation.": {
+    "value": "Showing the beginning of a very large presentation.",
+    "comment": "Beamer (LaTeX) slides, too many to show in full."
+  },
+  "Slide {0}": {
+    "value": "Slide {0}",
+    "comment": "Accessibility label of a slide in a presentation. {0} is its number."
+  },
+  "Illustrated by {0}": {
+    "value": "Illustrated by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Edited by {0}": {
+    "value": "Edited by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Translated by {0}": {
+    "value": "Translated by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Narrated by {0}": {
+    "value": "Narrated by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names. (Audiobook narrator.)"
+  },
+  "Introduction by {0}": {
+    "value": "Introduction by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Afterword by {0}": {
+    "value": "Afterword by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "With contributions by {0}": {
+    "value": "With contributions by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Annotated by {0}": {
+    "value": "Annotated by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Compiled by {0}": {
+    "value": "Compiled by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Cover by {0}": {
+    "value": "Cover by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names. (Cover designer.)"
+  },
+  "Adapted by {0}": {
+    "value": "Adapted by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Art by {0}": {
+    "value": "Art by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "Photographs by {0}": {
+    "value": "Photographs by {0}",
+    "comment": "EPUB book: credit under the title. {0} is a list of names."
+  },
+  "No references": {
+    "value": "No references",
+    "comment": "BibTeX library: the file has no entries."
+  },
+  "vol. {0}": {
+    "value": "vol. {0}",
+    "comment": "BibTeX library: a journal volume, abbreviated as in a citation. {0} is the volume number, maybe with the issue in parentheses."
+  },
+  "pp. {0}": {
+    "value": "pp. {0}",
+    "comment": "BibTeX library: a page range, abbreviated as in a citation (pp. = pages). {0} is e.g. “12–19”."
+  },
+  "{0} ed.": {
+    "value": "{0} ed.",
+    "comment": "BibTeX library: a book’s edition, abbreviated as in a citation. {0} is the edition as the file writes it (“2nd”, “Second”)."
+  },
+  "ed. {0}": {
+    "value": "ed. {0}",
+    "comment": "BibTeX library: “edited by”, abbreviated as in a citation. {0} is a list of editors’ names."
+  },
+  "Copy citation key": {
+    "value": "Copy citation key",
+    "comment": "BibTeX library: tooltip on an entry’s key (the name LaTeX cites it by); clicking copies it."
+  },
+  "Untitled": {
+    "value": "Untitled",
+    "comment": "An entry or a chapter with no title."
+  },
+  "{0} references": {
+    "one": "{0} reference",
+    "other": "{0} references",
+    "comment": "BibTeX library: how many references the file holds, under its name."
+  },
+  "{0} string macros": {
+    "one": "{0} string macro",
+    "other": "{0} string macros",
+    "comment": "BibTeX library: how many @string definitions (abbreviations reused across entries) the file has."
+  },
+  "{0} preambles": {
+    "one": "{0} preamble",
+    "other": "{0} preambles",
+    "comment": "BibTeX library: how many @preamble blocks (LaTeX code for the bibliography) the file has."
+  },
+  "Showing the first references of a very large library.": {
+    "value": "Showing the first references of a very large library.",
+    "comment": "BibTeX library: the file is too large to show every entry."
+  },
+  "No matching references": {
+    "value": "No matching references",
+    "comment": "BibTeX library: nothing matches the filter."
+  },
+  "Bibliography": {
+    "value": "Bibliography",
+    "comment": "BibTeX library: the page’s heading when the file’s name isn’t known."
+  },
+  "Filter references": {
+    "value": "Filter references",
+    "comment": "Accessibility label of the BibTeX library’s search field."
+  },
+  "Article": {
+    "value": "Article",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Articles": {
+    "one": "{0} Article",
+    "other": "{0} Articles",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Book": {
+    "value": "Book",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Books": {
+    "one": "{0} Book",
+    "other": "{0} Books",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Booklet": {
+    "value": "Booklet",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Booklets": {
+    "one": "{0} Booklet",
+    "other": "{0} Booklets",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Chapter": {
+    "value": "Chapter",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (BibTeX’s inbook: a chapter in a book.)"
+  },
+  "{0} Chapters": {
+    "one": "{0} Chapter",
+    "other": "{0} Chapters",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name. (BibTeX’s inbook: a chapter in a book.)"
+  },
+  "In Collection": {
+    "value": "In Collection",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (BibTeX’s incollection: a part of a book with its own title.)"
+  },
+  "{0} In Collection": {
+    "one": "{0} In Collection",
+    "other": "{0} In Collection",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name. (BibTeX’s incollection: a part of a book with its own title.)"
+  },
+  "Conference Paper": {
+    "value": "Conference Paper",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Conference Papers": {
+    "one": "{0} Conference Paper",
+    "other": "{0} Conference Papers",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Manual [document]": {
+    "value": "Manual",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (Technical documentation.)"
+  },
+  "{0} Manuals": {
+    "one": "{0} Manual",
+    "other": "{0} Manuals",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Master’s Thesis": {
+    "value": "Master’s Thesis",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Master’s Theses": {
+    "one": "{0} Master’s Thesis",
+    "other": "{0} Master’s Theses",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Misc": {
+    "value": "Misc",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (Miscellaneous.)"
+  },
+  "{0} Misc": {
+    "one": "{0} Misc",
+    "other": "{0} Misc",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name. (Miscellaneous.)"
+  },
+  "PhD Thesis": {
+    "value": "PhD Thesis",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} PhD Theses": {
+    "one": "{0} PhD Thesis",
+    "other": "{0} PhD Theses",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Proceedings": {
+    "value": "Proceedings",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (Conference proceedings.)"
+  },
+  "{0} Proceedings": {
+    "one": "{0} Proceedings",
+    "other": "{0} Proceedings",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Report": {
+    "value": "Report",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (A technical report.)"
+  },
+  "{0} Reports": {
+    "one": "{0} Report",
+    "other": "{0} Reports",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Unpublished": {
+    "value": "Unpublished",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Unpublished": {
+    "one": "{0} Unpublished",
+    "other": "{0} Unpublished",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Online": {
+    "value": "Online",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (A web page or other online resource.)"
+  },
+  "{0} Online": {
+    "one": "{0} Online",
+    "other": "{0} Online",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name. (Online resources: web pages.)"
+  },
+  "Thesis": {
+    "value": "Thesis",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Theses": {
+    "one": "{0} Thesis",
+    "other": "{0} Theses",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Software": {
+    "value": "Software",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Software": {
+    "one": "{0} Software",
+    "other": "{0} Software",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Dataset": {
+    "value": "Dataset",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Datasets": {
+    "one": "{0} Dataset",
+    "other": "{0} Datasets",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Patent": {
+    "value": "Patent",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Patents": {
+    "one": "{0} Patent",
+    "other": "{0} Patents",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Collection": {
+    "value": "Collection",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (A book of works by several authors.)"
+  },
+  "{0} Collections": {
+    "one": "{0} Collection",
+    "other": "{0} Collections",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Periodical": {
+    "value": "Periodical",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (A journal or magazine issue as a whole.)"
+  },
+  "{0} Periodicals": {
+    "one": "{0} Periodical",
+    "other": "{0} Periodicals",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Standard": {
+    "value": "Standard",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (A standards document, such as an ISO standard.)"
+  },
+  "{0} Standards": {
+    "one": "{0} Standard",
+    "other": "{0} Standards",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name. (Standards documents, such as ISO standards.)"
+  },
+  "Video": {
+    "value": "Video",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Videos": {
+    "one": "{0} Video",
+    "other": "{0} Videos",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Audio": {
+    "value": "Audio",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. (An audio recording.)"
+  },
+  "{0} Audio": {
+    "one": "{0} Audio",
+    "other": "{0} Audio",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Artwork": {
+    "value": "Artwork",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Artworks": {
+    "one": "{0} Artwork",
+    "other": "{0} Artworks",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Preprint": {
+    "value": "Preprint",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry."
+  },
+  "{0} Preprints": {
+    "one": "{0} Preprint",
+    "other": "{0} Preprints",
+    "comment": "BibTeX library: count of entries of one type, in the summary chips at the top (e.g. “3 Articles”). Capitalised like the type’s name."
+  },
+  "Entry": {
+    "value": "Entry",
+    "comment": "BibTeX library: the type of a reference, shown as a small label on each entry. Used when an entry has no type."
+  },
+  "{0} ({1})": {
+    "value": "{0} ({1})",
+    "comment": "BibTeX library: a summary chip for an entry type Greece doesn’t know: {0} is the type’s name as written in the file, {1} how many entries have it."
+  },
+  "Publisher": {
+    "value": "Publisher",
+    "comment": "EPUB book: a fact label beside the cover."
+  },
+  "Published": {
+    "value": "Published",
+    "comment": "EPUB book: a fact label: the publication date."
+  },
+  "Language": {
+    "value": "Language",
+    "comment": "EPUB book: a fact label: the language the book is written in."
+  },
+  "Identifier": {
+    "value": "Identifier",
+    "comment": "EPUB book: a fact label: the book’s unique identifier (when it has no ISBN)."
+  },
+  "{0} words · {1} min read": {
+    "one": "{0} word · {1} min read",
+    "other": "{0} words · {1} min read",
+    "comment": "EPUB book: length and estimated reading time. {0} words, {1} minutes. Use the language’s abbreviation for minutes."
+  },
+  "{0} words · {1} h {2} min read": {
+    "one": "{0} word · {1} h {2} min read",
+    "other": "{0} words · {1} h {2} min read",
+    "comment": "EPUB book: length and estimated reading time. {0} words, {1} hours, {2} minutes. Use the language’s abbreviations for hours and minutes."
+  },
+  "Length": {
+    "value": "Length",
+    "comment": "EPUB book: a fact label: words and reading time."
+  },
+  "Format": {
+    "value": "Format",
+    "comment": "Map tiles card: the tile format (e.g. PNG, vector tiles). Also: A fact label: the file format (EPUB 3; a font’s format and outlines)."
+  },
+  "Book {0}": {
+    "value": "Book {0}",
+    "comment": "EPUB book: its position in a series, after the series name (“The Cyclades · Book 2”)."
+  },
+  "Cover": {
+    "value": "Cover",
+    "comment": "Accessibility description of a book’s cover image."
+  },
+  "This book is protected, so its chapters can’t be shown.": {
+    "value": "This book is protected, so its chapters can’t be shown.",
+    "comment": "EPUB book with DRM."
+  },
+  "Previous [chapter]": {
+    "value": "Previous",
+    "comment": "EPUB book: button under a chapter that shows the previous chapter."
+  },
+  "Next [chapter]": {
+    "value": "Next",
+    "comment": "EPUB book: button under a chapter that shows the next chapter."
+  },
+  "Show All": {
+    "value": "Show All",
+    "comment": "Map button: zooms out to show all of the file's features. Also: EPUB book: button that expands a long table of contents."
+  },
+  "Section {0}": {
+    "value": "Section {0}",
+    "comment": "EPUB book: between the Previous and Next buttons, for a chapter without a title. {0} is its number."
+  },
+  "Empty diagram": {
+    "value": "Empty diagram",
+    "comment": "A Mermaid diagram file with no content."
+  },
+  "Zoom out": {
+    "value": "Zoom out",
+    "comment": "Toolbar tooltip (diagrams, SVG). A keyboard shortcut follows it in parentheses."
+  },
+  "Zoom to fit": {
+    "value": "Zoom to fit",
+    "comment": "Diagram toolbar: tooltip of the Fit button."
+  },
+  "Fit": {
+    "value": "Fit",
+    "comment": "Diagram toolbar: button (and zoom label) that zooms so the whole diagram fits the window. Keep it short."
+  },
+  "Zoom in": {
+    "value": "Zoom in",
+    "comment": "Toolbar tooltip (diagrams, SVG). A keyboard shortcut follows it in parentheses."
+  },
+  "Copy the diagram’s source": {
+    "value": "Copy the diagram’s source",
+    "comment": "Mermaid diagram file: tooltip on the Copy button; copies the diagram’s text."
+  },
+  "Mermaid isn’t available.": {
+    "value": "Mermaid isn’t available.",
+    "comment": "The diagram library didn’t load. Mermaid is a product name."
+  },
+  "No diagram": {
+    "value": "No diagram",
+    "comment": "Mermaid diagram file: the error detail when the library drew nothing."
+  },
+  "This diagram couldn’t be drawn": {
+    "value": "This diagram couldn’t be drawn",
+    "comment": "Mermaid diagram file: title above the error message."
+  },
+  "TikZ drawing": {
+    "value": "TikZ drawing",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it. TikZ is a product name."
+  },
+  "PGF drawing": {
+    "value": "PGF drawing",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it. PGF is a product name."
+  },
+  "Picture": {
+    "value": "Picture",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it. (LaTeX’s picture environment.)"
+  },
+  "Circuit diagram": {
+    "value": "Circuit diagram",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it."
+  },
+  "Tree diagram": {
+    "value": "Tree diagram",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it."
+  },
+  "Commutative diagram": {
+    "value": "Commutative diagram",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it. (Mathematics.)"
+  },
+  "Plot": {
+    "value": "Plot",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it. (A chart drawn with pgfplots.)"
+  },
+  "PSTricks drawing": {
+    "value": "PSTricks drawing",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it. PSTricks is a product name."
+  },
+  "Drawing": {
+    "value": "Drawing",
+    "comment": "LaTeX document: a placeholder for a drawing Greece can’t render; the drawing’s labels follow it."
+  },
+  "Missing figure": {
+    "value": "Missing figure",
+    "comment": "LaTeX document: placeholder for an image file that isn’t there; its file name follows."
+  },
+  "Figure": {
+    "value": "Figure",
+    "comment": "LaTeX document: placeholder for a figure Greece can’t show; its file name follows."
+  },
+  "Not in the bibliography": {
+    "value": "Not in the bibliography",
+    "comment": "LaTeX document: tooltip on a citation whose key isn’t in any bibliography file."
+  },
+  "Included PDF": {
+    "value": "Included PDF",
+    "comment": "LaTeX document: placeholder for a PDF the document includes as pages; its file name follows."
+  },
+  "Missing file": {
+    "value": "Missing file",
+    "comment": "LaTeX document: placeholder for an included .tex file that isn’t there; its name follows."
+  },
+  "Not included": {
+    "value": "Not included",
+    "comment": "LaTeX document: placeholder for an included file Greece couldn’t read (outside the project); its name follows."
+  },
+  "Map": {
+    "value": "Map",
+    "comment": "The map itself (for screen readers), and the layers panel's section of map options."
+  },
+  "Layers": {
+    "value": "Layers",
+    "comment": "Map: the button and panel listing the map's layers; also how many layers a tile set has."
+  },
+  "The map couldn’t start.": "The map couldn’t start.",
+  "{0}°N": {
+    "value": "{0}°N",
+    "comment": "Latitude label on a map grid, north of the equator. {0} is the number of degrees. Use this language's compass abbreviation."
+  },
+  "{0}°S": {
+    "value": "{0}°S",
+    "comment": "Latitude label on a map grid, south of the equator. Use this language's compass abbreviation."
+  },
+  "{0}°E": {
+    "value": "{0}°E",
+    "comment": "Longitude label on a map grid, east of Greenwich. Use this language's compass abbreviation (German: O)."
+  },
+  "{0}°W": {
+    "value": "{0}°W",
+    "comment": "Longitude label on a map grid, west of Greenwich. Use this language's compass abbreviation (French: O)."
+  },
+  "Tile": {
+    "value": "Tile",
+    "comment": "Map inspector: the layer name of a feature from a map tile layer that has no name."
+  },
+  "Point": {
+    "value": "Point",
+    "comment": "Map inspector: the shape type of a feature (one point)."
+  },
+  "Points": {
+    "value": "Points",
+    "comment": "3D statistics: how many points a point cloud has; also a map feature made of several points."
+  },
+  "Line [shape]": {
+    "value": "Line",
+    "comment": "Map inspector: the shape type of a feature (one line)."
+  },
+  "Lines": {
+    "value": "Lines",
+    "comment": "Map inspector: the shape type of a feature made of several lines."
+  },
+  "Polygon": {
+    "value": "Polygon",
+    "comment": "Map inspector: the shape type of a feature (one area)."
+  },
+  "Polygons": {
+    "value": "Polygons",
+    "comment": "Map inspector: the shape type of a feature made of several areas."
+  },
+  "Feature": {
+    "value": "Feature",
+    "comment": "Map inspector: a feature is one shape on the map (a place, road or area) and its attributes."
+  },
+  "No": {
+    "value": "No",
+    "comment": "A false yes/no attribute value of a map feature."
+  },
+  "No attributes": {
+    "value": "No attributes",
+    "comment": "Map inspector: the feature has no properties."
+  },
+  "{0} areas": {
+    "one": "{0} area",
+    "other": "{0} areas",
+    "comment": "Map layers panel: how many polygon features (areas) a layer has. Listed with line and point counts."
+  },
+  "{0} lines [shape]": {
+    "one": "{0} line",
+    "other": "{0} lines",
+    "comment": "Map layers panel: how many line features (roads, rivers, tracks) a layer has."
+  },
+  "{0} points": {
+    "one": "{0} point",
+    "other": "{0} points",
+    "comment": "Map layers panel: how many point features (places) a layer has."
+  },
+  "Tables": {
+    "value": "Tables",
+    "comment": "Map layers panel heading for a GeoPackage, whose layers are database tables."
+  },
+  "Objects": {
+    "value": "Objects",
+    "comment": "Map layers panel heading for a TopoJSON file, whose layers are called objects."
+  },
+  "Tile Layers": {
+    "value": "Tile Layers",
+    "comment": "Map layers panel heading: the layers inside vector map tiles."
+  },
+  "Basemap": {
+    "value": "Basemap",
+    "comment": "Map layers panel: checkbox showing the background world map (land, borders)."
+  },
+  "Grid": {
+    "value": "Grid",
+    "comment": "Map layers panel: checkbox showing latitude and longitude lines."
+  },
+  "Labels": {
+    "value": "Labels",
+    "comment": "Map layers panel: checkbox showing place names on the map."
+  },
+  "Reprojected to WGS 84 for display": {
+    "value": "Reprojected to WGS 84 for display",
+    "comment": "Map layers panel, under the file's coordinate system. WGS 84 is a coordinate system's name."
+  },
+  "Basemap: {0}": {
+    "value": "Basemap: {0}",
+    "comment": "Map credit line. {0} is the data source's name, Natural Earth."
+  },
+  "Vector tiles (PBF)": {
+    "value": "Vector tiles (PBF)",
+    "comment": "Map tiles card: the tile format. PBF is a format name."
+  },
+  "Zoom": {
+    "value": "Zoom",
+    "comment": "Map tiles card: the zoom levels the tile set covers (e.g. 0–14)."
+  },
+  "Showing": {
+    "value": "Showing",
+    "comment": "Label before what's shown right now: the map's current zoom level, or how many points of a point cloud are drawn."
+  },
+  "Tile size": {
+    "value": "Tile size",
+    "comment": "Map tiles card: size of each tile image in pixels."
+  },
+  "Bounds": {
+    "value": "Bounds",
+    "comment": "Map tiles card: the geographic extent of the tiles (west, south, east, north)."
+  },
+  "Center": {
+    "value": "Center",
+    "comment": "Map tiles card: the default centre point of the tile set."
+  },
+  "Version": {
+    "value": "Version",
+    "comment": "The file format's version (3D model, map tile set). Also: Font specimen: a fact label: the font’s version."
+  },
+  "Scheme": {
+    "value": "Scheme",
+    "comment": "Map tiles card: the tile numbering scheme (xyz or tms)."
+  },
+  "Generator": {
+    "value": "Generator",
+    "comment": "Map tiles card: the tool that generated the tiles."
+  },
+  "Vector": {
+    "value": "Vector",
+    "comment": "Map tiles card subtitle: vector tiles, as opposed to image (raster) tiles."
+  },
+  "Raster": {
+    "value": "Raster",
+    "comment": "Map tiles card subtitle: image tiles, as opposed to vector tiles."
+  },
+  "Collapse": {
+    "value": "Collapse",
+    "comment": "Button that folds a card on the map down to its title."
+  },
+  "Zoom {0} (overzoomed)": {
+    "value": "Zoom {0} (overzoomed)",
+    "comment": "Map tiles card: the current zoom level is beyond the tiles' most detailed level, so they are enlarged."
+  },
+  "Zoom {0}": {
+    "value": "Zoom {0}",
+    "comment": "Map tiles card: the map's current zoom level, e.g. Zoom 4.2."
+  },
+  "Distance": {
+    "value": "Distance",
+    "comment": "GPS track statistics: total distance."
+  },
+  "Duration": {
+    "value": "Duration",
+    "comment": "GPS track statistics: total time from start to finish."
+  },
+  "Moving": {
+    "value": "Moving",
+    "comment": "GPS track statistics: time spent moving (moving time), excluding stops."
+  },
+  "Elevation Gain": {
+    "value": "Elevation Gain",
+    "comment": "GPS track statistics: total climb."
+  },
+  "Highest": {
+    "value": "Highest",
+    "comment": "GPS track statistics: the highest elevation reached."
+  },
+  "Max Speed": {
+    "value": "Max Speed",
+    "comment": "GPS track statistics: the highest speed."
+  },
+  "Avg Speed": {
+    "value": "Avg Speed",
+    "comment": "GPS track statistics: average speed. Short label above a value."
+  },
+  "Avg Heart Rate": {
+    "value": "Avg Heart Rate",
+    "comment": "GPS track statistics: average heart rate. Short label above a value."
+  },
+  "{0} bpm": {
+    "value": "{0} bpm",
+    "comment": "Heart rate in beats per minute, on a GPS track. Use the abbreviation Apple's Health app uses in this language."
+  },
+  "Track": {
+    "value": "Track",
+    "comment": "Accessibility label of a menu choosing one GPS track among several."
+  },
+  "No features to draw": {
+    "value": "No features to draw",
+    "comment": "Map notice: the file has no shapes to show."
+  },
+  "Copied {0}": {
+    "value": "Copied {0}",
+    "comment": "A short confirmation after copying; {0} is what was copied (a colour value, a character)."
+  },
+  "Sample": {
+    "value": "Sample",
+    "comment": "Font specimen: a chip that puts the font’s own sample text in the tester."
+  },
+  "Pangram": {
+    "value": "Pangram",
+    "comment": "Font specimen: a chip that puts a pangram (a sentence with every letter) in the tester."
+  },
+  "Alphabet": {
+    "value": "Alphabet",
+    "comment": "Font specimen: a chip that puts the alphabet in the tester."
+  },
+  "Figures": {
+    "value": "Figures",
+    "comment": "Font specimen: a chip that puts digits and symbols in the tester (typography: figures = numerals)."
+  },
+  "Sample text": {
+    "value": "Sample text",
+    "comment": "Font specimen: accessibility label of the chips that choose the tester’s text."
+  },
+  "No faces in this font": {
+    "value": "No faces in this font",
+    "comment": "A font file with no usable typefaces in it."
+  },
+  "WebKit couldn’t load this font for display. Its details are below.": {
+    "value": "WebKit couldn’t load this font for display. Its details are below.",
+    "comment": "Font specimen. WebKit is a product name."
+  },
+  "Specimen": {
+    "value": "Specimen",
+    "comment": "Font specimen: section title for the type tester."
+  },
+  "Click the sample to type your own": {
+    "value": "Click the sample to type your own",
+    "comment": "Font specimen: hint beside the type tester."
+  },
+  "Variable Axes": {
+    "value": "Variable Axes",
+    "comment": "Font specimen: section title for a variable font’s axes (weight, width…)."
+  },
+  "{0} axes": {
+    "one": "{0} axis",
+    "other": "{0} axes",
+    "comment": "Font specimen: how many variation axes a variable font has."
+  },
+  "Axes": {
+    "value": "Axes",
+    "comment": "Font specimen: short name of the Variable Axes section in the navigation. Keep it short."
+  },
+  "OpenType Features": {
+    "value": "OpenType Features",
+    "comment": "Font specimen: section title. OpenType is a product name."
+  },
+  "Features [font]": {
+    "value": "Features",
+    "comment": "Font specimen: short name of the OpenType Features section in the navigation. Keep it short."
+  },
+  "Apply {0} to the specimen": {
+    "value": "Apply {0} to the specimen",
+    "comment": "Font specimen: tooltip on an OpenType feature’s card. {0} is a feature tag such as “ss01”."
+  },
+  "{0} · on by default": {
+    "value": "{0} · on by default",
+    "comment": "Font specimen: under an OpenType feature’s name. {0} is its tag such as “liga”."
+  },
+  "Sizes": {
+    "value": "Sizes",
+    "comment": "Font specimen: section title for the sample at several sizes."
+  },
+  "Icons": {
+    "value": "Icons",
+    "comment": "Font specimen: section title listing every icon in an icon font."
+  },
+  "Characters": {
+    "value": "Characters",
+    "comment": "Font specimen: section title listing every character in the font; also an Information row (how many)."
+  },
+  "Information": {
+    "value": "Information",
+    "comment": "Font specimen: section title for everything the font says about itself."
+  },
+  "Ascender": {
+    "value": "Ascender",
+    "comment": "Font specimen: a labelled metric line drawn across the large letters (typography term)."
+  },
+  "Cap height": {
+    "value": "Cap height",
+    "comment": "Font specimen: a labelled metric line drawn across the large letters (typography term)."
+  },
+  "x-height": {
+    "value": "x-height",
+    "comment": "Font specimen: a labelled metric line drawn across the large letters (typography term)."
+  },
+  "Baseline": {
+    "value": "Baseline",
+    "comment": "Font specimen: a labelled metric line drawn across the large letters (typography term)."
+  },
+  "Descender": {
+    "value": "Descender",
+    "comment": "Font specimen: a labelled metric line drawn across the large letters (typography term)."
+  },
+  "Glyphs": {
+    "value": "Glyphs",
+    "comment": "Font specimen: how many glyphs (drawn shapes) the font has."
+  },
+  "Variable": {
+    "value": "Variable",
+    "comment": "Font specimen: a fact label: the font is variable; its axes follow."
+  },
+  "Designer": {
+    "value": "Designer",
+    "comment": "Font specimen: a fact label: the typeface’s designer."
+  },
+  "Scripts [writing]": {
+    "value": "Scripts",
+    "comment": "Font specimen: a fact label: the writing systems the font covers (Latin, Greek…)."
+  },
+  "Show more": {
+    "value": "Show more",
+    "comment": "Button under a long text that shows all of it."
+  },
+  "Show less": {
+    "value": "Show less",
+    "comment": "Button that shortens a long text again."
+  },
+  "Family": {
+    "value": "Family",
+    "comment": "Font specimen, Information section: a row label. (Font family name.)"
+  },
+  "Style": {
+    "value": "Style",
+    "comment": "Font specimen, Information section: a row label. (Bold, Italic…)"
+  },
+  "Full name": {
+    "value": "Full name",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "PostScript name": {
+    "value": "PostScript name",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "Designer URL": {
+    "value": "Designer URL",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "Manufacturer": {
+    "value": "Manufacturer",
+    "comment": "Font specimen, Information section: a row label. (The foundry.)"
+  },
+  "Vendor URL": {
+    "value": "Vendor URL",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "Vendor ID": {
+    "value": "Vendor ID",
+    "comment": "Font specimen, Information section: a row label. (A four-letter foundry code.)"
+  },
+  "Description": {
+    "value": "Description",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "{0} · {1} outlines": {
+    "value": "{0} · {1} outlines",
+    "comment": "Font specimen, Information section: a row label. {0} is the file format (TrueType, WOFF2), {1} the outline format (TrueType, CFF)."
+  },
+  "Color ({0})": {
+    "value": "Color ({0})",
+    "comment": "Font specimen, Information section: a row label. The font has colour glyphs; {0} lists their formats (COLR, sbix…)."
+  },
+  "Units per em": {
+    "value": "Units per em",
+    "comment": "Font specimen, Information section: a row label. (Typography: the em square’s units.)"
+  },
+  "Metrics": {
+    "value": "Metrics",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}": {
+    "value": "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}",
+    "comment": "Font specimen, Information section: a row label. Vertical metrics in font units."
+  },
+  "Weight class": {
+    "value": "Weight class",
+    "comment": "Font specimen, Information section: a row label. (OpenType usWeightClass, e.g. 400.)"
+  },
+  "Width class": {
+    "value": "Width class",
+    "comment": "Font specimen, Information section: a row label. (OpenType usWidthClass, 1–9.)"
+  },
+  "Italic": {
+    "value": "Italic",
+    "comment": "Font specimen: a trait of the font (it is italic)."
+  },
+  "Monospaced": {
+    "value": "Monospaced",
+    "comment": "Font specimen: a trait of the font (every character is the same width)."
+  },
+  "Traits": {
+    "value": "Traits",
+    "comment": "Font specimen, Information section: a row label. Followed by Italic, Monospaced."
+  },
+  "Languages": {
+    "value": "Languages",
+    "comment": "Font specimen, Information section: a row label. Followed by a count and a list."
+  },
+  "Embedding": {
+    "value": "Embedding",
+    "comment": "Font specimen, Information section: a row label. (Whether documents may embed the font.)"
+  },
+  "Created": {
+    "value": "Created",
+    "comment": "Font specimen, Information section: a row label. (Date.)"
+  },
+  "Modified": {
+    "value": "Modified",
+    "comment": "Font specimen, Information section: a row label. (Date.)"
+  },
+  "Copyright": {
+    "value": "Copyright",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "Trademark": {
+    "value": "Trademark",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "License URL": {
+    "value": "License URL",
+    "comment": "Font specimen, Information section: a row label."
+  },
+  "Characters can’t be drawn without the font.": {
+    "value": "Characters can’t be drawn without the font.",
+    "comment": "Font specimen: the font couldn’t be loaded."
+  },
+  "Showing the first {1} of {0} characters.": {
+    "one": "Showing the first {1} of {0} character.",
+    "other": "Showing the first {1} of {0} characters.",
+    "comment": "Font specimen: the character set is too large to show in full. {1} shown, {0} in the font."
+  },
+  "Code point": {
+    "value": "Code point",
+    "comment": "Font specimen, character inspector: the Unicode code point (U+0041)."
+  },
+  "Character": {
+    "value": "Character",
+    "comment": "Font specimen, character inspector: button that copies the character. Keep it short."
+  },
+  "Copy the character": {
+    "value": "Copy the character",
+    "comment": "Tooltip of the Character button."
+  },
+  "Copy the code point": {
+    "value": "Copy the code point",
+    "comment": "Tooltip of the button that copies “U+0041”."
+  },
+  "Unnamed": {
+    "value": "Unnamed",
+    "comment": "A character with no Unicode name."
+  },
+  "Glyph": {
+    "value": "Glyph",
+    "comment": "Font specimen, character inspector: the glyph’s name in the font."
+  },
+  "Glyph ID": {
+    "value": "Glyph ID",
+    "comment": "Font specimen, character inspector: the glyph’s number in the font."
+  },
+  "Advance": {
+    "value": "Advance",
+    "comment": "Font specimen, character inspector: the glyph’s advance width."
+  },
+  "{0} units": {
+    "one": "{0} unit",
+    "other": "{0} units",
+    "comment": "Font units (of the em square), e.g. an advance width."
+  },
+  "The Lottie player is missing": {
+    "value": "The Lottie player is missing",
+    "comment": "Lottie is a product name (animation format)."
+  },
+  "Click to play or pause": {
+    "value": "Click to play or pause",
+    "comment": "Lottie animation: tooltip on the animation. A keyboard shortcut follows in parentheses."
+  },
+  "Play": {
+    "value": "Play",
+    "comment": "3D model toolbar button: plays the animation. Also: Tooltip of the Play button (animation). A keyboard shortcut follows in parentheses."
+  },
+  "Loop": {
+    "value": "Loop",
+    "comment": "Tooltip of the button that plays the animation again and again."
+  },
+  "Background: Checkerboard": {
+    "value": "Background: Checkerboard",
+    "comment": "Lottie animation: tooltip of the button that cycles the background; the current one is a transparency checkerboard."
+  },
+  "Background: White": {
+    "value": "Background: White",
+    "comment": "Lottie animation: tooltip of the button that cycles the background; the current one is white."
+  },
+  "Background: Black": {
+    "value": "Background: Black",
+    "comment": "Lottie animation: tooltip of the button that cycles the background; the current one is black."
+  },
+  "Speed {0}": {
+    "value": "Speed {0}",
+    "comment": "Lottie animation: tooltip of a playback speed button. {0} is e.g. “0.5×”."
+  },
+  "Pause": {
+    "value": "Pause",
+    "comment": "3D model toolbar button: pauses the animation. Also: Tooltip of the Pause button (animation). A keyboard shortcut follows in parentheses."
+  },
+  "This animation couldn’t be read.": {
+    "value": "This animation couldn’t be read.",
+    "comment": "Lottie animation file that couldn’t be loaded."
+  },
+  "This animation couldn’t be played.": {
+    "value": "This animation couldn’t be played.",
+    "comment": "Lottie animation that failed to start."
+  },
+  "Play from frame {0}": {
+    "value": "Play from frame {0}",
+    "comment": "Lottie animation: tooltip of a marker chip. {0} is a frame number."
+  },
+  "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.": {
+    "value": "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.",
+    "comment": "Tooltip of the “Expressions not evaluated” chip."
+  },
+  "Expressions not evaluated": {
+    "value": "Expressions not evaluated",
+    "comment": "Lottie animation: a chip. Expressions are scripts inside an animation, which Greece doesn’t run."
+  },
+  "Original": {
+    "value": "Original",
+    "comment": "Colour palette: notation button showing colours as the file defines them (CMYK, Lab…), when they mix models."
+  },
+  "{0} colors": {
+    "one": "{0} color",
+    "other": "{0} colors",
+    "comment": "Colour palette: how many colours it has."
+  },
+  "Ungrouped": {
+    "value": "Ungrouped",
+    "comment": "Colour palette: heading for colours outside any group."
+  },
+  "Spot": {
+    "value": "Spot",
+    "comment": "Colour palette: badge on a spot colour (a premixed printing ink). Keep it short."
+  },
+  "{0} — click to copy": {
+    "value": "{0} — click to copy",
+    "comment": "Colour palette: tooltip of a swatch. {0} is the colour’s name or value."
+  },
+  "Outside sRGB: shown as the nearest sRGB color": {
+    "value": "Outside sRGB: shown as the nearest sRGB color",
+    "comment": "Colour palette: tooltip of a mark beside a colour the screen can’t show exactly."
+  },
+  "{0} too fast": {
+    "one": "{0} too fast",
+    "other": "{0} too fast",
+    "comment": "Subtitles: a chip counting cues (subtitles) that break a guideline; click it to show only those. (Reading speed over the limit.)"
+  },
+  "Reading speed {0} cps (over {1})": {
+    "value": "Reading speed {0} cps (over {1})",
+    "comment": "Subtitles: why a cue is marked. cps = characters per second; use the abbreviation subtitlers use in this language."
+  },
+  "{0} long lines": {
+    "one": "{0} long line",
+    "other": "{0} long lines",
+    "comment": "Subtitles: a chip counting cues (subtitles) that break a guideline; click it to show only those."
+  },
+  "A line over {0} characters": {
+    "one": "A line over {0} character",
+    "other": "A line over {0} characters",
+    "comment": "Subtitles: why a cue is marked."
+  },
+  "{0} over 2 lines": {
+    "one": "{0} over 2 lines",
+    "other": "{0} over 2 lines",
+    "comment": "Subtitles: a chip counting cues (subtitles) that break a guideline; click it to show only those. (Cues with more than two lines.)"
+  },
+  "More than {0} lines": {
+    "one": "More than {0} line",
+    "other": "More than {0} lines",
+    "comment": "Subtitles: why a cue is marked."
+  },
+  "{0} brief": {
+    "one": "{0} brief",
+    "other": "{0} brief",
+    "comment": "Subtitles: a chip counting cues (subtitles) that break a guideline; click it to show only those. (Cues shown too briefly to read.)"
+  },
+  "On screen under {0} s": {
+    "value": "On screen under {0} s",
+    "comment": "Subtitles: why a cue is marked. {0} is seconds."
+  },
+  "{0} lingering": {
+    "one": "{0} lingering",
+    "other": "{0} lingering",
+    "comment": "Subtitles: a chip counting cues (subtitles) that break a guideline; click it to show only those. (Cues left on screen too long.)"
+  },
+  "On screen over {0} s": {
+    "value": "On screen over {0} s",
+    "comment": "Subtitles: why a cue is marked. {0} is seconds."
+  },
+  "{0} overlaps": {
+    "one": "{0} overlap",
+    "other": "{0} overlaps",
+    "comment": "Subtitles: a chip counting cues (subtitles) that break a guideline; click it to show only those. (Cues that overlap the previous one.)"
+  },
+  "Starts before the previous cue ends": {
+    "value": "Starts before the previous cue ends",
+    "comment": "Subtitles: why a cue is marked."
+  },
+  "{0} with bad timing": {
+    "one": "{0} with bad timing",
+    "other": "{0} with bad timing",
+    "comment": "Subtitles: a chip counting cues (subtitles) that break a guideline; click it to show only those. (Cues that end before they start.)"
+  },
+  "Ends before it starts": {
+    "value": "Ends before it starts",
+    "comment": "Subtitles: why a cue is marked (its timing is broken)."
+  },
+  "These subtitles couldn’t be read": {
+    "value": "These subtitles couldn’t be read",
+    "comment": "Subtitle file that couldn’t be loaded."
+  },
+  "Filter lines": {
+    "value": "Filter lines",
+    "comment": "Placeholder of the search field of a song’s lyrics (LRC file)."
+  },
+  "Filter cues": {
+    "value": "Filter cues",
+    "comment": "Placeholder of the search field of a subtitle file."
+  },
+  "{0} cues": {
+    "one": "{0} cue",
+    "other": "{0} cues",
+    "comment": "Subtitles: how many cues (individual subtitles) the file has."
+  },
+  "Average reading speed, in characters per second": {
+    "value": "Average reading speed, in characters per second",
+    "comment": "Subtitles: tooltip of the average reading speed chip."
+  },
+  "{0} cps average": {
+    "value": "{0} cps average",
+    "comment": "Subtitles: average reading speed chip. cps = characters per second."
+  },
+  "{0} speakers": {
+    "one": "{0} speaker",
+    "other": "{0} speakers",
+    "comment": "Subtitles: how many speakers are named."
+  },
+  "Timed at {0} fps": {
+    "value": "Timed at {0} fps",
+    "comment": "Subtitles: the frame rate the timing is based on (fps = frames per second)."
+  },
+  "Show only these": {
+    "value": "Show only these",
+    "comment": "Subtitles: tooltip of a warning chip; click to show only the cues it counts."
+  },
+  "Jump to a moment": {
+    "value": "Jump to a moment",
+    "comment": "Subtitles: tooltip of the timeline; click to scroll to the cue at that time."
+  },
+  "Showing the first {0} cues.": {
+    "one": "Showing the first {0} cue.",
+    "other": "Showing the first {0} cues.",
+    "comment": "Subtitles: the file is too long to show in full."
+  },
+  "{0} cps": {
+    "value": "{0} cps",
+    "comment": "Subtitles: a cue’s reading speed. cps = characters per second."
+  },
+  "No matching cues": {
+    "value": "No matching cues",
+    "comment": "Subtitles: nothing matches the filter."
+  },
+  "No cues found": {
+    "value": "No cues found",
+    "comment": "Subtitles: the file has no cues."
+  },
+  "SVG image": {
+    "value": "SVG image",
+    "comment": "Accessibility label of an SVG drawing without a title. Same as the app’s “SVG image”."
+  },
+  "This SVG couldn’t be drawn.": {
+    "value": "This SVG couldn’t be drawn.",
+    "comment": "An SVG file that couldn’t be shown."
+  },
+  "Actual size": {
+    "value": "Actual size",
+    "comment": "SVG viewer: tooltip of the zoom percentage and the 1:1 button (show at 100%)."
+  },
+  "Fit to window": {
+    "value": "Fit to window",
+    "comment": "SVG viewer: tooltip of the button that zooms to fit. A keyboard shortcut follows in parentheses."
+  },
+  "Transparency checkerboard": {
+    "value": "Transparency checkerboard",
+    "comment": "SVG viewer: tooltip of the button that shows a checkerboard behind transparent areas."
+  },
+  "Source [code]": {
+    "value": "Source",
+    "comment": "SVG viewer: tooltip of the button that shows the file’s XML source."
+  },
+  "This file contains scripts. Greece shows SVG as an image, so they never run.": {
+    "value": "This file contains scripts. Greece shows SVG as an image, so they never run.",
+    "comment": "SVG viewer: note above the source."
+  },
+  "It refers to files or web addresses, which previews don’t load.": {
+    "value": "It refers to files or web addresses, which previews don’t load.",
+    "comment": "SVG viewer: note above the source (“it” is the SVG file)."
+  },
+  "The source couldn’t be read.": {
+    "value": "The source couldn’t be read.",
+    "comment": "SVG viewer: the XML source couldn’t be loaded."
+  },
+  "Model controls": {
+    "value": "Model controls",
+    "comment": "Accessibility label of the 3D model viewer's toolbar."
+  },
+  "This model is too large to preview": {
+    "value": "This model is too large to preview",
+    "comment": "Error title for a 3D model."
+  },
+  "Greece previews models up to {0}.": {
+    "value": "Greece previews models up to {0}.",
+    "comment": "Error detail. {0} is a file size, e.g. 1 GB."
+  },
+  "3D previews need WebGL": {
+    "value": "3D previews need WebGL",
+    "comment": "Error title when the Mac's web view can't draw 3D graphics."
+  },
+  "Reading the model took too long.": {
+    "value": "Reading the model took too long.",
+    "comment": "Error detail for a 3D model."
+  },
+  "Greece couldn’t open this model": {
+    "value": "Greece couldn’t open this model",
+    "comment": "Error title for a 3D model. Greece is the app's name."
+  },
+  "Loading": {
+    "value": "Loading",
+    "comment": "Status under a progress ring while a 3D model loads."
+  },
+  "Preparing": {
+    "value": "Preparing",
+    "comment": "Status under a progress ring after a 3D model has loaded, before it's drawn."
+  },
+  "Not a MagicaVoxel file": {
+    "value": "Not a MagicaVoxel file",
+    "comment": "Error detail. MagicaVoxel is an app's name."
+  },
+  "Unsupported format": {
+    "value": "Unsupported format",
+    "comment": "Error detail for a 3D model file."
+  },
+  "The file has no scene": {
+    "value": "The file has no scene",
+    "comment": "Error detail for a 3D model with nothing in it."
+  },
+  "Couldn’t read the points": {
+    "value": "Couldn’t read the points",
+    "comment": "Error detail for a point cloud file."
+  },
+  "Not a LAS/LAZ file": {
+    "value": "Not a LAS/LAZ file",
+    "comment": "Error detail. LAS and LAZ are point cloud format names."
+  },
+  "Decompressing": {
+    "value": "Decompressing",
+    "comment": "Status under a progress ring while a compressed point cloud (LAZ) is unpacked."
+  },
+  "The decoder failed": {
+    "value": "The decoder failed",
+    "comment": "Error detail: decompressing a point cloud failed."
+  },
+  "The file has no points": {
+    "value": "The file has no points",
+    "comment": "Error detail for a point cloud."
+  },
+  "The model is empty": {
+    "value": "The model is empty",
+    "comment": "Error detail for a 3D model."
+  },
+  "Shaded": {
+    "value": "Shaded",
+    "comment": "3D model toolbar: draw the model with solid, lit surfaces."
+  },
+  "Wireframe": {
+    "value": "Wireframe",
+    "comment": "3D model toolbar: draw only the model's edges."
+  },
+  "Display": {
+    "value": "Display",
+    "comment": "3D model toolbar (for screen readers): the group choosing shaded or wireframe drawing."
+  },
+  "Colour": {
+    "value": "Colour",
+    "comment": "Point cloud toolbar: menu choosing how points are coloured, and the colour mode using the file's own colours."
+  },
+  "Animation {0}": {
+    "value": "Animation {0}",
+    "comment": "Name of a 3D model's animation that has no name of its own. {0} is its number."
+  },
+  "Animation": {
+    "value": "Animation",
+    "comment": "3D model toolbar: menu choosing which of the model's animations plays."
+  },
+  "Reset View": {
+    "value": "Reset View",
+    "comment": "3D model toolbar button: frames the whole model again."
+  },
+  "Statistics": {
+    "value": "Statistics",
+    "comment": "3D model toolbar button: shows the model's counts and dimensions."
+  },
+  "Classes": {
+    "value": "Classes",
+    "comment": "Point cloud statistics: how many classification classes (ground, building, water…) occur."
+  },
+  "Point format": {
+    "value": "Point format",
+    "comment": "Point cloud statistics: the LAS point record format number."
+  },
+  "LAS version": {
+    "value": "LAS version",
+    "comment": "Point cloud statistics: version of the LAS file format."
+  },
+  "Vertices": {
+    "value": "Vertices",
+    "comment": "3D model statistics: how many vertices the model has."
+  },
+  "Triangles": {
+    "value": "Triangles",
+    "comment": "3D model statistics: how many triangles the model has."
+  },
+  "Meshes": {
+    "value": "Meshes",
+    "comment": "3D model statistics: how many meshes the model has."
+  },
+  "Materials": {
+    "value": "Materials",
+    "comment": "3D model statistics: how many materials (surface definitions) the model has."
+  },
+  "Textures": {
+    "value": "Textures",
+    "comment": "3D model statistics: how many textures (images) the model uses."
+  },
+  "Texture memory": {
+    "value": "Texture memory",
+    "comment": "3D model statistics: graphics memory the textures use."
+  },
+  "Animations": {
+    "value": "Animations",
+    "comment": "3D model statistics: how many animations the model has."
+  },
+  "Bones": {
+    "value": "Bones",
+    "comment": "3D model statistics: how many skeleton bones an animated model has."
+  },
+  "Morph targets": {
+    "value": "Morph targets",
+    "comment": "3D model statistics: how many morph targets (blend shapes) the model has."
+  },
+  "Compression": {
+    "value": "Compression",
+    "comment": "3D model statistics: the compression schemes the file uses (e.g. Draco, Meshopt)."
+  },
+  "Created with": {
+    "value": "Created with",
+    "comment": "3D model statistics: the app that created the file. Label before an app name."
+  },
+  "{0} voxels": {
+    "one": "{0} voxel",
+    "other": "{0} voxels",
+    "comment": "3D model dimensions of a MagicaVoxel model: a width, depth or height in voxels."
+  },
+  "Width": {
+    "value": "Width",
+    "comment": "3D model dimensions: the size left to right."
+  },
+  "Depth": {
+    "value": "Depth",
+    "comment": "3D model dimensions: the size front to back."
+  },
+  "Height": {
+    "value": "Height",
+    "comment": "3D model dimensions: the size bottom to top."
+  },
+  "Elevation": {
+    "value": "Elevation",
+    "comment": "Point cloud colour mode: colour points by height."
+  },
+  "Intensity": {
+    "value": "Intensity",
+    "comment": "Point cloud colour mode: colour points by the laser return's strength."
+  },
+  "Classification": {
+    "value": "Classification",
+    "comment": "Point cloud colour mode: colour points by their class (ground, building, water…)."
+  },
+  "A file it needs couldn’t be read.": {
+    "value": "A file it needs couldn’t be read.",
+    "comment": "Error detail: the 3D model refers to another file (texture, buffer) that couldn't be read."
+  },
+  "Unreadable point sample": {
+    "value": "Unreadable point sample",
+    "comment": "Error detail: the point cloud data Greece prepared couldn't be read."
+  },
+  "Truncated point sample": {
+    "value": "Truncated point sample",
+    "comment": "Error detail: the point cloud data Greece prepared is cut short."
+  },
+  "Not an OFF file": {
+    "value": "Not an OFF file",
+    "comment": "Error detail. OFF is a 3D model format name."
+  },
+  "Invalid OFF header": {
+    "value": "Invalid OFF header",
+    "comment": "Error detail: an OFF 3D model file's header is broken. OFF is a format name."
+  }
+}

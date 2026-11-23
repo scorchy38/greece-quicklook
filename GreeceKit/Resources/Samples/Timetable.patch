@@ -1,0 +1,83 @@
+From 3f2a91c4e07b5d1a8c6e2f90b4d7a1c3e5f80912 Mon Sep 17 00:00:00 2001
+From: Eleni Papadaki <eleni@example.com>
+Date: Fri, 21 Nov 2026 09:40:12 +0200
+Subject: [PATCH] Add winter timetable and skip ports closed by the meltemi
+
+Winter sailings start on 1 December. Ports report closures before 06:00,
+so the planner now drops any leg whose origin or destination is closed.
+---
+ ferries.py      | 24 ++++++++++++++++++------
+ timetable.toml  | 11 +++++++++++
+ README.md       |  3 ++-
+ 3 files changed, 31 insertions(+), 7 deletions(-)
+
+diff --git a/ferries.py b/ferries.py
+index 8c1d2e4..b7a90f1 100644
+--- a/ferries.py
++++ b/ferries.py
+@@ -6,6 +6,7 @@ from __future__ import annotations
+ import heapq
+ from dataclasses import dataclass, field
+ from datetime import timedelta
++from typing import Iterable
+ 
+ 
+ @dataclass(order=True)
+@@ -27,13 +28,24 @@ TIMETABLE = [
+ ]
+ 
+ 
+-def fastest(start: str, goal: str) -> tuple[timedelta, list[str]] | None:
+-    """Dijkstra over the timetable. Ferries run both ways."""
++def open_legs(legs: Iterable[Leg], closed: set[str]) -> list[Leg]:
++    """Legs whose ports are both open today."""
++    return [leg for leg in legs if leg.origin not in closed and leg.destination not in closed]
++
++
++def fastest(start: str, goal: str, closed: set[str] = frozenset()) -> tuple[timedelta, list[str]] | None:
++    """Dijkstra over today's open legs. Ferries run both ways.
++
++    Ports closed by weather are skipped entirely.
++    """
+     graph: dict[str, list[Leg]] = {}
+-    for leg in TIMETABLE:
++    for leg in open_legs(TIMETABLE, closed):
+         graph.setdefault(leg.origin, []).append(leg)
+         graph.setdefault(leg.destination, []).append(Leg(leg.minutes, leg.destination, leg.origin, leg.operator))
+ 
++    if start in closed or goal in closed:
++        return None
++
+     queue = [(0, start, [start])]
+     seen: set[str] = set()
+     while queue:
+diff --git a/timetable.toml b/timetable.toml
+new file mode 100644
+index 0000000..4e1c2a7
+--- /dev/null
++++ b/timetable.toml
+@@ -0,0 +1,11 @@
++[season.winter]
++starts = 2026-12-01
++ends = 2027-03-31
++
++[[season.winter.legs]]
++from = "Piraeus"
++to = "Syros"
++departures = ["07:00", "17:30"]
++
++[closures]
++report_by = "06:00"
+diff --git a/README.md b/README.md
+index 1a2b3c4..5d6e7f8 100644
+--- a/README.md
++++ b/README.md
+@@ -1,4 +1,5 @@
+ # Ferry Planner
+ 
+-Finds the fastest way between two Aegean islands.
++Finds the fastest way between two Aegean islands, skipping
++ports that the meltemi has closed for the day.
+ 
+-- 
+2.47.0

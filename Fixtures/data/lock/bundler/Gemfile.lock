@@ -1,0 +1,28 @@
+GIT
+  remote: https://github.com/harbour/tide.git
+  revision: 3c2b1f0d
+  specs:
+    tide (0.4.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    actionpack (7.2.1)
+      rack (>= 2.2.4)
+    nokogiri (1.16.7-arm64-darwin)
+      racc (~> 1.4)
+    racc (1.8.1)
+    rack (3.1.8)
+    rspec (3.13.0)
+
+PLATFORMS
+  arm64-darwin
+
+DEPENDENCIES
+  actionpack (~> 7.2)
+  nokogiri
+  rspec
+  tide!
+
+BUNDLED WITH
+   2.5.22

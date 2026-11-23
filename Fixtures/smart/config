@@ -1,0 +1,29 @@
+Include ~/.orbstack/ssh/config
+
+Host github.com
+  User git
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+
+Host build-mac
+  HostName 10.0.4.21
+  User ci
+  Port 2222
+  IdentityFile ~/.ssh/build_mac
+  ForwardAgent no
+
+Host prod-web prod-web-*
+  HostName web.greece.example.com
+  User deploy
+  ProxyJump bastion
+
+Host bastion
+  HostName bastion.example.com
+  User admin
+  IdentityFile ~/.ssh/bastion_ed25519
+  ServerAliveInterval 30
+
+Host *
+  AddKeysToAgent yes
+  UseKeychain yes
+  ServerAliveInterval 60

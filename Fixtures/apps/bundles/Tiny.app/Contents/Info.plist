@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDisplayName</key>
+	<string>Tiny</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>tiny</string>
+			</array>
+			<key>CFBundleTypeName</key>
+			<string>Tiny Document</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Plain Text</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleExecutable</key>
+	<string>Tiny</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.scorchy.greece.fixture.tiny</string>
+	<key>CFBundleName</key>
+	<string>Tiny</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>2.1</string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Tiny links</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tiny</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>214</string>
+	<key>DTSDKName</key>
+	<string>macosx26.5</string>
+	<key>DTXcode</key>
+	<string>2660</string>
+	<key>DTXcodeBuild</key>
+	<string>17F42</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>14.0</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Tiny automates Finder to reveal files.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Tiny uses the camera to scan documents.</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Greece Fixtures</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Tiny records voice notes.</string>
+	<key>SUFeedURL</key>
+	<string>https://example.com/tiny/appcast.xml</string>
+</dict>
+</plist>

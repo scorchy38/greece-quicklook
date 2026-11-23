@@ -1,0 +1,192 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%lld passengers": {
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Passagier"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Passagiere"
+                }
+              }
+            }
+          }
+        },
+        "el": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld επιβάτης"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "%lld επιβάτες"
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld passenger"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld passengers"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Aegean Ferries": {
+      "comment": "App name",
+      "shouldTranslate": false
+    },
+    "Book a cabin": {
+      "comment": "Button on the sailing detail screen",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kabine buchen"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Κράτηση καμπίνας"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "Réserver une cabine"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "客室を予約"
+          }
+        }
+      }
+    },
+    "Cancelled": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Annulliert"
+          }
+        }
+      }
+    },
+    "Departs %@": {
+      "comment": "Departure time, e.g. Departs 07:25",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abfahrt %@"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Αναχώρηση %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Départ %@"
+          }
+        }
+      }
+    },
+    "Sea conditions": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seegang"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "new",
+            "value": ""
+          }
+        }
+      }
+    },
+    "Timetable": {
+      "comment": "Tab title",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fahrplan"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Δρομολόγια"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Horaires"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時刻表"
+          }
+        }
+      }
+    },
+    "Your ticket for %1$@ to %2$@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ihr Ticket von %1$@ nach %2$@"
+          }
+        },
+        "el": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Το εισιτήριό σας %1$@ προς %2$@"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

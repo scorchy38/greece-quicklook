@@ -1,0 +1,1071 @@
+{
+  "@same": [
+    "{0} B",
+    "{0} KB",
+    "{0} MB",
+    "{0} GB",
+    "{0} TB",
+    "{0}+",
+    "Null",
+    "{0} ed."
+  ],
+  "{0} bytes": {
+    "other": "{0}バイト"
+  },
+  "{0} B": "{0} B",
+  "{0} KB": "{0} KB",
+  "{0} MB": "{0} MB",
+  "{0} GB": "{0} GB",
+  "{0} TB": "{0} TB",
+  "Copied": "コピーしました",
+  "Empty file": "空のファイル",
+  "Copy": "コピー",
+  "Showing the beginning of a very large file.": "非常に大きなファイルの先頭部分を表示しています。",
+  "Note": "メモ",
+  "Tip": "ヒント",
+  "Important": "重要",
+  "Warning": "警告",
+  "Caution": "注意",
+  "Remote image not loaded": "リモート画像は読み込まれていません",
+  "On This Page": "このページの内容",
+  "Empty document": "空の書類",
+  "Showing the beginning of a very large document.": "非常に大きな書類の先頭部分を表示しています。",
+  "Added": "追加",
+  "Deleted": "削除",
+  "Renamed": "名称変更",
+  "Binary file not shown": "バイナリファイルは表示されません",
+  "No content changes": "内容の変更なし",
+  "{0} commits": {
+    "other": "{0}件のコミット"
+  },
+  "{0} files changed": {
+    "other": "{0}個のファイルを変更"
+  },
+  "Empty notebook": "空のノートブック",
+  "“{0}”": "「{0}」",
+  "Find": "検索",
+  "Previous": "前へ",
+  "Next": "次へ",
+  "Match Case": "大文字/小文字を区別",
+  "Whole Words": "単語全体",
+  "Done": "完了",
+  "Select text to find it": "検索するテキストを選択",
+  "{0}+": "{0}+",
+  "No matches": "該当なし",
+  "{0} of {1}": "{0}/{1}",
+  "Find {0}": "{0}を検索",
+  "Go to Line": "行へ移動",
+  "Line": "行番号",
+  "{0}+ matches": "{0}+件一致",
+  "{0} matches": {
+    "other": "{0}件一致"
+  },
+  "{0} lines": {
+    "other": "{0}行"
+  },
+  "Show {0} lines": {
+    "other": "{0}行を表示"
+  },
+  "Copy Line {0}": "{0}行目をコピー",
+  "Unfold": "展開",
+  "Fold": "折りたたむ",
+  "Wrap Lines": "行を折り返す",
+  "Fold All": "すべてを折りたたむ",
+  "Unfold All": "すべてを展開",
+  "Copy All": "すべてをコピー",
+  "Reveal value": "値を表示",
+  "Also set on line {0}; this value wins": "{0}行目でも設定されていますが、この値が優先されます",
+  "Duplicate": "重複",
+  "Empty": "空",
+  "Hide value": "値を非表示",
+  "line {0}, first set on line {1}": "{0}行目、最初の設定は{1}行目",
+  "line {0}": "{0}行目",
+  "{0} keys": {
+    "other": "{0}個のキー"
+  },
+  "{0} duplicates": {
+    "other": "重複{0}個"
+  },
+  "{0} empty": {
+    "other": "空の値{0}個"
+  },
+  "Values hidden": "値は非表示",
+  "Environment Template": "環境変数テンプレート",
+  "Environment Variables": "環境変数",
+  "Reveal All": "すべての値を表示",
+  "Hide All": "すべての値を非表示",
+  "Values shown": "値を表示中",
+  "stage {0}": "ステージ{0}",
+  "Base": "ベースイメージ",
+  "Ports": "ポート",
+  "Entrypoint": "エントリポイント",
+  "Command": "コマンド",
+  "Workdir": "作業ディレクトリ",
+  "User": "ユーザ",
+  "Healthcheck": "ヘルスチェック",
+  "Yes": "はい",
+  "from {0}": "{0}から",
+  "Build stages": "ビルドステージ",
+  "Stages": "ステージ",
+  "{0} stages": {
+    "other": "{0}個のステージ"
+  },
+  "Final: {0}": "最終: {0}",
+  "Service": "サービス",
+  "Image [container]": "イメージ",
+  "Volumes": "ボリューム",
+  "Start Order": "起動順序",
+  "{0} services": {
+    "other": "{0}個のサービス"
+  },
+  "{0} volumes": {
+    "other": "{0}個のボリューム"
+  },
+  "{0} networks": {
+    "other": "{0}個のネットワーク"
+  },
+  "tag {0}": "タグ{0}",
+  "1 input": "1個の入力",
+  "{0} inputs": {
+    "other": "{0}個の入力"
+  },
+  "Push": "プッシュ",
+  "to {0}": "{0}へ",
+  "Pull request": "プルリクエスト",
+  "Pull request target": "プルリクエストターゲット",
+  "into {0}": "{0}へ",
+  "Schedule": "スケジュール",
+  "Manual": "手動",
+  "Called by workflows": "ワークフローからの呼び出し",
+  "Release": "リリース",
+  "After workflow": "ワークフロー実行後",
+  "push": "プッシュ",
+  "pull request": "プルリクエスト",
+  "pull request target": "プルリクエストターゲット",
+  "schedule": "スケジュール",
+  "manual": "手動",
+  "called by workflows": "ワークフローからの呼び出し",
+  "release": "リリース",
+  "after workflow": "ワークフロー実行後",
+  "Triggers": "トリガー",
+  "reusable workflow": "再利用可能なワークフロー",
+  "{0} steps": {
+    "other": "{0}ステップ"
+  },
+  "Jobs": "ジョブ",
+  "Step": "ステップ",
+  "reusable": "再利用可能",
+  "Uses": "使用",
+  "Steps": "ステップ",
+  "{0} jobs": {
+    "other": "{0}個のジョブ"
+  },
+  "On {0}": "トリガー: {0}",
+  "replicas": "レプリカ",
+  "type": "タイプ",
+  "ports": "ポート",
+  "hosts": "ホスト",
+  "keys": "キー",
+  "(unnamed)": "（名称なし）",
+  "{0} resources": {
+    "other": "{0}個のリソース"
+  },
+  "{0} {1}s": {
+    "other": "{0}個の{1}"
+  },
+  "namespace {0}": "ネームスペース{0}",
+  "Other": "その他",
+  "Trace": "トレース",
+  "Debug": "デバッグ",
+  "Info": "情報",
+  "Warnings": "警告",
+  "Errors": "エラー",
+  "Access Log": "アクセスログ",
+  "macOS Unified Log": "macOS統合ログ",
+  "{0} more characters": {
+    "other": "あと{0}文字"
+  },
+  "Repeated {0} times": {
+    "other": "{0}回繰り返し"
+  },
+  "Repeats folded": "折りたたんだ繰り返し",
+  "Log": "ログ",
+  "Most Frequent Error": "最も多いエラー",
+  "Most Frequent Errors": "最も多いエラー",
+  "Previous Error": "前のエラー",
+  "Previous Warning": "前の警告",
+  "Next Error": "次のエラー",
+  "Next Warning": "次の警告",
+  "Errors and warnings": "エラーと警告",
+  "See {0}": "{0}を参照",
+  "License": "ライセンス",
+  "Module": "モジュール",
+  "ES modules": "ESモジュール",
+  "Package Manager": "パッケージマネージャ",
+  "Workspaces": "ワークスペース",
+  "Visibility": "公開設定",
+  "Private": "非公開",
+  "Home": "ホーム",
+  "npm package": "npmパッケージ",
+  "Composer package": "Composerパッケージ",
+  "Type": "種類",
+  "Cargo workspace": "Cargoワークスペース",
+  "Rust crate": "Rustクレート",
+  "Workspace": "ワークスペース",
+  "Edition": "エディション",
+  "Members": "メンバー",
+  "Features": "フィーチャ",
+  "Poetry project": "Poetryプロジェクト",
+  "Python project": "Pythonプロジェクト",
+  "Build": "ビルド",
+  "Go module": "Goモジュール",
+  "Toolchain": "ツールチェーン",
+  "Replaced": "置換",
+  "Source": "ソース",
+  "Platform": "プラットフォーム",
+  "Frameworks": "フレームワーク",
+  "Targets": "ターゲット",
+  "Library": "ライブラリ",
+  "Executable": "実行可能ファイル",
+  "Plugin": "プラグイン",
+  "Swift package": "Swiftパッケージ",
+  "Swift Tools": "Swiftツール",
+  "Platforms": "プラットフォーム",
+  "Products": "プロダクト",
+  "Flutter package": "Flutterパッケージ",
+  "Dart package": "Dartパッケージ",
+  "Publish": "公開先",
+  "Executables": "実行可能ファイル",
+  "Elixir project": "Elixirプロジェクト",
+  "Aliases": "エイリアス",
+  "Android build": "Androidビルド",
+  "Gradle build": "Gradleビルド",
+  "Compile SDK": "コンパイルSDK",
+  "Plugins": "プラグイン",
+  "dev": "開発",
+  "test": "テスト",
+  "peer": "ピア",
+  "optional": "オプション",
+  "build": "ビルド",
+  "indirect": "間接",
+  "platform": "プラットフォーム",
+  "override": "オーバーライド",
+  "group": "グループ",
+  "workspace": "ワークスペース",
+  "debug": "デバッグ",
+  "compile only": "コンパイルのみ",
+  "runtime": "ランタイム",
+  "{0} direct": {
+    "other": "直接{0}個"
+  },
+  "{0} dev": {
+    "other": "開発{0}個"
+  },
+  "{0} test": {
+    "other": "テスト{0}個"
+  },
+  "{0} peer": {
+    "other": "ピア{0}個"
+  },
+  "{0} optional": {
+    "other": "オプション{0}個"
+  },
+  "{0} build": {
+    "other": "ビルド{0}個"
+  },
+  "{0} indirect": {
+    "other": "間接{0}個"
+  },
+  "{0} platform": {
+    "other": "プラットフォーム{0}個"
+  },
+  "{0} override": {
+    "other": "オーバーライド{0}個"
+  },
+  "{0} group": {
+    "other": "グループ{0}個"
+  },
+  "{0} workspace": {
+    "other": "ワークスペース{0}個"
+  },
+  "{0} debug": {
+    "other": "デバッグ{0}個"
+  },
+  "{0} compile only": {
+    "other": "コンパイルのみ{0}個"
+  },
+  "{0} runtime": {
+    "other": "ランタイム{0}個"
+  },
+  "Scripts": "スクリプト",
+  "Dependencies": "依存関係",
+  "every weekday in {0}": "{0}の平日",
+  "on weekdays in {0}": "{0}の平日",
+  "every weekday": "平日",
+  "on weekdays": "平日",
+  "every Saturday and Sunday in {0}": "{0}の土曜日と日曜日",
+  "at weekends in {0}": "{0}の週末",
+  "every Saturday and Sunday": "毎週土曜日と日曜日",
+  "at weekends": "週末",
+  "every {0} to {1} in {2}": "{2}の毎週{0}から{1}",
+  "{0} to {1} in {2}": "{2}の{0}から{1}",
+  "every {0} to {1}": "毎週{0}から{1}",
+  "{0} to {1}": "{0}から{1}",
+  "every {0} in {1}": "{1}の毎週{0}",
+  "on {0} in {1}": "{1}の毎週{0}",
+  "every {0}": "毎週{0}",
+  "on {0}": "毎週{0}",
+  "on every {0} days of {1}": {
+    "other": "{1}の{0}日ごと"
+  },
+  "on every {0} days of every month": {
+    "other": "毎月{0}日ごと"
+  },
+  "on days {0}–{1} of {2}": "{2}の{0}日～{1}日",
+  "on days {0}–{1} of every month": "毎月{0}日～{1}日",
+  "{0}th": {
+    "other": "{0}日"
+  },
+  "on the {0} of {1}": "{1}の{0}",
+  "on the {0} of every month": "毎月{0}",
+  "every day": "毎日",
+  "every day in {0}": "{0}の毎日",
+  "in {0}": "{0}",
+  "every year on {0}": "毎年{0}",
+  "on {0} every year": "毎年{0}",
+  "At startup": "起動時",
+  ":{0}": "{0}分",
+  "{0} at {1}": "{0}の{1}",
+  "Every minute": "1分ごと",
+  "Every minute {0}": "{0}に1分ごと",
+  "Every {0} minutes": {
+    "other": "{0}分ごと"
+  },
+  "Every {0} minutes {1}": {
+    "other": "{1}に{0}分ごと"
+  },
+  "Every hour": "1時間ごと",
+  "Every hour {0}": "{0}に1時間ごと",
+  "Every hour at {0}": "毎時{0}",
+  "Every hour at {0} {1}": "{1}の毎時{0}",
+  "Every {0} hours": {
+    "other": "{0}時間ごと"
+  },
+  "Every {0} hours {1}": {
+    "other": "{1}に{0}時間ごと"
+  },
+  "Every {0} hours at {1}": {
+    "other": "{0}時間ごとの{1}"
+  },
+  "Every {0} hours at {1} {2}": {
+    "other": "{2}に{0}時間ごとの{1}"
+  },
+  "Every {0} hours from {1} to {2}": {
+    "other": "{1}から{2}まで{0}時間ごと"
+  },
+  "Every {0} hours from {1} to {2} {3}": {
+    "other": "{3}の{1}から{2}まで{0}時間ごと"
+  },
+  "Every hour from {0} to {1}": "{0}から{1}まで1時間ごと",
+  "Every hour from {0} to {1} {2}": "{2}の{0}から{1}まで1時間ごと",
+  "Every {0} minutes from {1} to {2}": {
+    "other": "{1}から{2}まで{0}分ごと"
+  },
+  "Every {0} minutes from {1} to {2} {3}": {
+    "other": "{3}の{1}から{2}まで{0}分ごと"
+  },
+  "Every minute from {0} to {1}": "{0}から{1}まで1分ごと",
+  "Every minute from {0} to {1} {2}": "{2}の{0}から{1}まで1分ごと",
+  "Every {0} minutes during {1}": {
+    "other": "{1}の時間帯に{0}分ごと"
+  },
+  "Every {0} minutes during {1} {2}": {
+    "other": "{2}の{1}の時間帯に{0}分ごと"
+  },
+  "{0} at {1} and more": "{0}の{1}など",
+  "{0} at {1} past {2}": "{0}、{2}の{1}過ぎ",
+  "{0} minutes": {
+    "other": "{0}分"
+  },
+  "{0} hours": {
+    "other": "{0}時間"
+  },
+  "Today {0}": "今日 {0}",
+  "Tomorrow {0}": "明日 {0}",
+  "Next run": "次回実行",
+  "as {0}": "{0}権限",
+  "System": "システム",
+  "Times in {0}": "時間帯: {0}",
+  "Times in local time": "ローカル時間帯",
+  "Environment": "環境変数",
+  "default": "デフォルト",
+  "{0} recipes": {
+    "other": "{0}個のレシピ"
+  },
+  "{0} targets": {
+    "other": "{0}個のターゲット"
+  },
+  "Default: {0}": "デフォルト: {0}",
+  "All hosts": "すべてのホスト",
+  "command": "コマンド",
+  "{0} defaults": {
+    "other": "デフォルト{0}個"
+  },
+  "key": "キー",
+  "via": "経由",
+  "{0} options": {
+    "other": "{0}個のオプション"
+  },
+  "SSH Config": "SSH設定",
+  "{0} hosts": {
+    "other": "{0}個のホスト"
+  },
+  "{0} includes": {
+    "other": "{0}個のインクルード"
+  },
+  "Required": "必須",
+  "Body": "本文",
+  "{0} params": {
+    "other": "{0}個のパラメータ"
+  },
+  "{0} endpoints": {
+    "other": "{0}個のエンドポイント"
+  },
+  "{0} tags": {
+    "other": "{0}個のタグ"
+  },
+  "{0} schemas": {
+    "other": "{0}個のスキーマ"
+  },
+  "{0} s": "{0}秒",
+  "{0} min": "{0}分",
+  "{0} h {1} min": "{0}時間{1}分",
+  "{0} h": "{0}時間",
+  "{0} days": {
+    "other": "{0}日"
+  },
+  "Graph": "グラフ",
+  "Show Less": "表示を減らす",
+  "Show {0} More": {
+    "other": "さらに{0}件を表示"
+  },
+  "Show Details": "詳細を表示",
+  "Hide Details": "詳細を非表示",
+  "Symbols": "シンボル",
+  "Filter": "フィルタ",
+  "Filter Symbols": "シンボルをフィルタ",
+  "{0} — line {1}": "{0} — {1}行目",
+  "No matching symbols": "一致するシンボルはありません",
+  "No symbols": "シンボルなし",
+  "Key": "キー",
+  "Value": "値",
+  "Copy Path": "パスをコピー",
+  "Copy Value": "値をコピー",
+  "Code": "コード",
+  "Tree": "ツリー",
+  "Show the Whole File as a Tree": "ファイル全体をツリーで表示",
+  "Reading the whole file…": "ファイル全体を読み込み中…",
+  "Indexing {0}…": "{0}をインデックス作成中…",
+  "Showing the first {0} values.": {
+    "other": "最初の{0}個の値を表示しています。"
+  },
+  "This isn’t valid JSON: a key needs a colon after it, on line {0}.": "有効なJSONではありません。{0}行目のキーの後にコロンが必要です。",
+  "This isn’t valid JSON: the file ends too soon, on line {0}.": "有効なJSONではありません。ファイルが{0}行目で途中で終わっています。",
+  "This isn’t valid JSON: unexpected {0} on line {1}.": "有効なJSONではありません。{1}行目に予期しない{0}があります。",
+  "Showing what could be read. A key needs a colon after it, on line {0}.": "読み込めた部分を表示しています。{0}行目のキーの後にコロンが必要です。",
+  "Showing what could be read. The file ends too soon, on line {0}.": "読み込めた部分を表示しています。ファイルが{0}行目で途中で終わっています。",
+  "Showing what could be read. Unexpected {0} on line {1}.": "読み込めた部分を表示しています。{1}行目に予期しない{0}があります。",
+  "Dictionary": "辞書",
+  "Object": "オブジェクト",
+  "Array": "配列",
+  "Date": "日付",
+  "Data": "データ",
+  "String": "文字列",
+  "Number": "数値",
+  "Boolean": "論理値",
+  "Null": "Null",
+  "Root": "ルート",
+  "Item {0}": "項目{0}",
+  "{0} items": {
+    "other": "{0}項目"
+  },
+  "Select a row to see its path": "行を選択するとパスが表示されます",
+  "Copy Link to Section": "セクションへのリンクをコピー",
+  "Link Copied": "リンクをコピーしました",
+  "Image": "画像",
+  "Close": "閉じる",
+  "Open Diagram": "ダイアグラムを開く",
+  "Diagram": "ダイアグラム",
+  "Zoom Out": "縮小",
+  "Actual Size": "実際のサイズ",
+  "Zoom In": "拡大",
+  "Zoom to Fit": "ウインドウに合わせる",
+  "Copy as SVG": "SVGとしてコピー",
+  "Copy SVG": "SVGをコピー",
+  "All {0} done": {
+    "other": "{0}件すべて完了"
+  },
+  "{1} of {0} done": {
+    "other": "{0}件中{1}件完了"
+  },
+  "Task lists in this document": "この書類内のタスクリスト",
+  "Hide Outline": "アウトラインを非表示",
+  "Drag to resize. Double-click to reset.": "ドラッグしてサイズを変更します。ダブルクリックでリセットします。",
+  "Drag to resize": "ドラッグしてサイズを変更",
+  "Show Outline": "アウトラインを表示",
+  "Outline": "アウトライン",
+  "To Do": "やること",
+  "Hint": "ヒント",
+  "Warn": "警告",
+  "Attention": "注目",
+  "Danger": "危険",
+  "Error": "エラー",
+  "Abstract": "要旨",
+  "Summary": "要約",
+  "TL;DR": "要点",
+  "Success": "成功",
+  "Check": "確認済み",
+  "Done [callout]": "完了",
+  "Question": "質問",
+  "Help": "ヘルプ",
+  "FAQ": "よくある質問",
+  "Failure": "失敗",
+  "Fail": "失敗",
+  "Missing": "欠落",
+  "Bug": "バグ",
+  "Example": "例",
+  "Quote": "引用",
+  "Cite": "引用",
+  "Details": "詳細",
+  "See Also": "関連項目",
+  "Tab": "タブ",
+  "Tab {0}": "タブ{0}",
+  "Read from the cover": "表紙から読む",
+  "Read": "読む",
+  "Pages": "ページ",
+  "Previous Page": "前のページ",
+  "Next Page": "次のページ",
+  "All": "すべて",
+  "Doc": "書類",
+  "Img": "画像",
+  "Font": "フォント",
+  "Media": "メディア",
+  "Document": "書類",
+  "Fetch": "フェッチ",
+  "Script": "スクリプト",
+  "Stylesheet": "スタイルシート",
+  "Queued": "処理待ち",
+  "DNS Lookup": "DNSルックアップ",
+  "Connection": "接続",
+  "Request Sent": "リクエスト送信",
+  "Waiting (TTFB)": "応答待ち（TTFB）",
+  "Download": "ダウンロード",
+  "Filter requests": "リクエストをフィルタ",
+  "Status": "ステータス",
+  "Method": "メソッド",
+  "Name": "名前",
+  "Size": "サイズ",
+  "Time": "時間",
+  "Waterfall": "ウォーターフォール",
+  "Load {0}": "読み込み: {0}",
+  "Failed": "失敗",
+  "No matching requests": "一致するリクエストはありません",
+  "{0} requests": {
+    "other": "{0}件のリクエスト"
+  },
+  "{1} of {0} requests": {
+    "other": "{0}件中{1}件のリクエスト"
+  },
+  "first {0} shown": "最初の{0}件を表示",
+  "Requests": "リクエスト",
+  "Transferred": "転送済み",
+  "Finished": "完了",
+  "Load": "読み込み",
+  "HTTP Archive": "HTTPアーカイブ",
+  "{0} · recorded with {1}": "{0} · {1}で記録",
+  "Recorded with {0}": "{0}で記録",
+  "Network capture": "ネットワークキャプチャ",
+  "Select a request to see its headers, payload, response and timing.": "リクエストを選択すると、ヘッダ、ペイロード、レスポンス、タイミングが表示されます。",
+  "This request’s details couldn’t be read.": "このリクエストの詳細を読み込めませんでした。",
+  "Headers": "ヘッダ",
+  "Payload": "ペイロード",
+  "Response": "レスポンス",
+  "Timing": "タイミング",
+  "Request URL": "リクエストURL",
+  "Remote Address": "リモートアドレス",
+  "{0} · connection {1}": "{0} · 接続{1}",
+  "Protocol": "プロトコル",
+  "Redirects To": "リダイレクト先",
+  "General": "一般",
+  "Response Headers": "レスポンスヘッダ",
+  "No response headers": "レスポンスヘッダなし",
+  "Request Headers": "リクエストヘッダ",
+  "No request headers": "リクエストヘッダなし",
+  "Cookies Sent": "送信したCookie",
+  "Cookies Set": "設定されたCookie",
+  "Showing the beginning of a long body.": "長い本文の先頭部分を表示しています。",
+  "Query String": "クエリー文字列",
+  "Form Data": "フォームデータ",
+  "Request Body": "リクエスト本文",
+  "No response body was recorded.": "レスポンス本文は記録されていません。",
+  "Binary content.": "バイナリコンテンツです。",
+  "Showing the first {0}.": "最初の{0}のみ表示しています。",
+  "Started at {0} · total {1}": "開始: {0} · 合計: {1}",
+  "No timing recorded.": "タイミングは記録されていません。",
+  "This formula uses commands Greece can’t typeset": "この数式にはGreeceで組版できないコマンドが使われています",
+  "The rest of this document took too long to typeset.": "この書類の残りの部分は、組版に時間がかかりすぎました。",
+  "The rest of this document couldn’t be typeset.": "この書類の残りの部分を組版できませんでした。",
+  "The rest of this document is too large or too deeply nested to typeset.": "この書類の残りの部分は、大きすぎるか入れ子が深すぎるため組版できません。",
+  "Showing the beginning of a very large project.": "非常に大きなプロジェクトの先頭部分を表示しています。",
+  "Contents": "目次",
+  "Showing the beginning of a very large presentation.": "非常に大きなプレゼンテーションの先頭部分を表示しています。",
+  "Slide {0}": "スライド{0}",
+  "Illustrated by {0}": "イラスト: {0}",
+  "Edited by {0}": "編集: {0}",
+  "Translated by {0}": "翻訳: {0}",
+  "Narrated by {0}": "ナレーション: {0}",
+  "Introduction by {0}": "序文: {0}",
+  "Afterword by {0}": "あとがき: {0}",
+  "With contributions by {0}": "協力: {0}",
+  "Annotated by {0}": "注釈: {0}",
+  "Compiled by {0}": "編纂: {0}",
+  "Cover by {0}": "表紙: {0}",
+  "Adapted by {0}": "翻案: {0}",
+  "Art by {0}": "アート: {0}",
+  "Photographs by {0}": "写真: {0}",
+  "No references": "参考文献なし",
+  "vol. {0}": "第{0}巻",
+  "pp. {0}": "{0}ページ",
+  "{0} ed.": "{0} ed.",
+  "ed. {0}": "{0}編",
+  "Copy citation key": "引用キーをコピー",
+  "Untitled": "名称未設定",
+  "{0} references": {
+    "other": "{0}件の参考文献"
+  },
+  "{0} string macros": {
+    "other": "{0}個の文字列マクロ"
+  },
+  "{0} preambles": {
+    "other": "{0}個のプリアンブル"
+  },
+  "Showing the first references of a very large library.": "非常に大きなライブラリの最初の参考文献を表示しています。",
+  "No matching references": "一致する参考文献はありません",
+  "Bibliography": "参考文献目録",
+  "Filter references": "参考文献をフィルタ",
+  "Article": "論文",
+  "{0} Articles": {
+    "other": "論文{0}件"
+  },
+  "Book": "書籍",
+  "{0} Books": {
+    "other": "書籍{0}件"
+  },
+  "Booklet": "小冊子",
+  "{0} Booklets": {
+    "other": "小冊子{0}件"
+  },
+  "Chapter": "章",
+  "{0} Chapters": {
+    "other": "章{0}件"
+  },
+  "In Collection": "論文集収録",
+  "{0} In Collection": {
+    "other": "論文集収録{0}件"
+  },
+  "Conference Paper": "会議論文",
+  "{0} Conference Papers": {
+    "other": "会議論文{0}件"
+  },
+  "Manual [document]": "マニュアル",
+  "{0} Manuals": {
+    "other": "マニュアル{0}件"
+  },
+  "Master’s Thesis": "修士論文",
+  "{0} Master’s Theses": {
+    "other": "修士論文{0}件"
+  },
+  "Misc": "その他",
+  "{0} Misc": {
+    "other": "その他{0}件"
+  },
+  "PhD Thesis": "博士論文",
+  "{0} PhD Theses": {
+    "other": "博士論文{0}件"
+  },
+  "Proceedings": "会議録",
+  "{0} Proceedings": {
+    "other": "会議録{0}件"
+  },
+  "Report": "報告書",
+  "{0} Reports": {
+    "other": "報告書{0}件"
+  },
+  "Unpublished": "未発表",
+  "{0} Unpublished": {
+    "other": "未発表{0}件"
+  },
+  "Online": "オンライン",
+  "{0} Online": {
+    "other": "オンライン{0}件"
+  },
+  "Thesis": "学位論文",
+  "{0} Theses": {
+    "other": "学位論文{0}件"
+  },
+  "Software": "ソフトウェア",
+  "{0} Software": {
+    "other": "ソフトウェア{0}件"
+  },
+  "Dataset": "データセット",
+  "{0} Datasets": {
+    "other": "データセット{0}件"
+  },
+  "Patent": "特許",
+  "{0} Patents": {
+    "other": "特許{0}件"
+  },
+  "Collection": "論文集",
+  "{0} Collections": {
+    "other": "論文集{0}件"
+  },
+  "Periodical": "定期刊行物",
+  "{0} Periodicals": {
+    "other": "定期刊行物{0}件"
+  },
+  "Standard": "規格",
+  "{0} Standards": {
+    "other": "規格{0}件"
+  },
+  "Video": "ビデオ",
+  "{0} Videos": {
+    "other": "ビデオ{0}件"
+  },
+  "Audio": "オーディオ",
+  "{0} Audio": {
+    "other": "オーディオ{0}件"
+  },
+  "Artwork": "アートワーク",
+  "{0} Artworks": {
+    "other": "アートワーク{0}件"
+  },
+  "Preprint": "プレプリント",
+  "{0} Preprints": {
+    "other": "プレプリント{0}件"
+  },
+  "Entry": "エントリー",
+  "{0} ({1})": "{0}（{1}）",
+  "Publisher": "出版社",
+  "Published": "出版日",
+  "Language": "言語",
+  "Identifier": "識別子",
+  "{0} words · {1} min read": {
+    "other": "{0}語 · 読了まで{1}分"
+  },
+  "{0} words · {1} h {2} min read": {
+    "other": "{0}語 · 読了まで{1}時間{2}分"
+  },
+  "Length": "長さ",
+  "Format": "フォーマット",
+  "Book {0}": "第{0}巻",
+  "Cover": "表紙",
+  "This book is protected, so its chapters can’t be shown.": "このブックは保護されているため、章を表示できません。",
+  "Previous [chapter]": "前へ",
+  "Next [chapter]": "次へ",
+  "Show All": "すべてを表示",
+  "Section {0}": "セクション{0}",
+  "Empty diagram": "空のダイアグラム",
+  "Zoom out": "縮小",
+  "Zoom to fit": "ウインドウに合わせる",
+  "Fit": "フィット",
+  "Zoom in": "拡大",
+  "Copy the diagram’s source": "ダイアグラムのソースをコピー",
+  "Mermaid isn’t available.": "Mermaidを使用できません。",
+  "No diagram": "ダイアグラムなし",
+  "This diagram couldn’t be drawn": "このダイアグラムを描画できませんでした",
+  "TikZ drawing": "TikZ図",
+  "PGF drawing": "PGF図",
+  "Picture": "ピクチャ",
+  "Circuit diagram": "回路図",
+  "Tree diagram": "樹形図",
+  "Commutative diagram": "可換図式",
+  "Plot": "プロット",
+  "PSTricks drawing": "PSTricks図",
+  "Drawing": "図",
+  "Missing figure": "見つからない図",
+  "Figure": "図",
+  "Not in the bibliography": "参考文献にありません",
+  "Included PDF": "挿入されたPDF",
+  "Missing file": "見つからないファイル",
+  "Not included": "読み込まれていません",
+  "Map": "地図",
+  "Layers": "レイヤー",
+  "The map couldn’t start.": "地図を開始できませんでした。",
+  "{0}°N": "北緯{0}°",
+  "{0}°S": "南緯{0}°",
+  "{0}°E": "東経{0}°",
+  "{0}°W": "西経{0}°",
+  "Tile": "タイル",
+  "Point": "ポイント",
+  "Points": "ポイント",
+  "Line [shape]": "ライン",
+  "Lines": "複数のライン",
+  "Polygon": "ポリゴン",
+  "Polygons": "複数のポリゴン",
+  "Feature": "地物",
+  "No": "いいえ",
+  "No attributes": "属性なし",
+  "{0} areas": {
+    "other": "{0}個のエリア"
+  },
+  "{0} lines [shape]": {
+    "other": "{0}本のライン"
+  },
+  "{0} points": {
+    "other": "{0}個のポイント"
+  },
+  "Tables": "表",
+  "Objects": "オブジェクト",
+  "Tile Layers": "タイルレイヤー",
+  "Basemap": "ベースマップ",
+  "Grid": "グリッド",
+  "Labels": "ラベル",
+  "Reprojected to WGS 84 for display": "表示用にWGS 84に再投影",
+  "Basemap: {0}": "ベースマップ: {0}",
+  "Vector tiles (PBF)": "ベクトルタイル（PBF）",
+  "Zoom": "ズーム",
+  "Showing": "表示中",
+  "Tile size": "タイルサイズ",
+  "Bounds": "範囲",
+  "Center": "中心",
+  "Version": "バージョン",
+  "Scheme": "スキーム",
+  "Generator": "生成ツール",
+  "Vector": "ベクトル",
+  "Raster": "ラスター",
+  "Collapse": "折りたたむ",
+  "Zoom {0} (overzoomed)": "ズーム{0}（拡大しすぎ）",
+  "Zoom {0}": "ズーム{0}",
+  "Distance": "距離",
+  "Duration": "所要時間",
+  "Moving": "移動時間",
+  "Elevation Gain": "獲得標高",
+  "Highest": "最高標高",
+  "Max Speed": "最高速度",
+  "Avg Speed": "平均速度",
+  "Avg Heart Rate": "平均心拍数",
+  "{0} bpm": "{0}拍/分",
+  "Track": "トラック",
+  "No features to draw": "描画する地物がありません",
+  "Copied {0}": "{0}をコピーしました",
+  "Sample": "サンプル",
+  "Pangram": "パングラム",
+  "Alphabet": "アルファベット",
+  "Figures": "数字",
+  "Sample text": "サンプルテキスト",
+  "No faces in this font": "このフォントには使用できる書体がありません",
+  "WebKit couldn’t load this font for display. Its details are below.": "WebKitでこのフォントを表示用に読み込めませんでした。詳細は以下のとおりです。",
+  "Specimen": "見本",
+  "Click the sample to type your own": "サンプルをクリックして自由に入力",
+  "Variable Axes": "可変軸",
+  "{0} axes": {
+    "other": "{0}個の軸"
+  },
+  "Axes": "軸",
+  "OpenType Features": "OpenType機能",
+  "Features [font]": "機能",
+  "Apply {0} to the specimen": "{0}を見本に適用",
+  "{0} · on by default": "{0} · デフォルトでオン",
+  "Sizes": "サイズ",
+  "Icons": "アイコン",
+  "Characters": "文字",
+  "Information": "情報",
+  "Ascender": "アセンダ",
+  "Cap height": "キャップハイト",
+  "x-height": "xハイト",
+  "Baseline": "ベースライン",
+  "Descender": "ディセンダ",
+  "Glyphs": "グリフ",
+  "Variable": "可変",
+  "Designer": "デザイナー",
+  "Scripts [writing]": "文字体系",
+  "Show more": "さらに表示",
+  "Show less": "表示を減らす",
+  "Family": "ファミリー",
+  "Style": "スタイル",
+  "Full name": "フルネーム",
+  "PostScript name": "PostScript名",
+  "Designer URL": "デザイナーのURL",
+  "Manufacturer": "製造元",
+  "Vendor URL": "製造元のURL",
+  "Vendor ID": "製造元ID",
+  "Description": "説明",
+  "{0} · {1} outlines": "{0} · {1}アウトライン",
+  "Color ({0})": "カラー（{0}）",
+  "Units per em": "emあたりのユニット数",
+  "Metrics": "メトリクス",
+  "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}": "アセンダ{0} · ディセンダ{1} · キャップハイト{2} · xハイト{3}",
+  "Weight class": "ウェイトクラス",
+  "Width class": "幅クラス",
+  "Italic": "イタリック",
+  "Monospaced": "等幅",
+  "Traits": "特徴",
+  "Languages": "言語",
+  "Embedding": "埋め込み",
+  "Created": "作成日",
+  "Modified": "変更日",
+  "Copyright": "著作権",
+  "Trademark": "商標",
+  "License URL": "ライセンスURL",
+  "Characters can’t be drawn without the font.": "フォントがないため文字を描画できません。",
+  "Showing the first {1} of {0} characters.": {
+    "other": "{0}文字中、最初の{1}文字を表示しています。"
+  },
+  "Code point": "コードポイント",
+  "Character": "文字",
+  "Copy the character": "文字をコピー",
+  "Copy the code point": "コードポイントをコピー",
+  "Unnamed": "名称なし",
+  "Glyph": "グリフ",
+  "Glyph ID": "グリフID",
+  "Advance": "送り幅",
+  "{0} units": {
+    "other": "{0}ユニット"
+  },
+  "The Lottie player is missing": "Lottieプレーヤーが見つかりません",
+  "Click to play or pause": "クリックして再生/一時停止",
+  "Play": "再生",
+  "Loop": "ループ",
+  "Background: Checkerboard": "背景: チェッカーボード",
+  "Background: White": "背景: 白",
+  "Background: Black": "背景: 黒",
+  "Speed {0}": "速度{0}",
+  "Pause": "一時停止",
+  "This animation couldn’t be read.": "このアニメーションを読み込めませんでした。",
+  "This animation couldn’t be played.": "このアニメーションを再生できませんでした。",
+  "Play from frame {0}": "フレーム{0}から再生",
+  "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.": "Lottieのエクスプレッションはコードのため、Greeceでは実行されません。そのため、一部の動きが異なる場合があります。",
+  "Expressions not evaluated": "エクスプレッション未評価",
+  "Original": "オリジナル",
+  "{0} colors": {
+    "other": "{0}色"
+  },
+  "Ungrouped": "グループなし",
+  "Spot": "特色",
+  "{0} — click to copy": "{0} — クリックしてコピー",
+  "Outside sRGB: shown as the nearest sRGB color": "sRGBの範囲外: 最も近いsRGBカラーで表示",
+  "{0} too fast": {
+    "other": "速すぎ{0}件"
+  },
+  "Reading speed {0} cps (over {1})": "読む速度{0}文字/秒（{1}超）",
+  "{0} long lines": {
+    "other": "長い行{0}件"
+  },
+  "A line over {0} characters": {
+    "other": "{0}文字を超える行"
+  },
+  "{0} over 2 lines": {
+    "other": "2行超{0}件"
+  },
+  "More than {0} lines": {
+    "other": "{0}行を超える"
+  },
+  "{0} brief": {
+    "other": "短すぎ{0}件"
+  },
+  "On screen under {0} s": "表示時間が{0}秒未満",
+  "{0} lingering": {
+    "other": "長すぎ{0}件"
+  },
+  "On screen over {0} s": "表示時間が{0}秒超",
+  "{0} overlaps": {
+    "other": "重なり{0}件"
+  },
+  "Starts before the previous cue ends": "前の字幕が終わる前に開始",
+  "{0} with bad timing": {
+    "other": "タイミング不正{0}件"
+  },
+  "Ends before it starts": "開始前に終了",
+  "These subtitles couldn’t be read": "この字幕を読み込めませんでした",
+  "Filter lines": "行をフィルタ",
+  "Filter cues": "字幕をフィルタ",
+  "{0} cues": {
+    "other": "{0}件の字幕"
+  },
+  "Average reading speed, in characters per second": "平均の読む速度（1秒あたりの文字数）",
+  "{0} cps average": "平均{0}文字/秒",
+  "{0} speakers": {
+    "other": "話者{0}人"
+  },
+  "Timed at {0} fps": "{0}fpsでタイミング設定",
+  "Show only these": "これらのみを表示",
+  "Jump to a moment": "特定の時点に移動",
+  "Showing the first {0} cues.": {
+    "other": "最初の{0}件の字幕を表示しています。"
+  },
+  "{0} cps": "{0}文字/秒",
+  "No matching cues": "一致する字幕はありません",
+  "No cues found": "字幕が見つかりません",
+  "SVG image": "SVG画像",
+  "This SVG couldn’t be drawn.": "このSVGを描画できませんでした。",
+  "Actual size": "実際のサイズ",
+  "Fit to window": "ウインドウに合わせる",
+  "Transparency checkerboard": "透明部分のチェッカーボード",
+  "Source [code]": "ソース",
+  "This file contains scripts. Greece shows SVG as an image, so they never run.": "このファイルにはスクリプトが含まれています。GreeceはSVGを画像として表示するため、スクリプトが実行されることはありません。",
+  "It refers to files or web addresses, which previews don’t load.": "このファイルはほかのファイルやWebアドレスを参照していますが、プレビューでは読み込まれません。",
+  "The source couldn’t be read.": "ソースを読み込めませんでした。",
+  "Model controls": "モデルのコントロール",
+  "This model is too large to preview": "このモデルは大きすぎるためプレビューできません",
+  "Greece previews models up to {0}.": "Greeceでプレビューできるモデルは{0}までです。",
+  "3D previews need WebGL": "3DプレビューにはWebGLが必要です",
+  "Reading the model took too long.": "モデルの読み込みに時間がかかりすぎました。",
+  "Greece couldn’t open this model": "Greeceでこのモデルを開けませんでした",
+  "Loading": "読み込み中",
+  "Preparing": "準備中",
+  "Not a MagicaVoxel file": "MagicaVoxelファイルではありません",
+  "Unsupported format": "対応していないフォーマット",
+  "The file has no scene": "ファイルにシーンがありません",
+  "Couldn’t read the points": "ポイントを読み込めませんでした",
+  "Not a LAS/LAZ file": "LAS/LAZファイルではありません",
+  "Decompressing": "展開中",
+  "The decoder failed": "デコーダでエラーが起きました",
+  "The file has no points": "ファイルにポイントがありません",
+  "The model is empty": "モデルが空です",
+  "Shaded": "シェーディング",
+  "Wireframe": "ワイヤーフレーム",
+  "Display": "表示",
+  "Colour": "カラー",
+  "Animation {0}": "アニメーション{0}",
+  "Animation": "アニメーション",
+  "Reset View": "表示をリセット",
+  "Statistics": "統計",
+  "Classes": "クラス",
+  "Point format": "ポイントフォーマット",
+  "LAS version": "LASバージョン",
+  "Vertices": "頂点",
+  "Triangles": "三角形",
+  "Meshes": "メッシュ",
+  "Materials": "マテリアル",
+  "Textures": "テクスチャ",
+  "Texture memory": "テクスチャメモリ",
+  "Animations": "アニメーション",
+  "Bones": "ボーン",
+  "Morph targets": "モーフターゲット",
+  "Compression": "圧縮",
+  "Created with": "作成ツール",
+  "{0} voxels": {
+    "other": "{0}ボクセル"
+  },
+  "Width": "幅",
+  "Depth": "奥行き",
+  "Height": "高さ",
+  "Elevation": "標高",
+  "Intensity": "強度",
+  "Classification": "分類",
+  "A file it needs couldn’t be read.": "必要なファイルを読み込めませんでした。",
+  "Unreadable point sample": "ポイントサンプルを読み込めません",
+  "Truncated point sample": "ポイントサンプルが途中で切れています",
+  "Not an OFF file": "OFFファイルではありません",
+  "Invalid OFF header": "OFFヘッダが無効です"
+}

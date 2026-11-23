@@ -1,128 +1,57 @@
 import Cocoa
 import Quartz
-import WebKit
+import os
+import GreeceKit
 
-/// Main Quick Look extension entry point.
-/// Routes each file URL to the appropriate renderer based on detected file type.
-class PreviewViewController: NSViewController, QLPreviewingController {
+/// Quick Look entry point. All rendering lives in GreeceKit, shared with the app's live previews.
+final class PreviewViewController: NSViewController, QLPreviewingController {
 
-    // MARK: - Child renderers (lazy)
-    private lazy var markdownRenderer = MarkdownRenderer()
-    private lazy var sourceCodeRenderer = SourceCodeRenderer()
-    private lazy var csvRenderer = CSVRenderer()
-    private lazy var sqliteRenderer = SQLiteRenderer()
-    private lazy var diffRenderer = DiffRenderer()
-    private lazy var archiveRenderer = ArchiveRenderer()
-    private lazy var folderRenderer = FolderRenderer()
+    private static let log = Logger(subsystem: "com.scorchy.greece", category: "quicklook")
+    private var session: PreviewSession?
+    /// Sizes Quick Look sets while opening aren't the reader's choice; only later resizes are.
+    private var tracksResizes = false
 
-    // MARK: - Metadata bar
-    private lazy var metadataBar = MetadataBarView()
-    private var metadataBarHeight: NSLayoutConstraint?
-
-    // MARK: - State
-    private var currentFileURL: URL?
-
-    // MARK: - Lifecycle
+    override var nibName: NSNib.Name? { nil }
 
     override func loadView() {
-        self.view = NSView()
-        self.view.wantsLayer = true
+        view = NSView(frame: NSRect(x: 0, y: 0, width: 920, height: 720))
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupMetadataBar()
-    }
-
-    // MARK: - QLPreviewingController
-
-    func preparePreviewOfFile(at url: URL, completionHandler handler: @escaping (Error?) -> Void) {
-        currentFileURL = url
-        let category = FileTypeDetector.detect(url: url)
-
-        // Update metadata bar
-        if GreeceSettings.shared.showMetadataBar {
-            metadataBar.configure(with: url, category: category)
-            metadataBarHeight?.constant = 28
-        } else {
-            metadataBarHeight?.constant = 0
-        }
-
-        // Route to appropriate renderer
-        switch category {
-        case .markdown, .textBundle:
-            embedRenderer(markdownRenderer, for: url, completion: handler)
-
-        case .sourceCode:
-            embedRenderer(sourceCodeRenderer, for: url, completion: handler)
-
-        case .csv:
-            embedRenderer(csvRenderer, for: url, completion: handler)
-
-        case .sqlite:
-            embedRenderer(sqliteRenderer, for: url, completion: handler)
-
-        case .diff:
-            embedRenderer(diffRenderer, for: url, completion: handler)
-
-        case .archive:
-            embedRenderer(archiveRenderer, for: url, completion: handler)
-
-        case .folder:
-            embedRenderer(folderRenderer, for: url, completion: handler)
-
-        case .unknown:
-            // Try source code as fallback for text-like files
-            embedRenderer(sourceCodeRenderer, for: url, completion: handler)
+    func preparePreviewOfFile(at url: URL) async throws {
+        let started = Date()
+        Self.log.info("Preparing preview (\(url.pathExtension.isEmpty ? "no extension" : url.pathExtension, privacy: .public))")
+        do {
+            let session = PreviewSession(url: url)
+            try await session.start()
+            self.session?.stop()
+            self.session?.view.removeFromSuperview()
+            session.view.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview(session.view)
+            NSLayoutConstraint.activate([
+                session.view.topAnchor.constraint(equalTo: view.topAnchor),
+                session.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                session.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                session.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            ])
+            self.session = session
+            preferredContentSize = session.preferredSize
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in self?.tracksResizes = true }
+            let ms = Int(Date().timeIntervalSince(started) * 1000)
+            Self.log.info("Rendered \(session.preview?.summary.title ?? "", privacy: .public) in \(ms, privacy: .public) ms")
+        } catch {
+            Self.log.error("Preview failed: \(error.localizedDescription, privacy: .public)")
+            throw error
         }
     }
 
-    // MARK: - Renderer Embedding
-
-    private func embedRenderer(_ renderer: FileRenderer, for url: URL, completion: @escaping (Error?) -> Void) {
-        // Remove any existing content views (but keep metadata bar)
-        for subview in view.subviews where subview !== metadataBar {
-            subview.removeFromSuperview()
-        }
-
-        let contentView = renderer.render(fileAt: url) { error in
-            completion(error)
-        }
-
-        contentView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(contentView, positioned: .below, relativeTo: metadataBar)
-
-        NSLayoutConstraint.activate([
-            contentView.topAnchor.constraint(equalTo: view.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: metadataBar.topAnchor),
-        ])
+    override func viewDidLayout() {
+        super.viewDidLayout()
+        guard tracksResizes, view.window?.styleMask.contains(.fullScreen) != true else { return }
+        session?.windowResized(to: view.bounds.size)
     }
 
-    // MARK: - Metadata Bar Setup
-
-    private func setupMetadataBar() {
-        metadataBar.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(metadataBar)
-
-        let heightConstraint = metadataBar.heightAnchor.constraint(equalToConstant: 28)
-        self.metadataBarHeight = heightConstraint
-
-        NSLayoutConstraint.activate([
-            metadataBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            metadataBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            metadataBar.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            heightConstraint,
-        ])
+    override func viewWillDisappear() {
+        super.viewWillDisappear()
+        session?.stop()
     }
-}
-
-// MARK: - File Renderer Protocol
-
-/// Protocol all renderers implement to provide a preview view.
-protocol FileRenderer {
-    /// Create and return a view that renders the file at the given URL.
-    /// Call the completion handler when rendering is finished (or on error).
-    func render(fileAt url: URL, completion: @escaping (Error?) -> Void) -> NSView
 }

@@ -1,0 +1,7 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/private/tmp/claude-501/-Users-shubhsaras-Scorchy-Repositories-Greece/ac5c0c55-25d2-47fc-a4b1-80a3d58aa55f/scratchpad/agents/apps/fixtures/work/Tiny'
+relocations:
+  - { offset: 0x26, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000460, symSize: 0x34 }
+  - { offset: 0x41, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x0, symBinAddr: 0x100000460, symSize: 0x34 }
+...

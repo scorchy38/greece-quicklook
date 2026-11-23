@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>AutoJoin</key>
+			<true/>
+			<key>EncryptionType</key>
+			<string>WPA2</string>
+			<key>PayloadDisplayName</key>
+			<string>Office Wi-Fi</string>
+			<key>PayloadIdentifier</key>
+			<string>wifi</string>
+			<key>PayloadType</key>
+			<string>com.apple.wifi.managed</string>
+			<key>PayloadUUID</key>
+			<string>B1</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>SSID_STR</key>
+			<string>Greece-Office</string>
+		</dict>
+		<dict>
+			<key>Label</key>
+			<string>Intranet</string>
+			<key>PayloadIdentifier</key>
+			<string>clip</string>
+			<key>PayloadType</key>
+			<string>com.apple.webClip.managed</string>
+			<key>PayloadUUID</key>
+			<string>B2</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>URL</key>
+			<string>https://intranet.example.com</string>
+		</dict>
+		<dict>
+			<key>PayloadContent</key>
+			<data>
+			MIIDpjCCAo6gAwIBAgIUQC1OVzNDd6h51940MGeEPoeXiT4wDQYJ
+			KoZIhvcNAQELBQAwczE2MDQGA1UEAwwtQXBwbGUgRGV2ZWxvcG1l
+			bnQ6IEdyZWVjZSBGaXh0dXJlIChGSVhUVVJFMDEpMRIwEAYDVQQL
+			DAlGSVhUVVJFMDExGDAWBgNVBAoMD0dyZWVjZSBGaXh0dXJlczEL
+			MAkGA1UEBhMCVVMwHhcNMjYxMTIxMjMyNDE0WhcNMzYxMTE4MjMy
+			NDE0WjBzMTYwNAYDVQQDDC1BcHBsZSBEZXZlbG9wbWVudDogR3Jl
+			ZWNlIEZpeHR1cmUgKEZJWFRVUkUwMSkxEjAQBgNVBAsMCUZJWFRV
+			UkUwMTEYMBYGA1UECgwPR3JlZWNlIEZpeHR1cmVzMQswCQYDVQQG
+			EwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAOWC
+			53UPgtXASG7fwJeZLvb6CzUYodP3doN4ScDMnNknqkpQ4LxjHyp3
+			gNsqUc7V+VPKrw4cWtiA6IHheFhFb1q5zSSO7PUAJ8fYWom0Wnvk
+			CoLR4keA5YUzLtcXTYzPQXWm8Y9qRnWaEJbv9I/YDEmerZYABit1
+			vEv0Vs3Rr7v/Eyu8ttb6N9wuJ/4ECqMqG5406I5pB19WvVEGepfQ
+			KZTHmZSsA903ipbpIlnW8FCXGNye2kPGdfjGph7f1xC9k2n1otN4
+			uloz4QEXF7CGtJApcceY5KyR1A0mKOn9Pm2MLaAIxnfsZcCznOfk
+			puhzT0TIZqISXhiz3uL9itlb6gECAwEAAaMyMDAwHQYDVR0OBBYE
+			FPkAHZfOKWYoeAtTuiQSWfpey9YCMA8GA1UdEwEB/wQFMAMBAf8w
+			DQYJKoZIhvcNAQELBQADggEBAFAyGLf4NlHSHak56Qz9H0k+iQfX
+			5b0FpK04luW/mhGfH3hiaFU5lUc87bckztDB/LRR7LFkPiONSrcI
+			b+D1HmYENGzeTXzXG2fX18qzK+3YOviWIRh9nxNvQuS6ZTQY3QMN
+			+3CF0DbfKy4XFtUWzsJxn6vH9W3hJ1M9NuEn7RN9RPRIlZWCyzvG
+			75k7WtZz5AEyw9J659uCqYK6xcf9K5qJ2XbQrXSuPK2S8XTc2heh
+			hHUzRJlVRICGov45SKgOKbMywC3bWA7OKvnIITnLAMY1dgjAMQs9
+			UWtbVZxnnd4hvQZ4qEsy529+fKGo/nPOPgplOGToPdeMtjQlqhaf
+			vlE=
+			</data>
+			<key>PayloadDisplayName</key>
+			<string>Greece Root CA</string>
+			<key>PayloadIdentifier</key>
+			<string>root</string>
+			<key>PayloadType</key>
+			<string>com.apple.security.root</string>
+			<key>PayloadUUID</key>
+			<string>B3</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+		<dict>
+			<key>PayloadIdentifier</key>
+			<string>restrictions</string>
+			<key>PayloadType</key>
+			<string>com.apple.applicationaccess</string>
+			<key>PayloadUUID</key>
+			<string>B4</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>allowAirDrop</key>
+			<false/>
+			<key>allowCamera</key>
+			<false/>
+		</dict>
+	</array>
+	<key>PayloadDescription</key>
+	<string>Wi-Fi, a web clip and restrictions for testing.</string>
+	<key>PayloadDisplayName</key>
+	<string>Greece Office</string>
+	<key>PayloadIdentifier</key>
+	<string>com.scorchy.greece.fixture.profile</string>
+	<key>PayloadOrganization</key>
+	<string>Greece Fixtures</string>
+	<key>PayloadRemovalDisallowed</key>
+	<false/>
+	<key>PayloadScope</key>
+	<string>System</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>9E1F2A3B-0000-4000-8000-0000000000AA</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>

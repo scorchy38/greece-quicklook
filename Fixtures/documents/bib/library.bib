@@ -1,0 +1,201 @@
+% Reference library: computing, typography and information design.
+% Maintained by hand; keys are lastnameYEARword.
+
+@preamble{ "\newcommand{\noopsort}[1]{} " # "\newcommand{\singleletter}[1]{#1} " }
+
+@string{ tug   = "TeX Users Group" }
+@string{ aw    = "Addison-Wesley" }
+@string{ cacm  = "Communications of the {ACM}" }
+@string{ jan   = "January" }
+
+@comment{ The entries below are a sample library for Greece's BibTeX preview. }
+
+@book{knuth1984texbook,
+  author    = {Knuth, Donald E.},
+  title     = {The {\TeX}book},
+  publisher = aw,
+  address   = {Reading, Massachusetts},
+  year      = 1984,
+  series    = {Computers and Typesetting},
+  volume    = {A},
+  isbn      = {0-201-13447-0},
+  keywords  = {typesetting, tex}
+}
+
+@article{knuth1981breaking,
+  author   = {Knuth, Donald E. and Plass, Michael F.},
+  title    = {Breaking Paragraphs into Lines},
+  journal  = {Software: Practice and Experience},
+  volume   = {11},
+  number   = {11},
+  pages    = {1119--1184},
+  year     = {1981},
+  doi      = {10.1002/spe.4380111102},
+  keywords = {typesetting, algorithms, line breaking},
+  abstract = {This paper discusses a new approach to the problem of dividing the text of a
+              paragraph into lines of approximately equal length. Instead of simply making
+              decisions one line at a time, the method considers the paragraph as a whole,
+              so that the final appearance of a given line might be influenced by the text
+              on succeeding lines.}
+}
+
+@article{dijkstra1968goto,
+  author  = {Dijkstra, Edsger W.},
+  title   = {Go To Statement Considered Harmful},
+  journal = cacm,
+  volume  = {11},
+  number  = {3},
+  pages   = {147--148},
+  month   = mar,
+  year    = {1968},
+  doi     = {10.1145/362929.362947}
+}
+
+@book{tufte2001visual,
+  author    = {Tufte, Edward R.},
+  title     = {The Visual Display of Quantitative Information},
+  edition   = {Second},
+  publisher = {Graphics Press},
+  address   = {Cheshire, Connecticut},
+  year      = {2001},
+  isbn      = {978-0-9613921-4-7},
+  keywords  = {information design, statistics}
+}
+
+@book{bringhurst2004elements,
+  author    = {Bringhurst, Robert},
+  title     = {The Elements of Typographic Style},
+  edition   = {3rd},
+  publisher = {Hartley \& Marks},
+  address   = {Vancouver},
+  year      = {2004},
+  isbn      = {0-88179-206-3}
+}
+
+@inproceedings{lamport1986latex,
+  author    = {Lamport, Leslie},
+  title     = {{\LaTeX}: A Document Preparation System},
+  booktitle = {Proceedings of the } # tug # { Annual Meeting},
+  year      = {1986},
+  pages     = {1--12},
+  note      = {Invited talk}
+}
+
+@proceedings{chi2019,
+  title     = {Proceedings of the 2019 {CHI} Conference on Human Factors in Computing Systems},
+  editor    = {Brewster, Stephen and Fitzpatrick, Geraldine and Cox, Anna and Kostakos, Vassilis},
+  publisher = {ACM},
+  address   = {New York, NY, USA},
+  year      = {2019},
+  isbn      = {978-1-4503-5970-2}
+}
+
+@inproceedings{rello2019readability,
+  author    = {Rello, Luz and Pielot, Martin and Marcos, Mari-Carmen},
+  title     = {Make It Big! {T}he Effect of Font Size and Line Spacing on Online Readability},
+  crossref  = {chi2019},
+  pages     = {3637--3648},
+  doi       = {10.1145/2858036.2858204}
+}
+
+@incollection{shneiderman2003eyes,
+  author    = {Shneiderman, Ben},
+  title     = {The Eyes Have It: A Task by Data Type Taxonomy for Information Visualizations},
+  booktitle = {The Craft of Information Visualization},
+  editor    = {Bederson, Benjamin B. and Shneiderman, Ben},
+  publisher = {Morgan Kaufmann},
+  address   = {San Francisco},
+  year      = {2003},
+  pages     = {364--371},
+  chapter   = {7}
+}
+
+@phdthesis{plass1981optimal,
+  author = {Plass, Michael Frederick},
+  title  = {Optimal Pagination Techniques for Automatic Typesetting Systems},
+  school = {Stanford University},
+  year   = {1981},
+  month  = jun,
+  type   = {{Ph.D.} dissertation},
+  url    = {https://www.tug.org/docs/plass/}
+}
+
+@mastersthesis{ostergaard2015kerning,
+  author = {{\O}stergaard, S{\o}ren and Br{\"u}ckner, Lena},
+  title  = {Learning Kerning Pairs from Font Outlines},
+  school = {Technical University of Denmark},
+  year   = {2015},
+  address = {Kongens Lyngby}
+}
+
+@techreport{unicode2023bidi,
+  author      = {Davis, Mark and Lanin, Aharon and Glass, Andrew},
+  title       = {Unicode Bidirectional Algorithm},
+  institution = {The Unicode Consortium},
+  type        = {Unicode Standard Annex},
+  number      = {9},
+  year        = {2023},
+  url         = {https://www.unicode.org/reports/tr9/}
+}
+
+@manual{pgfmanual,
+  title        = {The {TikZ} and {PGF} Packages: Manual for Version 3.1.10},
+  author       = {Tantau, Till},
+  organization = {Institut f{\"u}r Theoretische Informatik, Universit{\"a}t zu L{\"u}beck},
+  year         = {2023},
+  url          = {https://ctan.org/pkg/pgf}
+}
+
+@misc{vaswani2017attention,
+  author        = {Vaswani, Ashish and Shazeer, Noam and Parmar, Niki and Uszkoreit, Jakob and Jones, Llion and Gomez, Aidan N. and Kaiser, {\L}ukasz and Polosukhin, Illia},
+  title         = {Attention Is All You Need},
+  year          = {2017},
+  eprint        = {1706.03762},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}
+
+@online{typst2023,
+  author  = {{Typst GmbH}},
+  title   = {Typst: Compose Papers Faster},
+  year    = {2023},
+  url     = {https://typst.app},
+  urldate = {2026-01-15}
+}
+
+@unpublished{marsh2026sieve,
+  author = {Marsh, Helena and Okafor, Tom{\'a}s},
+  title  = {Sparse Attention for Long-Context Retrieval},
+  note   = {Manuscript in preparation},
+  year   = {2026},
+  month  = jan
+}
+
+@article{erdos1947remarks,
+  author  = {Erd{\H{o}}s, Paul},
+  title   = {Some Remarks on the Theory of Graphs},
+  journal = {Bulletin of the American Mathematical Society},
+  volume  = {53},
+  number  = {4},
+  pages   = {292--294},
+  year    = {1947},
+  doi     = {10.1090/S0002-9904-1947-08785-1}
+}
+
+@book{carroll1865alice,
+  author    = {Carroll, Lewis},
+  title     = {Alice's Adventures in Wonderland},
+  publisher = {Macmillan},
+  address   = {London},
+  year      = {1865},
+  note      = {Illustrated by John Tenniel}
+}
+
+@misc{knuth2014literate,
+  author       = "Knuth, Donald E.",
+  title        = "Literate Programming",
+  howpublished = "Lecture, Computer History Museum",
+  month        = jan,
+  year         = 2014,
+  note         = "Video recording"
+}

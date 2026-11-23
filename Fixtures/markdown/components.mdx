@@ -1,0 +1,51 @@
+---
+title: Components
+---
+import { Callout, Tabs } from 'nextra/components'
+import Chart from '../components/Chart'
+import {
+  Steps,
+  Card,
+} from '@/components'
+
+export const meta = {
+  sidebar: 'docs',
+}
+
+# Using Greece in your docs
+
+Greece previews MDX without running it. Expressions like {meta.sidebar} show as code
+and comments disappear{/* like this one */}.
+
+<Callout type="warning" title="Before you start">
+  Quick Look extensions only run after the app has been **opened once**.
+</Callout>
+
+<Tabs items={['Finder', 'Terminal']}>
+  <Tabs.Tab>
+    Select a file and press **Space**.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```sh
+    qlmanage -p README.md
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+<Chart kind="bar" data={[12, 19, 7]} title="Previews per day" />
+
+<Steps>
+### Install
+Download Greece and move it to Applications.
+
+### Enable
+Turn it on in System Settings.
+</Steps>
+
+<Accordion title="Why is my file not previewing?">
+  Some types belong to Apple's own viewers. Greece's Diagnostics page explains which.
+</Accordion>
+
+<Card title="Read the guide" href="/guide">
+  Everything about settings, themes and shortcuts.
+</Card>

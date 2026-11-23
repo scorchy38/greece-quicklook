@@ -1,0 +1,55 @@
+name: greece
+
+x-defaults: &defaults
+  restart: unless-stopped
+
+services:
+  web:
+    <<: *defaults
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://greece:greece@db:5432/greece
+      REDIS_URL: redis://cache:6379
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_started
+    volumes:
+      - ./public:/app/public:ro
+
+  worker:
+    <<: *defaults
+    image: ghcr.io/example/greece-worker:2.4
+    command: ["node", "worker.js"]
+    depends_on: [db, cache]
+
+  db:
+    image: postgres:17-alpine
+    ports:
+      - target: 5432
+        published: 5433
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "greece"]
+
+  cache:
+    image: redis:7.4-alpine
+
+  proxy:
+    image: caddy:2.8
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+    depends_on: [web]
+    profiles: [edge]
+
+volumes:
+  pgdata:
+  caddy_data:

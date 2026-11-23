@@ -1,0 +1,1 @@
+query Harbour($port:String!,$first:Int=20,$after:String){port(code:$port){name country berths(first:$first,after:$after){totalCount pageInfo{hasNextPage endCursor}edges{node{id name depth vessel{...VesselFields flag@include(if:true)}}}}weather{wind{speed direction}warnings}}}fragment VesselFields on Vessel{name length registry arrival{at from{name}}}

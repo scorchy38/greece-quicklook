@@ -1,0 +1,6 @@
+# Markdown, text bundles and Jupyter notebooks.
+net.daringfireball.markdown
+com.scorchy.greece.markdown
+org.textbundle.package
+org.textbundle.textpack
+org.jupyter.ipynb

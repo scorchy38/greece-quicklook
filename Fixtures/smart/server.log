@@ -1,0 +1,30 @@
+2026-11-21 09:12:01.004 INFO  [main] Greece sync server 2.4.1 starting (pid 4182)
+2026-11-21 09:12:01.118 DEBUG [main] Loaded config from /etc/greece/sync.toml
+2026-11-21 09:12:01.241 INFO  [main] Listening on 0.0.0.0:3000
+2026-11-21 09:12:04.502 INFO  [http-1] GET /files 200 12ms
+2026-11-21 09:12:05.913 TRACE [cache] lookup key=thumb:9f2c hit=true
+2026-11-21 09:12:07.330 WARN  [http-2] Slow request: GET /files/9f2c/preview took 1840ms
+2026-11-21 09:12:09.001 INFO  [http-1] GET /me 200 4ms
+2026-11-21 09:12:11.774 ERROR [worker-3] Failed to render preview for 9f2c: connection refused (redis:6379)
+java.net.ConnectException: Connection refused
+	at java.base/sun.nio.ch.Net.connect0(Native Method)
+	at io.lettuce.core.RedisClient.connect(RedisClient.java:214)
+	at greece.preview.Renderer.render(Renderer.java:88)
+2026-11-21 09:12:12.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:13.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:14.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:15.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:16.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:17.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:18.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:19.002 INFO  [health] heartbeat ok
+2026-11-21 09:12:19.640 ERROR [worker-1] Failed to render preview for a71e: connection refused (redis:6379)
+2026-11-21 09:12:20.114 WARN  [pool] Retrying redis connection (attempt 2 of 5)
+2026-11-21 09:12:21.580 INFO  [pool] Redis connection restored
+2026-11-21 09:12:22.003 DEBUG [http-4] POST /files multipart boundary=----greece
+2026-11-21 09:12:22.410 INFO  [http-4] POST /files 201 402ms
+2026-11-21 09:12:25.918 ERROR [worker-2] Thumbnail failed for 33bd: unsupported format (image/heic)
+2026-11-21 09:12:31.077 WARN  [gc] Heap usage at 82%
+2026-11-21 09:12:40.500 INFO  [http-1] DELETE /files/33bd 204 6ms
+2026-11-21 09:13:02.913 FATAL [main] Out of disk space on /var/lib/greece (0 bytes free)
+2026-11-21 09:13:02.950 INFO  [main] Shutting down

@@ -1,0 +1,21 @@
+/* Greece — the code view's parts of the find bar (the bar itself is all-find.css): Go to Line,
+   and the marks beside the scroller. */
+
+.code-findbar { z-index: 20; }
+.code-findbar .bar-title { display: none; font: 600 12.5px/1 var(--ui); color: color-mix(in srgb, var(--fb-fg) 80%, transparent); white-space: nowrap; }
+.code-findbar.goto .bar-title { display: block; }
+.code-findbar.goto .find-field { flex-basis: 220px; }
+.code-findbar.goto .glyph { display: none; }
+.code-findbar.goto .find-field input { margin-left: 2px; }
+.code-findbar.goto.invalid .find-field { box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 30%, transparent), inset 0 0 0 .5px var(--red); }
+.code-findbar.goto .find-steps, .code-findbar.goto .find-option { display: none; }
+
+.code-find-marks {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 19;
+  width: 8px;
+  pointer-events: none;
+}
+.code-find-marks[hidden] { display: none; }

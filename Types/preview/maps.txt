@@ -1,0 +1,14 @@
+# Maps and geodata, drawn on an offline map.
+public.geojson
+com.scorchy.greece.geojson-lines
+com.scorchy.greece.topojson
+com.google.earth.kml
+com.google.earth.kmz
+com.topografix.gpx
+com.scorchy.greece.shapefile
+com.scorchy.greece.geopackage
+com.scorchy.greece.mbtiles
+com.scorchy.greece.osm
+com.scorchy.greece.wkt
+# .json files that are GeoJSON, and zipped shapefiles, arrive through public.json and
+# public.zip-archive, which Greece's core list already claims.

@@ -1,0 +1,24 @@
+platform :ios, '16.0'
+use_frameworks!
+inhibit_all_warnings!
+
+target 'GreeceViewer' do
+  pod 'Alamofire', '~> 5.10'
+  pod 'SDWebImage', '~> 5.19'
+  pod 'Highlightr', :git => 'https://github.com/raspu/Highlightr.git'
+  pod 'Down', '0.11.0'
+
+  target 'GreeceViewerTests' do
+    inherit! :search_paths
+    pod 'Quick', '~> 7.6'
+    pod 'Nimble', '~> 13.4'
+  end
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '16.0'
+    end
+  end
+end

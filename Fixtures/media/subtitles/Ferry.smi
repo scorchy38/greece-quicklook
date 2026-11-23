@@ -1,0 +1,21 @@
+<SAMI>
+<HEAD>
+<TITLE>The Morning Ferry</TITLE>
+<STYLE TYPE="text/css">
+<!--
+P { margin-left: 8pt; font-size: 20pt; text-align: center; }
+.ENUSCC { Name: English; lang: en-US; }
+.ELGRCC { Name: Greek; lang: el-GR; }
+-->
+</STYLE>
+</HEAD>
+<BODY>
+<SYNC Start=1200><P Class=ENUSCC>The morning ferry leaves Piraeus at seven.</P><P Class=ELGRCC>Το πρωινό πλοίο φεύγει από τον Πειραιά στις επτά.</P>
+<SYNC Start=3800><P Class=ENUSCC>&nbsp;</P>
+<SYNC Start=4100><P Class=ENUSCC><I>Kalimera.</I> Two tickets to Naxos, please.</P>
+<SYNC Start=6900><P Class=ENUSCC>&nbsp;</P>
+<SYNC Start=7300><P Class=ENUSCC>Deck or cabin?<br>Deck &amp; sea air.</P>
+<SYNC Start=9500><P Class=ENUSCC>Look, dolphins!</P>
+<SYNC Start=11800><P Class=ENUSCC>&nbsp;</P>
+</BODY>
+</SAMI>

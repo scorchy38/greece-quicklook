@@ -1,0 +1,49 @@
+{
+  "name": "@greece/web",
+  "version": "2.4.1",
+  "description": "The Greece website and download portal, built with Next.js.",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "homepage": "https://greece.example.com",
+  "engines": {
+    "node": ">=20.11",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start -p $PORT",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "release": "changeset publish"
+  },
+  "dependencies": {
+    "next": "15.0.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@radix-ui/react-tabs": "^1.1.1",
+    "zod": "^3.23.8",
+    "stripe": "^17.3.1",
+    "date-fns": "^4.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4",
+    "eslint": "^9.14.0",
+    "prettier": "^3.3.3",
+    "@changesets/cli": "^2.27.9",
+    "@types/react": "^19.0.0",
+    "@types/node": "^22.9.0"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "optionalDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

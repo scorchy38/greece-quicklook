@@ -1,0 +1,39 @@
+version = 1
+requires-python = ">=3.12"
+
+[[package]]
+name = "harbour"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "httpx" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ruff" },
+]
+
+[[package]]
+name = "httpx"
+version = "0.27.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio" },
+    { name = "certifi" },
+]
+
+[[package]]
+name = "anyio"
+version = "4.6.2"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "certifi"
+version = "2024.8.30"
+source = { registry = "https://pypi.org/simple" }
+
+[[package]]
+name = "ruff"
+version = "0.7.1"
+source = { registry = "https://pypi.org/simple" }

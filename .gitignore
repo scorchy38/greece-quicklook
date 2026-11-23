@@ -24,3 +24,6 @@ build/
 # Swift Package Manager
 .build/
 Package.resolved
+
+# Parallel worktrees
+.claude/worktrees/

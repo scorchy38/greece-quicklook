@@ -1,0 +1,21 @@
+# Finder thumbnails for media and design files. TrueType and OpenType fonts keep Apple's "Aa".
+com.scorchy.greece.woff
+com.scorchy.greece.woff2
+com.scorchy.greece.subrip
+org.w3.webvtt
+com.scorchy.greece.substation
+com.scorchy.greece.sami
+com.scorchy.greece.ttml
+com.scorchy.greece.sbv
+com.scorchy.greece.microdvd
+com.scorchy.greece.lrc
+public.svg-image  # Apple has none for SVGZ; SVG draws through the same CoreSVG either way
+com.scorchy.greece.lottie
+com.scorchy.greece.ase
+org.aseprite.aseprite.sprite
+com.scorchy.greece.aco
+com.scorchy.greece.act
+com.apple.color-file
+com.scorchy.greece.gpl
+com.scorchy.greece.procreate-swatches
+com.scorchy.greece.sketchpalette

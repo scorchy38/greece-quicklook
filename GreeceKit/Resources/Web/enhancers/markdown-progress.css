@@ -1,0 +1,17 @@
+/* Greece — reading progress. */
+
+.read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+.read-progress.on { opacity: .75; }

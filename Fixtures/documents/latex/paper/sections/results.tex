@@ -1,0 +1,60 @@
+% Included from main.tex with \include{sections/results}
+\section{Results}
+\label{sec:results}
+
+We evaluate on four long-context benchmarks: needle retrieval, multi-document
+question answering, code completion over whole repositories, and long-form
+summarisation. All models are 7B-parameter decoders fine-tuned at 32k tokens
+and evaluated at up to 128k.
+
+\begin{table}[ht]
+  \centering
+  \caption{Accuracy and keys read per query at 128k tokens. Higher accuracy is
+  better; fewer keys is cheaper. Best sparse result in bold.}
+  \label{tab:results}
+  \begin{tabular}{lrrrr}
+    \toprule
+    Method        & Needle & Multi-doc QA & Repo code & Keys read \\
+    \midrule
+    Dense         & 99.1   & 71.4         & 58.2      & 131{,}072 \\
+    Sliding window & 41.7  & 52.9         & 44.0      & 4{,}096   \\
+    BigBird       & 88.3   & 63.0         & 51.6      & 12{,}288  \\
+    Routing       & 95.6   & 68.1         & 55.9      & 16{,}384  \\
+    \midrule
+    \textsc{Sieve} ($k=8$)  & 97.8 & 69.9 & 56.7 & 6{,}144 \\
+    \textsc{Sieve} ($k=16$) & \textbf{98.9} & \textbf{71.0} & \textbf{57.8} & 11{,}264 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Table~\ref{tab:results} summarises the main comparison. \textsc{Sieve} with
+$k = 16$ is within 0.4 points of dense attention on every task while reading
+$11.6\times$ fewer keys. Sliding-window attention fails at needle retrieval,
+as expected, because the answer is rarely local to the question.
+
+\begin{figure}[ht]
+  \centering
+  \input{figures/loss.pgf}
+  \caption{Validation loss during fine-tuning. \textsc{Sieve} tracks dense
+  attention closely; the shaded band is the spread over three seeds.}
+  \label{fig:loss}
+\end{figure}
+
+Figure~\ref{fig:loss} shows that training with \textsc{Sieve} converges at the
+same rate as dense attention, and Figure~\ref{fig:attention} shows why: the
+selected blocks cover the bright regions of the dense attention map.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{figures/attention.png}
+  \caption{Dense attention weights for one head of layer 18 on a 4k-token
+  excerpt. Blocks selected by \textsc{Sieve} are outlined.}
+  \label{fig:attention}
+\end{figure}
+
+\subsection{Ablations}
+
+Removing the spread term $\sigma_i$ from the block score costs 2.1 points on
+needle retrieval, and disabling selection reuse across layers increases
+latency by 18\% with no change in accuracy. See \autoref{sec:analysis} for
+why the spread term matters.

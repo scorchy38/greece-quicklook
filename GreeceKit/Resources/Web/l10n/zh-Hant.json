@@ -1,0 +1,1071 @@
+{
+  "@same": [
+    "{0} B",
+    "{0} KB",
+    "{0} MB",
+    "{0} GB",
+    "{0} TB",
+    "{0}+",
+    "Rust crate",
+    "Fetch"
+  ],
+  "{0} bytes": {
+    "other": "{0} 位元組"
+  },
+  "{0} B": "{0} B",
+  "{0} KB": "{0} KB",
+  "{0} MB": "{0} MB",
+  "{0} GB": "{0} GB",
+  "{0} TB": "{0} TB",
+  "Copied": "已拷貝",
+  "Empty file": "空白檔案",
+  "Copy": "拷貝",
+  "Showing the beginning of a very large file.": "檔案過大，僅顯示開頭部分。",
+  "Note": "備註",
+  "Tip": "提示",
+  "Important": "重要",
+  "Warning": "警告",
+  "Caution": "小心",
+  "Remote image not loaded": "未載入遠端影像",
+  "On This Page": "本頁內容",
+  "Empty document": "空白文件",
+  "Showing the beginning of a very large document.": "文件過大，僅顯示開頭部分。",
+  "Added": "已新增",
+  "Deleted": "已刪除",
+  "Renamed": "已重新命名",
+  "Binary file not shown": "未顯示二進位檔",
+  "No content changes": "內容無更改",
+  "{0} commits": {
+    "other": "{0} 個提交"
+  },
+  "{0} files changed": {
+    "other": "已更改 {0} 個檔案"
+  },
+  "Empty notebook": "空白筆記本",
+  "“{0}”": "「{0}」",
+  "Find": "尋找",
+  "Previous": "上一個",
+  "Next": "下一個",
+  "Match Case": "區分大小寫",
+  "Whole Words": "全字相符",
+  "Done": "完成",
+  "Select text to find it": "選取文字即可尋找",
+  "{0}+": "{0}+",
+  "No matches": "無相符項目",
+  "{0} of {1}": "{0}/{1}",
+  "Find {0}": "尋找{0}",
+  "Go to Line": "前往行",
+  "Line": "行號",
+  "{0}+ matches": "{0}+ 個相符項目",
+  "{0} matches": {
+    "other": "{0} 個相符項目"
+  },
+  "{0} lines": {
+    "other": "{0} 行"
+  },
+  "Show {0} lines": {
+    "other": "顯示 {0} 行"
+  },
+  "Copy Line {0}": "拷貝第 {0} 行",
+  "Unfold": "展開",
+  "Fold": "收合",
+  "Wrap Lines": "自動換行",
+  "Fold All": "全部收合",
+  "Unfold All": "全部展開",
+  "Copy All": "拷貝全部",
+  "Reveal value": "顯示值",
+  "Also set on line {0}; this value wins": "第 {0} 行也設定了此變數；以此值為準",
+  "Duplicate": "重複",
+  "Empty": "空白",
+  "Hide value": "隱藏值",
+  "line {0}, first set on line {1}": "第 {0} 行，首次設定於第 {1} 行",
+  "line {0}": "第 {0} 行",
+  "{0} keys": {
+    "other": "{0} 個鍵"
+  },
+  "{0} duplicates": {
+    "other": "{0} 個重複"
+  },
+  "{0} empty": {
+    "other": "{0} 個空白"
+  },
+  "Values hidden": "值已隱藏",
+  "Environment Template": "環境變數範本",
+  "Environment Variables": "環境變數",
+  "Reveal All": "顯示全部",
+  "Hide All": "隱藏全部",
+  "Values shown": "值已顯示",
+  "stage {0}": "階段 {0}",
+  "Base": "基礎映像檔",
+  "Ports": "連接埠",
+  "Entrypoint": "進入點",
+  "Command": "指令",
+  "Workdir": "工作目錄",
+  "User": "使用者",
+  "Healthcheck": "健康檢查",
+  "Yes": "是",
+  "from {0}": "基於 {0}",
+  "Build stages": "建置階段",
+  "Stages": "階段",
+  "{0} stages": {
+    "other": "{0} 個階段"
+  },
+  "Final: {0}": "最終：{0}",
+  "Service": "服務",
+  "Image [container]": "映像檔",
+  "Volumes": "卷宗",
+  "Start Order": "啟動順序",
+  "{0} services": {
+    "other": "{0} 個服務"
+  },
+  "{0} volumes": {
+    "other": "{0} 個卷宗"
+  },
+  "{0} networks": {
+    "other": "{0} 個網路"
+  },
+  "tag {0}": "標籤 {0}",
+  "1 input": "1 個輸入項目",
+  "{0} inputs": {
+    "other": "{0} 個輸入項目"
+  },
+  "Push": "推送",
+  "to {0}": "至 {0}",
+  "Pull request": "拉取請求",
+  "Pull request target": "拉取請求目標",
+  "into {0}": "合併至 {0}",
+  "Schedule": "排程",
+  "Manual": "手動",
+  "Called by workflows": "由工作流程呼叫",
+  "Release": "發行版本",
+  "After workflow": "工作流程執行後",
+  "push": "推送",
+  "pull request": "拉取請求",
+  "pull request target": "拉取請求目標",
+  "schedule": "排程",
+  "manual": "手動",
+  "called by workflows": "由工作流程呼叫",
+  "release": "發行版本",
+  "after workflow": "工作流程執行後",
+  "Triggers": "觸發條件",
+  "reusable workflow": "可重複使用的工作流程",
+  "{0} steps": {
+    "other": "{0} 個步驟"
+  },
+  "Jobs": "工作",
+  "Step": "步驟",
+  "reusable": "可重複使用",
+  "Uses": "使用",
+  "Steps": "步驟",
+  "{0} jobs": {
+    "other": "{0} 個工作"
+  },
+  "On {0}": "觸發：{0}",
+  "replicas": "副本",
+  "type": "類型",
+  "ports": "連接埠",
+  "hosts": "主機",
+  "keys": "鍵",
+  "(unnamed)": "（未命名）",
+  "{0} resources": {
+    "other": "{0} 個資源"
+  },
+  "{0} {1}s": {
+    "other": "{0} 個 {1}"
+  },
+  "namespace {0}": "命名空間 {0}",
+  "Other": "其他",
+  "Trace": "追蹤",
+  "Debug": "除錯",
+  "Info": "資訊",
+  "Warnings": "警告",
+  "Errors": "錯誤",
+  "Access Log": "存取記錄檔",
+  "macOS Unified Log": "macOS 統一記錄檔",
+  "{0} more characters": {
+    "other": "還有 {0} 個字元"
+  },
+  "Repeated {0} times": {
+    "other": "重複 {0} 次"
+  },
+  "Repeats folded": "已收合重複行",
+  "Log": "記錄檔",
+  "Most Frequent Error": "最常見錯誤",
+  "Most Frequent Errors": "最常見錯誤",
+  "Previous Error": "上一個錯誤",
+  "Previous Warning": "上一個警告",
+  "Next Error": "下一個錯誤",
+  "Next Warning": "下一個警告",
+  "Errors and warnings": "錯誤和警告",
+  "See {0}": "參閱 {0}",
+  "License": "授權",
+  "Module": "模組",
+  "ES modules": "ES 模組",
+  "Package Manager": "套件管理器",
+  "Workspaces": "工作區",
+  "Visibility": "可見度",
+  "Private": "私人",
+  "Home": "首頁",
+  "npm package": "npm 套件",
+  "Composer package": "Composer 套件",
+  "Type": "類型",
+  "Cargo workspace": "Cargo 工作區",
+  "Rust crate": "Rust crate",
+  "Workspace": "工作區",
+  "Edition": "版次",
+  "Members": "成員",
+  "Features": "特性",
+  "Poetry project": "Poetry 專案",
+  "Python project": "Python 專案",
+  "Build": "建置",
+  "Go module": "Go 模組",
+  "Toolchain": "工具鏈",
+  "Replaced": "已取代",
+  "Source": "來源",
+  "Platform": "平台",
+  "Frameworks": "框架",
+  "Targets": "目標",
+  "Library": "函式庫",
+  "Executable": "執行檔",
+  "Plugin": "外掛模組",
+  "Swift package": "Swift 套件",
+  "Swift Tools": "Swift 工具",
+  "Platforms": "平台",
+  "Products": "產品",
+  "Flutter package": "Flutter 套件",
+  "Dart package": "Dart 套件",
+  "Publish": "發佈",
+  "Executables": "執行檔",
+  "Elixir project": "Elixir 專案",
+  "Aliases": "別名",
+  "Android build": "Android 建置",
+  "Gradle build": "Gradle 建置",
+  "Compile SDK": "編譯 SDK",
+  "Plugins": "外掛模組",
+  "dev": "開發",
+  "test": "測試",
+  "peer": "對等",
+  "optional": "選用",
+  "build": "建置",
+  "indirect": "間接",
+  "platform": "平台",
+  "override": "覆寫",
+  "group": "群組",
+  "workspace": "工作區",
+  "debug": "除錯",
+  "compile only": "僅編譯",
+  "runtime": "執行階段",
+  "{0} direct": {
+    "other": "直接 {0}"
+  },
+  "{0} dev": {
+    "other": "開發 {0}"
+  },
+  "{0} test": {
+    "other": "測試 {0}"
+  },
+  "{0} peer": {
+    "other": "對等 {0}"
+  },
+  "{0} optional": {
+    "other": "選用 {0}"
+  },
+  "{0} build": {
+    "other": "建置 {0}"
+  },
+  "{0} indirect": {
+    "other": "間接 {0}"
+  },
+  "{0} platform": {
+    "other": "平台 {0}"
+  },
+  "{0} override": {
+    "other": "覆寫 {0}"
+  },
+  "{0} group": {
+    "other": "群組 {0}"
+  },
+  "{0} workspace": {
+    "other": "工作區 {0}"
+  },
+  "{0} debug": {
+    "other": "除錯 {0}"
+  },
+  "{0} compile only": {
+    "other": "僅編譯 {0}"
+  },
+  "{0} runtime": {
+    "other": "執行階段 {0}"
+  },
+  "Scripts": "工序指令",
+  "Dependencies": "相依項目",
+  "every weekday in {0}": "{0}的每個平日",
+  "on weekdays in {0}": "{0}的平日",
+  "every weekday": "每個平日",
+  "on weekdays": "平日",
+  "every Saturday and Sunday in {0}": "{0}的每個週六和週日",
+  "at weekends in {0}": "{0}的週末",
+  "every Saturday and Sunday": "每個週六和週日",
+  "at weekends": "週末",
+  "every {0} to {1} in {2}": "{2}的每個{0}至{1}",
+  "{0} to {1} in {2}": "{2}的{0}至{1}",
+  "every {0} to {1}": "每個{0}至{1}",
+  "{0} to {1}": "{0}至{1}",
+  "every {0} in {1}": "{1}的每個{0}",
+  "on {0} in {1}": "{1}的{0}",
+  "every {0}": "每個{0}",
+  "on {0}": "{0}",
+  "on every {0} days of {1}": {
+    "other": "{1}中每 {0} 天"
+  },
+  "on every {0} days of every month": {
+    "other": "每月中每 {0} 天"
+  },
+  "on days {0}–{1} of {2}": "{2}的{0}–{1}日",
+  "on days {0}–{1} of every month": "每月{0}–{1}日",
+  "{0}th": {
+    "other": "{0}日"
+  },
+  "on the {0} of {1}": "{1}的{0}",
+  "on the {0} of every month": "每月{0}",
+  "every day": "每天",
+  "every day in {0}": "{0}的每天",
+  "in {0}": "{0}",
+  "every year on {0}": "每年{0}",
+  "on {0} every year": "每年{0}",
+  "At startup": "開機時",
+  ":{0}": "{0} 分",
+  "{0} at {1}": "{0} {1}",
+  "Every minute": "每分鐘",
+  "Every minute {0}": "{0}每分鐘",
+  "Every {0} minutes": {
+    "other": "每 {0} 分鐘"
+  },
+  "Every {0} minutes {1}": {
+    "other": "{1}每 {0} 分鐘"
+  },
+  "Every hour": "每小時",
+  "Every hour {0}": "{0}每小時",
+  "Every hour at {0}": "每小時的 {0}",
+  "Every hour at {0} {1}": "{1}每小時的 {0}",
+  "Every {0} hours": {
+    "other": "每 {0} 小時"
+  },
+  "Every {0} hours {1}": {
+    "other": "{1}每 {0} 小時"
+  },
+  "Every {0} hours at {1}": {
+    "other": "每 {0} 小時的 {1}"
+  },
+  "Every {0} hours at {1} {2}": {
+    "other": "{2}每 {0} 小時的 {1}"
+  },
+  "Every {0} hours from {1} to {2}": {
+    "other": "{1} 至 {2} 每 {0} 小時"
+  },
+  "Every {0} hours from {1} to {2} {3}": {
+    "other": "{3} {1} 至 {2} 每 {0} 小時"
+  },
+  "Every hour from {0} to {1}": "{0} 至 {1} 每小時",
+  "Every hour from {0} to {1} {2}": "{2} {0} 至 {1} 每小時",
+  "Every {0} minutes from {1} to {2}": {
+    "other": "{1} 至 {2} 每 {0} 分鐘"
+  },
+  "Every {0} minutes from {1} to {2} {3}": {
+    "other": "{3} {1} 至 {2} 每 {0} 分鐘"
+  },
+  "Every minute from {0} to {1}": "{0} 至 {1} 每分鐘",
+  "Every minute from {0} to {1} {2}": "{2} {0} 至 {1} 每分鐘",
+  "Every {0} minutes during {1}": {
+    "other": "{1} 期間每 {0} 分鐘"
+  },
+  "Every {0} minutes during {1} {2}": {
+    "other": "{2} {1} 期間每 {0} 分鐘"
+  },
+  "{0} at {1} and more": "{0} {1} 等",
+  "{0} at {1} past {2}": "{0}，{2}，每小時 {1}",
+  "{0} minutes": {
+    "other": "{0} 分鐘"
+  },
+  "{0} hours": {
+    "other": "{0} 小時"
+  },
+  "Today {0}": "今天 {0}",
+  "Tomorrow {0}": "明天 {0}",
+  "Next run": "下次執行",
+  "as {0}": "以 {0} 身分",
+  "System": "系統",
+  "Times in {0}": "時區：{0}",
+  "Times in local time": "採用本地時間",
+  "Environment": "環境",
+  "default": "預設",
+  "{0} recipes": {
+    "other": "{0} 個配方"
+  },
+  "{0} targets": {
+    "other": "{0} 個目標"
+  },
+  "Default: {0}": "預設：{0}",
+  "All hosts": "所有主機",
+  "command": "指令",
+  "{0} defaults": {
+    "other": "{0} 項預設設定"
+  },
+  "key": "金鑰",
+  "via": "經由",
+  "{0} options": {
+    "other": "{0} 個選項"
+  },
+  "SSH Config": "SSH 設定",
+  "{0} hosts": {
+    "other": "{0} 個主機"
+  },
+  "{0} includes": {
+    "other": "{0} 個包含檔案"
+  },
+  "Required": "必要",
+  "Body": "請求主體",
+  "{0} params": {
+    "other": "{0} 個參數"
+  },
+  "{0} endpoints": {
+    "other": "{0} 個端點"
+  },
+  "{0} tags": {
+    "other": "{0} 個標籤"
+  },
+  "{0} schemas": {
+    "other": "{0} 個結構描述"
+  },
+  "{0} s": "{0} 秒",
+  "{0} min": "{0} 分鐘",
+  "{0} h {1} min": "{0} 小時 {1} 分鐘",
+  "{0} h": "{0} 小時",
+  "{0} days": {
+    "other": "{0} 天"
+  },
+  "Graph": "關係圖",
+  "Show Less": "顯示較少",
+  "Show {0} More": {
+    "other": "再顯示 {0} 項"
+  },
+  "Show Details": "顯示詳細資訊",
+  "Hide Details": "隱藏詳細資訊",
+  "Symbols": "符號",
+  "Filter": "過濾",
+  "Filter Symbols": "過濾符號",
+  "{0} — line {1}": "{0} — 第 {1} 行",
+  "No matching symbols": "沒有符合的符號",
+  "No symbols": "沒有符號",
+  "Key": "鍵",
+  "Value": "值",
+  "Copy Path": "拷貝路徑",
+  "Copy Value": "拷貝值",
+  "Code": "程式碼",
+  "Tree": "樹狀",
+  "Show the Whole File as a Tree": "以樹狀顯示整個檔案",
+  "Reading the whole file…": "正在讀取整個檔案⋯",
+  "Indexing {0}…": "正在索引 {0}⋯",
+  "Showing the first {0} values.": {
+    "other": "僅顯示前 {0} 個值。"
+  },
+  "This isn’t valid JSON: a key needs a colon after it, on line {0}.": "這不是有效的 JSON：第 {0} 行的鍵後面需要冒號。",
+  "This isn’t valid JSON: the file ends too soon, on line {0}.": "這不是有效的 JSON：檔案在第 {0} 行過早結束。",
+  "This isn’t valid JSON: unexpected {0} on line {1}.": "這不是有效的 JSON：第 {1} 行出現非預期的{0}。",
+  "Showing what could be read. A key needs a colon after it, on line {0}.": "僅顯示可讀取的部分。第 {0} 行的鍵後面需要冒號。",
+  "Showing what could be read. The file ends too soon, on line {0}.": "僅顯示可讀取的部分。檔案在第 {0} 行過早結束。",
+  "Showing what could be read. Unexpected {0} on line {1}.": "僅顯示可讀取的部分。第 {1} 行出現非預期的{0}。",
+  "Dictionary": "字典",
+  "Object": "物件",
+  "Array": "陣列",
+  "Date": "日期",
+  "Data": "資料",
+  "String": "字串",
+  "Number": "數字",
+  "Boolean": "布林值",
+  "Null": "空值",
+  "Root": "根",
+  "Item {0}": "項目 {0}",
+  "{0} items": {
+    "other": "{0} 個項目"
+  },
+  "Select a row to see its path": "選取一列來檢視其路徑",
+  "Copy Link to Section": "拷貝章節連結",
+  "Link Copied": "已拷貝連結",
+  "Image": "影像",
+  "Close": "關閉",
+  "Open Diagram": "打開圖表",
+  "Diagram": "圖表",
+  "Zoom Out": "縮小",
+  "Actual Size": "實際大小",
+  "Zoom In": "放大",
+  "Zoom to Fit": "縮放至適當大小",
+  "Copy as SVG": "拷貝為 SVG",
+  "Copy SVG": "拷貝 SVG",
+  "All {0} done": {
+    "other": "{0} 項全部完成"
+  },
+  "{1} of {0} done": {
+    "other": "已完成 {1}/{0}"
+  },
+  "Task lists in this document": "此文件中的任務列表",
+  "Hide Outline": "隱藏大綱",
+  "Drag to resize. Double-click to reset.": "拖移來調整大小。按兩下來重置。",
+  "Drag to resize": "拖移來調整大小",
+  "Show Outline": "顯示大綱",
+  "Outline": "大綱",
+  "To Do": "待辦",
+  "Hint": "提示",
+  "Warn": "警告",
+  "Attention": "注意",
+  "Danger": "危險",
+  "Error": "錯誤",
+  "Abstract": "摘要",
+  "Summary": "概要",
+  "TL;DR": "簡而言之",
+  "Success": "成功",
+  "Check": "已確認",
+  "Done [callout]": "已完成",
+  "Question": "問題",
+  "Help": "輔助說明",
+  "FAQ": "常見問題",
+  "Failure": "失敗",
+  "Fail": "失敗",
+  "Missing": "缺少",
+  "Bug": "程式錯誤",
+  "Example": "範例",
+  "Quote": "引言",
+  "Cite": "引用",
+  "Details": "詳細資訊",
+  "See Also": "另請參閱",
+  "Tab": "標籤頁",
+  "Tab {0}": "標籤頁 {0}",
+  "Read from the cover": "從封面開始閱讀",
+  "Read": "閱讀",
+  "Pages": "頁面",
+  "Previous Page": "上一頁",
+  "Next Page": "下一頁",
+  "All": "全部",
+  "Doc": "文件",
+  "Img": "影像",
+  "Font": "字體",
+  "Media": "媒體",
+  "Document": "文件",
+  "Fetch": "Fetch",
+  "Script": "工序指令",
+  "Stylesheet": "樣式表",
+  "Queued": "佇列中",
+  "DNS Lookup": "DNS 查詢",
+  "Connection": "連線",
+  "Request Sent": "傳送請求",
+  "Waiting (TTFB)": "等待（TTFB）",
+  "Download": "下載",
+  "Filter requests": "過濾請求",
+  "Status": "狀態",
+  "Method": "方法",
+  "Name": "名稱",
+  "Size": "大小",
+  "Time": "時間",
+  "Waterfall": "瀑布圖",
+  "Load {0}": "載入 {0}",
+  "Failed": "失敗",
+  "No matching requests": "沒有符合的請求",
+  "{0} requests": {
+    "other": "{0} 個請求"
+  },
+  "{1} of {0} requests": {
+    "other": "{0} 個請求中的 {1} 個"
+  },
+  "first {0} shown": "顯示前 {0} 個",
+  "Requests": "請求",
+  "Transferred": "已傳輸",
+  "Finished": "完成",
+  "Load": "載入",
+  "HTTP Archive": "HTTP 封存檔",
+  "{0} · recorded with {1}": "{0} · 由 {1} 錄製",
+  "Recorded with {0}": "由 {0} 錄製",
+  "Network capture": "網路擷取",
+  "Select a request to see its headers, payload, response and timing.": "選取一個請求來檢視其標頭、承載、回應和計時。",
+  "This request’s details couldn’t be read.": "無法讀取此請求的詳細資訊。",
+  "Headers": "標頭",
+  "Payload": "承載",
+  "Response": "回應",
+  "Timing": "計時",
+  "Request URL": "請求 URL",
+  "Remote Address": "遠端位址",
+  "{0} · connection {1}": "{0} · 連線 {1}",
+  "Protocol": "通訊協定",
+  "Redirects To": "重新導向至",
+  "General": "一般",
+  "Response Headers": "回應標頭",
+  "No response headers": "沒有回應標頭",
+  "Request Headers": "請求標頭",
+  "No request headers": "沒有請求標頭",
+  "Cookies Sent": "已傳送的 Cookie",
+  "Cookies Set": "已設定的 Cookie",
+  "Showing the beginning of a long body.": "內容過長，僅顯示開頭部分。",
+  "Query String": "查詢字串",
+  "Form Data": "表單資料",
+  "Request Body": "請求主體",
+  "No response body was recorded.": "未記錄回應主體。",
+  "Binary content.": "二進位內容。",
+  "Showing the first {0}.": "僅顯示前 {0}。",
+  "Started at {0} · total {1}": "開始於 {0} · 共 {1}",
+  "No timing recorded.": "未記錄計時資訊。",
+  "This formula uses commands Greece can’t typeset": "此公式使用了 Greece 無法排版的指令",
+  "The rest of this document took too long to typeset.": "此文件其餘部分的排版耗時過長。",
+  "The rest of this document couldn’t be typeset.": "無法排版此文件的其餘部分。",
+  "The rest of this document is too large or too deeply nested to typeset.": "此文件的其餘部分過大或巢狀層級過深，無法排版。",
+  "Showing the beginning of a very large project.": "專案過大，僅顯示開頭部分。",
+  "Contents": "目錄",
+  "Showing the beginning of a very large presentation.": "簡報過大，僅顯示開頭部分。",
+  "Slide {0}": "幻燈片 {0}",
+  "Illustrated by {0}": "插圖：{0}",
+  "Edited by {0}": "編輯：{0}",
+  "Translated by {0}": "翻譯：{0}",
+  "Narrated by {0}": "朗讀：{0}",
+  "Introduction by {0}": "導言：{0}",
+  "Afterword by {0}": "後記：{0}",
+  "With contributions by {0}": "參與撰寫：{0}",
+  "Annotated by {0}": "註釋：{0}",
+  "Compiled by {0}": "編纂：{0}",
+  "Cover by {0}": "封面設計：{0}",
+  "Adapted by {0}": "改編：{0}",
+  "Art by {0}": "美術：{0}",
+  "Photographs by {0}": "攝影：{0}",
+  "No references": "沒有參考文獻",
+  "vol. {0}": "卷 {0}",
+  "pp. {0}": "第 {0} 頁",
+  "{0} ed.": "{0} 版",
+  "ed. {0}": "{0} 編",
+  "Copy citation key": "拷貝引用鍵",
+  "Untitled": "未命名",
+  "{0} references": {
+    "other": "{0} 筆參考文獻"
+  },
+  "{0} string macros": {
+    "other": "{0} 個字串巨集"
+  },
+  "{0} preambles": {
+    "other": "{0} 個導言"
+  },
+  "Showing the first references of a very large library.": "文獻庫過大，僅顯示前面的參考文獻。",
+  "No matching references": "沒有符合的參考文獻",
+  "Bibliography": "書目",
+  "Filter references": "過濾參考文獻",
+  "Article": "文章",
+  "{0} Articles": {
+    "other": "{0} 篇文章"
+  },
+  "Book": "書籍",
+  "{0} Books": {
+    "other": "{0} 本書籍"
+  },
+  "Booklet": "小冊子",
+  "{0} Booklets": {
+    "other": "{0} 本小冊子"
+  },
+  "Chapter": "章節",
+  "{0} Chapters": {
+    "other": "{0} 個章節"
+  },
+  "In Collection": "文集文章",
+  "{0} In Collection": {
+    "other": "{0} 篇文集文章"
+  },
+  "Conference Paper": "會議論文",
+  "{0} Conference Papers": {
+    "other": "{0} 篇會議論文"
+  },
+  "Manual [document]": "手冊",
+  "{0} Manuals": {
+    "other": "{0} 本手冊"
+  },
+  "Master’s Thesis": "碩士論文",
+  "{0} Master’s Theses": {
+    "other": "{0} 篇碩士論文"
+  },
+  "Misc": "其他",
+  "{0} Misc": {
+    "other": "{0} 項其他"
+  },
+  "PhD Thesis": "博士論文",
+  "{0} PhD Theses": {
+    "other": "{0} 篇博士論文"
+  },
+  "Proceedings": "會議論文集",
+  "{0} Proceedings": {
+    "other": "{0} 部會議論文集"
+  },
+  "Report": "報告",
+  "{0} Reports": {
+    "other": "{0} 份報告"
+  },
+  "Unpublished": "未出版",
+  "{0} Unpublished": {
+    "other": "{0} 項未出版"
+  },
+  "Online": "線上資源",
+  "{0} Online": {
+    "other": "{0} 項線上資源"
+  },
+  "Thesis": "學位論文",
+  "{0} Theses": {
+    "other": "{0} 篇學位論文"
+  },
+  "Software": "軟體",
+  "{0} Software": {
+    "other": "{0} 套軟體"
+  },
+  "Dataset": "資料集",
+  "{0} Datasets": {
+    "other": "{0} 個資料集"
+  },
+  "Patent": "專利",
+  "{0} Patents": {
+    "other": "{0} 項專利"
+  },
+  "Collection": "文集",
+  "{0} Collections": {
+    "other": "{0} 部文集"
+  },
+  "Periodical": "期刊",
+  "{0} Periodicals": {
+    "other": "{0} 份期刊"
+  },
+  "Standard": "標準",
+  "{0} Standards": {
+    "other": "{0} 項標準"
+  },
+  "Video": "影片",
+  "{0} Videos": {
+    "other": "{0} 部影片"
+  },
+  "Audio": "音訊",
+  "{0} Audio": {
+    "other": "{0} 個音訊"
+  },
+  "Artwork": "藝術作品",
+  "{0} Artworks": {
+    "other": "{0} 件藝術作品"
+  },
+  "Preprint": "預印本",
+  "{0} Preprints": {
+    "other": "{0} 篇預印本"
+  },
+  "Entry": "條目",
+  "{0} ({1})": "{0}（{1}）",
+  "Publisher": "出版商",
+  "Published": "出版日期",
+  "Language": "語言",
+  "Identifier": "識別碼",
+  "{0} words · {1} min read": {
+    "other": "{0} 字 · 閱讀約 {1} 分鐘"
+  },
+  "{0} words · {1} h {2} min read": {
+    "other": "{0} 字 · 閱讀約 {1} 小時 {2} 分鐘"
+  },
+  "Length": "篇幅",
+  "Format": "格式",
+  "Book {0}": "第 {0} 冊",
+  "Cover": "封面",
+  "This book is protected, so its chapters can’t be shown.": "此書籍受到保護，因此無法顯示其章節。",
+  "Previous [chapter]": "上一章",
+  "Next [chapter]": "下一章",
+  "Show All": "顯示全部",
+  "Section {0}": "第 {0} 節",
+  "Empty diagram": "空白圖表",
+  "Zoom out": "縮小",
+  "Zoom to fit": "縮放至適當大小",
+  "Fit": "適合",
+  "Zoom in": "放大",
+  "Copy the diagram’s source": "拷貝圖表原始碼",
+  "Mermaid isn’t available.": "無法使用 Mermaid。",
+  "No diagram": "沒有圖表",
+  "This diagram couldn’t be drawn": "無法繪製此圖表",
+  "TikZ drawing": "TikZ 繪圖",
+  "PGF drawing": "PGF 繪圖",
+  "Picture": "圖片",
+  "Circuit diagram": "電路圖",
+  "Tree diagram": "樹狀圖",
+  "Commutative diagram": "交換圖",
+  "Plot": "座標圖",
+  "PSTricks drawing": "PSTricks 繪圖",
+  "Drawing": "繪圖",
+  "Missing figure": "缺少插圖",
+  "Figure": "插圖",
+  "Not in the bibliography": "不在書目中",
+  "Included PDF": "包含的 PDF",
+  "Missing file": "缺少檔案",
+  "Not included": "未包含",
+  "Map": "地圖",
+  "Layers": "圖層",
+  "The map couldn’t start.": "無法啟動地圖。",
+  "{0}°N": "北緯 {0}°",
+  "{0}°S": "南緯 {0}°",
+  "{0}°E": "東經 {0}°",
+  "{0}°W": "西經 {0}°",
+  "Tile": "圖磚",
+  "Point": "點",
+  "Points": "點",
+  "Line [shape]": "線",
+  "Lines": "多條線",
+  "Polygon": "多邊形",
+  "Polygons": "多個多邊形",
+  "Feature": "圖徵",
+  "No": "否",
+  "No attributes": "沒有屬性",
+  "{0} areas": {
+    "other": "{0} 個區域"
+  },
+  "{0} lines [shape]": {
+    "other": "{0} 條線"
+  },
+  "{0} points": {
+    "other": "{0} 個點"
+  },
+  "Tables": "表格",
+  "Objects": "物件",
+  "Tile Layers": "圖磚圖層",
+  "Basemap": "底圖",
+  "Grid": "經緯網",
+  "Labels": "標籤",
+  "Reprojected to WGS 84 for display": "已重新投影至 WGS 84 以便顯示",
+  "Basemap: {0}": "底圖：{0}",
+  "Vector tiles (PBF)": "向量圖磚（PBF）",
+  "Zoom": "縮放",
+  "Showing": "目前顯示",
+  "Tile size": "圖磚大小",
+  "Bounds": "範圍",
+  "Center": "中心",
+  "Version": "版本",
+  "Scheme": "編號方案",
+  "Generator": "產生工具",
+  "Vector": "向量",
+  "Raster": "點陣",
+  "Collapse": "收合",
+  "Zoom {0} (overzoomed)": "縮放 {0}（過度縮放）",
+  "Zoom {0}": "縮放 {0}",
+  "Distance": "距離",
+  "Duration": "時間長度",
+  "Moving": "移動時間",
+  "Elevation Gain": "爬升高度",
+  "Highest": "最高海拔",
+  "Max Speed": "最高速度",
+  "Avg Speed": "平均速度",
+  "Avg Heart Rate": "平均心率",
+  "{0} bpm": "{0} 次/分",
+  "Track": "軌跡",
+  "No features to draw": "沒有可繪製的圖徵",
+  "Copied {0}": "已拷貝 {0}",
+  "Sample": "範例",
+  "Pangram": "全字母句",
+  "Alphabet": "字母表",
+  "Figures": "數字",
+  "Sample text": "範例文字",
+  "No faces in this font": "此字體中沒有字樣",
+  "WebKit couldn’t load this font for display. Its details are below.": "WebKit 無法載入此字體來顯示。其詳細資訊如下。",
+  "Specimen": "樣本",
+  "Click the sample to type your own": "按一下範例即可輸入自訂文字",
+  "Variable Axes": "可變軸",
+  "{0} axes": {
+    "other": "{0} 個軸"
+  },
+  "Axes": "軸",
+  "OpenType Features": "OpenType 特性",
+  "Features [font]": "特性",
+  "Apply {0} to the specimen": "將 {0} 套用至樣本",
+  "{0} · on by default": "{0} · 預設開啟",
+  "Sizes": "字級",
+  "Icons": "圖像",
+  "Characters": "字元",
+  "Information": "資訊",
+  "Ascender": "上伸部",
+  "Cap height": "大寫字母高度",
+  "x-height": "x 字高",
+  "Baseline": "基線",
+  "Descender": "下伸部",
+  "Glyphs": "字形",
+  "Variable": "可變",
+  "Designer": "設計師",
+  "Scripts [writing]": "書寫系統",
+  "Show more": "顯示更多",
+  "Show less": "顯示較少",
+  "Family": "字體系列",
+  "Style": "樣式",
+  "Full name": "全名",
+  "PostScript name": "PostScript 名稱",
+  "Designer URL": "設計師 URL",
+  "Manufacturer": "製造商",
+  "Vendor URL": "廠商 URL",
+  "Vendor ID": "廠商 ID",
+  "Description": "描述",
+  "{0} · {1} outlines": "{0} · {1} 外框",
+  "Color ({0})": "彩色（{0}）",
+  "Units per em": "每 em 單位數",
+  "Metrics": "度量",
+  "Ascender {0} · Descender {1} · Cap height {2} · x-height {3}": "上伸部 {0} · 下伸部 {1} · 大寫字母高度 {2} · x 字高 {3}",
+  "Weight class": "粗細等級",
+  "Width class": "寬度等級",
+  "Italic": "斜體",
+  "Monospaced": "等寬",
+  "Traits": "特徵",
+  "Languages": "語言",
+  "Embedding": "嵌入",
+  "Created": "建立日期",
+  "Modified": "修改日期",
+  "Copyright": "版權",
+  "Trademark": "商標",
+  "License URL": "授權 URL",
+  "Characters can’t be drawn without the font.": "沒有字體，無法繪製字元。",
+  "Showing the first {1} of {0} characters.": {
+    "other": "僅顯示 {0} 個字元中的前 {1} 個。"
+  },
+  "Code point": "碼位",
+  "Character": "字元",
+  "Copy the character": "拷貝字元",
+  "Copy the code point": "拷貝碼位",
+  "Unnamed": "無名稱",
+  "Glyph": "字形",
+  "Glyph ID": "字形 ID",
+  "Advance": "步進寬度",
+  "{0} units": {
+    "other": "{0} 單位"
+  },
+  "The Lottie player is missing": "缺少 Lottie 播放器",
+  "Click to play or pause": "按一下來播放或暫停",
+  "Play": "播放",
+  "Loop": "循環播放",
+  "Background: Checkerboard": "背景：棋盤格",
+  "Background: White": "背景：白色",
+  "Background: Black": "背景：黑色",
+  "Speed {0}": "速度 {0}",
+  "Pause": "暫停",
+  "This animation couldn’t be read.": "無法讀取此動畫。",
+  "This animation couldn’t be played.": "無法播放此動畫。",
+  "Play from frame {0}": "從第 {0} 個影格播放",
+  "Lottie expressions are code; Greece doesn’t run them, so some motion may differ.": "Lottie 運算式是程式碼，Greece 不會執行它們，因此某些動態效果可能有所不同。",
+  "Expressions not evaluated": "運算式未求值",
+  "Original": "原始",
+  "{0} colors": {
+    "other": "{0} 種顏色"
+  },
+  "Ungrouped": "未分組",
+  "Spot": "特別色",
+  "{0} — click to copy": "{0} — 按一下來拷貝",
+  "Outside sRGB: shown as the nearest sRGB color": "超出 sRGB：顯示為最接近的 sRGB 顏色",
+  "{0} too fast": {
+    "other": "{0} 則過快"
+  },
+  "Reading speed {0} cps (over {1})": "閱讀速度 {0} 字/秒（超過 {1}）",
+  "{0} long lines": {
+    "other": "{0} 則超長行"
+  },
+  "A line over {0} characters": {
+    "other": "有一行超過 {0} 個字元"
+  },
+  "{0} over 2 lines": {
+    "other": "{0} 則超過 2 行"
+  },
+  "More than {0} lines": {
+    "other": "超過 {0} 行"
+  },
+  "{0} brief": {
+    "other": "{0} 則過短"
+  },
+  "On screen under {0} s": "顯示不到 {0} 秒",
+  "{0} lingering": {
+    "other": "{0} 則停留過久"
+  },
+  "On screen over {0} s": "顯示超過 {0} 秒",
+  "{0} overlaps": {
+    "other": "{0} 則重疊"
+  },
+  "Starts before the previous cue ends": "在上一則字幕結束前開始",
+  "{0} with bad timing": {
+    "other": "{0} 則時間錯誤"
+  },
+  "Ends before it starts": "結束時間早於開始時間",
+  "These subtitles couldn’t be read": "無法讀取這些字幕",
+  "Filter lines": "過濾歌詞",
+  "Filter cues": "過濾字幕",
+  "{0} cues": {
+    "other": "{0} 則字幕"
+  },
+  "Average reading speed, in characters per second": "平均閱讀速度（字/秒）",
+  "{0} cps average": "平均 {0} 字/秒",
+  "{0} speakers": {
+    "other": "{0} 位說話者"
+  },
+  "Timed at {0} fps": "以 {0} fps 計時",
+  "Show only these": "僅顯示這些",
+  "Jump to a moment": "跳至某個時間點",
+  "Showing the first {0} cues.": {
+    "other": "僅顯示前 {0} 則字幕。"
+  },
+  "{0} cps": "{0} 字/秒",
+  "No matching cues": "沒有符合的字幕",
+  "No cues found": "找不到字幕",
+  "SVG image": "SVG 影像",
+  "This SVG couldn’t be drawn.": "無法繪製此 SVG。",
+  "Actual size": "實際大小",
+  "Fit to window": "符合視窗大小",
+  "Transparency checkerboard": "透明棋盤格",
+  "Source [code]": "原始碼",
+  "This file contains scripts. Greece shows SVG as an image, so they never run.": "此檔案包含工序指令。Greece 會將 SVG 顯示為影像，因此工序指令永遠不會執行。",
+  "It refers to files or web addresses, which previews don’t load.": "它參照了檔案或網址，預覽不會載入這些內容。",
+  "The source couldn’t be read.": "無法讀取原始碼。",
+  "Model controls": "模型控制項目",
+  "This model is too large to preview": "此模型過大，無法預覽",
+  "Greece previews models up to {0}.": "Greece 可預覽最大 {0} 的模型。",
+  "3D previews need WebGL": "3D 預覽需要 WebGL",
+  "Reading the model took too long.": "讀取模型耗時過長。",
+  "Greece couldn’t open this model": "Greece 無法打開此模型",
+  "Loading": "正在載入",
+  "Preparing": "正在準備",
+  "Not a MagicaVoxel file": "不是 MagicaVoxel 檔案",
+  "Unsupported format": "不支援的格式",
+  "The file has no scene": "檔案中沒有場景",
+  "Couldn’t read the points": "無法讀取點資料",
+  "Not a LAS/LAZ file": "不是 LAS/LAZ 檔案",
+  "Decompressing": "正在解壓縮",
+  "The decoder failed": "解碼器失敗",
+  "The file has no points": "檔案中沒有點",
+  "The model is empty": "模型是空的",
+  "Shaded": "著色",
+  "Wireframe": "線框",
+  "Display": "顯示方式",
+  "Colour": "顏色",
+  "Animation {0}": "動畫 {0}",
+  "Animation": "動畫",
+  "Reset View": "重置視角",
+  "Statistics": "統計資料",
+  "Classes": "類別",
+  "Point format": "點格式",
+  "LAS version": "LAS 版本",
+  "Vertices": "頂點",
+  "Triangles": "三角形",
+  "Meshes": "網格",
+  "Materials": "材質",
+  "Textures": "紋理",
+  "Texture memory": "紋理記憶體",
+  "Animations": "動畫",
+  "Bones": "骨骼",
+  "Morph targets": "變形目標",
+  "Compression": "壓縮",
+  "Created with": "建立工具",
+  "{0} voxels": {
+    "other": "{0} 體素"
+  },
+  "Width": "寬度",
+  "Depth": "深度",
+  "Height": "高度",
+  "Elevation": "海拔",
+  "Intensity": "強度",
+  "Classification": "分類",
+  "A file it needs couldn’t be read.": "無法讀取所需的檔案。",
+  "Unreadable point sample": "無法讀取點樣本",
+  "Truncated point sample": "點樣本已截斷",
+  "Not an OFF file": "不是 OFF 檔案",
+  "Invalid OFF header": "無效的 OFF 標頭"
+}
